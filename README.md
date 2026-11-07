@@ -83,6 +83,12 @@ up to the game's player count. In ludo, for example: 1 player vs 3 computers, 2 
 computers, or 2 friends over BLE plus 2 computers. The host fills seats with bots before the
 game starts; bots only ever run on the host, and guests see them as ordinary players.
 
+Games with a team mode (e.g. ludo with partners) group seats into teams, and each seat in a
+team is still a person or a computer: 1 player + 1 computer vs 2 computers, 2 friends vs 2
+computers, and so on. Teams are part of the game setup the host picks; they will need a game
+option passed to `GameRules.initialState` and an optional `team` field per player in `lobby`
+and `state` (see the compatibility rule in `docs/protocol.md`).
+
 ## Multiplayer roadmap
 
 1. Pass-and-play (one device) — `LocalTransport`
