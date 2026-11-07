@@ -51,6 +51,8 @@ object CongklakBoard {
     )
     private val WOOD = floatArrayOf(0.64f, 0.42f, 0.24f)
     private val WOOD_DARK = floatArrayOf(0.44f, 0.27f, 0.15f)
+    private val GOLD = floatArrayOf(0.95f, 0.72f, 0.29f)
+    private const val RING_HEIGHT = 0.18f
 
     val boardTop: Float = BOARD_LAYERS * CELL
     private val pitFloor = PIT_LAYERS * CELL
@@ -105,6 +107,38 @@ object CongklakBoard {
         val r = 0.25f + (k % 5) * 0.08f
         return floatArrayOf(centers[pit][0] + r * cos(a), boardTop + 1.6f + (k / 5) * 0.3f, centers[pit][1] + r * sin(a))
     }
+
+    /** Where to place [ringMesh] to circle [pit]: x, y, z. */
+    fun ringOrigin(pit: Int): FloatArray = floatArrayOf(centers[pit][0], boardTop, centers[pit][1])
+
+    /**
+     * A gold voxel ring around a hole, centered on the origin and sitting on y = 0. Marks the
+     * holes the player may start from; place it with [ringOrigin]. It is a half-cell outline
+     * of the hole's voxel edge (hole centers sit on cell corners), thin enough that rings on
+     * neighboring holes stay apart.
+     */
+    fun ringMesh(): VoxelMesh {
+        val half = CELL / 2
+        // A half cell belongs to the hole when the board cell containing it does.
+        fun inHole(i: Int, k: Int): Boolean {
+            val cx = (floorDiv(i, 2) + 0.5f) * CELL
+            val cz = (floorDiv(k, 2) + 0.5f) * CELL
+            return cx * cx + cz * cz <= HOLE_RADIUS * HOLE_RADIUS
+        }
+        val mesh = VoxelMesh()
+        val reach = 6
+        for (i in -reach until reach) for (k in -reach until reach) {
+            if (inHole(i, k)) continue
+            val edge = (-1..1).any { di -> (-1..1).any { dk -> inHole(i + di, k + dk) } }
+            if (!edge) continue
+            val x = i * half
+            val z = k * half
+            mesh.box(floatArrayOf(x, 0f, z), floatArrayOf(x + half, RING_HEIGHT, z + half), GOLD)
+        }
+        return mesh
+    }
+
+    private fun floorDiv(a: Int, b: Int): Int = if (a >= 0) a / b else -((-a + b - 1) / b)
 
     fun seedMesh(variant: Int): VoxelMesh {
         val h = SEED_SIZE / 2
@@ -211,6 +245,9 @@ class CongklakSeeds(pits: List<Int>) {
     }
 
     fun counts(): List<Int> = piles.map { it.size }
+
+    /** Seeds in the sowing hand right now. */
+    fun handCount(): Int = hand.size
 
     fun apply(step: SowStep) {
         handPit = step.pit

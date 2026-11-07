@@ -17,6 +17,8 @@ final class BoardScene {
     private let anchor = AnchorEntity(world: .zero)
     private let camera = PerspectiveCamera()
     private var seeds: [ModelEntity] = []
+    /// Gold rings marking playable holes, keyed by pit.
+    private var rings: [Int: ModelEntity] = [:]
     private var placed = false
 
     init() {
@@ -27,6 +29,7 @@ final class BoardScene {
 
         let palette = Palette()
         palette.add(CongklakBoard.shared.boardMesh())
+        palette.add(CongklakBoard.shared.ringMesh())
         for v in 0..<Int(CongklakBoard.shared.SEED_VARIANTS) {
             palette.add(CongklakBoard.shared.seedMesh(variant: Int32(v)))
         }
@@ -34,7 +37,15 @@ final class BoardScene {
         let resources = descriptors.map { try! MeshResource.generate(from: [$0]) }
 
         anchor.addChild(ModelEntity(mesh: resources[0], materials: [material]))
-        let seedResources = Array(resources.dropFirst())
+        for pit in 0..<Int(CongklakGame.shared.PITS) where !CongklakGame.shared.isStore(pit: Int32(pit)) {
+            let ring = ModelEntity(mesh: resources[1], materials: [material])
+            let o = Self.floats(CongklakBoard.shared.ringOrigin(pit: Int32(pit)))
+            ring.position = SIMD3(o[0], o[1], o[2])
+            ring.isEnabled = false
+            rings[pit] = ring
+            anchor.addChild(ring)
+        }
+        let seedResources = Array(resources.dropFirst(2))
         for i in 0..<Int(CongklakBoard.shared.SEED_COUNT) {
             let variant = Int(CongklakBoard.shared.seedVariant(seed: Int32(i)))
             let seed = ModelEntity(mesh: seedResources[variant], materials: [material])
@@ -79,6 +90,11 @@ final class BoardScene {
             let p = Self.floats(CongklakBoard.shared.pitAnchor(pit: Int32(pit)))
             return view.project(SIMD3(p[0], p[1], p[2])) ?? .zero
         }
+    }
+
+    /// Shows gold rings around exactly these holes.
+    func showRings(_ pits: Set<Int>) {
+        for (pit, ring) in rings { ring.isEnabled = pits.contains(pit) }
     }
 
     /// `targets` holds x, y, z per seed (`CongklakSeeds.targets()`). The first call places

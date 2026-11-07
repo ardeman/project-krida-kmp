@@ -129,7 +129,11 @@ class CongklakTest {
                 val play = g.play(s, seat, move)
                 val steps = CongklakSeeds.steps(s.pits, g.pit(seat, move.hole), play.path)
                 assertEquals(play.path.size, steps.count { !it.pickUp })
-                steps.forEach(seeds::apply)
+                val start = s.pits[g.pit(seat, move.hole)]
+                seeds.apply(steps.first())
+                assertEquals(start, seeds.handCount())
+                steps.drop(1).forEach(seeds::apply)
+                assertEquals(0, seeds.handCount())
                 seeds.settle(play.state.pits)
                 assertEquals(play.state.pits, seeds.counts(), "game $game")
                 s = play.state
@@ -147,5 +151,15 @@ class CongklakTest {
         assertTrue(m.vertexCount in 1..65_535, "${m.vertexCount} vertices")
         assertTrue(idx.all { it in 0 until m.vertexCount })
         assertEquals(m.vertexCount * 3, m.colorArray().size)
+    }
+
+    @Test
+    fun ringMeshCirclesTheHole() {
+        val m = CongklakBoard.ringMesh()
+        val pos = m.positionArray()
+        assertTrue(m.vertexCount > 0)
+        assertTrue(m.indexArray().all { it in 0 until m.vertexCount })
+        // Nothing covers the hole itself.
+        assertTrue((0 until m.vertexCount).all { v -> pos[v * 3] * pos[v * 3] + pos[v * 3 + 2] * pos[v * 3 + 2] >= 0.45f })
     }
 }

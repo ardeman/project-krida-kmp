@@ -16,6 +16,9 @@ class CongklakTable: ObservableObject {
     /// Shown under the score (disconnects, refusals), or nil.
     @Published fileprivate(set) var notice: String?
 
+    /// The computer's difficulty, shown next to its name; nil without a computer player.
+    fileprivate(set) var botLevel: String?
+
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: CongklakState?
     /// Receives every snapshot after `latest`, in order.
@@ -94,13 +97,15 @@ final class HostTable: CongklakTable {
     }
 
     /// You (seat 0, moving first) against a `CongklakBot` on this device.
-    static func vsComputer(you: String, computer: String, level: CongklakBot.Level) -> HostTable {
+    static func vsComputer(you: String, computer: String, level: CongklakBot.Level, levelName: String) -> HostTable {
         let transport = LocalTransport()
         let session = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: transport, roomCode: "LOCAL")
         _ = session.addLocalPlayer(name: you, platform: .ios)
         _ = session.addBot(name: computer, platform: .ios, bot: CongklakBot(level: level))
         session.start()
-        return HostTable(session: session, mySeat: 0, transport: transport)
+        let table = HostTable(session: session, mySeat: 0, transport: transport)
+        table.botLevel = levelName
+        return table
     }
 }
 
