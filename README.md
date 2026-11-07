@@ -79,8 +79,9 @@ All of them plug into the same `Transport` interface; game code never changes.
 ## Status
 
 Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rule variant
-documented in the file). Next: first voxel congklak board scene on each platform, then wire
-it to `HostSession` for pass-and-play.
+documented in the file). Android: playable pass-and-play congklak on a voxel board
+(`androidApp/.../congklak/`, Filament + glTF generated in code). Next: the same board on iOS
+(RealityKit), then congklak over BLE.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`.

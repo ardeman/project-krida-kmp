@@ -21,7 +21,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.ardeman.krida.ble.BleGuestTransport
+import com.ardeman.krida.congklak.CongklakScreen
 import com.ardeman.krida.ble.BleHostTransport
 import com.ardeman.krida.core.games.CounterGame
 import com.ardeman.krida.core.games.CounterMove
@@ -48,6 +50,7 @@ class MainActivity : ComponentActivity() {
     private var total by mutableStateOf<Int?>(null)
     private var myTurn by mutableStateOf(false)
     private var pendingAction: (() -> Unit)? = null
+    private var playingCongklak by mutableStateOf(false)
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -58,7 +61,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it }
-        setContent { MaterialTheme { Screen() } }
+        setContent {
+            MaterialTheme {
+                if (playingCongklak) CongklakScreen(onExit = { playingCongklak = false }) else Screen()
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -77,6 +84,7 @@ class MainActivity : ComponentActivity() {
             if (players.isNotEmpty()) Text("Pemain: $players")
 
             if (host == null && guest == null) {
+                Button(onClick = { playingCongklak = true }) { Text(stringResource(R.string.congklak_pass_and_play)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Button(onClick = { withBlePermissions(::startHost) }) { Text("Buat room (BLE)") }
                 }

@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Krida</string>
+    <string name="congklak_title">Congklak</string>
+    <string name="congklak_pass_and_play">Main congklak (satu perangkat)</string>
+    <string name="congklak_player_1">Pemain 1</string>
+    <string name="congklak_player_2">Pemain 2</string>
+    <string name="congklak_turn">Giliran %1$s</string>
+    <string name="congklak_wins">%1$s menang!</string>
+    <string name="congklak_draw">Seri!</string>
+    <string name="congklak_score">%1$s %2$d · %3$s %4$d</string>
+    <string name="congklak_play_again">Main lagi</string>
+    <string name="congklak_back">Kembali</string>
 </resources>

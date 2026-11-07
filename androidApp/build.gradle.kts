@@ -53,8 +53,8 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.activity.compose)
 
-    // 3D voxel rendering. Enable when the first board scene lands.
-    // implementation(libs.filament.android)
-    // implementation(libs.filament.gltfio)
-    // implementation(libs.filament.utils)
+    // 3D voxel rendering. Meshes are generated in code as glTF and drawn with gltfio's
+    // built-in materials, so no material compiler (matc) and no filament-utils are needed.
+    implementation(libs.filament.android)
+    implementation(libs.filament.gltfio)
 }
