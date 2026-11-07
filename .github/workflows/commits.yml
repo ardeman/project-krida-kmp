@@ -1,0 +1,39 @@
+# Checks that every pushed or PR commit follows Conventional Commits,
+# using the same hook as local commits (scripts/git-hooks/commit-msg).
+# Commits up to b652c53 predate the convention and are skipped.
+name: Commit messages
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check commit messages
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.event.after }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$PUSH_BEFORE" ] && ! echo "$PUSH_BEFORE" | grep -q '^0*$'; then
+            range="$PUSH_BEFORE..$PUSH_AFTER"
+          else
+            range="$PUSH_AFTER -1"  # new branch: check its tip only
+          fi
+          status=0
+          for sha in $(git rev-list --no-merges $range --not b652c53); do
+            git log -1 --format=%B "$sha" > "$RUNNER_TEMP/msg"
+            scripts/git-hooks/commit-msg "$RUNNER_TEMP/msg" || { echo "  in $sha"; status=1; }
+          done
+          exit $status

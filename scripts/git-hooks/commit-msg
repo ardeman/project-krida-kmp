@@ -1,0 +1,29 @@
+#!/bin/sh
+# Rejects commit messages whose first line is not a Conventional Commit:
+#   <type>(<scope>)!: <description>
+# Scope and "!" are optional. See "Commit messages" in AGENTS.md.
+# Enable once per clone: git config core.hooksPath scripts/git-hooks
+
+msg_file="$1"
+header=$(grep -v '^#' "$msg_file" | head -n 1)
+
+# Messages git writes itself, and autosquash markers.
+case "$header" in
+  "Merge "* | "Revert \""* | "fixup! "* | "squash! "* | "amend! "*) exit 0 ;;
+esac
+
+types='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+pattern="^($types)(\([a-z0-9-]+\))?!?: [^ ].*"
+
+if ! printf '%s\n' "$header" | grep -Eq "$pattern"; then
+  echo "commit-msg: first line is not a Conventional Commit:" >&2
+  echo "  $header" >&2
+  echo "Expected: <type>(<scope>): <description>, e.g. \"feat(android): congklak over BLE\"" >&2
+  echo "Types: $(echo "$types" | tr '|' ' ')" >&2
+  exit 1
+fi
+
+if [ "${#header}" -gt 72 ]; then
+  echo "commit-msg: first line is ${#header} characters; keep it to 72." >&2
+  exit 1
+fi

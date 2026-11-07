@@ -37,6 +37,9 @@ smallest install size. See [docs/architecture.md](docs/architecture.md).
 ## Getting started
 
 ```bash
+# once per clone: check commit messages (Conventional Commits, see AGENTS.md)
+git config core.hooksPath scripts/git-hooks
+
 # shared core tests (JVM)
 ./gradlew :shared:jvmTest                     # add -PsharedOnly=true if no Android SDK
 

@@ -24,3 +24,15 @@ Gradle needs JDK 17–21; Android Studio's bundled JDK 25 is too new (see `READM
 - Install size budget is under 15 MB per store download. Ask before adding a dependency; prefer generating voxel meshes in code over shipping assets, and use `.glb` with vertex colors (no textures) when an asset is needed.
 - User-facing text is Indonesian. On Android it belongs in `res/values/strings.xml`, on iOS in a string catalog; don't add more hardcoded strings. Code comments are in English.
 - When a step in the README's multiplayer roadmap or the "Status" line changes, update `README.md` in the same commit.
+
+## Commit messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `<type>(<scope>): <description>`.
+
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+- Scope is the part touched, lowercase: `shared`, `android`, `ios`, `web`, `protocol`, `congklak`, `brand`, `audio`, `ads`, `readme`. Leave it out when a change spans the whole repo.
+- Description in English, imperative or a short noun phrase, no trailing period; the first line stays within 72 characters.
+- A breaking change (for example a `protocol` bump) gets `!` after the scope and a `BREAKING CHANGE:` footer.
+- The hook in `scripts/git-hooks/commit-msg` enforces the first line; enable it with `git config core.hooksPath scripts/git-hooks`. CI (`.github/workflows/commits.yml`) runs the same check on every push and pull request.
+
+Examples: `feat(android): congklak over BLE`, `fix(ios): skip the x86_64 simulator slice`, `feat(protocol)!: rename seat field`.
