@@ -24,6 +24,7 @@ final class CongklakGameModel: ObservableObject {
     private static let pickUpDelay: UInt64 = 260_000_000
     private static let sowDelay: UInt64 = 170_000_000
     private static let settleDelay: UInt64 = 320_000_000
+    private static let botPause: UInt64 = 600_000_000
 
     init(table: CongklakTable) {
         self.table = table
@@ -39,6 +40,7 @@ final class CongklakGameModel: ObservableObject {
             self.queue.append(update)
             self.drain()
         }
+        drain()
     }
 
     var game: CongklakGame { CongklakGame.shared }
@@ -81,8 +83,17 @@ final class CongklakGameModel: ObservableObject {
         if table.play(seat: seat, hole: Int32(hole)), table.isRemote { waiting = true }
     }
 
+    /// Once the board is still, give a computer player its turn after a short pause.
+    private func idle() {
+        Task {
+            try? await Task.sleep(nanoseconds: Self.botPause)
+            if !animating && queue.isEmpty { table.stepBot() }
+        }
+    }
+
     private func drain() {
-        guard !animating, !queue.isEmpty else { return }
+        guard !animating else { return }
+        guard !queue.isEmpty else { return idle() }
         let update = queue.removeFirst()
         animating = true
         Task {

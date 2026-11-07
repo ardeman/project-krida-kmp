@@ -1,7 +1,7 @@
 import SwiftUI
 import Shared
 
-/// Menu: congklak pass-and-play on this device, or a nearby room over BLE (host or join),
+/// Menu: congklak pass-and-play or vs computer on this device, or a nearby room over BLE (host or join),
 /// iOS and Android alike. Then the lobby, then the board.
 struct ContentView: View {
     @Binding var roomCode: String
@@ -29,6 +29,13 @@ struct ContentView: View {
             Image("Wordmark").resizable().scaledToFit().frame(height: 40).accessibilityLabel("Krida")
             Button("Main congklak (satu perangkat)", action: startPassAndPlay)
                 .buttonStyle(.borderedProminent)
+            Text("Lawan komputer").font(.headline)
+            HStack(spacing: 12) {
+                Button("Mudah") { startVsComputer(.easy) }
+                Button("Sedang") { startVsComputer(.normal) }
+                Button("Sulit") { startVsComputer(.hard) }
+            }
+            .buttonStyle(.bordered)
             Text("Main bareng dekat (Bluetooth)").font(.headline)
             Button("Buat room") { room = NearbyRoom.host() }
                 .buttonStyle(.borderedProminent)
@@ -51,6 +58,10 @@ struct ContentView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(Color(red: 1.0, green: 0.97, blue: 0.93))
+    }
+
+    private func startVsComputer(_ level: CongklakBot.Level) {
+        passAndPlay = HostTable.vsComputer(you: String(localized: "Kamu"), computer: String(localized: "Komputer"), level: level)
     }
 
     private func startPassAndPlay() {

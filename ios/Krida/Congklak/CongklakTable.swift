@@ -8,8 +8,8 @@ struct CongklakUpdate {
     let move: CongklakMove?
 }
 
-/// What the congklak screen plays against: pass-and-play on this device, a BLE host, or a
-/// BLE guest. Session callbacks arrive on the main thread, so this needs no locks.
+/// What the congklak screen plays against: pass-and-play or vs computer on this device, a
+/// BLE host, or a BLE guest. Session callbacks arrive on the main thread, so this needs no locks.
 @MainActor
 class CongklakTable: ObservableObject {
     @Published fileprivate(set) var players: [PlayerInfo] = []
@@ -36,9 +36,11 @@ class CongklakTable: ObservableObject {
     func play(seat: Int32, hole: Int32) -> Bool { false }
     func restart() {}
     func leave() {}
+    /// Lets a computer player move if it is its turn. Called once the board is idle.
+    func stepBot() {}
 }
 
-/// The authoritative table: pass-and-play (no transport peers) or hosting a BLE room.
+/// The authoritative table: pass-and-play, vs computer (no transport peers) or hosting a BLE room.
 final class HostTable: CongklakTable {
     private let session: HostSession<CongklakState, CongklakMove>
     private let transport: Transport
@@ -79,6 +81,8 @@ final class HostTable: CongklakTable {
         session.restart()
     }
 
+    override func stepBot() { _ = session.stepBot() }
+
     override func leave() { transport.close() }
 
     static func passAndPlay(names: [String]) -> HostTable {
@@ -87,6 +91,16 @@ final class HostTable: CongklakTable {
         for name in names { _ = session.addLocalPlayer(name: name, platform: .ios) }
         session.start()
         return HostTable(session: session, mySeat: nil, transport: transport)
+    }
+
+    /// You (seat 0, moving first) against a `CongklakBot` on this device.
+    static func vsComputer(you: String, computer: String, level: CongklakBot.Level) -> HostTable {
+        let transport = LocalTransport()
+        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: transport, roomCode: "LOCAL")
+        _ = session.addLocalPlayer(name: you, platform: .ios)
+        _ = session.addBot(name: computer, platform: .ios, bot: CongklakBot(level: level))
+        session.start()
+        return HostTable(session: session, mySeat: 0, transport: transport)
     }
 }
 
