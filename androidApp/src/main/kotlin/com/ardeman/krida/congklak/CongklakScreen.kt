@@ -190,8 +190,8 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
             }
             val dx = when {
                 !store -> 0.dp
-                near -> 48.dp
-                else -> (-48).dp
+                near -> (-48).dp // your store is on your left, so push its count outward
+                else -> 48.dp
             }
             CountBadge(
                 count = counts[pit],

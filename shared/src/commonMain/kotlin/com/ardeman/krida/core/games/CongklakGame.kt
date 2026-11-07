@@ -40,8 +40,9 @@ data class CongklakPlay(
  * - Sow one seed per pit, including your own store, skipping the opponent's store.
  * - Last seed in a non-empty hole (either side): pick all of them up and keep sowing.
  * - Last seed in your own store: you move again.
- * - Last seed in an empty hole on your side: capture it plus the facing hole into your
- *   store, if the facing hole has seeds (tembak). Otherwise the seed stays. Turn ends.
+ * - Last seed in an empty hole on your side (tembak): move it plus everything in the facing
+ *   hole into your store. If the facing hole is empty, the lone seed still goes to your
+ *   store. Turn ends.
  * - Last seed in an empty hole on the opponent's side: turn ends.
  * - If the player to move has no seeds in their holes, the game ends and the opponent
  *   collects what is left on their own side. Most seeds in store wins.
@@ -119,12 +120,10 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
                 pits[pos] > 1 && path.size < MAX_SOWN -> { hand = pits[pos]; pits[pos] = 0 }
                 ownerOf(pos) == seat && pits[pos] == 1 -> {
                     val facing = opposite(pos)
-                    if (pits[facing] > 0) {
-                        pits[own] += pits[facing] + 1
-                        pits[facing] = 0
-                        pits[pos] = 0
-                        capturedFrom = facing
-                    }
+                    if (pits[facing] > 0) capturedFrom = facing
+                    pits[own] += pits[facing] + 1
+                    pits[facing] = 0
+                    pits[pos] = 0
                     break
                 }
                 else -> break

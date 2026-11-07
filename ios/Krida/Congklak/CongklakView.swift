@@ -227,7 +227,7 @@ struct CongklakView: View {
     private func badgePosition(pit: Int, at p: CGPoint) -> CGPoint {
         let store = model.game.isStore(pit: Int32(pit))
         let near = model.game.ownerOf(pit: Int32(pit)) == model.viewSeat
-        if store { return CGPoint(x: p.x + (near ? 48 : -48), y: p.y) }
+        if store { return CGPoint(x: p.x + (near ? -48 : 48), y: p.y) } // your store is on your left
         return CGPoint(x: p.x, y: p.y + (near ? 34 : -34))
     }
 }

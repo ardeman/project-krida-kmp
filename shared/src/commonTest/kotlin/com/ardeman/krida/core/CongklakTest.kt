@@ -51,11 +51,12 @@ class CongklakTest {
     }
 
     @Test
-    fun emptyOwnHoleWithEmptyFacingHoleKeepsSeed() {
+    fun emptyOwnHoleWithEmptyFacingHoleBanksTheSeed() {
         val s = board(0, 0 to 1, 10 to 2)
         val p = g.play(s, 0, CongklakMove(0))
         assertNull(p.capturedFrom)
-        assertEquals(1, p.state.pits[1])
+        assertEquals(0, p.state.pits[1])
+        assertEquals(1, g.score(p.state, 0))
         assertEquals(1, p.state.turn)
     }
 

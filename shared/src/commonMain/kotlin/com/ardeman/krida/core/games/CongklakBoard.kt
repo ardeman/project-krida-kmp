@@ -8,12 +8,13 @@ import kotlin.math.sin
 
 /**
  * The congklak board as both platforms draw it, in world units (y up). Seat 0 sits on the
- * near side (+z), seat 1 across; sowing runs counter-clockwise seen from above:
+ * near side (+z), seat 1 across. As in traditional congklak, sowing runs clockwise seen from
+ * above and each player's store is on their left:
  *
  * ```
- *        14 13 12 11 10  9  8          (seat 1)
- *   15                          7
- *         0  1  2  3  4  5  6          (seat 0)
+ *         8  9 10 11 12 13 14          (seat 1)
+ *    7                         15
+ *         6  5  4  3  2  1  0          (seat 0)
  * ```
  *
  * Pure geometry, so the Android (Filament) and iOS (RealityKit) boards are identical.
@@ -58,9 +59,9 @@ object CongklakBoard {
         val seat = CongklakGame.ownerOf(pit)
         val hole = pit % (CongklakGame.HOLES + 1)
         when {
-            CongklakGame.isStore(pit) -> floatArrayOf(if (seat == 0) 12.5f else -12.5f, 0f)
-            seat == 0 -> floatArrayOf((hole - 3) * 3f, 2f)
-            else -> floatArrayOf((3 - hole) * 3f, -2f)
+            CongklakGame.isStore(pit) -> floatArrayOf(if (seat == 0) -12.5f else 12.5f, 0f)
+            seat == 0 -> floatArrayOf((3 - hole) * 3f, 2f)
+            else -> floatArrayOf((hole - 3) * 3f, -2f)
         }
     }
 
