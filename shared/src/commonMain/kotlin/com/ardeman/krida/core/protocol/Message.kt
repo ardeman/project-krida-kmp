@@ -21,6 +21,10 @@ data class PlayerInfo(
     val local: Boolean = false,
 )
 
+/** A move as applied by the host: who made it and the game-specific move JSON. */
+@Serializable
+data class LastMove(val seat: Int, val move: JsonElement)
+
 /** Every message on every transport. See docs/protocol.md. */
 @Serializable
 sealed class Message {
@@ -69,6 +73,8 @@ sealed class Message {
         val finished: Boolean,
         val state: JsonElement,
         val players: List<PlayerInfo>,
+        /** The move that produced this snapshot (absent for the first one), for animations. */
+        val last: LastMove? = null,
     ) : Message()
 
     /** host -> guest: the intent with [seq] was refused. */

@@ -3,6 +3,7 @@ package com.ardeman.krida.core.session
 import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.protocol.InvalidReason
 import com.ardeman.krida.core.protocol.Krida
+import com.ardeman.krida.core.protocol.LastMove
 import com.ardeman.krida.core.protocol.Message
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
@@ -49,6 +50,12 @@ class HostSession<S, M>(
     var state: S? = null
         private set
 
+    /** Seat and move that produced [state] (null before the first move). Read in [onStateChanged]. */
+    var lastSeat: Int? = null
+        private set
+    var lastMove: M? = null
+        private set
+
     /** UI hooks. Called on the transport's thread. */
     var onPlayersChanged: ((List<PlayerInfo>) -> Unit)? = null
     var onStateChanged: ((S) -> Unit)? = null
@@ -76,6 +83,8 @@ class HostSession<S, M>(
         check(canStart()) { "Need at least ${rules.minPlayers} players" }
         started = true
         state = rules.initialState(seats.size, random)
+        lastSeat = null
+        lastMove = null
         seq = 1
         broadcastState()
     }
@@ -162,6 +171,8 @@ class HostSession<S, M>(
         if (rules.currentTurn(current) != seat) return InvalidReason.NOT_YOUR_TURN
         rules.validate(current, seat, move)?.let { return it }
         state = rules.apply(current, seat, move, random)
+        lastSeat = seat
+        lastMove = move
         seq++
         broadcastState()
         return null
@@ -175,6 +186,9 @@ class HostSession<S, M>(
             finished = rules.isFinished(s),
             state = Codec.json.encodeToJsonElement(rules.stateSerializer, s),
             players = players,
+            last = lastMove?.let { m ->
+                LastMove(lastSeat!!, Codec.json.encodeToJsonElement(rules.moveSerializer, m))
+            },
         )
         val bytes = Codec.encode(msg)
         remotePeers().forEach { transport.send(it, bytes) }

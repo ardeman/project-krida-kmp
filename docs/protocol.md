@@ -32,7 +32,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
 | `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves) |
 | `intent` | guest → host | `seq`, `move` |
-| `state` | host → all | `seq`, `turn`, `finished`, `state`, `players` |
+| `state` | host → all | `seq`, `turn`, `finished`, `state`, `players`, `last?` |
 | `invalid` | host → guest | `seq`, `reason` |
 | `ping` / `pong` | both | `t` |
 | `bye` | both | — |
@@ -40,6 +40,11 @@ opaque JSON value owned by each game's `GameRules`.
 `seq` in `intent` is the guest's own counter; `seq` in `state` is the host's state version.
 A guest that sees a gap simply waits for the next full `state` — every `state` is a full
 snapshot, so there is no diffing to get wrong.
+
+`last` (optional, `{seat, move}`) is the move that produced this snapshot, so every device
+can animate it (e.g. congklak sowing). It is absent on the first snapshot. Animate it only
+when the snapshot's `seq` is exactly one more than the previous one; after a gap or a rejoin,
+just show the snapshot. `GuestSession.lastMove` already applies this rule.
 
 ## BLE framing
 

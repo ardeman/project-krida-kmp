@@ -38,6 +38,15 @@ class GuestSession<S, M>(
     var stateSeq: Int = 0
         private set
 
+    /**
+     * Seat and move that produced [state], when it directly follows the previous snapshot
+     * (null after a gap, a rejoin, or for the first snapshot). Read in [onState] to animate.
+     */
+    var lastSeat: Int? = null
+        private set
+    var lastMove: M? = null
+        private set
+
     private var intentSeq = 0
 
     var onLobby: ((List<PlayerInfo>) -> Unit)? = null
@@ -94,6 +103,16 @@ class GuestSession<S, M>(
                 } catch (e: Exception) {
                     return
                 }
+                val follows = msg.seq == stateSeq + 1
+                val last = msg.last?.takeIf { follows }?.let { l ->
+                    try {
+                        l.seat to Codec.json.decodeFromJsonElement(rules.moveSerializer, l.move)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                lastSeat = last?.first
+                lastMove = last?.second
                 stateSeq = msg.seq
                 turn = msg.turn
                 finished = msg.finished

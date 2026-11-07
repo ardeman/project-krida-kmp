@@ -111,4 +111,30 @@ class SessionTest {
         net.connect("ayu-3")
         assertEquals(RejectReason.STARTED, reason)
     }
+
+    @Test
+    fun stateCarriesLastMoveForAnimation() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        val first = guest("ayu-1")
+        host.start()
+        assertNull(first.lastMove)
+        assertNull(host.lastMove)
+
+        host.submitLocal(0, CounterMove(2))
+        assertEquals(0, first.lastSeat)
+        assertEquals(CounterMove(2), first.lastMove)
+
+        first.sendMove(CounterMove(1))
+        assertEquals(1, host.lastSeat)
+        assertEquals(CounterMove(1), host.lastMove)
+        assertEquals(CounterMove(1), first.lastMove)
+
+        // A rejoining guest gets a snapshot, not an animation of a move it never saw.
+        val token = assertNotNull(first.rejoinToken)
+        net.drop("ayu-1")
+        val back = guest("ayu-2", token = token)
+        assertEquals(3, back.stateSeq)
+        assertNull(back.lastMove)
+        assertNull(back.lastSeat)
+    }
 }
