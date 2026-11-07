@@ -31,6 +31,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 14) {
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40).accessibilityLabel("Krida")
                 CongklakCard()
+                SoundToggles()
             }
             .frame(width: 236)
             ScrollView {

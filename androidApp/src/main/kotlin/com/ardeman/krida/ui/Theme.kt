@@ -97,7 +97,7 @@ private fun KridaButton(
             .clip(shape)
             .background(fill.copy(alpha = if (pressed) 0.8f else 1f))
             .then(if (border != null) Modifier.border(border, shape) else Modifier)
-            .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            .clickable(source, indication = null, enabled = enabled, role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() }
             .padding(horizontal = 18.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -114,7 +114,7 @@ fun CircleIconButton(@DrawableRes icon: Int, label: String, onClick: () -> Unit,
             .clip(CircleShape)
             .background(Color.White)
             .border(1.5.dp, Theme.line, CircleShape)
-            .clickable(role = Role.Button, onClick = onClick),
+            .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(icon), contentDescription = label, tint = Theme.ink, modifier = Modifier.size(22.dp))

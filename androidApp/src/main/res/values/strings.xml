@@ -62,4 +62,8 @@
     <string name="nearby_host_lost">Terputus dari host</string>
     <string name="nearby_player_lost">Pemain lain terputus. Menunggu dia kembali…</string>
     <string name="nearby_move_refused">Langkah ditolak</string>
+    <string name="sound_on">Nyalakan suara</string>
+    <string name="sound_off">Matikan suara</string>
+    <string name="music_on">Nyalakan musik</string>
+    <string name="music_off">Matikan musik</string>
 </resources>

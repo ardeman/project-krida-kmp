@@ -69,6 +69,8 @@ import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.ui.CircleIconButton
+import com.ardeman.krida.ui.SoundToggles
+import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.Theme
@@ -126,17 +128,26 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
             val seat = update.seat
             val move = update.move
             var sowed = false
+            var shot = false
             if (seat != null && move != null && CongklakGame.validate(state, seat, move) == null) {
                 val sowing = CongklakGame.play(state, seat, move)
                 for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, move.hole), sowing.path)) {
-                    seeds.apply(step); push(); delay(if (step.pickUp) PICKUP_MS else SOW_MS)
+                    seeds.apply(step); push()
+                    if (!step.pickUp) Sounds.play(if (CongklakGame.isStore(step.pit)) Sounds.Effect.Store else Sounds.Effect.Sow)
+                    delay(if (step.pickUp) PICKUP_MS else SOW_MS)
                 }
                 sowed = true
+                shot = sowing.capturedFrom != null
             }
             if (seeds.counts() != update.state.pits) {
                 if (sowed) delay(SETTLE_MS)
+                if (shot) {
+                    Sounds.play(Sounds.Effect.Capture)
+                    Sounds.say(Sounds.Line.Shoot)
+                }
                 seeds.settle(update.state.pits); push()
             }
+            if (sowed) announce(state, update.state, table.mySeat)
             state = update.state
             animating = false
             drain()
@@ -260,9 +271,12 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
                     seats = seats,
                     on = active(seats.far),
                     detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
-                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 60.dp),
+                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 160.dp), // clear of the buttons either side
                 )
-                CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true }, Modifier.align(Alignment.CenterEnd))
+                Row(Modifier.align(Alignment.CenterEnd), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SoundToggles()
+                    CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
+                }
             }
             Spacer(Modifier.weight(1f))
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -443,6 +457,23 @@ private fun RowScope.ScoreTile(seats: Seats, seat: Int, score: Int, won: Boolean
     ) {
         Text(seats.displayName(seat), style = Theme.font(14, color = Theme.muted), maxLines = 1)
         Text(score.toString(), style = Theme.font(30, FontWeight.Black, if (won) Theme.ink else Theme.muted))
+    }
+}
+
+/**
+ * After a move: the result when the game ends, otherwise whose turn it is when it changed.
+ * Voice lines need a seat on this device; pass-and-play gets the chime and effects only.
+ */
+private fun announce(before: CongklakState, after: CongklakState, me: Int?) {
+    if (after.finished) {
+        val winner = CongklakGame.winner(after) ?: -1
+        when {
+            winner < 0 -> { Sounds.play(Sounds.Effect.Win); Sounds.say(Sounds.Line.Draw) }
+            me == null || me == winner -> { Sounds.play(Sounds.Effect.Win); if (me != null) Sounds.say(Sounds.Line.Win) }
+            else -> { Sounds.play(Sounds.Effect.Lose); Sounds.say(Sounds.Line.Lose) }
+        }
+    } else if (after.turn != before.turn) {
+        if (me != null) Sounds.say(if (after.turn == me) Sounds.Line.YourTurn else Sounds.Line.TheirTurn) else Sounds.play(Sounds.Effect.Turn)
     }
 }
 

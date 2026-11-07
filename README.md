@@ -111,6 +111,9 @@ board turns so your side is near, and remote moves animate like local ones.
 Bot seats in the shared core: `HostSession.addBot` / `stepBot` and `CongklakBot` (easy,
 normal, hard). Android and iOS play congklak vs computer (Mudah / Sedang / Sulit). Both apps
 have the reworked UI (two-column home, turn pills, gold rings on playable holes, result card).
+Sound on both: seed clicks while sowing, "Tembak!" on a capture, Indonesian turn and result
+voice lines, and looping gamelan music, each switched off on its own from home or the board.
+The `.m4a` files are made with ElevenLabs in `../project-pamerstudio-node/krida` (its README).
 Offline BLE for more games and up to 4 players is next.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.

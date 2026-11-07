@@ -20,6 +20,7 @@ final class CongklakGameModel: ObservableObject {
 
     let table: CongklakTable
     let board = BoardScene()
+    private let sounds = Sounds.shared
     private let seeds: CongklakSeeds
     private var queue: [CongklakUpdate] = []
 
@@ -118,25 +119,54 @@ final class CongklakGameModel: ObservableObject {
         board.showRings([])
         Task {
             var sowed = false
+            var shot = false
             if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
                 let sowing = game.play(state: state, seat: seat, move: move)
                 let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
                 for step in steps {
                     seeds.apply(step: step)
                     push()
+                    if !step.pickUp { sounds.play(game.isStore(pit: step.pit) ? .store : .sow) }
                     try? await Task.sleep(nanoseconds: step.pickUp ? Self.pickUpDelay : Self.sowDelay)
                 }
                 sowed = true
+                shot = sowing.capturedFrom != nil
             }
             // Captures, the end-of-game sweep, a restart: move whatever differs to match.
             if seeds.counts() != update.state.pits {
                 if sowed { try? await Task.sleep(nanoseconds: Self.settleDelay) }
+                if shot {
+                    sounds.play(.capture)
+                    sounds.say(.shoot)
+                }
                 seeds.settle(pits: update.state.pits)
                 push()
             }
+            if sowed { announce(before: state, after: update.state) }
             state = update.state
             animating = false
             drain()
+        }
+    }
+
+    /// After a move: the result when the game ends, otherwise whose turn it is when it changed.
+    /// Voice lines need a seat on this device; pass-and-play gets the chime and effects only.
+    private func announce(before: CongklakState, after: CongklakState) {
+        let me = table.mySeat
+        if after.finished {
+            let winner = game.winner(state: after)?.intValue ?? -1
+            if winner < 0 {
+                sounds.play(.win)
+                sounds.say(.draw)
+            } else if me == nil || Int(me!) == winner {
+                sounds.play(.win)
+                if me != nil { sounds.say(.win) }
+            } else {
+                sounds.play(.lose)
+                sounds.say(.lose)
+            }
+        } else if after.turn != before.turn {
+            if let me { sounds.say(after.turn == me ? .yourTurn : .theirTurn) } else { sounds.play(.turn) }
         }
     }
 
@@ -225,7 +255,10 @@ struct CongklakView: View {
             HStack {
                 CircleIconButton(systemImage: "chevron.left", label: "Kembali ke menu", action: exit)
                 Spacer()
-                CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
+                HStack(spacing: 8) {
+                    SoundToggles()
+                    CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
+                }
             }
             .overlay { opponentPill }
             .padding(.horizontal, 24)
@@ -264,7 +297,7 @@ struct CongklakView: View {
         .background(on ? Theme.accent : .white, in: Capsule())
         .overlay(Capsule().stroke(on ? .clear : Theme.line, lineWidth: 1.5))
         .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6)
-        .padding(.horizontal, 60)
+        .padding(.horizontal, 160) // clear of the back button and the three on the right
         .accessibilityElement(children: .combine)
     }
 

@@ -4,6 +4,7 @@ import Shared
 @main
 struct KridaApp: App {
     @State private var roomCode = ""
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +15,7 @@ struct KridaApp: App {
                         roomCode = code
                     }
                 }
+                .onChange(of: scenePhase, initial: true) { _, phase in Sounds.shared.setActive(phase == .active) }
         }
     }
 }

@@ -77,6 +77,8 @@ import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.ui.IconTile
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
+import com.ardeman.krida.ui.SoundToggles
+import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.Theme
 
 /**
@@ -103,6 +105,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Sounds.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
             val r = room
@@ -113,6 +116,16 @@ class MainActivity : ComponentActivity() {
                 else -> Menu()
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Sounds.setActive(true)
+    }
+
+    override fun onStop() {
+        Sounds.setActive(false)
+        super.onStop()
     }
 
     override fun onDestroy() {
@@ -134,6 +147,7 @@ class MainActivity : ComponentActivity() {
                     alignment = Alignment.CenterStart,
                 )
                 CongklakCard(Modifier.weight(1f))
+                SoundToggles()
             }
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),

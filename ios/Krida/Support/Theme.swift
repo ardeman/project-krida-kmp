@@ -38,6 +38,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.horizontal, 18)
             .frame(height: height)
             .background(Theme.accent.opacity(configuration.isPressed ? 0.8 : 1), in: RoundedRectangle(cornerRadius: 14))
+            .tapSound(configuration.isPressed)
     }
 }
 
@@ -53,6 +54,14 @@ struct SecondaryButtonStyle: ButtonStyle {
             .frame(height: height)
             .background(.white.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(tint == Theme.accent ? Theme.accent : Color(hex: 0xD9C6AF), lineWidth: 1.5))
+            .tapSound(configuration.isPressed)
+    }
+}
+
+extension View {
+    /// The wooden tap as a button goes down.
+    func tapSound(_ pressed: Bool) -> some View {
+        onChange(of: pressed) { _, down in if down { Sounds.shared.play(.tap) } }
     }
 }
 
@@ -60,13 +69,23 @@ struct SecondaryButtonStyle: ButtonStyle {
 struct CircleIconButton: View {
     let systemImage: String
     let label: LocalizedStringKey
+    /// Draws a slash over the icon (a setting that is off).
+    var struck = false
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            Sounds.shared.play(.tap)
+            action()
+        } label: {
             Image(systemName: systemImage)
                 .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(struck ? Theme.muted : Theme.ink)
+                .overlay {
+                    if struck {
+                        Capsule().fill(Theme.muted).frame(width: 2.5, height: 26).rotationEffect(.degrees(-45))
+                    }
+                }
                 .frame(width: 44, height: 44)
                 .background(.white, in: Circle())
                 .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
