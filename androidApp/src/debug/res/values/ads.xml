@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug builds: Google's public TEST ad unit ids, so developing never requests real ads
+  (clicking your own real ads risks the AdMob account). The app id stays the real one.
+-->
+<resources>
+    <string name="admob_banner" translatable="false">ca-app-pub-3940256099942544/9214589741</string>
+    <string name="admob_interstitial" translatable="false">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="admob_rewarded" translatable="false">ca-app-pub-3940256099942544/5224354917</string>
+</resources>

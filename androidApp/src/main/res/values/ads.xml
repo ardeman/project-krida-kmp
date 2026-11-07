@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   AdMob and Play Billing IDs: the one place to change them.
-  These are Google's public TEST ids; replace them with the real ones from the AdMob
-  console before release. Shipping test ids earns nothing; using real ids while
-  developing risks the account, so add test devices first.
+  These are the real ids from the AdMob console (publisher pub-4887874546732768).
+  Debug builds override the ad unit ids with Google's test ids in
+  src/debug/res/values/ads.xml, so developing never requests real ads.
 -->
 <resources>
-    <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
-    <string name="admob_banner" translatable="false">ca-app-pub-3940256099942544/9214589741</string>
-    <string name="admob_interstitial" translatable="false">ca-app-pub-3940256099942544/1033173712</string>
-    <string name="admob_rewarded" translatable="false">ca-app-pub-3940256099942544/5224354917</string>
+    <string name="admob_app_id" translatable="false">ca-app-pub-4887874546732768~5902194713</string>
+    <string name="admob_banner" translatable="false">ca-app-pub-4887874546732768/1499915275</string>
+    <string name="admob_interstitial" translatable="false">ca-app-pub-4887874546732768/4589113040</string>
+    <string name="admob_rewarded" translatable="false">ca-app-pub-4887874546732768/5766463343</string>
     <!-- Non-consumable in-app product in Play Console, priced Rp 15.000. -->
     <string name="iap_remove_ads" translatable="false">hapus_iklan</string>
 </resources>

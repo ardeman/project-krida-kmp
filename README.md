@@ -121,8 +121,9 @@ Ads on both (AdMob behind the UMP consent form; `androidApp/.../ads/`, `ios/Krid
 banner on the home and lobby screens, an interstitial every 2nd finished game, and a rewarded ad
 for a hint ("Petunjuk": the hard bot's move). The "Hapus iklan" purchase (non-consumable
 `hapus_iklan`: Play Billing; StoreKit 2 on iOS, with "Pulihkan pembelian") turns ads off and
-makes hints free. The ids in `res/values/ads.xml` and `ios/Krida/Ads/AdIds.swift` (app id in
-`ios/project.yml`) are still Google's test ids.
+makes hints free. The real AdMob ids are in `res/values/ads.xml` and `ios/Krida/Ads/AdIds.swift`
+(app id in `ios/project.yml`); debug builds use Google's test ad units (`src/debug/res/values/ads.xml`,
+`#if DEBUG`). `hapus_iklan` exists in App Store Connect; the Play product still needs a build upload.
 Offline BLE for more games and up to 4 players is next.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
