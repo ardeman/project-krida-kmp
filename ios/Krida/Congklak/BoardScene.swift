@@ -42,11 +42,26 @@ final class BoardScene {
             anchor.addChild(seed)
         }
 
+        anchor.addChild(camera)
+        aimCamera()
+        view.scene.addAnchor(anchor)
+    }
+
+    /// The seat on the near side of the board (0 or 1). Call `layout()` after changing it.
+    var viewSeat: Int32 = 0 {
+        didSet { aimCamera() }
+    }
+
+    private func aimCamera() {
+        // Seat 1 looks from the other long side: turn the camera 180 degrees around the y axis.
+        let flip: Float = viewSeat == 1 ? -1 : 1
         let eye = Self.floats(CongklakBoard.shared.cameraEye)
         let target = Self.floats(CongklakBoard.shared.cameraTarget)
-        anchor.addChild(camera)
-        camera.look(at: SIMD3(target[0], target[1], target[2]), from: SIMD3(eye[0], eye[1], eye[2]), relativeTo: nil)
-        view.scene.addAnchor(anchor)
+        camera.look(
+            at: SIMD3(target[0] * flip, target[1], target[2] * flip),
+            from: SIMD3(eye[0] * flip, eye[1], eye[2] * flip),
+            relativeTo: nil
+        )
     }
 
     /// Call when the view size changes: keeps the board's width in frame and re-projects pits.

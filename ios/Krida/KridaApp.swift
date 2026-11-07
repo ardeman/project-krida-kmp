@@ -3,15 +3,15 @@ import Shared
 
 @main
 struct KridaApp: App {
-    @StateObject private var model = RoomModel()
+    @State private var roomCode = ""
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView(roomCode: $roomCode)
                 // QR join links: krida://join?room=ABCD
                 .onOpenURL { url in
                     if let code = RoomCode.shared.parse(text: url.absoluteString) {
-                        model.roomCode = code
+                        roomCode = code
                     }
                 }
         }

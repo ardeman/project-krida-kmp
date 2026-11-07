@@ -2,7 +2,10 @@ import RealityKit
 import Shared
 import SwiftUI
 
-/// Pass-and-play congklak on one device: seat 0 on the near side, seat 1 across.
+/// Congklak on a voxel board, driven by a `CongklakTable`. The board is turned so this
+/// device's seat sits on the near side (seat 0 for pass-and-play). Every snapshot from the
+/// table is animated in order: the move it carries is replayed from the shown state, then
+/// whatever still differs (captures, the end sweep, a restart) settles into place.
 /// Rules, board geometry and seed bookkeeping all come from shared/.
 @MainActor
 final class CongklakGameModel: ObservableObject {
@@ -10,38 +13,54 @@ final class CongklakGameModel: ObservableObject {
     @Published private(set) var counts: [Int]
     @Published private(set) var pitPoints: [CGPoint] = []
     @Published private(set) var animating = false
+    /// A guest's move is on its way to the host.
+    @Published private(set) var waiting = false
 
-    let names: [String]
+    let table: CongklakTable
     let board = BoardScene()
-    private var session: HostSession<CongklakState, CongklakMove>
     private let seeds: CongklakSeeds
+    private var queue: [CongklakUpdate] = []
 
     private static let pickUpDelay: UInt64 = 260_000_000
     private static let sowDelay: UInt64 = 170_000_000
     private static let settleDelay: UInt64 = 320_000_000
 
-    init(names: [String]) {
-        self.names = names
-        session = Self.newSession(names)
-        let start = session.state!
+    init(table: CongklakTable) {
+        self.table = table
+        let start = table.latest!
         state = start
         counts = start.pits.map { $0.intValue }
         seeds = CongklakSeeds(pits: start.pits)
+        board.viewSeat = table.mySeat ?? 0
         board.setSeedTargets(seeds.targets())
+        table.onUpdate = { [weak self] update in
+            guard let self else { return }
+            self.waiting = false
+            self.queue.append(update)
+            self.drain()
+        }
     }
 
     var game: CongklakGame { CongklakGame.shared }
     var turn: Int { Int(state.turn) }
     var finished: Bool { state.finished }
+    var viewSeat: Int32 { board.viewSeat }
+
+    var canPlay: Bool {
+        !animating && !waiting && queue.isEmpty && !finished && (table.mySeat == nil || table.mySeat == state.turn)
+    }
 
     func layout(size: CGSize) {
         board.layout(size: size)
         pitPoints = board.pitPoints
     }
 
+    /// A notice arrived (refusal, disconnect): stop waiting for the host's answer.
+    func noticeChanged() { waiting = false }
+
     /// A tap at a view point: plays the nearest hole on the mover's side, if close enough.
     func tap(at point: CGPoint) {
-        guard pitPoints.count == Int(game.PITS) else { return }
+        guard canPlay, pitPoints.count == Int(game.PITS) else { return }
         let reach = hypot(pitPoints[1].x - pitPoints[0].x, pitPoints[1].y - pitPoints[0].y) * 0.6
         let seat = state.turn
         let hole = (0..<Int(game.HOLES)).min { a, b in
@@ -55,58 +74,57 @@ final class CongklakGameModel: ObservableObject {
         return hypot(q.x - p.x, q.y - p.y)
     }
 
-    func play(hole: Int) {
+    private func play(hole: Int) {
         let seat = state.turn
-        let move = CongklakMove(hole: Int32(hole))
-        guard !animating, !finished, game.validate(state: state, seat: seat, move: move) == nil else { return }
-        let sowing = game.play(state: state, seat: seat, move: move)
-        guard session.submitLocal(seat: seat, move: move) == nil, let next = session.state else { return }
-        let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: Int32(hole)), path: sowing.path)
-
-        animating = true
-        Task {
-            for step in steps {
-                seeds.apply(step: step)
-                push()
-                try? await Task.sleep(nanoseconds: step.pickUp ? Self.pickUpDelay : Self.sowDelay)
-            }
-            // Captures and the end-of-game sweep: move whatever differs to match the rules.
-            if seeds.counts() != next.pits {
-                try? await Task.sleep(nanoseconds: Self.settleDelay)
-                seeds.settle(pits: next.pits)
-                push()
-            }
-            state = next
-            animating = false
-        }
+        guard canPlay, game.validate(state: state, seat: seat, move: CongklakMove(hole: Int32(hole))) == nil else { return }
+        // Pass-and-play and the host answer synchronously; a guest waits for the host's snapshot.
+        if table.play(seat: seat, hole: Int32(hole)), table.isRemote { waiting = true }
     }
 
-    func restart() {
-        session = Self.newSession(names)
-        state = session.state!
-        seeds.reset(pits: state.pits)
-        push()
+    private func drain() {
+        guard !animating, !queue.isEmpty else { return }
+        let update = queue.removeFirst()
+        animating = true
+        Task {
+            var sowed = false
+            if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
+                let sowing = game.play(state: state, seat: seat, move: move)
+                let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
+                for step in steps {
+                    seeds.apply(step: step)
+                    push()
+                    try? await Task.sleep(nanoseconds: step.pickUp ? Self.pickUpDelay : Self.sowDelay)
+                }
+                sowed = true
+            }
+            // Captures, the end-of-game sweep, a restart: move whatever differs to match.
+            if seeds.counts() != update.state.pits {
+                if sowed { try? await Task.sleep(nanoseconds: Self.settleDelay) }
+                seeds.settle(pits: update.state.pits)
+                push()
+            }
+            state = update.state
+            animating = false
+            drain()
+        }
     }
 
     private func push() {
         board.setSeedTargets(seeds.targets())
         counts = seeds.counts().map { $0.intValue }
     }
-
-    private static func newSession(_ names: [String]) -> HostSession<CongklakState, CongklakMove> {
-        let s = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: LocalTransport(), roomCode: "LOCAL")
-        for name in names { _ = s.addLocalPlayer(name: name, platform: .ios) }
-        s.start()
-        return s
-    }
 }
 
 struct CongklakView: View {
-    @StateObject private var model = CongklakGameModel(names: [
-        String(localized: "Pemain 1"),
-        String(localized: "Pemain 2"),
-    ])
+    @ObservedObject private var table: CongklakTable
+    @StateObject private var model: CongklakGameModel
     let onExit: () -> Void
+
+    init(table: CongklakTable, onExit: @escaping () -> Void) {
+        self.table = table
+        _model = StateObject(wrappedValue: CongklakGameModel(table: table))
+        self.onExit = onExit
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -128,12 +146,18 @@ struct CongklakView: View {
         }
         .ignoresSafeArea()
         .background(Color(red: 0.96, green: 0.93, blue: 0.86))
+        .onChange(of: table.notice) { _, notice in if notice != nil { model.noticeChanged() } }
+    }
+
+    private func exit() {
+        table.leave()
+        onExit()
     }
 
     private var hud: some View {
         VStack {
             HStack(spacing: 12) {
-                Button("Kembali", action: onExit)
+                Button("Kembali", action: exit)
                 Text("Congklak").font(.title2.bold())
                 Spacer()
             }
@@ -142,9 +166,16 @@ struct CongklakView: View {
             Spacer()
             VStack(spacing: 8) {
                 Text(statusLine).font(.title2)
-                Text("\(model.names[0]) \(score(0)) · \(model.names[1]) \(score(1))")
-                if model.finished {
-                    Button("Main lagi", action: model.restart).buttonStyle(.borderedProminent)
+                Text("\(name(0)) \(score(0)) · \(name(1)) \(score(1))")
+                if let notice = table.notice {
+                    Text(notice).foregroundStyle(.red)
+                }
+                if model.finished && !model.animating {
+                    if table.canRestart {
+                        Button("Main lagi", action: table.restart).buttonStyle(.borderedProminent)
+                    } else {
+                        Text("Menunggu host memulai lagi…").font(.subheadline)
+                    }
                 }
             }
             .padding(.bottom, 24)
@@ -152,11 +183,19 @@ struct CongklakView: View {
         .foregroundStyle(.black)
     }
 
+    private func name(_ seat: Int) -> String {
+        table.players.first { $0.seat == Int32(seat) }?.name ?? "\(seat + 1)"
+    }
+
     private var statusLine: String {
+        let mine = table.mySeat.map(Int.init)
         guard let winner = model.game.winner(state: model.state)?.intValue else {
-            return String(localized: "Giliran \(model.names[model.turn])")
+            if model.turn == mine { return String(localized: "Giliranmu") }
+            return String(localized: "Giliran \(name(model.turn))")
         }
-        return winner < 0 ? String(localized: "Seri!") : String(localized: "\(model.names[winner]) menang!")
+        if winner < 0 { return String(localized: "Seri!") }
+        if winner == mine { return String(localized: "Kamu menang!") }
+        return String(localized: "\(name(winner)) menang!")
     }
 
     private func score(_ seat: Int) -> Int { Int(model.game.score(state: model.state, seat: Int32(seat))) }
@@ -176,9 +215,9 @@ struct CongklakView: View {
 
     private func badgePosition(pit: Int, at p: CGPoint) -> CGPoint {
         let store = model.game.isStore(pit: Int32(pit))
-        let owner = model.game.ownerOf(pit: Int32(pit))
-        if store { return CGPoint(x: p.x + (owner == 0 ? 48 : -48), y: p.y) }
-        return CGPoint(x: p.x, y: p.y + (owner == 0 ? 34 : -34))
+        let near = model.game.ownerOf(pit: Int32(pit)) == model.viewSeat
+        if store { return CGPoint(x: p.x + (near ? 48 : -48), y: p.y) }
+        return CGPoint(x: p.x, y: p.y + (near ? 34 : -34))
     }
 }
 

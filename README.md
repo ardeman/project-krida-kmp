@@ -106,7 +106,8 @@ Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rul
 documented in the file). Pass-and-play congklak on a voxel board on **Android** (Filament,
 `androidApp/.../congklak/`) and **iOS** (RealityKit, `ios/Krida/Congklak/`). Board geometry,
 seed layout and sowing animation steps are shared (`CongklakBoard.kt`), so both boards match.
-Next: congklak over BLE (Android ↔ iOS).
+Congklak over BLE on both platforms: host a room or join one by its code, iOS ↔ Android; the
+board turns so your side is near, and remote moves animate like local ones.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's
