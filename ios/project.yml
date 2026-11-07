@@ -43,6 +43,10 @@ targets:
         # Smaller binary
         DEAD_CODE_STRIPPING: YES
         SWIFT_OPTIMIZATION_LEVEL: "-Osize"
+    scheme:
+      # Local "hapus_iklan" product so the buy button shows in the simulator and in
+      # debug runs without App Store Connect. Not used by archives or TestFlight.
+      storeKitConfiguration: Krida.storekit
     preBuildScripts:
       - name: Build Shared framework
         basedOnDependencyAnalysis: false

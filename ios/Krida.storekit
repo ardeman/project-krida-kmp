@@ -1,0 +1,29 @@
+{
+  "identifier" : "6A1C2E3F",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "15000",
+      "familyShareable" : false,
+      "internalID" : "6832096026",
+      "localizations" : [
+        {
+          "description" : "Matikan semua iklan selamanya.",
+          "displayName" : "Hapus Iklan",
+          "locale" : "id_ID"
+        }
+      ],
+      "productID" : "hapus_iklan",
+      "referenceName" : "Hapus Iklan",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_compatibilityTimeRate" : { "3" : 6 },
+    "_locale" : "id_ID",
+    "_storefront" : "IDN",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : { "major" : 4, "minor" : 0 }
+}
