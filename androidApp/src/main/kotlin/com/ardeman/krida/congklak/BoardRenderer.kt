@@ -36,6 +36,13 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
     /** Pit centers on screen, in pixels; updated on resize. */
     var onPitsProjected: ((List<FloatArray>) -> Unit)? = null
 
+    /** The seat on the near side of the board (0 or 1). */
+    var viewSeat = 0
+        set(value) {
+            field = value
+            if (width > 1) { updateCamera(); dirty = true }
+        }
+
     private val engine: Engine
     private val renderer: Renderer
     private val filamentScene: com.google.android.filament.Scene
@@ -198,8 +205,10 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
 
     private fun updateCamera() {
         val aspect = width.toDouble() / height
-        val eye = CongklakBoard.cameraEye
-        val at = CongklakBoard.cameraTarget
+        // Seat 1 looks from the other long side: turn the camera 180 degrees around the y axis.
+        val flip = if (viewSeat == 1) -1f else 1f
+        val eye = CongklakBoard.cameraEye.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
+        val at = CongklakBoard.cameraTarget.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
         camera.setProjection(CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES.toDouble(), aspect, 0.5, 100.0, Camera.Fov.HORIZONTAL)
         camera.lookAt(
             eye[0].toDouble(), eye[1].toDouble(), eye[2].toDouble(),

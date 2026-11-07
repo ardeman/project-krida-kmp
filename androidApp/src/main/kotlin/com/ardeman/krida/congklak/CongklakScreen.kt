@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,9 +42,6 @@ import com.ardeman.krida.R
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakSeeds
-import com.ardeman.krida.core.protocol.Platform
-import com.ardeman.krida.core.session.HostSession
-import com.ardeman.krida.core.transport.LocalTransport
 import kotlin.math.hypot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,17 +50,23 @@ private const val PICKUP_MS = 260L
 private const val SOW_MS = 170L
 private const val SETTLE_MS = 320L
 
-/** Pass-and-play congklak on one device: seat 0 on the near side, seat 1 across. */
+/**
+ * Congklak on a voxel board, driven by a [CongklakTable]. The board is turned so this
+ * device's seat sits on the near side (seat 0 for pass-and-play). Every snapshot from the
+ * table is animated in order: the move it carries is replayed from the shown state, then
+ * whatever still differs (captures, the end sweep, a restart) settles into place.
+ */
 @Composable
-fun CongklakScreen(onExit: () -> Unit) {
-    val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
-    var session by remember { mutableStateOf(newSession(names)) }
-    var state by remember { mutableStateOf(session.state!!) }
+fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
+    val viewSeat = table.mySeat ?: 0
+    var state by remember { mutableStateOf(table.latest!!) }
     val seeds = remember { CongklakSeeds(state.pits) }
     val counts = remember { mutableStateListOf(*state.pits.toTypedArray()) }
     var animating by remember { mutableStateOf(false) }
+    var waiting by remember { mutableStateOf(false) }
     var pitsOnScreen by remember { mutableStateOf<List<FloatArray>>(emptyList()) }
     var renderer by remember { mutableStateOf<BoardRenderer?>(null) }
+    val queue = remember { ArrayDeque<CongklakUpdate>() }
     val scope = rememberCoroutineScope()
 
     fun push() {
@@ -70,33 +74,54 @@ fun CongklakScreen(onExit: () -> Unit) {
         seeds.counts().forEachIndexed { i, n -> if (counts[i] != n) counts[i] = n }
     }
 
-    fun play(hole: Int) {
-        val seat = state.turn
-        val move = CongklakMove(hole)
-        if (animating || state.finished || CongklakGame.validate(state, seat, move) != null) return
-        val sowing = CongklakGame.play(state, seat, move)
-        if (session.submitLocal(seat, move) != null) return
-        val next = session.state!!
+    fun drain() {
+        if (animating) return
+        val update = queue.removeFirstOrNull() ?: return
         animating = true
         scope.launch {
-            for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, hole), sowing.path)) {
-                seeds.apply(step); push(); delay(if (step.pickUp) PICKUP_MS else SOW_MS)
+            val seat = update.seat
+            val move = update.move
+            var sowed = false
+            if (seat != null && move != null && CongklakGame.validate(state, seat, move) == null) {
+                val sowing = CongklakGame.play(state, seat, move)
+                for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, move.hole), sowing.path)) {
+                    seeds.apply(step); push(); delay(if (step.pickUp) PICKUP_MS else SOW_MS)
+                }
+                sowed = true
             }
-            // Captures and the end-of-game sweep: move whatever differs to match the rules.
-            if (seeds.counts() != next.pits) { delay(SETTLE_MS); seeds.settle(next.pits); push() }
-            state = next
+            if (seeds.counts() != update.state.pits) {
+                if (sowed) delay(SETTLE_MS)
+                seeds.settle(update.state.pits); push()
+            }
+            state = update.state
             animating = false
+            drain()
         }
     }
 
-    fun restart() {
-        session = newSession(names)
-        state = session.state!!
-        seeds.reset(state.pits)
-        push()
+    DisposableEffect(table) {
+        table.onUpdate = { update -> waiting = false; queue.addLast(update); drain() }
+        onDispose { table.onUpdate = null }
     }
 
-    BackHandler(onBack = onExit)
+    fun canPlay() = !animating && !waiting && queue.isEmpty() && !state.finished &&
+        (table.mySeat == null || table.mySeat == state.turn)
+
+    fun play(hole: Int) {
+        val seat = state.turn
+        if (!canPlay() || CongklakGame.validate(state, seat, CongklakMove(hole)) != null) return
+        // Pass-and-play answers synchronously; a guest waits for the host's snapshot.
+        if (table.play(seat, hole) && table is GuestTable) waiting = true
+    }
+
+    fun exit() {
+        table.leave()
+        onExit()
+    }
+
+    LaunchedEffect(table.notice) { if (table.notice != null) waiting = false }
+
+    BackHandler(onBack = ::exit)
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -115,6 +140,7 @@ fun CongklakScreen(onExit: () -> Unit) {
             factory = { ctx ->
                 SurfaceView(ctx).also { view ->
                     renderer = BoardRenderer(view).apply {
+                        this.viewSeat = viewSeat
                         onPitsProjected = { pitsOnScreen = it }
                         setSeedTargets(seeds.targets())
                         resume()
@@ -128,7 +154,7 @@ fun CongklakScreen(onExit: () -> Unit) {
         Box(
             Modifier.fillMaxSize().pointerInput(pitsOnScreen) {
                 detectTapGestures { tap ->
-                    if (pitsOnScreen.size < CongklakGame.PITS) return@detectTapGestures
+                    if (pitsOnScreen.size < CongklakGame.PITS || !canPlay()) return@detectTapGestures
                     val reach = hypot(pitsOnScreen[1][0] - pitsOnScreen[0][0], pitsOnScreen[1][1] - pitsOnScreen[0][1]) * 0.6f
                     val seat = state.turn
                     val hole = (0 until CongklakGame.HOLES).minBy {
@@ -146,14 +172,15 @@ fun CongklakScreen(onExit: () -> Unit) {
             val owner = CongklakGame.ownerOf(pit)
             val store = CongklakGame.isStore(pit)
             val active = !state.finished && !store && owner == state.turn
+            val near = owner == viewSeat
             val dy = when {
                 store -> 0.dp
-                owner == 0 -> 34.dp
+                near -> 34.dp
                 else -> (-34).dp
             }
             val dx = when {
                 !store -> 0.dp
-                owner == 0 -> 48.dp
+                near -> 48.dp
                 else -> (-48).dp
             }
             CountBadge(
@@ -169,7 +196,7 @@ fun CongklakScreen(onExit: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            TextButton(onClick = onExit) { Text(stringResource(R.string.congklak_back)) }
+            TextButton(onClick = ::exit) { Text(stringResource(R.string.congklak_back)) }
             Text(stringResource(R.string.congklak_title), style = MaterialTheme.typography.titleLarge)
         }
 
@@ -178,18 +205,29 @@ fun CongklakScreen(onExit: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            val names = table.players.map { it.name }
+            fun name(seat: Int) = names.getOrElse(seat) { "${seat + 1}" }
             val winner = CongklakGame.winner(state)
-            val line = when (winner) {
-                null -> stringResource(R.string.congklak_turn, names[state.turn])
-                -1 -> stringResource(R.string.congklak_draw)
-                else -> stringResource(R.string.congklak_wins, names[winner])
+            val line = when {
+                winner == -1 -> stringResource(R.string.congklak_draw)
+                winner != null && winner == table.mySeat -> stringResource(R.string.congklak_you_win)
+                winner != null -> stringResource(R.string.congklak_wins, name(winner))
+                state.turn == table.mySeat -> stringResource(R.string.congklak_your_turn)
+                else -> stringResource(R.string.congklak_turn, name(state.turn))
             }
             Text(line, style = MaterialTheme.typography.headlineSmall)
             Text(
-                stringResource(R.string.congklak_score, names[0], CongklakGame.score(state, 0), names[1], CongklakGame.score(state, 1)),
+                stringResource(R.string.congklak_score, name(0), CongklakGame.score(state, 0), name(1), CongklakGame.score(state, 1)),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            if (winner != null) Button(onClick = ::restart) { Text(stringResource(R.string.congklak_play_again)) }
+            table.notice?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+            if (winner != null && !animating) {
+                if (table.canRestart) {
+                    Button(onClick = table::restart) { Text(stringResource(R.string.congklak_play_again)) }
+                } else {
+                    Text(stringResource(R.string.congklak_wait_host), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
         }
     }
 }
@@ -215,8 +253,3 @@ private fun Modifier.centeredAt(x: Int, y: Int) = layout { measurable, constrain
     val p = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
     layout(p.width, p.height) { p.place(IntOffset(x - p.width / 2, y - p.height / 2)) }
 }.let { this.then(it) }
-
-private fun newSession(names: List<String>) = HostSession(CongklakGame, LocalTransport(), roomCode = "LOCAL").apply {
-    names.forEach { addLocalPlayer(it, Platform.ANDROID) }
-    start()
-}

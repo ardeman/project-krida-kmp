@@ -137,4 +137,22 @@ class SessionTest {
         assertNull(back.lastMove)
         assertNull(back.lastSeat)
     }
+
+    @Test
+    fun restartAfterFinishReachesGuests() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        val ayu = guest("ayu")
+        host.start()
+        host.submitLocal(0, CounterMove(3))
+        ayu.sendMove(CounterMove(3))
+        host.submitLocal(0, CounterMove(3))
+        ayu.sendMove(CounterMove(1))
+        assertTrue(ayu.finished)
+
+        host.restart()
+        assertFalse(ayu.finished)
+        assertEquals(0, ayu.state?.total)
+        assertEquals(6, ayu.stateSeq)
+        assertNull(ayu.lastMove)
+    }
 }

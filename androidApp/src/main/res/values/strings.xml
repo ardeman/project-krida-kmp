@@ -10,4 +10,24 @@
     <string name="congklak_score">%1$s %2$d · %3$s %4$d</string>
     <string name="congklak_play_again">Main lagi</string>
     <string name="congklak_back">Kembali</string>
+    <string name="congklak_your_turn">Giliranmu</string>
+    <string name="congklak_you_win">Kamu menang!</string>
+    <string name="congklak_wait_host">Menunggu host memulai lagi…</string>
+    <string name="nearby_title">Main bareng dekat (Bluetooth)</string>
+    <string name="nearby_host">Buat room</string>
+    <string name="nearby_code">Kode room</string>
+    <string name="nearby_join">Gabung</string>
+    <string name="nearby_room_code">Kode room</string>
+    <string name="nearby_start">Mulai</string>
+    <string name="nearby_waiting">Menunggu pemain lain…</string>
+    <string name="nearby_searching">Mencari room…</string>
+    <string name="nearby_joined">Sudah masuk. Menunggu host memulai…</string>
+    <string name="nearby_permission_denied">Izin Bluetooth ditolak</string>
+    <string name="nearby_rejected">Tidak bisa masuk room</string>
+    <string name="nearby_rejected_version">Versi aplikasi berbeda. Perbarui aplikasi.</string>
+    <string name="nearby_rejected_full">Room sudah penuh</string>
+    <string name="nearby_rejected_started">Permainan sudah dimulai</string>
+    <string name="nearby_host_lost">Terputus dari host</string>
+    <string name="nearby_player_lost">Pemain lain terputus. Menunggu dia kembali…</string>
+    <string name="nearby_move_refused">Langkah ditolak</string>
 </resources>

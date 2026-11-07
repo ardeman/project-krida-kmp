@@ -89,6 +89,17 @@ class HostSession<S, M>(
         broadcastState()
     }
 
+    /** New game with the same seats, once the current one is finished. [seq] keeps rising. */
+    fun restart() {
+        val current = state
+        check(started && current != null && rules.isFinished(current)) { "Game is not finished" }
+        state = rules.initialState(seats.size, random)
+        lastSeat = null
+        lastMove = null
+        seq++
+        broadcastState()
+    }
+
     /** A local player's move. Returns null when applied, otherwise an [InvalidReason] / rules reason. */
     fun submitLocal(seat: Int, move: M): String? {
         val s = seats.getOrNull(seat) ?: return InvalidReason.NOT_SEATED
