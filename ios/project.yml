@@ -29,6 +29,8 @@ targets:
         # Kotlin Multiplatform "Shared" framework built by the pre-build script below.
         FRAMEWORK_SEARCH_PATHS: "$(inherited) $(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         OTHER_LDFLAGS: "$(inherited) -framework Shared"
+        # Shared is built for arm64 simulators only (no iosX64 target), so skip the Intel slice.
+        EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         # Smaller binary
         DEAD_CODE_STRIPPING: YES
