@@ -31,6 +31,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Krida memakai Bluetooth untuk main bareng teman di dekatmu tanpa internet.</string>
 	<key>NSBonjourServices</key>
@@ -39,6 +41,13 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Krida mencari teman di Wi-Fi yang sama untuk main bareng.</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

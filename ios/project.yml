@@ -8,12 +8,20 @@ options:
   # User-facing text is Indonesian (Localizable.xcstrings).
   developmentLanguage: id
 
+packages:
+  # AdMob; brings Google's User Messaging Platform (consent form) along.
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    from: 13.12.0
+
 targets:
   Krida:
     type: application
     platform: iOS
     sources:
       - path: Krida
+    dependencies:
+      - package: GoogleMobileAds
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ardeman.krida
@@ -54,6 +62,11 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         NSBluetoothAlwaysUsageDescription: "Krida memakai Bluetooth untuk main bareng teman di dekatmu tanpa internet."
         NSLocalNetworkUsageDescription: "Krida mencari teman di Wi-Fi yang sama untuk main bareng."
+        # AdMob app id: Google's TEST id until the real one from the AdMob console (see Ads/AdIds.swift).
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        # Google's own SKAdNetwork id; add the third-party buyer ids from Google's list before release.
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
         NSBonjourServices:
           - _krida._tcp
         CFBundleURLTypes:

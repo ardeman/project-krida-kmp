@@ -17,6 +17,8 @@ final class CongklakGameModel: ObservableObject {
     @Published private(set) var waiting = false
     /// Seeds in the sowing hand while a move animates.
     @Published private(set) var inHand = 0
+    /// Hole suggested for the current turn, paid for with a rewarded ad; cleared by the next update.
+    @Published private(set) var hint: Int?
 
     let table: CongklakTable
     let board = BoardScene()
@@ -66,10 +68,21 @@ final class CongklakGameModel: ObservableObject {
         updateRings()
     }
 
-    /// Gold rings on the holes the mover may start from, only while this device can play.
+    /// The hard bot's choice for the player to move, after a rewarded ad (free without ads).
+    func showHint() {
+        Ads.shared.rewarded { [weak self] in
+            guard let self, canPlay else { return }
+            hint = Int(CongklakBot(level: .hard).chooseMove(state: state, seat: state.turn, random: KotlinRandom.companion).hole)
+            updateRings()
+        }
+    }
+
+    /// Gold rings on the holes the mover may start from, only while this device can play;
+    /// a hint narrows them to the suggested hole.
     private func updateRings() {
         guard canPlay else { return board.showRings([]) }
         let seat = state.turn
+        if let hint { return board.showRings([Int(game.pit(seat: seat, hole: Int32(hint)))]) }
         let holes = (0..<Int32(game.HOLES)).filter { game.validate(state: state, seat: seat, move: CongklakMove(hole: $0)) == nil }
         board.showRings(Set(holes.map { Int(game.pit(seat: seat, hole: $0)) }))
     }
@@ -144,6 +157,7 @@ final class CongklakGameModel: ObservableObject {
             }
             if sowed { announce(before: state, after: update.state) }
             state = update.state
+            hint = nil
             animating = false
             drain()
         }
@@ -181,6 +195,7 @@ struct CongklakView: View {
     @ObservedObject private var table: CongklakTable
     @StateObject private var model: CongklakGameModel
     @State private var showRules = false
+    @ObservedObject private var ads = Ads.shared
     let onExit: () -> Void
 
     init(table: CongklakTable, onExit: @escaping () -> Void) {
@@ -217,6 +232,15 @@ struct CongklakView: View {
     private func exit() {
         table.leave()
         onExit()
+    }
+
+    /// Interstitials only where nobody waits on this device: local games, or leaving to the menu.
+    private func restart() {
+        if table.mySeat == nil || table.botLevel != nil {
+            ads.afterGame(then: table.restart)
+        } else {
+            table.restart()
+        }
     }
 
     // MARK: Seats
@@ -257,6 +281,9 @@ struct CongklakView: View {
                 Spacer()
                 HStack(spacing: 8) {
                     SoundToggles()
+                    if model.canPlay && isLocal(model.turn) && model.hint == nil {
+                        CircleIconButton(systemImage: "lightbulb", label: ads.removed ? "Petunjuk" : "Petunjuk (tonton iklan)", action: model.showHint)
+                    }
                     CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
                 }
             }
@@ -390,10 +417,10 @@ struct CongklakView: View {
                     scoreTile(farSeat, winner: winner)
                 }
                 HStack(spacing: 10) {
-                    Button(action: exit) { Text("Ke menu").frame(maxWidth: .infinity) }
+                    Button { ads.afterGame(then: exit) } label: { Text("Ke menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
-                        Button(action: table.restart) { Text("Main lagi").frame(maxWidth: .infinity) }
+                        Button(action: restart) { Text("Main lagi").frame(maxWidth: .infinity) }
                             .buttonStyle(PrimaryButtonStyle(height: 48))
                     } else {
                         Text("Menunggu host memulai lagi…")

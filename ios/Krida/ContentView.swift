@@ -34,15 +34,19 @@ struct ContentView: View {
                 SoundToggles()
             }
             .frame(width: 236)
-            ScrollView {
-                VStack(spacing: 10) {
-                    passAndPlayCard
-                    vsComputerCard
-                    nearbyCard
+            VStack(spacing: 10) {
+                ScrollView {
+                    VStack(spacing: 10) {
+                        passAndPlayCard
+                        vsComputerCard
+                        nearbyCard
+                        AdButtons()
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .scrollBounceBehavior(.basedOnSize)
+                AdBanner()
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 20)
@@ -138,6 +142,33 @@ struct ContentView: View {
 
     private func startPassAndPlay() {
         passAndPlay = HostTable.passAndPlay(names: [String(localized: "Pemain 1"), String(localized: "Pemain 2")])
+    }
+}
+
+/// "Hapus iklan · Rp 15.000" and "Pulihkan pembelian" while ads are on; "Privasi iklan" where required.
+private struct AdButtons: View {
+    @ObservedObject private var ads = Ads.shared
+
+    var body: some View {
+        if !ads.removed || ads.privacyOptionsRequired {
+            HStack(spacing: 8) {
+                if let price = ads.removeAdsPrice {
+                    Button("Hapus iklan · \(price)", action: ads.buyRemoveAds)
+                        .buttonStyle(SecondaryButtonStyle())
+                }
+                if !ads.removed {
+                    Button("Pulihkan pembelian", action: ads.restorePurchases)
+                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                }
+                if ads.privacyOptionsRequired {
+                    Button("Privasi iklan", action: ads.showPrivacyOptions)
+                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                }
+                Spacer(minLength: 0)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+        }
     }
 }
 
@@ -278,6 +309,7 @@ private struct RoomView: View {
             }
             .buttonStyle(SecondaryButtonStyle())
             Spacer()
+            AdBanner()
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)

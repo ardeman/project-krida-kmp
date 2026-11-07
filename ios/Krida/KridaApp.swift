@@ -15,7 +15,11 @@ struct KridaApp: App {
                         roomCode = code
                     }
                 }
-                .onChange(of: scenePhase, initial: true) { _, phase in Sounds.shared.setActive(phase == .active) }
+                .onAppear { Ads.shared.start() }
+                .onChange(of: scenePhase, initial: true) { _, phase in
+                    Sounds.shared.setActive(phase == .active)
+                    if phase == .active { Ads.shared.refresh() }
+                }
         }
     }
 }
