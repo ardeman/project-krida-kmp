@@ -78,4 +78,9 @@ All of them plug into the same `Transport` interface; game code never changes.
 
 ## Status
 
-Skeleton + protocol v1. Next: congklak rules in `shared/`, first voxel board scene on each platform.
+Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rule variant
+documented in the file). Next: first voxel congklak board scene on each platform, then wire
+it to `HostSession` for pass-and-play.
+
+Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
+`export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`.
