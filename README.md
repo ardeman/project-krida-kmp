@@ -67,13 +67,25 @@ npm run build                            # static site in web/dist
 Why it loads fast: zero JavaScript, CSS inlined into the HTML, system fonts, all art is
 inline SVG. The whole page is one HTML request plus a tiny favicon, with no third-party requests.
 
+## Play modes
+
+Every game supports three core modes:
+
+- **Lawan komputer:** single player against bots. Bots live in `shared/` next to each game's
+  rules and fill seats in a `HostSession`, so they play the same on Android and iOS.
+- **Main bareng dekat:** player vs player nearby over BLE, iOS ↔ Android, no internet.
+- **Main online:** player vs player over the internet.
+
+Pass-and-play on one device comes for free with `LocalTransport`.
+
 ## Multiplayer roadmap
 
 1. Pass-and-play (one device) — `LocalTransport`
-2. Online rooms — WebSocket backend (TBD)
+2. Single player vs computer — bot seats in `HostSession`, bots per game in `shared/`
 3. **Offline BLE** — main offline mode, iOS ↔ Android, up to 4 players
-4. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
-5. Wi‑Fi Aware — later, once device support is broad
+4. Online rooms — WebSocket backend (TBD)
+5. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
+6. Wi‑Fi Aware — later, once device support is broad
 
 All of them plug into the same `Transport` interface; game code never changes.
 

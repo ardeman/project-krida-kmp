@@ -95,12 +95,12 @@ func die(mono: Bool = false) -> [Shape] {
         k.addLines(between: [iso(u, 1, w + cell), iso(u + cell, 1, w + cell), iso(u + cell, 1, w), iso(u, 1, w)])
         k.closeSubpath()
     }
-    // Two wood pips across the right face (x = 1), like the "2" face of a real die.
-    let two = CGMutablePath()
-    for (v, w) in [(0.28, 0.72), (0.72, 0.28)] {
-        two.addLines(between: [iso(1, v - r, w + r), iso(1, v + r, w + r), iso(1, v + r, w - r), iso(1, v - r, w - r)])
-        two.closeSubpath()
-    }
+    // One big wood pip in the middle of the right face (x = 1): you against the computer,
+    // next to the four pips on top for playing together.
+    let one = CGMutablePath()
+    let big = 0.17
+    one.addLines(between: [iso(1, 0.5 - big, 0.5 + big), iso(1, 0.5 + big, 0.5 + big), iso(1, 0.5 + big, 0.5 - big), iso(1, 0.5 - big, 0.5 - big)])
+    one.closeSubpath()
     if mono {
         let t = poly(top)
         for p in pips { t.addLines(between: pip(p.0, p.1)); t.closeSubpath() }
@@ -109,7 +109,7 @@ func die(mono: Bool = false) -> [Shape] {
         return [
             Shape(path: t, fill: "#FFFFFF", evenOdd: true),
             Shape(path: l, fill: "#FFFFFF", alpha: 0.75, evenOdd: true),
-            Shape(path: { let p = poly(right); p.addPath(two); return p }(), fill: "#FFFFFF", alpha: 0.5, evenOdd: true),
+            Shape(path: { let p = poly(right); p.addPath(one); return p }(), fill: "#FFFFFF", alpha: 0.5, evenOdd: true),
         ]
     }
     return [
@@ -117,7 +117,7 @@ func die(mono: Bool = false) -> [Shape] {
         Shape(path: poly(left), fill: Brand.dieLeft),
         Shape(path: poly(right), fill: Brand.dieRight),
         Shape(path: k, fill: Brand.kayu),
-        Shape(path: two, fill: Brand.kayu),
+        Shape(path: one, fill: Brand.kayu),
     ] + pips.map { Shape(path: poly(pip($0.0, $0.1)), fill: $0.2) }
 }
 

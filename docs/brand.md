@@ -13,8 +13,9 @@ outline the "rida" letters into paths, so no font ships in the apps or on the we
 ## Marks
 
 - **App icon (`docs/brand/icon.svg`):** a cream isometric die on the accent colour. The top
-  face has four pips in the four player colours (1–4 players). The left face shows the voxel
-  K from the wordmark. The right face has two wood pips, as on a real die.
+  face has four pips in the four player colours: play together, nearby over BLE or online, up
+  to 4 players. The right face has one big wood pip: play alone against the computer. The left
+  face shows the voxel K from the wordmark.
 - **Wordmark (`docs/brand/wordmark.svg`, `wordmark-dark.svg`):** a K stacked from five rows of
   wooden blocks, followed by "rida" in Baloo 2 ExtraBold. The block K is exactly the cap height
   of the letters. Only the "rida" letters change colour between light and dark mode.
