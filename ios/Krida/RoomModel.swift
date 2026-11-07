@@ -33,6 +33,7 @@ final class RoomModel: ObservableObject {
             self.canStart = session.canStart()
         }
         session.onStateChanged = { [weak self] state in
+            guard let state else { return }
             self?.render(state, isMyTurn: state.turn == 0)
         }
 
@@ -61,6 +62,7 @@ final class RoomModel: ObservableObject {
             self?.status = "Masuk room \(code)"
         }
         session.onState = { [weak self, weak session] state in
+            guard let state else { return }
             self?.render(state, isMyTurn: session?.isMyTurn ?? false)
         }
         session.onRejected = { [weak self] reason in

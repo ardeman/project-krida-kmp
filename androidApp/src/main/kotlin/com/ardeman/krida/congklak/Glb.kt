@@ -1,56 +1,12 @@
 package com.ardeman.krida.congklak
 
+import com.ardeman.krida.core.games.CongklakBoard
+import com.ardeman.krida.core.voxel.VoxelMesh
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.pow
-
-/** Triangle mesh with per-vertex colors, built quad by quad. */
-class VoxelMesh {
-    private val positions = ArrayList<Float>()
-    private val colors = ArrayList<Float>()
-    private val indices = ArrayList<Int>()
-
-    val vertexCount get() = positions.size / 3
-
-    /** Adds a quad (corners in order around the face) with an sRGB [rgb] color. */
-    fun quad(corners: Array<FloatArray>, rgb: FloatArray) {
-        val base = vertexCount
-        for (c in corners) {
-            positions += c[0]; positions += c[1]; positions += c[2]
-            // glTF vertex colors are linear.
-            colors += srgbToLinear(rgb[0]); colors += srgbToLinear(rgb[1]); colors += srgbToLinear(rgb[2]); colors += 1f
-        }
-        indices += base; indices += base + 1; indices += base + 2
-        indices += base; indices += base + 2; indices += base + 3
-    }
-
-    /** Axis-aligned box from [min] to [max], each face shaded by [shade] (top, x sides, z sides). */
-    fun box(min: FloatArray, max: FloatArray, rgb: FloatArray, shade: FloatArray = DEFAULT_SHADE, bottom: Boolean = false) {
-        val (x0, y0, z0) = min
-        val (x1, y1, z1) = max
-        fun s(f: Float) = floatArrayOf(rgb[0] * f, rgb[1] * f, rgb[2] * f)
-        quad(arrayOf(f(x0, y1, z0), f(x0, y1, z1), f(x1, y1, z1), f(x1, y1, z0)), s(shade[0]))
-        quad(arrayOf(f(x1, y0, z0), f(x1, y1, z0), f(x1, y1, z1), f(x1, y0, z1)), s(shade[1]))
-        quad(arrayOf(f(x0, y0, z1), f(x0, y1, z1), f(x0, y1, z0), f(x0, y0, z0)), s(shade[1]))
-        quad(arrayOf(f(x0, y0, z1), f(x1, y0, z1), f(x1, y1, z1), f(x0, y1, z1)), s(shade[2]))
-        quad(arrayOf(f(x1, y0, z0), f(x0, y0, z0), f(x0, y1, z0), f(x1, y1, z0)), s(shade[2]))
-        if (bottom) quad(arrayOf(f(x0, y0, z0), f(x1, y0, z0), f(x1, y0, z1), f(x0, y0, z1)), s(shade[2]))
-    }
-
-    internal fun positionArray() = positions.toFloatArray()
-    internal fun colorArray() = colors.toFloatArray()
-    internal fun indexArray() = indices.toIntArray()
-
-    companion object {
-        /** Baked light: tops brightest, sides darker, so unlit voxels still read as 3D. */
-        val DEFAULT_SHADE = floatArrayOf(1f, 0.78f, 0.88f)
-
-        fun f(x: Float, y: Float, z: Float) = floatArrayOf(x, y, z)
-        fun srgbToLinear(c: Float) = c.coerceIn(0f, 1f).toDouble().pow(2.2).toFloat()
-    }
-}
 
 /**
  * Writes a binary glTF (.glb) with one unlit, vertex-colored material and one node per
@@ -90,7 +46,10 @@ class GlbWriter {
                 JSONObject().put("bufferView", posView).put("componentType", FLOAT).put("count", m.vertexCount)
                     .put("type", "VEC3").put("min", JSONArray(min.map { it.toDouble() })).put("max", JSONArray(max.map { it.toDouble() })),
             )
-            val colView = view(floats(m.colorArray()), ARRAY_BUFFER)
+            // glTF vertex colors are linear RGBA; the shared mesh is sRGB RGB.
+            val rgb = m.colorArray()
+            val rgba = FloatArray(m.vertexCount * 4) { i -> if (i % 4 == 3) 1f else srgbToLinear(rgb[i / 4 * 3 + i % 4]) }
+            val colView = view(floats(rgba), ARRAY_BUFFER)
             accessors.put(JSONObject().put("bufferView", colView).put("componentType", FLOAT).put("count", m.vertexCount).put("type", "VEC4"))
             val idx = m.indexArray()
             val idxView = view(ints(idx), ELEMENT_ARRAY_BUFFER)
@@ -146,10 +105,25 @@ class GlbWriter {
         return if (size == bytes.size) bytes else bytes.copyOf(size).also { it.fill(fill, bytes.size, size) }
     }
 
-    private companion object {
-        const val FLOAT = 5126
-        const val UNSIGNED_INT = 5125
-        const val ARRAY_BUFFER = 34962
-        const val ELEMENT_ARRAY_BUFFER = 34963
+    companion object {
+        fun srgbToLinear(c: Float) = c.coerceIn(0f, 1f).toDouble().pow(2.2).toFloat()
+
+        private const val FLOAT = 5126
+        private const val UNSIGNED_INT = 5125
+        private const val ARRAY_BUFFER = 34962
+        private const val ELEMENT_ARRAY_BUFFER = 34963
+    }
+}
+
+/** The congklak board and its seeds as one .glb; seed nodes are named by [seedName]. */
+object CongklakGlb {
+    fun seedName(i: Int) = "seed$i"
+
+    fun build(): ByteBuffer {
+        val glb = GlbWriter()
+        glb.node("board", glb.mesh(CongklakBoard.boardMesh()))
+        val seedMeshes = (0 until CongklakBoard.SEED_VARIANTS).map { glb.mesh(CongklakBoard.seedMesh(it)) }
+        repeat(CongklakBoard.SEED_COUNT) { glb.node(seedName(it), seedMeshes[CongklakBoard.seedVariant(it)]) }
+        return glb.build()
     }
 }

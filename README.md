@@ -79,9 +79,13 @@ All of them plug into the same `Transport` interface; game code never changes.
 ## Status
 
 Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rule variant
-documented in the file). Android: playable pass-and-play congklak on a voxel board
-(`androidApp/.../congklak/`, Filament + glTF generated in code). Next: the same board on iOS
-(RealityKit), then congklak over BLE.
+documented in the file). Pass-and-play congklak on a voxel board on **Android** (Filament,
+`androidApp/.../congklak/`) and **iOS** (RealityKit, `ios/Krida/Congklak/`). Board geometry,
+seed layout and sowing animation steps are shared (`CongklakBoard.kt`), so both boards match.
+Next: congklak over BLE (Android ↔ iOS).
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
-`export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`.
+`export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's
+"Build Shared framework" phase runs Gradle too, so export it before `xcodebuild` (or set it in
+`~/.gradle/gradle.properties` as `org.gradle.java.home=…` for builds started from Xcode).
+The iOS app accepts a `-openCongklak` launch argument to open the board directly.

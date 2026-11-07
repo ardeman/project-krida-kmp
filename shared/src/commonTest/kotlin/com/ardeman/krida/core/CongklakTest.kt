@@ -1,6 +1,8 @@
 package com.ardeman.krida.core
 
+import com.ardeman.krida.core.games.CongklakBoard
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakGame.PITS
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakState
@@ -112,5 +114,37 @@ class CongklakTest {
             val round = json.decodeFromString(g.stateSerializer, json.encodeToString(g.stateSerializer, s))
             assertEquals(s, round)
         }
+    }
+
+    @Test
+    fun seedAnimationEndsOnTheRulesBoard() {
+        repeat(100) { game ->
+            val rnd = Random(1000 + game)
+            var s = g.initialState(2, rnd)
+            val seeds = CongklakSeeds(s.pits)
+            while (!g.isFinished(s)) {
+                val seat = g.currentTurn(s)
+                val move = (0 until 7).map(::CongklakMove).filter { g.validate(s, seat, it) == null }.random(rnd)
+                val play = g.play(s, seat, move)
+                val steps = CongklakSeeds.steps(s.pits, g.pit(seat, move.hole), play.path)
+                assertEquals(play.path.size, steps.count { !it.pickUp })
+                steps.forEach(seeds::apply)
+                seeds.settle(play.state.pits)
+                assertEquals(play.state.pits, seeds.counts(), "game $game")
+                s = play.state
+            }
+            // Every seed has a place on the board (no seed left at the origin).
+            val t = seeds.targets()
+            assertTrue((0 until CongklakBoard.SEED_COUNT).all { t[it * 3 + 1] > 0f })
+        }
+    }
+
+    @Test
+    fun boardMeshIsWellFormed() {
+        val m = CongklakBoard.boardMesh()
+        val idx = m.indexArray()
+        assertTrue(m.vertexCount in 1..65_535, "${m.vertexCount} vertices")
+        assertTrue(idx.all { it in 0 until m.vertexCount })
+        assertEquals(m.vertexCount * 3, m.colorArray().size)
     }
 }

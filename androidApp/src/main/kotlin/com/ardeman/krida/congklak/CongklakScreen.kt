@@ -40,7 +40,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ardeman.krida.R
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
-import com.ardeman.krida.core.games.CongklakState
+import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.transport.LocalTransport
@@ -58,7 +58,7 @@ fun CongklakScreen(onExit: () -> Unit) {
     val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
     var session by remember { mutableStateOf(newSession(names)) }
     var state by remember { mutableStateOf(session.state!!) }
-    val seeds = remember { SeedPiles(state) }
+    val seeds = remember { CongklakSeeds(state.pits) }
     val counts = remember { mutableStateListOf(*state.pits.toTypedArray()) }
     var animating by remember { mutableStateOf(false) }
     var pitsOnScreen by remember { mutableStateOf<List<FloatArray>>(emptyList()) }
@@ -79,10 +79,8 @@ fun CongklakScreen(onExit: () -> Unit) {
         val next = session.state!!
         animating = true
         scope.launch {
-            seeds.pickUp(CongklakGame.pit(seat, hole)); push(); delay(PICKUP_MS)
-            sowing.path.forEachIndexed { i, pit ->
-                if (seeds.handEmpty) { seeds.pickUp(sowing.path[i - 1]); push(); delay(PICKUP_MS) }
-                seeds.drop(pit); push(); delay(SOW_MS)
+            for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, hole), sowing.path)) {
+                seeds.apply(step); push(); delay(if (step.pickUp) PICKUP_MS else SOW_MS)
             }
             // Captures and the end-of-game sweep: move whatever differs to match the rules.
             if (seeds.counts() != next.pits) { delay(SETTLE_MS); seeds.settle(next.pits); push() }
@@ -221,49 +219,4 @@ private fun Modifier.centeredAt(x: Int, y: Int) = layout { measurable, constrain
 private fun newSession(names: List<String>) = HostSession(CongklakGame, LocalTransport(), roomCode = "LOCAL").apply {
     names.forEach { addLocalPlayer(it, Platform.ANDROID) }
     start()
-}
-
-/** Which seed sits where, so seeds keep their identity while they move. */
-private class SeedPiles(start: CongklakState) {
-    private val piles = Array(CongklakGame.PITS) { ArrayList<Int>() }
-    private val hand = ArrayList<Int>()
-    private var handPit = 0
-
-    val handEmpty get() = hand.isEmpty()
-
-    init { reset(start.pits) }
-
-    fun reset(pits: List<Int>) {
-        piles.forEach { it.clear() }
-        hand.clear()
-        var next = 0
-        pits.forEachIndexed { pit, n -> repeat(n) { piles[pit] += next++ } }
-    }
-
-    fun counts(): List<Int> = piles.map { it.size }
-
-    fun pickUp(pit: Int) {
-        hand += piles[pit]
-        piles[pit].clear()
-        handPit = pit
-    }
-
-    fun drop(pit: Int) {
-        handPit = pit
-        piles[pit] += hand.removeAt(hand.lastIndex)
-    }
-
-    /** Moves surplus seeds (and anything left in hand) to pits that are short. */
-    fun settle(pits: List<Int>) {
-        val loose = ArrayList(hand).also { hand.clear() }
-        piles.forEachIndexed { pit, pile -> while (pile.size > pits[pit]) loose += pile.removeAt(pile.lastIndex) }
-        piles.forEachIndexed { pit, pile -> while (pile.size < pits[pit] && loose.isNotEmpty()) pile += loose.removeAt(loose.lastIndex) }
-    }
-
-    fun targets(): Array<FloatArray> {
-        val out = Array(CongklakModel.SEED_COUNT) { FloatArray(3) }
-        piles.forEachIndexed { pit, pile -> pile.forEachIndexed { k, seed -> out[seed] = CongklakModel.slot(pit, k) } }
-        hand.forEachIndexed { k, seed -> out[seed] = CongklakModel.handSlot(handPit, k) }
-        return out
-    }
 }

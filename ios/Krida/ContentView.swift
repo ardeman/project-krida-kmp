@@ -3,6 +3,7 @@ import Shared
 
 struct ContentView: View {
     @ObservedObject var model: RoomModel
+    @State private var playingCongklak = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -13,6 +14,8 @@ struct ContentView: View {
             }
 
             if !model.inRoom {
+                Button("Main congklak (satu perangkat)") { playingCongklak = true }
+                    .buttonStyle(.borderedProminent)
                 Button("Buat room (BLE)") { model.startHost() }
                     .buttonStyle(.borderedProminent)
                 HStack {
@@ -47,5 +50,10 @@ struct ContentView: View {
         .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(red: 1.0, green: 0.97, blue: 0.93))
+        // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { playingCongklak = true } }
+        .fullScreenCover(isPresented: $playingCongklak) {
+            CongklakView { playingCongklak = false }
+        }
     }
 }

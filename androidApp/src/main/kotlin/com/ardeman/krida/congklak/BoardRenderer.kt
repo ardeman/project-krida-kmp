@@ -3,6 +3,8 @@ package com.ardeman.krida.congklak
 import android.view.Choreographer
 import android.view.Surface
 import android.view.SurfaceView
+import com.ardeman.krida.core.games.CongklakBoard
+import com.ardeman.krida.core.games.CongklakGame
 import com.google.android.filament.Camera
 import com.google.android.filament.ColorGrading
 import com.google.android.filament.Engine
@@ -49,8 +51,8 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
     private var swapChain: SwapChain? = null
     private val choreographer = Choreographer.getInstance()
 
-    private val current = Array(CongklakModel.SEED_COUNT) { FloatArray(3) }
-    private val target = Array(CongklakModel.SEED_COUNT) { FloatArray(3) }
+    private val current = Array(CongklakBoard.SEED_COUNT) { FloatArray(3) }
+    private val target = Array(CongklakBoard.SEED_COUNT) { FloatArray(3) }
     private var placed = false
     private var dirty = true
     private var lastFrameNanos = 0L
@@ -74,18 +76,18 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
         view.multiSampleAntiAliasingOptions = View.MultiSampleAntiAliasingOptions().apply { enabled = true; sampleCount = 4 }
         renderer.clearOptions = Renderer.ClearOptions().apply {
             clear = true
-            val bg = BACKGROUND.map(VoxelMesh::srgbToLinear)
+            val bg = CongklakBoard.background.map(GlbWriter::srgbToLinear)
             clearColor = floatArrayOf(bg[0], bg[1], bg[2], 1f)
         }
 
         materials = UbershaderProvider(engine)
         assetLoader = AssetLoader(engine, materials, EntityManager.get())
         resourceLoader = ResourceLoader(engine)
-        asset = checkNotNull(assetLoader.createAsset(CongklakModel.buildGlb())) { "board glb rejected" }
+        asset = checkNotNull(assetLoader.createAsset(CongklakGlb.build())) { "board glb rejected" }
         resourceLoader.loadResources(asset)
         asset.releaseSourceData()
         filamentScene.addEntities(asset.entities)
-        seedEntities = IntArray(CongklakModel.SEED_COUNT) { asset.getFirstEntityByName(CongklakModel.seedName(it)) }
+        seedEntities = IntArray(CongklakBoard.SEED_COUNT) { asset.getFirstEntityByName(CongklakGlb.seedName(it)) }
 
         uiHelper.renderCallback = object : UiHelper.RendererCallback {
             override fun onNativeWindowChanged(surface: Surface) {
@@ -114,10 +116,11 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
     }
 
     /** Sets where every seed should rest. The first call places them without animation. */
-    fun setSeedTargets(targets: Array<FloatArray>) {
-        for (i in targets.indices) targets[i].copyInto(target[i])
+    /** [targets] holds x, y, z per seed, as [com.ardeman.krida.core.games.CongklakSeeds.targets] returns. */
+    fun setSeedTargets(targets: FloatArray) {
+        for (i in target.indices) targets.copyInto(target[i], 0, i * 3, i * 3 + 3)
         if (!placed) {
-            for (i in targets.indices) target[i].copyInto(current[i])
+            for (i in target.indices) target[i].copyInto(current[i])
             placed = true
         }
         dirty = true
@@ -186,7 +189,7 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
             }
             if (changed || dirty) {
                 if (changed) moving = true
-                yawMatrix(CongklakModel.yaw(i), c, m)
+                yawMatrix(CongklakBoard.yaw(i), c, m)
                 tm.setTransform(tm.getInstance(seedEntities[i]), m)
             }
         }
@@ -195,9 +198,15 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
 
     private fun updateCamera() {
         val aspect = width.toDouble() / height
-        camera.setProjection(FOV_DEGREES, aspect, 0.5, 100.0, Camera.Fov.HORIZONTAL)
-        camera.lookAt(0.0, 21.0, 17.0, 0.0, 0.0, 0.6, 0.0, 1.0, 0.0)
-        onPitsProjected?.invoke(CongklakModel.pitCenters.map { (x, z) -> project(x, CongklakModel.boardTop - 0.5f, z) })
+        val eye = CongklakBoard.cameraEye
+        val at = CongklakBoard.cameraTarget
+        camera.setProjection(CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES.toDouble(), aspect, 0.5, 100.0, Camera.Fov.HORIZONTAL)
+        camera.lookAt(
+            eye[0].toDouble(), eye[1].toDouble(), eye[2].toDouble(),
+            at[0].toDouble(), at[1].toDouble(), at[2].toDouble(),
+            0.0, 1.0, 0.0,
+        )
+        onPitsProjected?.invoke(List(CongklakGame.PITS) { CongklakBoard.pitAnchor(it).let { (x, y, z) -> project(x, y, z) } })
     }
 
     /** World point to screen pixels (origin top-left). */
@@ -226,9 +235,7 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
     }
 
     companion object {
-        private const val FOV_DEGREES = 62.0
         private const val EASE_PER_SECOND = 14f
-        private val BACKGROUND = floatArrayOf(0.96f, 0.93f, 0.86f)
 
         private var initialized = false
 
