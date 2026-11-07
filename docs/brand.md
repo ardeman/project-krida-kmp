@@ -31,7 +31,7 @@ outline the "Krida" letters into paths, so no font ships in the apps or on the w
 | Krem | `#FFF7EC` | — | Light background, die top |
 | Malam | `#1B1612` | — | Dark background |
 | Tinta | `#2B211A` | `#F6EADC` | Text, wordmark letters |
-| Kayu terang / Kayu / Kayu gelap | `#E3A66B` / `#B8743F` / `#8F552A` | same | Wood: boards, the K and the single pip on the die |
+| Kayu terang / Kayu / Kayu gelap | `#E3A66B` / `#B8743F` / `#8F552A` | same | Wood: boards, the K and the single pip on the die use Kayu gelap, so they stand out from the accent background |
 
 Player colours, seat 1–4: Merah `#D6453D`, Biru `#2F6FD1`, Hijau `#3E9A4F`, Kuning `#F0B429`.
 

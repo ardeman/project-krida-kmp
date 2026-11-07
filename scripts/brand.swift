@@ -116,8 +116,8 @@ func die(mono: Bool = false) -> [Shape] {
         Shape(path: poly(top), fill: Brand.dieTop),
         Shape(path: poly(left), fill: Brand.dieLeft),
         Shape(path: poly(right), fill: Brand.dieRight),
-        Shape(path: k, fill: Brand.kayu),
-        Shape(path: one, fill: Brand.kayu),
+        Shape(path: k, fill: Brand.kayuGelap),
+        Shape(path: one, fill: Brand.kayuGelap),
     ] + pips.map { Shape(path: poly(pip($0.0, $0.1)), fill: $0.2) }
 }
 
