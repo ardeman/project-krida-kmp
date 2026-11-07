@@ -345,22 +345,31 @@ const width = Math.round((height * \(num(markSize.width))) / \(num(markSize.heig
 
 """, to: "web/src/components/Wordmark.astro")
 
+// iOS app icon as an Icon Composer document (Liquid Glass). Two layers on a 1024 pt canvas,
+// the die body behind its marks, so the system can give them depth; it also renders the
+// dark, tinted and clear looks and the flat fallback for older iOS from this one file.
+func srgb(_ hex: String) -> String {
+    let v = UInt32(hex.dropFirst(), radix: 16)!
+    let c = [(v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF].map { String(format: "%.5f", Double($0) / 255) }
+    return "srgb:\(c.joined(separator: ",")),1.00000"
+}
+let glassDie = fit(die(), center: CGPoint(x: 512, y: 512), maxDim: 594)
+let iconDoc = "ios/Krida/AppIcon.icon"
+let canvas1024 = CGSize(width: 1024, height: 1024)
+write(svg(Array(glassDie[..<3]), size: canvas1024), to: "\(iconDoc)/Assets/die.svg")
+write(svg(Array(glassDie[3...]), size: canvas1024), to: "\(iconDoc)/Assets/marks.svg")
+write(json([
+    "fill": ["solid": srgb(Brand.accent)],
+    "groups": [
+        ["layers": [["image-name": "marks.svg", "name": "marks"]], "shadow": ["kind": "neutral", "opacity": 0.5], "translucency": ["enabled": false, "value": 0]],
+        ["layers": [["image-name": "die.svg", "name": "die"]], "shadow": ["kind": "neutral", "opacity": 0.5], "translucency": ["enabled": true, "value": 0.3]],
+    ],
+    "supported-platforms": ["squares": "shared"],
+]), to: "\(iconDoc)/icon.json")
+
 // iOS asset catalog.
 let assets = "ios/Krida/Assets.xcassets"
 write(json(["info": ["author": "xcode", "version": 1]]), to: "\(assets)/Contents.json")
-png(iconDie, viewBox: 100, pixels: 1024, background: Brand.accent, to: "\(assets)/AppIcon.appiconset/AppIcon.png")
-// iOS 18 home screen variants: dark (system draws the dark backdrop) and tinted (grayscale).
-png(iconDie, viewBox: 100, pixels: 1024, background: nil, to: "\(assets)/AppIcon.appiconset/AppIcon-dark.png")
-png(fit(die(mono: true), center: CGPoint(x: 50, y: 50), maxDim: 58), viewBox: 100, pixels: 1024, background: nil, to: "\(assets)/AppIcon.appiconset/AppIcon-tinted.png")
-func icon(_ file: String, _ appearance: String?) -> [String: Any] {
-    var i: [String: Any] = ["filename": file, "idiom": "universal", "platform": "ios", "size": "1024x1024"]
-    if let appearance { i["appearances"] = [["appearance": "luminosity", "value": appearance]] }
-    return i
-}
-write(json([
-    "images": [icon("AppIcon.png", nil), icon("AppIcon-dark.png", "dark"), icon("AppIcon-tinted.png", "tinted")],
-    "info": ["author": "xcode", "version": 1],
-]), to: "\(assets)/AppIcon.appiconset/Contents.json")
 write(colorset(Brand.accent, Brand.accentDark), to: "\(assets)/AccentColor.colorset/Contents.json")
 write(svg(mark, size: markSize, ink: Brand.ink), to: "\(assets)/Wordmark.imageset/wordmark.svg")
 write(svg(mark, size: markSize, ink: Brand.inkDark), to: "\(assets)/Wordmark.imageset/wordmark-dark.svg")

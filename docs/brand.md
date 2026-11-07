@@ -38,6 +38,6 @@ Player colours, seat 1–4: Merah `#D6453D`, Biru `#2F6FD1`, Hijau `#3E9A4F`, Ku
 
 | Platform | Files |
 |---|---|
-| iOS | `ios/Krida/Assets.xcassets`: `AppIcon` (default, dark and tinted 1024 px), `AccentColor`, `Wordmark` (vector SVG, light and dark) |
+| iOS | `ios/Krida/AppIcon.icon` (Icon Composer document: die and marks as two SVG layers on the accent fill; the system renders Liquid Glass, dark, tinted and the fallback for older iOS). Preview it with Icon Composer or `ictool`. `ios/Krida/Assets.xcassets`: `AccentColor`, `Wordmark` (vector SVG, light and dark) |
 | Android | `res/mipmap-anydpi-v26/ic_launcher*.xml` (adaptive and themed icon), `res/drawable/ic_launcher_*.xml`, `res/drawable/krida_wordmark.xml`, `res/values*/brand_colors.xml` |
 | Web | `web/public/favicon.svg`, `web/public/apple-touch-icon.png`, `web/src/components/Wordmark.astro` |
