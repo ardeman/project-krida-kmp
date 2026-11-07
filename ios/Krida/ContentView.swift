@@ -29,7 +29,9 @@ struct ContentView: View {
     private var menu: some View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 14) {
+                // Light variant always: the menu stays cream even when the system is dark.
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40).accessibilityLabel("Krida")
+                    .environment(\.colorScheme, .light)
                 CongklakCard()
                 SoundToggles()
             }
