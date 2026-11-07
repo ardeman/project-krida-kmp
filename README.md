@@ -78,6 +78,11 @@ Every game supports three core modes:
 
 Pass-and-play on one device comes for free with `LocalTransport`.
 
+Seats mix freely: any seat can be a person (on this device, nearby or online) or a computer,
+up to the game's player count. In ludo, for example: 1 player vs 3 computers, 2 players vs 2
+computers, or 2 friends over BLE plus 2 computers. The host fills seats with bots before the
+game starts; bots only ever run on the host, and guests see them as ordinary players.
+
 ## Multiplayer roadmap
 
 1. Pass-and-play (one device) — `LocalTransport`
