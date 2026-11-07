@@ -72,7 +72,14 @@ h3 { margin: 10px 0 2px; font-size: 18px; }
 .feature { border-top: 1px solid var(--line); padding: 18px 0 24px; }
 .feature h3 { margin-top: 0; }
 
-.footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding: 24px 0 40px; }
+.footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 24px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding: 24px 0 40px; }
+.lema { max-width: 440px; margin: 0; display: grid; gap: 4px; }
+.lema-head { font-family: "Fraunces", Georgia, serif; color: var(--ink); font-size: 22px; line-height: 32px; }
+.footer-copy { line-height: 32px; }
+.lema-head b { font-weight: 700; }
+.lema-say, .lema-head i { color: var(--muted); font-size: 16px; }
+.lema-def { color: var(--ink); font-size: 16px; line-height: 1.5; }
+.lema-src { font-size: 13px; }
 
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; padding-top: 16px; }
