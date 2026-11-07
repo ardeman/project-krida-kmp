@@ -1,0 +1,113 @@
+---
+import Base from "../layouts/Base.astro";
+import Wordmark from "../components/Wordmark.astro";
+const home = import.meta.env.BASE_URL;
+const contact = "mail@ardeman.com";
+---
+
+<Base
+  title="Kebijakan Privasi — Krida"
+  description="Data apa yang dipakai Krida, untuk apa, dan siapa yang menerimanya."
+>
+  <main>
+    <header class="nav">
+      <a class="logo" href={home}><Wordmark height={30} /></a>
+    </header>
+
+    <article class="doc">
+      <h1>Kebijakan Privasi</h1>
+      <p class="doc-date">Berlaku sejak 8 November 2026</p>
+
+      <p>
+        Krida adalah kumpulan permainan papan untuk Android dan iPhone, dibuat oleh Ardeman. Halaman ini
+        menjelaskan data apa yang dipakai aplikasi Krida, untuk apa, dan siapa yang menerimanya.
+      </p>
+
+      <h2>Singkatnya</h2>
+      <ul>
+        <li>Krida tidak meminta akun, nama asli, email, nomor telepon, atau kontak.</li>
+        <li>Kami tidak punya server yang menyimpan data pemain.</li>
+        <li>Iklan di Krida disediakan oleh Google AdMob, yang mengumpulkan sebagian data perangkat seperti dijelaskan di bawah.</li>
+        <li>Pembayaran diproses oleh Google Play atau App Store; kami tidak pernah melihat data pembayaranmu.</li>
+      </ul>
+
+      <h2>Data yang tersimpan di perangkatmu</h2>
+      <p>
+        Pengaturan (misalnya suara dan musik) dan status pembelian <i>Hapus iklan</i> disimpan di perangkatmu
+        sendiri dan tidak dikirim ke kami. Data ini terhapus saat aplikasi dihapus.
+      </p>
+
+      <h2>Main bareng lewat Bluetooth dan Wi-Fi</h2>
+      <p>
+        Saat kamu main bersama teman di dekatmu, Krida memakai Bluetooth atau jaringan Wi-Fi yang sama untuk
+        mengirim data permainan (kode room, nama pemain di room, dan langkah permainan) langsung antarperangkat.
+        Data itu tidak melewati server kami dan tidak disimpan setelah permainan selesai.
+      </p>
+      <p>
+        Di Android 11 ke bawah, sistem Android mewajibkan izin lokasi untuk mencari perangkat Bluetooth di sekitar.
+        Krida meminta izin itu hanya untuk mencari teman bermain; Krida tidak membaca, menyimpan, atau mengirim
+        lokasimu.
+      </p>
+
+      <h2>Iklan (Google AdMob)</h2>
+      <p>
+        Krida menampilkan iklan dari Google AdMob. Untuk menampilkan iklan, mengukur kinerjanya, dan mencegah
+        penipuan, Google dapat mengumpulkan:
+      </p>
+      <ul>
+        <li>ID iklan perangkat (Advertising ID di Android);</li>
+        <li>alamat IP dan perkiraan lokasi yang diturunkan darinya;</li>
+        <li>informasi perangkat dan aplikasi, seperti model, versi sistem, dan bahasa;</li>
+        <li>interaksi dengan iklan, seperti tayangan dan klik;</li>
+        <li>data diagnostik, seperti waktu muat dan galat.</li>
+      </ul>
+      <p>
+        Di wilayah yang mewajibkannya (misalnya Uni Eropa dan Inggris), Krida menampilkan formulir persetujuan
+        dari Google sebelum iklan dimuat, dan kamu dapat mengubah pilihanmu kapan saja dari aplikasi. Di iPhone,
+        Krida tidak meminta izin pelacakan (App Tracking Transparency), sehingga ID iklan iPhone (IDFA) tidak
+        dipakai.
+      </p>
+      <p>
+        Kamu bisa mengatur ulang ID iklan atau mematikan iklan yang dipersonalisasi di pengaturan perangkatmu.
+        Penjelasan lengkap tentang cara Google memakai data ini ada di
+        <a href="https://policies.google.com/technologies/partner-sites?hl=id">Cara Google menggunakan informasi dari situs atau aplikasi yang menggunakan layanannya</a>
+        dan <a href="https://policies.google.com/privacy?hl=id">Kebijakan Privasi Google</a>.
+      </p>
+      <p>Setelah kamu membeli <i>Hapus iklan</i>, Krida berhenti memuat iklan.</p>
+
+      <h2>Pembelian dalam aplikasi</h2>
+      <p>
+        Pembelian <i>Hapus iklan</i> diproses sepenuhnya oleh Google Play atau Apple App Store menurut kebijakan
+        privasi masing-masing. Krida hanya menerima konfirmasi bahwa pembelian berhasil; kami tidak menerima nama,
+        email, atau data pembayaranmu.
+      </p>
+
+      <h2>Anak-anak</h2>
+      <p>
+        Krida ditujukan untuk pengguna berusia 13 tahun ke atas dan tidak dengan sengaja mengumpulkan data pribadi
+        anak di bawah 13 tahun. Jika kamu orang tua dan yakin anakmu memberikan data kepada kami, hubungi kami dan
+        kami akan membantu.
+      </p>
+
+      <h2>Menghapus data</h2>
+      <p>
+        Karena Krida tidak punya akun, menghapus aplikasi sudah menghapus semua data Krida di perangkatmu. Data yang
+        dikumpulkan Google untuk iklan dikelola oleh Google; kamu dapat mengelolanya lewat pengaturan iklan di
+        perangkat atau di akun Google-mu.
+      </p>
+
+      <h2>Perubahan</h2>
+      <p>
+        Jika kebijakan ini berubah, versi terbarunya akan dimuat di halaman ini dengan tanggal berlaku yang baru.
+      </p>
+
+      <h2>Kontak</h2>
+      <p>Pertanyaan tentang privasi? Kirim email ke <a href={`mailto:${contact}`}>{contact}</a>.</p>
+    </article>
+
+    <footer class="footer">
+      <a href={home}>Kembali ke Krida</a>
+      <span class="footer-copy">krida.ardeman.com</span>
+    </footer>
+  </main>
+</Base>

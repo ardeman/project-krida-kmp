@@ -91,3 +91,12 @@ h3 { margin: 10px 0 2px; font-size: 18px; }
 
 .notfound { min-height: 100vh; display: grid; place-content: center; justify-items: center; text-align: center; gap: 8px; }
 .notfound h1 { font-size: clamp(30px, 5vw, 44px); margin: 12px 0 0; }
+
+/* Long-form pages (privacy policy) */
+.doc { max-width: 680px; padding: 24px 0 56px; font-size: 17px; line-height: 1.6; }
+.doc h1 { font-size: clamp(34px, 5vw, 48px); margin-bottom: 8px; }
+.doc h2 { font-size: 22px; margin: 36px 0 8px; }
+.doc p, .doc ul { margin: 0 0 14px; }
+.doc ul { padding-left: 20px; }
+.doc a, .footer a { color: var(--accent); }
+.doc-date { color: var(--muted); font-size: 15px; }
