@@ -17,6 +17,8 @@ import kotlin.time.TimeSource
  * The authoritative side of a room. Lives on the host device.
  *
  * - Local players (the host player, pass-and-play) act through [submitLocal].
+ * - Bots ([addBot]) move when the host app calls [stepBot], so it can pace them to its
+ *   animations; the session itself has no timers.
  * - Remote players connect through [transport] and send intents.
  * - Every applied move bumps [seq] and broadcasts a full snapshot.
  */
@@ -32,11 +34,12 @@ class HostSession<S, M>(
     constructor(rules: GameRules<S, M>, transport: Transport, roomCode: String) :
         this(rules, transport, roomCode, Random.Default, defaultClock())
 
-    private class Seat(
+    private inner class Seat(
         var name: String,
         val platform: Platform,
-        var peer: String?,          // null = local player
+        var peer: String?,          // null = local player or bot
         val token: String,
+        val bot: Bot<S, M>? = null,
         var connected: Boolean = true,
         var disconnectedAt: Long = 0,
     )
@@ -66,7 +69,8 @@ class HostSession<S, M>(
 
     val players: List<PlayerInfo>
         get() = seats.mapIndexed { i, s ->
-            PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected, local = s.peer == null)
+            PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected,
+                local = s.peer == null && s.bot == null, bot = s.bot != null)
         }
 
     /** Adds a player sitting at this device. Returns the seat, or null if full/started. */
@@ -75,6 +79,35 @@ class HostSession<S, M>(
         seats += Seat(name, platform, peer = null, token = newToken())
         lobbyChanged()
         return seats.lastIndex
+    }
+
+    /** Adds a computer player run by this device. Returns the seat, or null if full/started. */
+    fun addBot(name: String, platform: Platform, bot: Bot<S, M>): Int? {
+        if (started || seats.size >= capacity()) return null
+        seats += Seat(name, platform, peer = null, token = newToken(), bot = bot)
+        lobbyChanged()
+        return seats.lastIndex
+    }
+
+    /** Seat of the bot whose turn it is, or null when a person is to move (or no game is on). */
+    fun botToMove(): Int? {
+        val current = state ?: return null
+        if (rules.isFinished(current)) return null
+        val seat = rules.currentTurn(current)
+        return if (seats.getOrNull(seat)?.bot != null) seat else null
+    }
+
+    /**
+     * Plays one move for the bot whose turn it is. Returns false when no bot is to move.
+     * Call it after each state change (once the previous move has animated) until it returns
+     * false; a bot that earns another turn simply moves again on the next call.
+     */
+    fun stepBot(): Boolean {
+        val seat = botToMove() ?: return false
+        val move = seats[seat].bot!!.chooseMove(state!!, seat, random)
+        val reason = submit(seat, move)
+        check(reason == null) { "Bot at seat $seat chose an illegal move: $reason" }
+        return true
     }
 
     fun canStart(): Boolean = !started && seats.size >= rules.minPlayers
@@ -103,7 +136,7 @@ class HostSession<S, M>(
     /** A local player's move. Returns null when applied, otherwise an [InvalidReason] / rules reason. */
     fun submitLocal(seat: Int, move: M): String? {
         val s = seats.getOrNull(seat) ?: return InvalidReason.NOT_SEATED
-        if (s.peer != null) return InvalidReason.NOT_SEATED
+        if (s.peer != null || s.bot != null) return InvalidReason.NOT_SEATED
         return submit(seat, move)
     }
 

@@ -19,6 +19,8 @@ data class PlayerInfo(
     val connected: Boolean = true,
     /** true for players sitting at the host device (host player, pass-and-play). */
     val local: Boolean = false,
+    /** true for computer players; they run on the host. Optional: older guests ignore it. */
+    val bot: Boolean = false,
 )
 
 /** A move as applied by the host: who made it and the game-specific move JSON. */

@@ -41,6 +41,11 @@ opaque JSON value owned by each game's `GameRules`.
 A guest that sees a gap simply waits for the next full `state` — every `state` is a full
 snapshot, so there is no diffing to get wrong.
 
+Each entry in `players` is `{seat, name, platform, connected?, local?, bot?}`. `bot: true`
+marks a computer player; bots run only on the host, which moves for them like any other
+seat, so guests just show them (e.g. as "Komputer") and never act for them. Older guests
+ignore the field.
+
 `last` (optional, `{seat, move}`) is the move that produced this snapshot, so every device
 can animate it (e.g. congklak sowing). It is absent on the first snapshot. Animate it only
 when the snapshot's `seq` is exactly one more than the previous one; after a gap or a rejoin,
