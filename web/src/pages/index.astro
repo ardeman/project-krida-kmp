@@ -35,16 +35,12 @@ const year = new Date().getFullYear();
 
     <section class="hero">
       <div class="hero-text">
-        <p class="eyebrow">Board games Nusantara · 3D voxel</p>
         <h1>Main bareng, di mana saja.</h1>
         <p class="lead">
           Congklak, ludo, ular tangga, perang kapal dan lainnya, dibuat ulang jadi mainan kecil yang bisa kamu
           mainkan bersama keluarga dan teman. Online atau offline lewat Bluetooth.
         </p>
-        <div class="cta">
-          <span class="store">Segera di Google Play</span>
-          <span class="store">Segera di App Store</span>
-        </div>
+        <p class="soon">Segera hadir di Google Play dan App Store.</p>
       </div>
       <div class="hero-art"><Board /></div>
     </section>
@@ -54,8 +50,8 @@ const year = new Date().getFullYear();
       <div class="games">
         {
           games.map((g) => (
-            <article class="card">
-              <Voxel color={g.color} size={40} />
+            <article class="game">
+              <Voxel color={g.color} size={48} />
               <h3>{g.name}</h3>
               <p>{g.note}</p>
             </article>

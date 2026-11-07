@@ -21,6 +21,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <link rel="icon" href={`${base.replace(/\/$/, "")}/favicon.svg`} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={`${base.replace(/\/$/, "")}/apple-touch-icon.png`} />
     <meta name="theme-color" content="#fff7ec" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,600,100&display=swap" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
