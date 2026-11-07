@@ -2,6 +2,7 @@ package com.ardeman.krida.congklak
 
 import android.view.SurfaceView
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -64,6 +65,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ardeman.krida.R
+import com.ardeman.krida.ads.Ads
+import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakSeeds
@@ -75,6 +78,7 @@ import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.Theme
 import kotlin.math.hypot
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -101,6 +105,8 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
     var animating by remember { mutableStateOf(false) }
     var waiting by remember { mutableStateOf(false) }
     var showRules by remember { mutableStateOf(false) }
+    var hint by remember { mutableStateOf<Int?>(null) } // hole suggested for the current turn
+    val activity = LocalActivity.current
     var pitsOnScreen by remember { mutableStateOf<List<FloatArray>>(emptyList()) }
     var renderer by remember { mutableStateOf<BoardRenderer?>(null) }
     val queue = remember { ArrayDeque<CongklakUpdate>() }
@@ -176,9 +182,19 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
     }
 
     LaunchedEffect(table.notice) { if (table.notice != null) waiting = false }
+    LaunchedEffect(state) { hint = null }
 
-    // Gold rings on the holes the mover may start from, only while this device can play.
-    val rings = if (!canPlay()) emptySet() else (0 until CongklakGame.HOLES)
+    // The hard bot's choice for the player to move, paid for with a rewarded ad.
+    fun showHint() {
+        val a = activity ?: return
+        Ads.rewarded(a) {
+            if (canPlay()) hint = CongklakBot(CongklakBot.Level.HARD).chooseMove(state, state.turn, Random.Default).hole
+        }
+    }
+
+    // Gold rings on the holes the mover may start from, only while this device can play;
+    // a hint narrows them to the suggested hole.
+    val rings = if (!canPlay()) emptySet() else hint?.let { setOf(CongklakGame.pit(state.turn, it)) } ?: (0 until CongklakGame.HOLES)
         .filter { CongklakGame.validate(state, state.turn, CongklakMove(it)) == null }
         .map { CongklakGame.pit(state.turn, it) }
         .toSet()
@@ -275,6 +291,9 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
                 )
                 Row(Modifier.align(Alignment.CenterEnd), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SoundToggles()
+                    if (canPlay() && seats.isLocal(state.turn) && hint == null) {
+                        CircleIconButton(R.drawable.ic_hint, stringResource(if (Ads.removed) R.string.hint_free else R.string.hint), ::showHint)
+                    }
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
             }
@@ -294,7 +313,13 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
         }
 
         AnimatedVisibility(finished && !animating, enter = fadeIn(), exit = fadeOut()) {
-            GameOver(table, seats, state, ::exit)
+            // Interstitials only where nobody waits on this device: local games, or leaving to the menu.
+            val local = table.mySeat == null || table.botLevel != null
+            GameOver(
+                table, seats, state,
+                onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
+                onRestart = { if (local && activity != null) Ads.afterGame(activity, table::restart) else table.restart() },
+            )
         }
     }
 
@@ -397,7 +422,7 @@ private fun Avatar(seats: Seats, seat: Int, on: Boolean, size: Dp) {
 
 /** The result card: who won, both scores, and Ke menu / Main lagi. */
 @Composable
-private fun GameOver(table: CongklakTable, seats: Seats, state: CongklakState, onExit: () -> Unit) {
+private fun GameOver(table: CongklakTable, seats: Seats, state: CongklakState, onExit: () -> Unit, onRestart: () -> Unit) {
     val winner = CongklakGame.winner(state)
     Box(
         Modifier.fillMaxSize().background(Theme.ink.copy(alpha = 0.45f)).pointerInput(Unit) { detectTapGestures { } },
@@ -432,7 +457,7 @@ private fun GameOver(table: CongklakTable, seats: Seats, state: CongklakState, o
             Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 SecondaryButton(stringResource(R.string.congklak_to_menu), onExit, Modifier.weight(1f), height = 48.dp, tint = Theme.ink)
                 if (table.canRestart) {
-                    PrimaryButton(stringResource(R.string.congklak_play_again), table::restart, Modifier.weight(1f), height = 48.dp)
+                    PrimaryButton(stringResource(R.string.congklak_play_again), onRestart, Modifier.weight(1f), height = 48.dp)
                 } else {
                     Text(
                         stringResource(R.string.congklak_wait_host),

@@ -57,4 +57,11 @@ dependencies {
     // built-in materials, so no material compiler (matc) and no filament-utils are needed.
     implementation(libs.filament.android)
     implementation(libs.filament.gltfio)
+
+    // Ads (AdMob + UMP consent) and the "Hapus iklan" purchase that turns them off.
+    implementation(libs.play.services.ads)
+    implementation(libs.ump)
+    implementation(libs.billing)
+    // play-services-ads pulls in an old Fragment that breaks registerForActivityResult.
+    implementation(libs.fragment)
 }

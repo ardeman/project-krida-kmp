@@ -5,6 +5,10 @@ serialization = "1.9.0"
 compose-bom = "2025.09.00"
 activity-compose = "1.10.1"
 filament = "1.66.0"
+play-services-ads = "25.5.0"
+ump = "4.0.0"
+billing = "9.1.0"
+fragment = "1.9.1"
 
 [libraries]
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
@@ -15,6 +19,10 @@ activity-compose = { module = "androidx.activity:activity-compose", version.ref 
 filament-android = { module = "com.google.android.filament:filament-android", version.ref = "filament" }
 filament-gltfio = { module = "com.google.android.filament:gltfio-android", version.ref = "filament" }
 filament-utils = { module = "com.google.android.filament:filament-utils-android", version.ref = "filament" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "play-services-ads" }
+ump = { module = "com.google.android.ump:user-messaging-platform", version.ref = "ump" }
+billing = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
+fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

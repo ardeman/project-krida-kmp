@@ -114,6 +114,11 @@ have the reworked UI (two-column home, turn pills, gold rings on playable holes,
 Sound on both: seed clicks while sowing, "Tembak!" on a capture, Indonesian turn and result
 voice lines, and looping gamelan music, each switched off on its own from home or the board.
 The `.m4a` files are made with ElevenLabs in `../project-pamerstudio-node/krida` (its README).
+Ads on **Android** (AdMob behind the UMP consent form, `androidApp/.../ads/`): a banner on the
+home and lobby screens, an interstitial every 2nd finished game, and a rewarded ad for a hint
+("Petunjuk": the hard bot's move). The "Hapus iklan" purchase (Play Billing, non-consumable
+`hapus_iklan`) turns ads off and makes hints free. The ids in `res/values/ads.xml` are still
+Google's test ids. iOS ads are next.
 Offline BLE for more games and up to 4 players is next.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.

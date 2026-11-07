@@ -68,6 +68,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.HostTable
@@ -106,6 +107,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Sounds.init(this)
+        Ads.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
             val r = room
@@ -121,6 +123,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         Sounds.setActive(true)
+        Ads.refresh()
     }
 
     override fun onStop() {
@@ -149,13 +152,32 @@ class MainActivity : ComponentActivity() {
                 CongklakCard(Modifier.weight(1f))
                 SoundToggles()
             }
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                PassAndPlayCard()
-                VsComputerCard()
-                NearbyCard()
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    PassAndPlayCard()
+                    VsComputerCard()
+                    NearbyCard()
+                    AdButtons()
+                }
+                Ads.Banner()
+            }
+        }
+    }
+
+    /** "Hapus iklan · Rp 15.000" while ads are on and Play knows the product; "Privasi iklan" where required. */
+    @Composable
+    private fun AdButtons() {
+        val price = Ads.removeAdsPrice
+        if (price == null && !Ads.privacyOptionsRequired) return
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (price != null) {
+                SecondaryButton(stringResource(R.string.shop_remove_ads, price), onClick = { Ads.buyRemoveAds(this@MainActivity) })
+            }
+            if (Ads.privacyOptionsRequired) {
+                SecondaryButton(stringResource(R.string.ads_privacy), onClick = { Ads.showPrivacyOptions(this@MainActivity) }, tint = Theme.muted)
             }
         }
     }
@@ -281,6 +303,8 @@ class MainActivity : ComponentActivity() {
                 if (r.isHost) PrimaryButton(stringResource(R.string.nearby_start), onClick = r::start, enabled = r.canStart)
                 SecondaryButton(stringResource(R.string.congklak_back), onClick = ::leave)
             }
+            Spacer(Modifier.weight(1f))
+            Ads.Banner()
         }
     }
 
