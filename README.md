@@ -16,7 +16,7 @@ krida/
 ├── androidApp/   Native Android app (Kotlin, Compose UI, Filament 3D) + BLE/LAN transports
 ├── ios/          Native iOS app (Swift, SwiftUI, RealityKit 3D) + BLE/LAN transports
 ├── web/          Landing page for krida.ardeman.com (Astro, zero-JS static HTML, GitHub Pages)
-├── docs/         architecture.md, protocol.md, brand.md (logo, icons, palette)
+├── docs/         architecture.md, protocol.md, brand.md (logo, icons, palette), store.md (listings, privacy answers)
 ├── scripts/      brand.swift: generates every icon and the wordmark
 └── bitbucket-pipelines.yml
 ```
