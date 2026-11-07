@@ -13,6 +13,12 @@
     <string name="congklak_your_turn">Giliranmu</string>
     <string name="congklak_you_win">Kamu menang!</string>
     <string name="congklak_wait_host">Menunggu host memulai lagi…</string>
+    <string name="bot_title">Lawan komputer</string>
+    <string name="bot_you">Kamu</string>
+    <string name="bot_name">Komputer</string>
+    <string name="bot_easy">Mudah</string>
+    <string name="bot_normal">Sedang</string>
+    <string name="bot_hard">Sulit</string>
     <string name="nearby_title">Main bareng dekat (Bluetooth)</string>
     <string name="nearby_host">Buat room</string>
     <string name="nearby_code">Kode room</string>

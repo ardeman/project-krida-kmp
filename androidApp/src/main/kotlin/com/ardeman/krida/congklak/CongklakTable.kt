@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.ardeman.krida.R
+import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakState
@@ -18,8 +19,8 @@ import com.ardeman.krida.core.transport.Transport
 class CongklakUpdate(val state: CongklakState, val seat: Int?, val move: CongklakMove?)
 
 /**
- * What the congklak screen plays against: pass-and-play on this device, a BLE host, or a
- * BLE guest. Session callbacks arrive on the main thread, so this needs no locks.
+ * What the congklak screen plays against: pass-and-play or vs computer on this device, a
+ * BLE host, or a BLE guest. Session callbacks arrive on the main thread, so this needs no locks.
  */
 abstract class CongklakTable {
     /** Seat whose side faces this device; null for pass-and-play (whoever's turn it is). */
@@ -49,9 +50,12 @@ abstract class CongklakTable {
     abstract fun play(seat: Int, hole: Int): Boolean
     abstract fun restart()
     abstract fun leave()
+
+    /** Lets a computer player move if it is its turn. Called once the board is idle. */
+    open fun stepBot() = Unit
 }
 
-/** The authoritative table: pass-and-play (no transport peers) or hosting a BLE room. */
+/** The authoritative table: pass-and-play, vs computer (no transport peers) or hosting a BLE room. */
 class HostTable(
     private val session: HostSession<CongklakState, CongklakMove>,
     override val mySeat: Int?,
@@ -83,6 +87,10 @@ class HostTable(
         if (CongklakGame.isFinished(s)) session.restart()
     }
 
+    override fun stepBot() {
+        session.stepBot()
+    }
+
     override fun leave() = transport.close()
 
     companion object {
@@ -92,6 +100,16 @@ class HostTable(
             names.forEach { session.addLocalPlayer(it, Platform.ANDROID) }
             session.start()
             return HostTable(session, mySeat = null, transport = transport)
+        }
+
+        /** You (seat 0, moving first) against a [CongklakBot] on this device. */
+        fun vsComputer(you: String, computer: String, level: CongklakBot.Level): HostTable {
+            val transport = LocalTransport()
+            val session = HostSession(CongklakGame, transport, roomCode = "LOCAL")
+            session.addLocalPlayer(you, Platform.ANDROID)
+            session.addBot(computer, Platform.ANDROID, CongklakBot(level))
+            session.start()
+            return HostTable(session, mySeat = 0, transport = transport)
         }
     }
 }

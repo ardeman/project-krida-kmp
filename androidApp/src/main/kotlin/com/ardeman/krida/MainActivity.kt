@@ -29,11 +29,12 @@ import androidx.compose.ui.unit.dp
 import com.ardeman.krida.congklak.CongklakScreen
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.HostTable
+import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
 
 /**
- * Menu: congklak pass-and-play on this device, or a nearby room over BLE (host or join),
+ * Menu: congklak pass-and-play or vs computer on this device, or a nearby room over BLE (host or join),
  * iOS and Android alike. Then the lobby, then the board.
  */
 class MainActivity : ComponentActivity() {
@@ -84,6 +85,20 @@ class MainActivity : ComponentActivity() {
             Image(painterResource(R.drawable.krida_wordmark), contentDescription = stringResource(R.string.app_name))
             Button(onClick = { passAndPlay = HostTable.passAndPlay(names) }) {
                 Text(stringResource(R.string.congklak_pass_and_play))
+            }
+            Text(stringResource(R.string.bot_title), style = MaterialTheme.typography.titleMedium)
+            val you = stringResource(R.string.bot_you)
+            val computer = stringResource(R.string.bot_name)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                listOf(
+                    CongklakBot.Level.EASY to R.string.bot_easy,
+                    CongklakBot.Level.NORMAL to R.string.bot_normal,
+                    CongklakBot.Level.HARD to R.string.bot_hard,
+                ).forEach { (level, label) ->
+                    Button(onClick = { passAndPlay = HostTable.vsComputer(you, computer, level) }) {
+                        Text(stringResource(label))
+                    }
+                }
             }
             Text(stringResource(R.string.nearby_title), style = MaterialTheme.typography.titleMedium)
             Button(onClick = { withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) } }) {

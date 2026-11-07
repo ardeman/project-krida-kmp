@@ -109,7 +109,8 @@ seed layout and sowing animation steps are shared (`CongklakBoard.kt`), so both 
 Congklak over BLE on both platforms: host a room or join one by its code, iOS ↔ Android; the
 board turns so your side is near, and remote moves animate like local ones.
 Bot seats in the shared core: `HostSession.addBot` / `stepBot` and `CongklakBot` (easy,
-normal, hard); the Android and iOS "vs computer" screens are next.
+normal, hard). Android plays congklak vs computer (Mudah / Sedang / Sulit); the iOS
+"vs computer" screen is next.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's

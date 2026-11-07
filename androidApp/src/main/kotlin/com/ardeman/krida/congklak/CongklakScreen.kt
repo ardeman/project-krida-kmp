@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 private const val PICKUP_MS = 260L
 private const val SOW_MS = 170L
 private const val SETTLE_MS = 320L
+private const val BOT_PAUSE_MS = 600L
 
 /**
  * Congklak on a voxel board, driven by a [CongklakTable]. The board is turned so this
@@ -74,9 +75,17 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
         seeds.counts().forEachIndexed { i, n -> if (counts[i] != n) counts[i] = n }
     }
 
+    // Once the board is still, give a computer player its turn after a short pause.
+    fun idle() {
+        scope.launch {
+            delay(BOT_PAUSE_MS)
+            if (!animating && queue.isEmpty()) table.stepBot()
+        }
+    }
+
     fun drain() {
         if (animating) return
-        val update = queue.removeFirstOrNull() ?: return
+        val update = queue.removeFirstOrNull() ?: return idle()
         animating = true
         scope.launch {
             val seat = update.seat
@@ -101,6 +110,7 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
 
     DisposableEffect(table) {
         table.onUpdate = { update -> waiting = false; queue.addLast(update); drain() }
+        drain()
         onDispose { table.onUpdate = null }
     }
 
