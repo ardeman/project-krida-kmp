@@ -36,7 +36,7 @@ body {
 main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 
 .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
-.logo { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.logo { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; }
 .pill { color: var(--ink); text-decoration: none; border: 1px solid var(--line); padding: 8px 14px; border-radius: 999px; font-size: 14px; }
 
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; padding: 48px 0 72px; }

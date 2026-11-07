@@ -19,6 +19,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={`${base.replace(/\/$/, "")}/favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${base.replace(/\/$/, "")}/apple-touch-icon.png`} />
     <meta name="theme-color" content="#fff7ec" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

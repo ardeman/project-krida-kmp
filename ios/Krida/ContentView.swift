@@ -7,7 +7,7 @@ struct ContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Krida").font(.largeTitle.bold())
+            Image("Wordmark").resizable().scaledToFit().frame(height: 40).accessibilityLabel("Krida")
             Text(model.status)
             if !model.players.isEmpty {
                 Text("Pemain: \(model.players)")

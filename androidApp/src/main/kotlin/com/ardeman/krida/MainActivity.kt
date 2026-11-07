@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.ardeman.krida.ble.BleGuestTransport
 import com.ardeman.krida.congklak.CongklakScreen
@@ -79,7 +81,7 @@ class MainActivity : ComponentActivity() {
             Modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Krida", style = MaterialTheme.typography.headlineLarge)
+            Image(painterResource(R.drawable.krida_wordmark), contentDescription = stringResource(R.string.app_name))
             Text(status)
             if (players.isNotEmpty()) Text("Pemain: $players")
 

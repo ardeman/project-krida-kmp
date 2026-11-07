@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Board from "../components/Board.astro";
 import Voxel from "../components/Voxel.astro";
+import Wordmark from "../components/Wordmark.astro";
 
 const games = [
   { name: "Congklak", note: "Biji demi biji, lubang demi lubang", color: "#c9783a" },
@@ -28,7 +29,7 @@ const year = new Date().getFullYear();
 >
   <main>
     <header class="nav">
-      <span class="logo"><Voxel color="#c9783a" size={18} /> Krida</span>
+      <a class="logo" href={import.meta.env.BASE_URL}><Wordmark height={30} /></a>
       <a class="pill" href="#games">Permainan</a>
     </header>
 
