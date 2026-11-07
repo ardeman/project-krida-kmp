@@ -1,0 +1,24 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.kotlin/
+captures/
+*.apk
+*.aab
+
+# iOS
+ios/Krida.xcodeproj/
+xcuserdata/
+DerivedData/
+*.xcworkspace/xcuserdata/
+
+# Web
+web/node_modules/
+web/dist/
+web/.astro/
+
+# OS
+.DS_Store

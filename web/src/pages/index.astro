@@ -1,0 +1,85 @@
+---
+import Base from "../layouts/Base.astro";
+import Board from "../components/Board.astro";
+import Voxel from "../components/Voxel.astro";
+
+const games = [
+  { name: "Congklak", note: "Biji demi biji, lubang demi lubang", color: "#c9783a" },
+  { name: "Ludo", note: "Bidak-bidak kecil menuju rumah", color: "#d64545" },
+  { name: "Ular Tangga", note: "Naik tangga, awas ular", color: "#3f9b5a" },
+  { name: "Perang Kapal", note: "Pinisi lawan jukung", color: "#2f7fc1" },
+  { name: "Macanan", note: "Satu macan lawan banyak orang", color: "#e0a526" },
+  { name: "Dam-daman", note: "Dam ala Nusantara", color: "#7a5bb5" },
+];
+
+const features = [
+  { title: "Main offline", body: "Lewat Bluetooth, tanpa internet. Cocok di rumah, di mobil, atau di warung." },
+  { title: "Android ↔ iPhone", body: "Semua bisa satu meja, apa pun HP-nya. Sampai 4 pemain." },
+  { title: "Online juga bisa", body: "Bagikan kode room ke teman yang jauh dan langsung main." },
+  { title: "Ringan", body: "Aplikasi native, ukuran kecil, lancar di tablet kelas menengah." },
+];
+
+const year = new Date().getFullYear();
+---
+
+<Base
+  title="Krida — Board games Nusantara, main bareng di mana saja"
+  description="Ludo, ular tangga, congklak, perang kapal dan lainnya dalam gaya voxel 3D. Main online atau offline lewat Bluetooth, Android dan iPhone bisa main bareng."
+>
+  <main>
+    <header class="nav">
+      <span class="logo"><Voxel color="#c9783a" size={18} /> Krida</span>
+      <a class="pill" href="#games">Permainan</a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Board games Nusantara · 3D voxel</p>
+        <h1>Main bareng, di mana saja.</h1>
+        <p class="lead">
+          Congklak, ludo, ular tangga, perang kapal dan lainnya, dibuat ulang jadi mainan kecil yang bisa kamu
+          mainkan bersama keluarga dan teman. Online atau offline lewat Bluetooth.
+        </p>
+        <div class="cta">
+          <span class="store">Segera di Google Play</span>
+          <span class="store">Segera di App Store</span>
+        </div>
+      </div>
+      <div class="hero-art"><Board /></div>
+    </section>
+
+    <section id="games" class="section">
+      <h2>Permainan</h2>
+      <div class="games">
+        {
+          games.map((g) => (
+            <article class="card">
+              <Voxel color={g.color} size={40} />
+              <h3>{g.name}</h3>
+              <p>{g.note}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Kenapa Krida</h2>
+      <div class="features">
+        {
+          features.map((f) => (
+            <article class="feature">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>© {year} Krida · krida.ardeman.com</span>
+      <span>Krida (Sanskerta): bermain</span>
+    </footer>
+  </main>
+</Base>

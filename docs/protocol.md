@@ -1,0 +1,64 @@
+# Krida protocol v1
+
+Same bytes on every transport (BLE, LAN, online). Source of truth:
+`shared/src/commonMain/kotlin/com/ardeman/krida/core/protocol/`.
+
+## Constants
+
+| Name | Value |
+|---|---|
+| Protocol version | `1` |
+| Max players | `4` (host + 3 guests) |
+| BLE service UUID | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646101` |
+| BLE `toHost` characteristic (guest → host, write) | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646102` |
+| BLE `toGuest` characteristic (host → guest, notify) | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646103` |
+| Bonjour / NSD service type | `_krida._tcp` |
+| Reconnect grace | 60 s |
+
+Example: `{"type":"hello","protocol":1,"name":"Ayu","platform":"ios"}`
+
+The room code (4 chars, e.g. `KRD4`) is put in the BLE advertisement's local name as
+`Krida-KRD4`, and in the QR code as `krida://join?room=KRD4`.
+
+## Messages
+
+JSON, UTF‑8, with a `type` discriminator. Game-specific data (`move`, `state`) is an
+opaque JSON value owned by each game's `GameRules`.
+
+| type | Direction | Fields |
+|---|---|---|
+| `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?` |
+| `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
+| `reject` | host → guest | `reason` (`version`, `full`, `started`) |
+| `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves) |
+| `intent` | guest → host | `seq`, `move` |
+| `state` | host → all | `seq`, `turn`, `finished`, `state`, `players` |
+| `invalid` | host → guest | `seq`, `reason` |
+| `ping` / `pong` | both | `t` |
+| `bye` | both | — |
+
+`seq` in `intent` is the guest's own counter; `seq` in `state` is the host's state version.
+A guest that sees a gap simply waits for the next full `state` — every `state` is a full
+snapshot, so there is no diffing to get wrong.
+
+## BLE framing
+
+BLE writes/notifications are limited by MTU (iOS usually ~185 bytes, Android up to 512).
+Every encoded message is split into frames:
+
+```
+byte 0     message id (0–255, wraps)
+byte 1     frame index
+byte 2     frame count
+byte 3..   payload slice
+```
+
+Max payload per frame = `mtu - 3 (ATT header) - 3 (frame header)`. The receiver
+reassembles per sender with `Reassembler`. LAN and online transports send whole
+messages (length-prefixed) and skip framing.
+
+## Compatibility rule
+
+Never change the meaning of an existing field. Add optional fields only. Bump
+`protocol` when a breaking change is unavoidable; the host rejects mismatches with
+`reject{reason:"version"}` so players get a clear "update the app" message.

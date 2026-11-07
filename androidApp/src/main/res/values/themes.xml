@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Krida" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFF7EC</item>
+        <item name="android:statusBarColor">#FFF7EC</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

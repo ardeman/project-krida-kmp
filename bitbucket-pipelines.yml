@@ -1,0 +1,29 @@
+image: eclipse-temurin:17-jdk
+
+definitions:
+  caches:
+    gradle-wrapper: ~/.gradle/wrapper
+  steps:
+    - step: &shared-tests
+        name: Shared core tests
+        caches: [gradle, gradle-wrapper]
+        script:
+          - ./gradlew :shared:jvmTest -PsharedOnly=true --no-daemon
+    - step: &web-build
+        name: Web landing build
+        image: node:20
+        caches: [node]
+        script:
+          - cd web
+          - npm ci
+          - npm run build
+        artifacts:
+          - web/dist/**
+
+pipelines:
+  default:
+    - parallel:
+        - step: *shared-tests
+        - step: *web-build
+  # Android/iOS release builds: add once signing keys are set up
+  # (iOS needs a macOS runner).

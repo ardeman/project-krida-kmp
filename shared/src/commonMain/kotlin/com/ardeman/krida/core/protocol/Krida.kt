@@ -1,0 +1,26 @@
+package com.ardeman.krida.core.protocol
+
+/** Protocol constants shared by Android, iOS and docs/protocol.md. Change them together. */
+object Krida {
+    const val PROTOCOL_VERSION: Int = 1
+    const val MAX_PLAYERS: Int = 4
+
+    // BLE GATT layout. "6b726964" is "krid" in hex.
+    const val BLE_SERVICE_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646101"
+    /** Guest -> host. Guests WRITE frames here. */
+    const val BLE_TO_HOST_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646102"
+    /** Host -> guest. Host NOTIFIES frames here. */
+    const val BLE_TO_GUEST_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646103"
+    /** Standard Client Characteristic Configuration Descriptor (enables notify). */
+    const val BLE_CCCD_UUID: String = "00002902-0000-1000-8000-00805f9b34fb"
+    /** Advertised local name is "Krida-<ROOM>". */
+    const val BLE_NAME_PREFIX: String = "Krida-"
+    /** MTU we ask for. The platform may grant less; iOS typically ~185. */
+    const val BLE_PREFERRED_MTU: Int = 512
+
+    const val BONJOUR_SERVICE_TYPE: String = "_krida._tcp"
+    const val JOIN_URL_PREFIX: String = "krida://join?room="
+
+    const val ROOM_CODE_LENGTH: Int = 4
+    const val RECONNECT_GRACE_MS: Long = 60_000L
+}

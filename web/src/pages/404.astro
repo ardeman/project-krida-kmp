@@ -1,0 +1,14 @@
+---
+import Base from "../layouts/Base.astro";
+import Voxel from "../components/Voxel.astro";
+const home = import.meta.env.BASE_URL;
+---
+
+<Base title="Halaman tidak ditemukan — Krida" description="Halaman ini tidak ada.">
+  <main class="notfound">
+    <Voxel color="#c9783a" size={72} />
+    <h1>Waduh, bidaknya nyasar.</h1>
+    <p class="lead">Halaman ini tidak ada.</p>
+    <a class="store" href={home}>Kembali ke Krida</a>
+  </main>
+</Base>

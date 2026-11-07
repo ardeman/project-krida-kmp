@@ -1,0 +1,54 @@
+---
+/** Isometric 3x3 board with hopping voxel pieces. One inline SVG; animation is CSS only. */
+const iso = (u: number, v: number): [number, number] => [200 + (u - v) * 60, 70 + (u + v) * 30];
+const pts = (...c: [number, number][]) => c.map((p) => p.join(",")).join(" ");
+
+const pad = 0.06;
+const tiles: { points: string; fill: string }[] = [];
+for (let i = 0; i < 3; i++)
+  for (let j = 0; j < 3; j++)
+    tiles.push({
+      points: pts(iso(i + pad, j + pad), iso(i + 1 - pad, j + pad), iso(i + 1 - pad, j + 1 - pad), iso(i + pad, j + 1 - pad)),
+      fill: (i + j) % 2 ? "#f4dfc0" : "#ead0a8",
+    });
+
+const s = 46;
+const pieces = [
+  { u: 0.5, v: 0.5, color: "#d64545", delay: "0s" },
+  { u: 2.5, v: 0.5, color: "#e0a526", delay: "0.8s" },
+  { u: 1.5, v: 1.5, color: "#2f7fc1", delay: "1.6s" },
+].map((p) => {
+  const [x, y] = iso(p.u, p.v);
+  return { ...p, x: x - s / 2, y: y - 0.73 * s };
+});
+
+const [l, t, r, b] = [iso(-0.15, 3.15), iso(-0.15, -0.15), iso(3.15, -0.15), iso(3.15, 3.15)];
+const faces = (a: [number, number], c: [number, number]) => pts(a, c, [c[0], c[1] + 14], [a[0], a[1] + 14]);
+
+// Cube polygons, scaled into each piece's box (same shape as Voxel.astro).
+const k = s / 100;
+const cube = (dx: number, dy: number) => (list: number[]) =>
+  list.reduce<string[]>((acc, v, i) => (i % 2 ? acc : [...acc, `${dx + v * k},${dy + list[i + 1] * k}`]), []).join(" ");
+---
+
+<svg class="board" viewBox="0 0 400 290" aria-hidden="true">
+  <polygon points={faces(l, b)} fill="#a06c3d"></polygon>
+  <polygon points={faces(b, r)} fill="#8a5a30"></polygon>
+  <polygon points={pts(t, r, b, l)} fill="#b9824f"></polygon>
+  {tiles.map((tile) => <polygon points={tile.points} fill={tile.fill} />)}
+  {
+    pieces.map((p) => {
+      const c = cube(p.x, p.y);
+      return (
+        <g class="hop" style={`animation-delay:${p.delay}`}>
+          <polygon points={c([50, 4, 94, 29, 50, 54, 6, 29])} fill={p.color} />
+          <polygon points={c([50, 4, 94, 29, 50, 54, 6, 29])} fill="#fff" opacity="0.18" />
+          <polygon points={c([6, 29, 50, 54, 50, 98, 6, 73])} fill={p.color} />
+          <polygon points={c([6, 29, 50, 54, 50, 98, 6, 73])} fill="#000" opacity="0.1" />
+          <polygon points={c([94, 29, 50, 54, 50, 98, 94, 73])} fill={p.color} />
+          <polygon points={c([94, 29, 50, 54, 50, 98, 94, 73])} fill="#000" opacity="0.28" />
+        </g>
+      );
+    })
+  }
+</svg>
