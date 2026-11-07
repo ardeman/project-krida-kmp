@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Upload key for Play. It lives outside the repo; without it, release builds are unsigned.
+val signingFile = file(
+    (findProperty("krida.signing") as String?)
+        ?: "${System.getProperty("user.home")}/.android-keystores/krida-upload.properties"
+)
+val signingProps = Properties().apply { if (signingFile.exists()) signingFile.inputStream().use(::load) }
 
 android {
     namespace = "com.ardeman.krida"
@@ -16,8 +25,20 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (signingFile.exists()) {
+            create("upload") {
+                storeFile = file(signingProps.getProperty("storeFile"))
+                storePassword = signingProps.getProperty("storePassword")
+                keyAlias = signingProps.getProperty("keyAlias")
+                keyPassword = signingProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfigs.findByName("upload")?.let { signingConfig = it }
             // Small install size: strip unused code and resources.
             isMinifyEnabled = true
             isShrinkResources = true
