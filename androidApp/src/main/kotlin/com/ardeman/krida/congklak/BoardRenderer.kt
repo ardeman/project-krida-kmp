@@ -54,6 +54,9 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
     private val resourceLoader: ResourceLoader
     private val asset: FilamentAsset
     private val seedEntities: IntArray
+    /** Gold ring entity per playable pit; only the shown ones are in the scene. */
+    private val ringEntities: Map<Int, Int>
+    private var shownRings = emptySet<Int>()
     private val uiHelper = UiHelper(UiHelper.ContextErrorPolicy.DONT_CHECK)
     private var swapChain: SwapChain? = null
     private val choreographer = Choreographer.getInstance()
@@ -95,6 +98,9 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
         asset.releaseSourceData()
         filamentScene.addEntities(asset.entities)
         seedEntities = IntArray(CongklakBoard.SEED_COUNT) { asset.getFirstEntityByName(CongklakGlb.seedName(it)) }
+        ringEntities = (0 until CongklakGame.PITS).filterNot(CongklakGame::isStore)
+            .associateWith { asset.getFirstEntityByName(CongklakGlb.ringName(it)) }
+        ringEntities.values.forEach(filamentScene::removeEntity)
 
         uiHelper.renderCallback = object : UiHelper.RendererCallback {
             override fun onNativeWindowChanged(surface: Surface) {
@@ -130,6 +136,17 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
             for (i in target.indices) target[i].copyInto(current[i])
             placed = true
         }
+        dirty = true
+    }
+
+    /** Shows gold rings around exactly these pits. */
+    fun showRings(pits: Set<Int>) {
+        if (pits == shownRings) return
+        ringEntities.forEach { (pit, e) ->
+            if (pit in pits && pit !in shownRings) filamentScene.addEntity(e)
+            if (pit !in pits && pit in shownRings) filamentScene.removeEntity(e)
+        }
+        shownRings = pits
         dirty = true
     }
 

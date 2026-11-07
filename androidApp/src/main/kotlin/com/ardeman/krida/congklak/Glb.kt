@@ -1,6 +1,7 @@
 package com.ardeman.krida.congklak
 
 import com.ardeman.krida.core.games.CongklakBoard
+import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.voxel.VoxelMesh
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -13,7 +14,7 @@ import kotlin.math.pow
  * named mesh instance. Small on purpose: just what gltfio needs to draw voxels.
  */
 class GlbWriter {
-    private class Node(val name: String, val mesh: Int)
+    private class Node(val name: String, val mesh: Int, val translation: FloatArray?)
 
     private val meshes = ArrayList<VoxelMesh>()
     private val nodes = ArrayList<Node>()
@@ -21,7 +22,7 @@ class GlbWriter {
     /** Returns the mesh index to use with [node]. */
     fun mesh(mesh: VoxelMesh): Int { meshes += mesh; return meshes.lastIndex }
 
-    fun node(name: String, mesh: Int) { nodes += Node(name, mesh) }
+    fun node(name: String, mesh: Int, translation: FloatArray? = null) { nodes += Node(name, mesh, translation) }
 
     fun build(): ByteBuffer {
         val bin = java.io.ByteArrayOutputStream()
@@ -64,7 +65,11 @@ class GlbWriter {
         }
 
         val jsonNodes = JSONArray()
-        nodes.forEach { jsonNodes.put(JSONObject().put("name", it.name).put("mesh", it.mesh)) }
+        nodes.forEach { n ->
+            val node = JSONObject().put("name", n.name).put("mesh", n.mesh)
+            n.translation?.let { t -> node.put("translation", JSONArray(t.map { it.toDouble() })) }
+            jsonNodes.put(node)
+        }
 
         val material = JSONObject()
             .put("pbrMetallicRoughness", JSONObject().put("baseColorFactor", JSONArray(listOf(1, 1, 1, 1))).put("metallicFactor", 0).put("roughnessFactor", 1))
@@ -115,13 +120,21 @@ class GlbWriter {
     }
 }
 
-/** The congklak board and its seeds as one .glb; seed nodes are named by [seedName]. */
+/**
+ * The congklak board, its seeds and a gold ring per hole as one .glb; seed nodes are named by
+ * [seedName], ring nodes by [ringName] (stores have none).
+ */
 object CongklakGlb {
     fun seedName(i: Int) = "seed$i"
+    fun ringName(pit: Int) = "ring$pit"
 
     fun build(): ByteBuffer {
         val glb = GlbWriter()
         glb.node("board", glb.mesh(CongklakBoard.boardMesh()))
+        val ring = glb.mesh(CongklakBoard.ringMesh())
+        for (pit in 0 until CongklakGame.PITS) {
+            if (!CongklakGame.isStore(pit)) glb.node(ringName(pit), ring, CongklakBoard.ringOrigin(pit))
+        }
         val seedMeshes = (0 until CongklakBoard.SEED_VARIANTS).map { glb.mesh(CongklakBoard.seedMesh(it)) }
         repeat(CongklakBoard.SEED_COUNT) { glb.node(seedName(it), seedMeshes[CongklakBoard.seedVariant(it)]) }
         return glb.build()

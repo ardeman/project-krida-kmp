@@ -34,6 +34,10 @@ abstract class CongklakTable {
     var notice by mutableStateOf<Int?>(null)
         protected set
 
+    /** The computer's difficulty, shown next to its name; null without a computer player. */
+    var botLevel: String? = null
+        protected set
+
     /** Latest snapshot; the screen starts from it. */
     var latest: CongklakState? = null
         private set
@@ -103,13 +107,13 @@ class HostTable(
         }
 
         /** You (seat 0, moving first) against a [CongklakBot] on this device. */
-        fun vsComputer(you: String, computer: String, level: CongklakBot.Level): HostTable {
+        fun vsComputer(you: String, computer: String, level: CongklakBot.Level, levelName: String): HostTable {
             val transport = LocalTransport()
             val session = HostSession(CongklakGame, transport, roomCode = "LOCAL")
             session.addLocalPlayer(you, Platform.ANDROID)
             session.addBot(computer, Platform.ANDROID, CongklakBot(level))
             session.start()
-            return HostTable(session, mySeat = 0, transport = transport)
+            return HostTable(session, mySeat = 0, transport = transport).apply { botLevel = levelName }
         }
     }
 }
