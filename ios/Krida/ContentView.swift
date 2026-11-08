@@ -217,19 +217,17 @@ private struct AdButtons: View {
     }
 }
 
-/// "Hapus iklan" with its price, beside the banner where the ad is: the cards above keep the
-/// full height. Only while the banner shows and the App Store knows the product. Same as Android.
+/// "Hapus iklan" beside the banner where the ad is: the cards above keep the full height.
+/// The price shows in the App Store sheet, not on the button. Only while the banner shows and
+/// the App Store knows the product. Same as Android.
 private struct RemoveAdsButton: View {
     @ObservedObject private var ads = Ads.shared
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if !ads.removed && ads.started, let price = ads.removeAdsPrice {
+        if !ads.removed && ads.started && ads.removeAdsPrice != nil {
             Button(action: ads.buyRemoveAds) {
-                VStack(spacing: 0) {
-                    Text("Hapus iklan").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
-                    Text(price).font(Theme.font(12 * s, .bold)).foregroundStyle(Theme.muted)
-                }
+                Text("Hapus iklan").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
                 .lineLimit(1)
                 .padding(.horizontal, 14 * s)
                 .frame(height: 50 * s)

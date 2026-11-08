@@ -235,22 +235,21 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * "Hapus iklan" with its price, beside the banner where the ad is: the cards above keep
-     * the full height. Only while ads are on and Play knows the product.
+     * "Hapus iklan" beside the banner where the ad is: the cards above keep the full height.
+     * The price shows in Play's purchase sheet, not on the button. Only while ads are on and
+     * Play knows the product.
      */
     @Composable
     private fun RemoveAdsButton() {
-        val price = Ads.removeAdsPrice ?: return
+        if (Ads.removeAdsPrice == null) return
         val shape = RoundedCornerShape(14.dp)
-        Column(
+        Box(
             Modifier.height(50.dp).clip(shape).background(Color.White).border(1.5.dp, Theme.accent, shape)
                 .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); Ads.buyRemoveAds(this@MainActivity) }
                 .padding(horizontal = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            contentAlignment = Alignment.Center,
         ) {
             Text(stringResource(R.string.shop_remove_ads), style = Theme.font(14, color = Theme.accent), maxLines = 1)
-            Text(price, style = Theme.font(12, FontWeight.Bold, Theme.muted), maxLines = 1)
         }
     }
 
