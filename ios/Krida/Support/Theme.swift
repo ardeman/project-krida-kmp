@@ -68,9 +68,13 @@ extension EnvironmentValues {
 ///
 /// A safe-area inset on one side only means a corner punch hole: the stage then takes the
 /// full width and screens keep just that corner clear (`punchHole`). Insets on both sides
-/// (an iPhone's Dynamic Island, centered on its side) are kept as they are.
+/// mean an iPhone's Dynamic Island: iOS reserves the same strip on both sides, but the island
+/// sits on one of them only, so the stage keeps the safe area on the island's side alone and
+/// screens use the empty strip on the other side.
 struct LandscapeStage<Content: View>: View {
     @ViewBuilder let content: Content
+    /// The side the Dynamic Island is on; follows the phone being turned around.
+    @State private var islandEdge: Edge.Set = .leading
 
     /// The phone design's landscape size (iPhone 17), in points.
     static var designSize: CGSize { CGSize(width: 874, height: 402) }
@@ -85,6 +89,7 @@ struct LandscapeStage<Content: View>: View {
             case (false, true): PunchHole(edge: .trailing, inset: insets.trailing)
             default: nil
             }
+            let island = insets.leading > 0 && insets.trailing > 0
             GeometryReader { geo in
                 let portrait = geo.size.height > geo.size.width
                 let width = portrait ? geo.size.height : geo.size.width
@@ -97,9 +102,31 @@ struct LandscapeStage<Content: View>: View {
                     .rotationEffect(.degrees(portrait ? 90 : 0))
                     .frame(width: geo.size.width, height: geo.size.height)
             }
-            .ignoresSafeArea(.container, edges: hole == nil ? [] : .horizontal)
+            .safeAreaPadding(island ? islandEdge : [], island ? max(insets.leading, insets.trailing) : 0)
+            .ignoresSafeArea(.container, edges: hole == nil && !island ? [] : .horizontal)
         }
         .background(Theme.cream.ignoresSafeArea())
+        .onAppear(perform: updateIsland)
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            // The scene takes a moment to turn after the device does.
+            for delay in [0.1, 0.5] { DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: updateIsland) }
+        }
+    }
+
+    /// Turned with the top to the left (`landscapeRight`), the island is on the leading side.
+    private func updateIsland() {
+        guard let scene = UIApplication.shared.connectedScenes.first(where: { $0 is UIWindowScene }) as? UIWindowScene else { return }
+        let orientation: UIInterfaceOrientation
+        if #available(iOS 26, *) {
+            orientation = scene.effectiveGeometry.interfaceOrientation
+        } else {
+            orientation = scene.interfaceOrientation
+        }
+        switch orientation {
+        case .landscapeRight: islandEdge = .leading
+        case .landscapeLeft: islandEdge = .trailing
+        default: break
+        }
     }
 }
 
