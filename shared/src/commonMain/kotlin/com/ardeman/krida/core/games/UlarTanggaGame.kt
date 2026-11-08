@@ -33,7 +33,8 @@ data class UlarTanggaOptions(
  * per seat, 0 for a seat that sat the round out (it lost an earlier one). Every seat throws
  * in the first round; the highest rolls tied go on to the next, until one is left.
  * [lastRoll] and [lastSeat] describe the move that produced this state, so guests can
- * animate it; both are absent before the first roll.
+ * animate it; both are absent before the first roll. [colors] is each seat's pawn color
+ * (0 red, 1 blue, 2 green, 3 yellow, all different); empty means seat order.
  */
 @Serializable
 data class UlarTanggaState(
@@ -46,7 +47,11 @@ data class UlarTanggaState(
     val lastRoll: Int? = null,
     val lastSeat: Int? = null,
     val options: UlarTanggaOptions = UlarTanggaOptions(),
+    val colors: List<Int> = emptyList(),
 ) {
+    /** [seat]'s pawn color, 0..3. */
+    fun color(seat: Int): Int = colors.getOrNull(seat) ?: seat
+
     /** 1st place, or null while nobody has reached 100. */
     val winner: Int? get() = finishOrder.firstOrNull()
 }
@@ -103,11 +108,20 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     override val stateSerializer: KSerializer<UlarTanggaState> = UlarTanggaState.serializer()
     override val moveSerializer: KSerializer<UlarTanggaMove> = UlarTanggaMove.serializer()
 
-    override fun initialState(players: Int, random: Random) =
-        initialState(players, UlarTanggaOptions(), random)
+    /** Pawn colors: red, blue, green, yellow. */
+    const val COLORS = 4
 
-    /** A new game; the host rolls the opening dice-off with [random]. */
-    fun initialState(players: Int, options: UlarTanggaOptions, random: Random): UlarTanggaState {
+    override fun initialState(players: Int, random: Random) =
+        initialState(players, UlarTanggaOptions(), emptyList(), random)
+
+    fun initialState(players: Int, options: UlarTanggaOptions, random: Random) =
+        initialState(players, options, emptyList(), random)
+
+    /**
+     * A new game; the host rolls the opening dice-off with [random]. [colors] are the pawn
+     * colors the players chose, by seat (see [seatColors]).
+     */
+    fun initialState(players: Int, options: UlarTanggaOptions, colors: List<Int>, random: Random): UlarTanggaState {
         require(players in minPlayers..maxPlayers) { "players must be $minPlayers..$maxPlayers" }
         val rounds = diceOff(players, random)
         val first = diceOffWinner(rounds)
@@ -117,7 +131,20 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
             firstTurn = first,
             openingRolls = rounds,
             options = options,
+            colors = seatColors(players, colors),
         )
+    }
+
+    /**
+     * A pawn color for each of [players] seats: the [wanted] colors in seat order, skipping
+     * any that is out of range or already taken, and the free colors in order for the rest.
+     */
+    fun seatColors(players: Int, wanted: List<Int>): List<Int> {
+        val taken = ArrayList<Int>()
+        for (c in wanted) if (taken.size < players && c in 0 until COLORS && c !in taken) taken += c
+        val free = (0 until COLORS).filter { it !in taken }.iterator()
+        while (taken.size < players) taken += free.next()
+        return taken
     }
 
     /**
@@ -226,14 +253,17 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
 }
 
 /**
- * Ular tangga with the options chosen before the game: [UlarTanggaGame] in every respect,
- * except that new games (and restarts) start with [options]. Give this to the host's
- * `HostSession`; guests read the options from the state, so they need nothing.
+ * Ular tangga with the choices made before the game: [UlarTanggaGame] in every respect,
+ * except that new games (and restarts) start with [options] and the pawn [colors] by seat.
+ * Give this to the host's `HostSession`; guests read both from the state, so they need nothing.
  */
-class UlarTanggaRules(val options: UlarTanggaOptions) :
+class UlarTanggaRules(val options: UlarTanggaOptions, val colors: List<Int>) :
     GameRules<UlarTanggaState, UlarTanggaMove> by UlarTanggaGame {
+    /** Pawns in seat order. */
+    constructor(options: UlarTanggaOptions) : this(options, emptyList())
+
     override fun initialState(players: Int, random: Random) =
-        UlarTanggaGame.initialState(players, options, random)
+        UlarTanggaGame.initialState(players, options, colors, random)
 }
 
 /** There is nothing to decide in ular tangga, so the computer just rolls. */

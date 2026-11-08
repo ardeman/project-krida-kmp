@@ -19,9 +19,9 @@ import kotlin.math.min
 import kotlin.math.tan
 import kotlin.random.Random
 
-/** The ular tangga board and one pawn per seat as one .glb; pawn nodes are named by [pieceName]. */
+/** The ular tangga board and one pawn per color as one .glb; pawn nodes are named by [pieceName]. */
 object UlarTanggaGlb {
-    fun pieceName(seat: Int) = "piece$seat"
+    fun pieceName(color: Int) = "piece$color"
     const val DIE = "die"
     const val DIE_SHADOW = "dieShadow"
 
@@ -82,19 +82,26 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     }
     private var obstacles: List<FloatArray> = emptyList()
 
-    private val pieces = IntArray(UlarTanggaBoard.PIECES) { entity(UlarTanggaGlb.pieceName(it)) }
+    /** Pawn entities by color, and the one each seat moves (seat order until [setSeats]). */
+    private val byColor = IntArray(UlarTanggaBoard.PIECES) { entity(UlarTanggaGlb.pieceName(it)) }
+    private val pieces = byColor.copyOf()
     private val position = Array(UlarTanggaBoard.PIECES) { FloatArray(3) }
     private val motions = arrayOfNulls<Motion>(UlarTanggaBoard.PIECES)
-    private var players = UlarTanggaBoard.PIECES
+    private var seatColors: List<Int> = List(UlarTanggaBoard.PIECES) { it }
 
-    /** Shows the pawns of seats 0 until [count] only. */
-    fun setPlayers(count: Int) {
-        if (count == players) return
+    /** One seat per entry of [colors], each moving the pawn of that color; other pawns hide. */
+    fun setSeats(colors: List<Int>) {
+        if (colors == seatColors) return
+        byColor.forEachIndexed { color, entity -> show(entity, color in colors) }
         for (seat in pieces.indices) {
-            if (seat < count && seat >= players) show(pieces[seat], true)
-            if (seat >= count && seat < players) show(pieces[seat], false)
+            motions[seat] = null
+            if (seat < colors.size) {
+                pieces[seat] = byColor[colors[seat]]
+                apply(seat)
+            }
         }
-        players = count
+        seatColors = colors
+        invalidate()
     }
 
     /** Puts [seat]'s pawn at [xyz] at once. */

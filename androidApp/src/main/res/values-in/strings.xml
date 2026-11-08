@@ -93,6 +93,9 @@
     <string name="ular_player_yellow">Kuning</string>
     <string name="ular_computer_n">Komputer %1$d</string>
     <string name="play_players">Pemain</string>
+    <string name="play_colors">Warna</string>
+    <string name="ular_color_chip">Pemain %1$d: %2$s</string>
+    <string name="ular_color_change">Ganti warna</string>
     <string name="play_rules">Aturan</string>
     <string name="ular_detail_phone">HP digilir; semua melempar dadu saat gilirannya.</string>
     <string name="ular_detail_computer">Kamu melawan komputer.</string>

@@ -65,6 +65,29 @@ class UlarTanggaTest {
         val s = json.decodeFromString(UlarTanggaState.serializer(), "{\"positions\":[0,0],\"turn\":1,\"firstTurn\":1}")
         assertEquals(emptyList(), s.openingRolls)
         assertEquals(1, s.turn)
+        assertEquals(emptyList(), s.colors)
+        assertEquals(listOf(0, 1), listOf(s.color(0), s.color(1)))
+    }
+
+    @Test
+    fun seatColorsKeepChoicesAndFillTheRest() {
+        assertEquals(listOf(0, 1, 2), UlarTanggaGame.seatColors(3, emptyList()))
+        assertEquals(listOf(3, 1), UlarTanggaGame.seatColors(2, listOf(3, 1, 0, 2)))
+        // A repeat or out-of-range color is skipped; the seats left take free colors in order.
+        assertEquals(listOf(2, 0, 1, 3), UlarTanggaGame.seatColors(4, listOf(2, 2, 9)))
+    }
+
+    @Test
+    fun chosenColorsReachTheStateAndSurviveARestart() {
+        val net = LoopbackNetwork()
+        val host = HostSession(UlarTanggaRules(UlarTanggaOptions(), listOf(3, 0)), net.host, roomCode = "ULAR", random = Random(3))
+        repeat(2) { host.addBot("Komputer ${it + 1}", Platform.ANDROID, UlarTanggaBot) }
+        host.start()
+        assertEquals(listOf(3, 0), host.state!!.colors)
+        assertEquals(3, host.state!!.color(0))
+        while (host.stepBot()) Unit
+        host.restart()
+        assertEquals(listOf(3, 0), host.state!!.colors)
     }
 
     @Test

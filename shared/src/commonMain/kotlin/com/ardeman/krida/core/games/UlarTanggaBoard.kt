@@ -60,7 +60,7 @@ object UlarTanggaBoard {
     private val WHITE = floatArrayOf(1f, 1f, 1f)
     private val BLACK = floatArrayOf(0.1f, 0.08f, 0.07f)
     private val TONGUE = floatArrayOf(0.86f, 0.16f, 0.18f)
-    /** The die follows the brand die (docs/brand/die.svg): Krem body, Kayu gelap pips, and the four colours on the 4. */
+    /** The die follows the brand die (docs/brand/die.svg): Krem body, Kayu gelap pips, and the four colors on the 4. */
     private val DIE_WHITE = floatArrayOf(1f, 0.969f, 0.925f)
     /** Milder than the default, since the die turns and its baked shading turns with it. */
     private val DIE_SHADE = floatArrayOf(1f, 0.9f, 0.94f)
@@ -74,15 +74,15 @@ object UlarTanggaBoard {
     )
     private val SHADOW = floatArrayOf(0.85f, 0.81f, 0.73f)
 
-    /** Piece colors by seat, sRGB: red, blue, green, yellow. The UI uses them too. */
-    private val SEAT_COLORS = arrayOf(
+    /** Pawn colors, sRGB: red, blue, green, yellow (see [UlarTanggaState.colors]). The UI uses them too. */
+    private val PIECE_COLORS = arrayOf(
         floatArrayOf(0.90f, 0.27f, 0.24f),
         floatArrayOf(0.24f, 0.50f, 0.90f),
         floatArrayOf(0.26f, 0.70f, 0.34f),
         floatArrayOf(0.98f, 0.78f, 0.18f),
     )
 
-    fun seatColor(seat: Int): FloatArray = SEAT_COLORS[seat % SEAT_COLORS.size]
+    fun pieceColor(color: Int): FloatArray = PIECE_COLORS[color % PIECE_COLORS.size]
 
     /**
      * Corners of a box around everything drawn (frame, start pad, a pawn's height): x, y, z
@@ -134,9 +134,9 @@ object UlarTanggaBoard {
         return listOf(squareAnchor(foot), squareAnchor(top))
     }
 
-    /** A voxel pawn in [seat]'s color, standing on the origin. */
-    fun pieceMesh(seat: Int): VoxelMesh {
-        val c = seatColor(seat)
+    /** A voxel pawn in pawn color [color] (0..3), standing on the origin. */
+    fun pieceMesh(color: Int): VoxelMesh {
+        val c = pieceColor(color)
         val dark = floatArrayOf(c[0] * 0.75f, c[1] * 0.75f, c[2] * 0.75f)
         val k = PIECE_SCALE
         return VoxelMesh().apply {

@@ -98,8 +98,11 @@ private const val JUMP_UNITS_PER_SECOND = 9f
 private const val SETTLE_MS = 180L
 private const val BOT_PAUSE_MS = 700L
 
-/** A seat's pawn color, for the HUD. */
-fun seatColor(seat: Int): Color = UlarTanggaBoard.seatColor(seat).let { Color(it[0], it[1], it[2]) }
+/** Pawn color [color] (0..3), for the HUD. */
+fun pawnColor(color: Int): Color = UlarTanggaBoard.pieceColor(color).let { Color(it[0], it[1], it[2]) }
+
+/** [seat]'s pawn color in [state], for the HUD. */
+fun seatColor(state: UlarTanggaState, seat: Int): Color = pawnColor(state.color(seat))
 
 /**
  * Ular tangga on a voxel board, driven by an [UlarTanggaTable]. Every snapshot is animated in
@@ -157,7 +160,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
 
     fun placeAll(s: UlarTanggaState) {
         val r = renderer ?: return
-        r.setPlayers(s.positions.size)
+        r.setSeats(List(s.positions.size) { s.color(it) })
         repeat(s.positions.size) { r.place(it, spot(s, it)) }
     }
 
@@ -488,7 +491,7 @@ private fun PlayerTile(
     val shape = RoundedCornerShape(14.dp)
     val place = state.finishOrder.indexOf(seat)
     val square = state.positions[seat]
-    val color = seatColor(seat)
+    val color = seatColor(state, seat)
     // Dark digits on a light pawn color (yellow), white on the rest.
     val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.ink else Color.White
     Column(
@@ -576,7 +579,7 @@ private fun GameOver(table: UlarTanggaTable, state: UlarTanggaState, onExit: () 
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("${i + 1}", style = Theme.font(16, FontWeight.Black, Theme.muted), modifier = Modifier.width(18.dp))
-                        Box(Modifier.size(14.dp).background(seatColor(seat), CircleShape))
+                        Box(Modifier.size(14.dp).background(seatColor(state, seat), CircleShape))
                         Text(displayName(table, seat), style = Theme.font(16, color = Theme.ink), maxLines = 1, modifier = Modifier.weight(1f))
                         val square = state.positions[seat]
                         Text(if (square == 0) stringResource(R.string.ular_start) else square.toString(), style = Theme.font(15, FontWeight.Bold, Theme.muted))

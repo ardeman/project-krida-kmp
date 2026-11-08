@@ -63,6 +63,11 @@ throws in the first round, the seats tied on the best roll throw again, and `fir
 the seat left with the best roll. Guests animate the rounds from it; a guest that ignores it
 just starts at `turn`.
 
+It also carries `colors` (optional, default empty): each seat's pawn colour, `0` red, `1`
+blue, `2` green, `3` yellow, all different, chosen by the players before the game. Empty
+means seat order (seat 0 red, seat 1 blue, ...), which is also what a guest from before the
+field shows.
+
 ## BLE framing
 
 BLE writes/notifications are limited by MTU (iOS usually ~185 bytes, Android up to 512).
