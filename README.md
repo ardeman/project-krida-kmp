@@ -114,8 +114,8 @@ board turns so your side is near, and remote moves animate like local ones.
 Bot seats in the shared core: `HostSession.addBot` / `stepBot` and `CongklakBot` (easy,
 normal, hard). Android and iOS play congklak vs computer (Mudah / Sedang / Sulit). Both apps
 have the reworked UI (two-column home, turn pills, gold rings on playable holes, result card).
-Sound on both: seed clicks while sowing, "Tembak!" on a capture, Indonesian turn and result
-voice lines, and looping gamelan music, each switched off on its own from home or the board.
+Sound on both: seed clicks while sowing, "Tembak!" ("Shoot!") on a capture, turn and result
+voice lines in the app language (`vo_*_en.m4a` for English), and looping gamelan music, each switched off on its own from home or the board.
 The `.m4a` files are made with ElevenLabs in `../project-pamerstudio-node/krida` (its README).
 Ads on both (AdMob behind the UMP consent form; `androidApp/.../ads/`, `ios/Krida/Ads/`): a
 banner on the home and lobby screens, an interstitial every 2nd finished game, and a rewarded ad

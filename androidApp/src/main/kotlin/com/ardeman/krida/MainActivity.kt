@@ -114,6 +114,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Sounds.init(this)
+        // A language change recreates the activity, so this follows the picker.
+        Sounds.english = Language.current(this) == Language.Lang.EN
         Ads.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {

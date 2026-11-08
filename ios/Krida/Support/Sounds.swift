@@ -1,7 +1,8 @@
 import AVFoundation
 import SwiftUI
 
-/// Krida's sounds: effects and Indonesian voice lines (`Audio/*.m4a`, made with ElevenLabs in
+/// Krida's sounds: effects and voice lines in Indonesian
+/// and English (`Audio/*.m4a`, made with ElevenLabs in
 /// project-pamerstudio-node/krida), and looping background music. The ambient session mixes
 /// with other apps' audio and follows the silent switch. Sound and music are toggled apart.
 @MainActor
@@ -28,7 +29,9 @@ final class Sounds: ObservableObject {
 
     /// A few players per effect so quick seed drops can overlap.
     private var effects: [Effect: [AVAudioPlayer]] = [:]
+    /// Each line in Indonesian and in English (`<name>_en`), spoken in the app language.
     private var lines: [Line: AVAudioPlayer] = [:]
+    private var linesEn: [Line: AVAudioPlayer] = [:]
     private var music: AVAudioPlayer?
     private var active = false
 
@@ -37,7 +40,10 @@ final class Sounds: ObservableObject {
         for effect in Effect.allCases {
             effects[effect] = (0..<(effect == .sow ? 4 : 2)).compactMap { _ in Self.player(effect.rawValue) }
         }
-        for line in Line.allCases { lines[line] = Self.player(line.rawValue) }
+        for line in Line.allCases {
+            lines[line] = Self.player(line.rawValue)
+            linesEn[line] = Self.player(line.rawValue + "_en")
+        }
         music = Self.player("bgm")
         music?.numberOfLoops = -1
         music?.volume = 0.35
@@ -62,8 +68,9 @@ final class Sounds: ObservableObject {
 
     /// A voice line cuts off the one before it, so two never talk over each other.
     func say(_ line: Line) {
-        guard soundOn, let player = lines[line] else { return }
-        lines.values.filter(\.isPlaying).forEach { $0.stop() }
+        let english = Language.shared.code == .en
+        guard soundOn, let player = english ? linesEn[line] : lines[line] else { return }
+        (Array(lines.values) + Array(linesEn.values)).filter(\.isPlaying).forEach { $0.stop() }
         player.currentTime = 0
         player.play()
     }

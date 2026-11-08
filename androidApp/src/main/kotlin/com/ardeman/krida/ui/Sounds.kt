@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.ardeman.krida.R
 
 /**
- * Krida's sounds: effects and Indonesian voice lines (the `.m4a` files in `res/raw`, made with ElevenLabs in
+ * Krida's sounds: effects and voice lines in Indonesian and English (the `.m4a` files in `res/raw`, made with ElevenLabs in
  * project-pamerstudio-node/krida), and looping background music while the app is in front.
  * Sound and music are toggled apart and remembered. Call [init] once, then [setActive] from
  * the activity's onStart/onStop.
@@ -33,13 +33,14 @@ object Sounds {
         Tap(R.raw.sfx_tap, 0.4f),
     }
 
-    enum class Line(val res: Int) {
-        YourTurn(R.raw.vo_your_turn),
-        TheirTurn(R.raw.vo_their_turn),
-        Shoot(R.raw.vo_shoot),
-        Win(R.raw.vo_win),
-        Lose(R.raw.vo_lose),
-        Draw(R.raw.vo_draw),
+    /** Each line in Indonesian and in English; [english] picks which one is spoken. */
+    enum class Line(val res: Int, val resEn: Int) {
+        YourTurn(R.raw.vo_your_turn, R.raw.vo_your_turn_en),
+        TheirTurn(R.raw.vo_their_turn, R.raw.vo_their_turn_en),
+        Shoot(R.raw.vo_shoot, R.raw.vo_shoot_en),
+        Win(R.raw.vo_win, R.raw.vo_win_en),
+        Lose(R.raw.vo_lose, R.raw.vo_lose_en),
+        Draw(R.raw.vo_draw, R.raw.vo_draw_en),
     }
 
     private const val PREFS = "sounds"
@@ -48,9 +49,16 @@ object Sounds {
     private lateinit var context: Context
     private var pool: SoundPool? = null
     private val ids = mutableMapOf<Any, Int>()
+    private val idsEn = mutableMapOf<Line, Int>()
     private var music: MediaPlayer? = null
     private var lineStream = 0
     private var active = false
+
+    /**
+     * Speak the English lines. Set by the activity from the language its resources show; the
+     * application context this object holds doesn't follow the in-app language before Android 13.
+     */
+    var english = false
 
     var soundOn by mutableStateOf(true)
         private set
@@ -69,7 +77,10 @@ object Sounds {
             .build()
         pool = SoundPool.Builder().setMaxStreams(8).setAudioAttributes(attributes).build().also { pool ->
             Effect.entries.forEach { ids[it] = pool.load(context, it.res, 1) }
-            Line.entries.forEach { ids[it] = pool.load(context, it.res, 1) }
+            Line.entries.forEach {
+                ids[it] = pool.load(context, it.res, 1)
+                idsEn[it] = pool.load(context, it.resEn, 1)
+            }
         }
     }
 
@@ -84,7 +95,7 @@ object Sounds {
     fun say(line: Line) {
         if (!soundOn) return
         val pool = pool ?: return
-        val id = ids[line] ?: return
+        val id = (if (english) idsEn[line] else ids[line]) ?: return
         if (lineStream != 0) pool.stop(lineStream)
         lineStream = pool.play(id, 1f, 1f, 2, 0, 1f)
     }
