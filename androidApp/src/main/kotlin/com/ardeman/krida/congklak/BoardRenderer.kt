@@ -3,6 +3,7 @@ package com.ardeman.krida.congklak
 import android.view.Choreographer
 import android.view.Surface
 import android.view.SurfaceView
+import android.view.TextureView
 import com.ardeman.krida.core.games.CongklakBoard
 import com.ardeman.krida.core.games.CongklakGame
 import com.google.android.filament.Camera
@@ -27,11 +28,20 @@ import kotlin.math.min
 import kotlin.math.sin
 
 /**
- * Draws the voxel congklak board with Filament on a [SurfaceView]. Seeds glide toward the
+ * Draws the voxel congklak board with Filament on a [SurfaceView] (the game) or a
+ * [TextureView] (the menu card's preview, which Compose can clip and snapshot). Seeds glide toward the
  * targets set with [setSeedTargets]; frames are only rendered while something changes.
  * Call everything on the main thread.
  */
-class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
+class BoardRenderer private constructor(attach: (UiHelper) -> Unit) : Choreographer.FrameCallback {
+
+    constructor(surfaceView: SurfaceView) : this({ it.attachTo(surfaceView) })
+    constructor(textureView: TextureView) : this({ it.attachTo(textureView) })
+
+    /** True once a frame has been rendered to the current surface. */
+    var hasDrawn = false
+        private set
+
 
     /** Pit centers on screen, in pixels; updated on resize. */
     var onPitsProjected: ((List<FloatArray>) -> Unit)? = null
@@ -106,6 +116,7 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
             override fun onNativeWindowChanged(surface: Surface) {
                 swapChain?.let(engine::destroySwapChain)
                 swapChain = engine.createSwapChain(surface)
+                hasDrawn = false
                 dirty = true
             }
 
@@ -125,7 +136,7 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
                 dirty = true
             }
         }
-        uiHelper.attachTo(surfaceView)
+        attach(uiHelper)
     }
 
     /** Sets where every seed should rest. The first call places them without animation. */
@@ -136,6 +147,11 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
             for (i in target.indices) target[i].copyInto(current[i])
             placed = true
         }
+        dirty = true
+    }
+
+    /** Draws the scene again on the next frame, even if nothing changed. */
+    fun invalidate() {
         dirty = true
     }
 
@@ -193,6 +209,7 @@ class BoardRenderer(surfaceView: SurfaceView) : Choreographer.FrameCallback {
             renderer.render(view)
             renderer.endFrame()
             dirty = false
+            hasDrawn = true
         }
     }
 

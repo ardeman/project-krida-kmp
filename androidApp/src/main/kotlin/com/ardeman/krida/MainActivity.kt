@@ -8,8 +8,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +19,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -47,9 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
+import com.ardeman.krida.congklak.BoardPreview
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakBot
@@ -111,8 +110,24 @@ class MainActivity : ComponentActivity() {
         super.attachBaseContext(Language.wrap(newBase))
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Dialogs and full-screen ads can bring the bars back; hide them again on return.
+        if (hasFocus) hideSystemBars()
+    }
+
+    /** Full screen like a game: no status bar or navigation bar until the player swipes from an edge. */
+    private fun hideSystemBars() {
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        hideSystemBars()
         Sounds.init(this)
         // A language change recreates the activity, so this follows the picker.
         Sounds.english = Language.current(this) == Language.Lang.EN
@@ -397,7 +412,7 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
     }
 }
 
-/** The congklak tile on the home screen: a flat drawing of the board. */
+/** The congklak tile on the home screen, with a snapshot of the real board. */
 @Composable
 private fun CongklakCard(modifier: Modifier) {
     val shape = RoundedCornerShape(22.dp)
@@ -411,37 +426,9 @@ private fun CongklakCard(modifier: Modifier) {
                 Spacer(Modifier.weight(1f))
                 Text(stringResource(R.string.congklak_card_players), style = Theme.font(13, FontWeight.Bold, Color(0xFFF3DDBE)))
             }
-            MiniBoard()
+            // The real board, cropped to its left end; it takes whatever height the card has.
+            BoardPreview(Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).clip(RoundedCornerShape(14.dp)))
             Text(stringResource(R.string.congklak_card_tagline), style = Theme.font(13, FontWeight.SemiBold, Color(0xFFF3DDBE)))
-        }
-    }
-}
-
-/** Two rows of seven holes between two stores, drawn flat. */
-@Composable
-private fun ColumnScope.MiniBoard() {
-    Canvas(
-        Modifier.fillMaxWidth().weight(1f, fill = false).aspectRatio(204f / 80f).clearAndSetSemantics {},
-    ) {
-        val u = size.width / 204f
-        drawRoundRect(Theme.woodDark, cornerRadius = CornerRadius(size.height / 2))
-        val storeW = 18 * u
-        val storeH = 56 * u
-        val padX = 10 * u
-        val top = (size.height - storeH) / 2
-        drawRoundRect(Theme.pit, Offset(padX, top), Size(storeW, storeH), CornerRadius(12 * u))
-        drawRoundRect(Theme.pit, Offset(size.width - padX - storeW, top), Size(storeW, storeH), CornerRadius(12 * u))
-        val innerL = padX + storeW + 8 * u
-        val innerR = size.width - padX - storeW - 8 * u
-        val gap = 5 * u
-        val d = (innerR - innerL - 6 * gap) / 7
-        val rowGap = 6 * u
-        val y0 = (size.height - (2 * d + rowGap)) / 2
-        val seed = 5 * u
-        for (row in 0..1) for (i in 0 until 7) {
-            val c = Offset(innerL + i * (d + gap) + d / 2, y0 + row * (d + rowGap) + d / 2)
-            drawCircle(Theme.pit, d / 2, c)
-            drawRoundRect(Theme.seed, Offset(c.x - seed / 2, c.y - seed / 2), Size(seed, seed), CornerRadius(1.5f * u))
         }
     }
 }
