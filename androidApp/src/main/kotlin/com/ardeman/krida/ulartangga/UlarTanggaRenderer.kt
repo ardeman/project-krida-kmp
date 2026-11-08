@@ -55,15 +55,20 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     }
 
     /**
-     * Screen room the HUD takes on each side, in pixels: left, top, right, bottom. The camera
-     * widens and shifts so the whole board fits between them.
+     * Where the board may go and what it must stay clear of, in view pixels: [room] is left, top,
+     * right, bottom, and each of [obstacles] is a HUD box the same way. The camera narrows and
+     * shifts to the largest board that fits the room without covering any of them.
      */
-    var insets = FloatArray(4)
-        set(value) {
-            if (value.contentEquals(field)) return
-            field = value
-            if (width > 1) { onResize(); invalidate() }
-        }
+    fun fitBoard(room: FloatArray, obstacles: List<FloatArray>) {
+        if (room.contentEquals(this.room) && obstacles.size == this.obstacles.size &&
+            obstacles.indices.all { obstacles[it].contentEquals(this.obstacles[it]) }) return
+        this.room = room
+        this.obstacles = obstacles
+        if (width > 1) { onResize(); invalidate() }
+    }
+
+    private var room: FloatArray? = null
+    private var obstacles: List<FloatArray> = emptyList()
 
     private val pieces = IntArray(UlarTanggaBoard.PIECES) { entity(UlarTanggaGlb.pieceName(it)) }
     private val position = Array(UlarTanggaBoard.PIECES) { FloatArray(3) }
@@ -414,47 +419,97 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
             at[0].toDouble(), at[1].toDouble(), at[2].toDouble(),
             0.0, 1.0, 0.0,
         )
+        // A narrower view scales the image about the view's center and a shift moves it, so the
+        // board's outline is projected once and then scaled and moved in screen space: find the
+        // largest scale that has some place in the room clear of the HUD, then take the place
+        // nearest the room's middle.
         camera.setShift(0.0, 0.0)
-        // Find the narrowest view (largest board) whose board bounds still fit the room the HUD
-        // leaves, then shift the image so they sit in the middle of that room.
-        val (l, t, r, b) = insets.toList()
-        val roomW = (width - l - r).coerceAtLeast(width * 0.3f)
-        val roomH = (height - t - b).coerceAtLeast(height * 0.3f)
-        val bounds = UlarTanggaBoard.bounds()
-        fun fits(fov: Float): Boolean {
-            camera.setProjection(fov.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
-            val box = screenBox(bounds)
-            return box[2] - box[0] <= roomW && box[3] - box[1] <= roomH
+        val base = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
+        camera.setProjection(base.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+        val cx = width / 2f
+        val cy = height / 2f
+        val hull = convexHull(UlarTanggaBoard.bounds().map { (x, y, z) -> project(x, y, z) })
+        val room = this.room ?: floatArrayOf(0f, 0f, width.toFloat(), height.toFloat())
+        val tanBase = tan(base * PI.toFloat() / 360f)
+        fun scaleFor(fov: Float) = tanBase / tan(fov * PI.toFloat() / 360f)
+        fun place(k: Float): FloatArray? {
+            val shape = hull.map { floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k) }
+            val x0 = shape.minOf { it[0] }; val x1 = shape.maxOf { it[0] }
+            val y0 = shape.minOf { it[1] }; val y1 = shape.maxOf { it[1] }
+            val loX = room[0] - x0; val hiX = room[2] - x1
+            val loY = room[1] - y0; val hiY = room[3] - y1
+            if (loX > hiX || loY > hiY) return null
+            val midX = (loX + hiX) / 2; val midY = (loY + hiY) / 2
+            var best: FloatArray? = null
+            var bestDistance = Float.MAX_VALUE
+            for (i in 0..FIT_STEPS) for (j in 0..FIT_STEPS) {
+                val dx = loX + (hiX - loX) * i / FIT_STEPS
+                val dy = loY + (hiY - loY) * j / FIT_STEPS
+                val distance = (dx - midX) * (dx - midX) + (dy - midY) * (dy - midY)
+                if (distance >= bestDistance) continue
+                if (obstacles.any { overlaps(shape, dx, dy, it) }) continue
+                best = floatArrayOf(dx, dy)
+                bestDistance = distance
+            }
+            return best
         }
-        var lo = 5f
-        var hi = 90f
+        var lo = MIN_FOV
+        var hi = MAX_FOV
         repeat(20) {
             val mid = (lo + hi) / 2
-            if (fits(mid)) hi = mid else lo = mid
+            if (place(scaleFor(mid)) != null) hi = mid else lo = mid
         }
-        fits(hi)
-        val box = screenBox(bounds)
-        val dx = (l + roomW / 2) - (box[0] + box[2]) / 2
-        val dy = (t + roomH / 2) - (box[1] + box[3]) / 2
+        val (dx, dy) = place(scaleFor(hi)) ?: floatArrayOf(0f, 0f)
         fovDegrees = hi
+        camera.setProjection(hi.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
         shiftX = dx * 2.0 / width
         shiftY = -dy * 2.0 / height
         camera.setShift(shiftX, shiftY)
         updateHome()
     }
 
-    /** min x, min y, max x, max y of [points] on screen. */
-    private fun screenBox(points: List<FloatArray>): FloatArray {
-        val box = floatArrayOf(Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE)
-        points.forEach { (x, y, z) ->
-            val p = project(x, y, z)
-            box[0] = minOf(box[0], p[0]); box[1] = minOf(box[1], p[1])
-            box[2] = maxOf(box[2], p[0]); box[3] = maxOf(box[3], p[1])
+    /** Convex outline of [points], counter-clockwise on screen (monotone chain). */
+    private fun convexHull(points: List<FloatArray>): List<FloatArray> {
+        val sorted = points.sortedWith(compareBy({ it[0] }, { it[1] }))
+        fun turn(o: FloatArray, a: FloatArray, b: FloatArray) = (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+        val lower = mutableListOf<FloatArray>()
+        for (p in sorted) {
+            while (lower.size >= 2 && turn(lower[lower.size - 2], lower.last(), p) <= 0) lower.removeAt(lower.lastIndex)
+            lower += p
         }
-        return box
+        val upper = mutableListOf<FloatArray>()
+        for (p in sorted.asReversed()) {
+            while (upper.size >= 2 && turn(upper[upper.size - 2], upper.last(), p) <= 0) upper.removeAt(upper.lastIndex)
+            upper += p
+        }
+        return lower.dropLast(1) + upper.dropLast(1)
+    }
+
+    /** Whether convex [shape], moved by [dx], [dy], overlaps [box] (left, top, right, bottom). */
+    private fun overlaps(shape: List<FloatArray>, dx: Float, dy: Float, box: FloatArray): Boolean {
+        if (shape.maxOf { it[0] } + dx <= box[0] || shape.minOf { it[0] } + dx >= box[2]) return false
+        if (shape.maxOf { it[1] } + dy <= box[1] || shape.minOf { it[1] } + dy >= box[3]) return false
+        val corners = listOf(box[0] to box[1], box[2] to box[1], box[2] to box[3], box[0] to box[3])
+        for (i in shape.indices) {
+            val a = shape[i]
+            val b = shape[(i + 1) % shape.size]
+            val nx = b[1] - a[1]
+            val ny = a[0] - b[0]
+            var sMin = Float.MAX_VALUE; var sMax = -Float.MAX_VALUE
+            for (p in shape) { val d = (p[0] + dx) * nx + (p[1] + dy) * ny; sMin = minOf(sMin, d); sMax = maxOf(sMax, d) }
+            var bMin = Float.MAX_VALUE; var bMax = -Float.MAX_VALUE
+            for ((x, y) in corners) { val d = x * nx + y * ny; bMin = minOf(bMin, d); bMax = maxOf(bMax, d) }
+            if (sMax <= bMin || bMax <= sMin) return false
+        }
+        return true
     }
 
     private companion object {
+        const val MIN_FOV = 5f
+        const val MAX_FOV = 90f
+        /** Places tried along each axis when fitting the board. */
+        const val FIT_STEPS = 24
+
         /** The die as it waits on screen: [value] up, turned to show two more faces. */
         fun homeRotation(value: Int): FloatArray =
             qMul(qMul(qAxis(1f, 0f, 0f, 0.2f), qAxis(0f, 1f, 0f, 0.6f)), UlarTanggaBoard.dieRest(value))

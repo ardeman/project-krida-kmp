@@ -42,10 +42,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -329,33 +331,40 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             },
         ) }
 
-        // Tell the renderer how much room the HUD columns take, so the board fits between them.
+        // Tell the renderer where the HUD sits, so the board takes the largest free space around it.
         var rootX by remember { mutableStateOf(0f) }
         var rootY by remember { mutableStateOf(0f) }
         var dieSpot by remember { mutableStateOf<FloatArray?>(null) }
         LaunchedEffect(renderer, dieSpot) { renderer?.dieSpot = dieSpot }
-        var rootW by remember { mutableStateOf(0f) }
-        var leftEdge by remember { mutableStateOf(0f) }
-        var rightEdge by remember { mutableStateOf(0f) }
+        val hud = remember { mutableStateMapOf<String, FloatArray>() }
+        fun Modifier.hud(key: String) = onGloballyPositioned {
+            val p = it.positionInRoot()
+            hud[key] = floatArrayOf(p.x - rootX, p.y - rootY, p.x - rootX + it.size.width, p.y - rootY + it.size.height)
+        }
         val margin = with(LocalDensity.current) { 12.dp.toPx() }
-        LaunchedEffect(renderer, leftEdge, rightEdge, rootW) {
+        LaunchedEffect(renderer) {
             val r = renderer ?: return@LaunchedEffect
-            if (rightEdge <= leftEdge) return@LaunchedEffect
-            r.insets = floatArrayOf(leftEdge - rootX + margin, margin, rootX + rootW - rightEdge + margin, margin)
+            snapshotFlow { hud.toMap() }.collect { boxes ->
+                val room = boxes[ROOM] ?: return@collect
+                val obstacles = boxes.filterKeys { it != ROOM }.toSortedMap().values.map {
+                    floatArrayOf(it[0] - margin, it[1] - margin, it[2] + margin, it[3] + margin)
+                }
+                r.fitBoard(room, obstacles)
+            }
         }
         Row(
-            Modifier.fillMaxSize().onGloballyPositioned { rootX = it.positionInRoot().x; rootY = it.positionInRoot().y; rootW = it.size.width.toFloat() }
-                .windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp),
+            Modifier.fillMaxSize().onGloballyPositioned { rootX = it.positionInRoot().x; rootY = it.positionInRoot().y }
+                .windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM),
         ) {
             // Left: back, then the players.
             Column(
-                Modifier.width(136.dp).fillMaxHeight().onGloballyPositioned { leftEdge = it.positionInRoot().x + it.size.width },
+                Modifier.width(136.dp).fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.hud("back"))
                 Spacer(Modifier.height(4.dp))
                 // Two tiles a row.
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.hud("players"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     (0 until players).chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             pair.forEach { seat -> PlayerTile(
@@ -371,10 +380,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             Spacer(Modifier.weight(1f))
             // Right: sound and rules, then the die and whose turn it is.
             Column(
-                Modifier.width(136.dp).fillMaxHeight().onGloballyPositioned { rightEdge = it.positionInRoot().x },
+                Modifier.width(136.dp).fillMaxHeight(),
                 horizontalAlignment = Alignment.End,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.hud("buttons"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SoundToggles()
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
@@ -382,7 +391,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 // The die itself is 3D, drawn by the renderer over this spot; tap it to toss
                 // it, hold it to shake it and let go to throw it.
                 Box(
-                    Modifier.size(104.dp).align(Alignment.CenterHorizontally)
+                    Modifier.size(104.dp).align(Alignment.CenterHorizontally).hud("die")
                         .onGloballyPositioned {
                             val p = it.positionInRoot()
                             dieSpot = floatArrayOf(p.x - rootX + it.size.width / 2f, p.y - rootY + it.size.height / 2f, it.size.width * 0.45f)
@@ -422,9 +431,11 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     },
                     style = Theme.font(14, FontWeight.Bold, Theme.muted),
                     textAlign = TextAlign.Center,
+                    // Two lines kept even for a short status, so the die and the board don't move when it changes.
+                    minLines = 2,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().hud("status"),
                 )
             }
         }
@@ -440,6 +451,9 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
 
     if (showRules) RulesDialog(state.options) { showRules = false }
 }
+
+/** [hud] key of the space the board may use. */
+private const val ROOM = "room"
 
 private fun pathLength(path: List<FloatArray>): Float = path.zipWithNext().sumOf { (a, b) ->
     val dx = b[0] - a[0]; val dz = b[2] - a[2]
