@@ -40,7 +40,7 @@ struct ContentView: View {
                     .environment(\.colorScheme, .light)
                     .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
                 CongklakCard()
-                SoundToggles()
+                HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
             VStack(spacing: 10 * s) {
@@ -159,15 +159,15 @@ struct ContentView: View {
 
     private func startVsComputer(_ level: CongklakBot.Level) {
         let name = switch level {
-        case .easy: String(localized: "Mudah")
-        case .hard: String(localized: "Sulit")
-        default: String(localized: "Sedang")
+        case .easy: String(localized: "Mudah", bundle: .app)
+        case .hard: String(localized: "Sulit", bundle: .app)
+        default: String(localized: "Sedang", bundle: .app)
         }
-        passAndPlay = HostTable.vsComputer(you: String(localized: "Kamu"), computer: String(localized: "Komputer"), level: level, levelName: name)
+        passAndPlay = HostTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computer: String(localized: "Komputer", bundle: .app), level: level, levelName: name)
     }
 
     private func startPassAndPlay() {
-        passAndPlay = HostTable.passAndPlay(names: [String(localized: "Pemain 1"), String(localized: "Pemain 2")])
+        passAndPlay = HostTable.passAndPlay(names: [String(localized: "Pemain 1", bundle: .app), String(localized: "Pemain 2", bundle: .app)])
     }
 }
 

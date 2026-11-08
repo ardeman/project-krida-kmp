@@ -5,6 +5,7 @@ import Shared
 struct KridaApp: App {
     @State private var roomCode = ""
     @Environment(\.scenePhase) private var scenePhase
+    @ObservedObject private var language = Language.shared
 
     var body: some Scene {
         WindowGroup {
@@ -12,6 +13,8 @@ struct KridaApp: App {
             LandscapeStage { ContentView(roomCode: $roomCode) }
                 // A game: no clock over the cards (iPad windows, the unfolded Duo).
                 .statusBarHidden()
+                // The app language, switched in-app without a relaunch (see Language).
+                .environment(\.locale, language.locale)
                 // QR join links: krida://join?room=ABCD
                 .onOpenURL { url in
                     if let code = RoomCode.shared.parse(text: url.absoluteString) {

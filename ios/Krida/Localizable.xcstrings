@@ -1,73 +1,1154 @@
 {
-  "sourceLanguage" : "id",
+  "sourceLanguage" : "en",
   "strings" : {
-    "%@ menang!" : {},
-    "%d. %@" : {},
-    "2 pemain" : {},
-    "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {},
-    "Batal" : {},
-    "Berdua, gantian di satu HP" : {},
-    "Biji terakhir jatuh di lumbungmu: kamu main lagi." : {},
-    "Bluetooth, tanpa internet" : {},
-    "Buat room" : {},
-    "Cara main" : {},
-    "Congklak" : {},
-    "Gabung pakai kode" : {},
-    "Giliranmu · pilih lubang yang menyala" : {},
-    "Hapus iklan · %@" : {},
-    "Jatuh di lubang kosong di sisi lawan: giliranmu selesai." : {},
-    "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {},
-    "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur." : {},
-    "KOM" : {},
-    "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang." : {},
-    "Kamu" : {},
-    "Kamu menang!" : {},
-    "Ke menu" : {},
-    "Kembali" : {},
-    "Kembali ke menu" : {},
-    "Kode room" : {},
-    "Kode room dari temanmu" : {},
-    "Komputer" : {},
-    "Kumpulkan biji terbanyak di lumbungmu." : {},
-    "Langkah ditolak" : {},
-    "Lawan komputer" : {},
-    "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati." : {},
-    "Main bareng dekat" : {},
-    "Main lagi" : {},
-    "Masuk" : {},
-    "Matikan musik" : {},
-    "Matikan suara" : {},
-    "Menabur · %lld biji di tangan" : {},
-    "Mencari room…" : {},
-    "Menunggu host memulai lagi…" : {},
-    "Menunggu pemain lain…" : {},
-    "Mudah" : {},
-    "Mulai" : {},
-    "Nyalakan musik" : {},
-    "Nyalakan suara" : {},
-    "Pemain 1" : {},
-    "Pemain 2" : {},
-    "Pemain lain terputus. Menunggu dia kembali…" : {},
-    "Permainan sudah dimulai" : {},
-    "Petunjuk" : {},
-    "Petunjuk (tonton iklan)" : {},
-    "Privasi iklan" : {},
-    "Pulihkan pembelian" : {},
-    "Room sudah penuh" : {},
-    "Satu perangkat" : {},
-    "Searah jarum jam · lumbungmu di kiri" : {},
-    "Sedang" : {},
-    "Seri!" : {},
-    "Sudah masuk. Menunggu host memulai…" : {},
-    "Sulit" : {},
-    "Terputus dari host" : {},
-    "Tidak bisa masuk room" : {},
-    "Tingkat kesulitan" : {},
-    "Tutup" : {},
-    "Versi aplikasi berbeda. Perbarui aplikasi." : {},
-    "berpikir…" : {},
-    "gilirannya" : {},
-    "menunggu" : {}
+    "%@" : {
+      "shouldTranslate" : false
+    },
+    "%@ menang!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ wins!"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ menang!"
+          }
+        }
+      }
+    },
+    "%@. %@" : {
+      "shouldTranslate" : false
+    },
+    "%lld" : {
+      "shouldTranslate" : false
+    },
+    "2 pemain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 players"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 pemain"
+          }
+        }
+      }
+    },
+    "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take all the seeds from one hole on your side and sow them one by one, clockwise."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam."
+          }
+        }
+      }
+    },
+    "Aturan tembak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shooting rule"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aturan tembak"
+          }
+        }
+      }
+    },
+    "Bahasa" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bahasa"
+          }
+        }
+      }
+    },
+    "Batal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batal"
+          }
+        }
+      }
+    },
+    "Bebas" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anytime"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bebas"
+          }
+        }
+      }
+    },
+    "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haven't passed your store this turn? The seed stays in that hole and your turn ends."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai."
+          }
+        }
+      }
+    },
+    "Berdua, gantian di satu HP" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two players, taking turns on one phone"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berdua, gantian di satu HP"
+          }
+        }
+      }
+    },
+    "Biji terakhir jatuh di lumbungmu: kamu main lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last seed lands in your store: play again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biji terakhir jatuh di lumbungmu: kamu main lagi."
+          }
+        }
+      }
+    },
+    "Bluetooth, tanpa internet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth, no internet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth, tanpa internet"
+          }
+        }
+      }
+    },
+    "Buat room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buat room"
+          }
+        }
+      }
+    },
+    "Cara main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to play"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cara main"
+          }
+        }
+      }
+    },
+    "Congklak" : {
+      "shouldTranslate" : false
+    },
+    "Gabung pakai kode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join with a code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung pakai kode"
+          }
+        }
+      }
+    },
+    "Giliranmu · pilih lubang yang menyala" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your turn · pick a glowing hole"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giliranmu · pilih lubang yang menyala"
+          }
+        }
+      }
+    },
+    "Hapus iklan · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove ads · %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus iklan · %@"
+          }
+        }
+      }
+    },
+    "Jatuh di lubang kosong di sisi lawan: giliranmu selesai." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lands in an empty hole on your opponent's side: your turn ends."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jatuh di lubang kosong di sisi lawan: giliranmu selesai."
+          }
+        }
+      }
+    },
+    "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
+          }
+        }
+      }
+    },
+    "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
+          }
+        }
+      }
+    },
+    "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lands in a hole with seeds: pick them all up and keep sowing."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur."
+          }
+        }
+      }
+    },
+    "KOM" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KOM"
+          }
+        }
+      }
+    },
+    "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If all your holes are empty on your turn, the game ends. Most seeds in the store wins."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang."
+          }
+        }
+      }
+    },
+    "Kamu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu"
+          }
+        }
+      }
+    },
+    "Kamu menang!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You win!"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu menang!"
+          }
+        }
+      }
+    },
+    "Ke menu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ke menu"
+          }
+        }
+      }
+    },
+    "Kembali" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kembali"
+          }
+        }
+      }
+    },
+    "Kembali ke menu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to menu"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kembali ke menu"
+          }
+        }
+      }
+    },
+    "Kode room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kode room"
+          }
+        }
+      }
+    },
+    "Kode room dari temanmu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room code from your friend"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kode room dari temanmu"
+          }
+        }
+      }
+    },
+    "Komputer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Computer"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komputer"
+          }
+        }
+      }
+    },
+    "Kumpulkan biji terbanyak di lumbungmu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gather the most seeds in your store."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kumpulkan biji terbanyak di lumbungmu."
+          }
+        }
+      }
+    },
+    "Langkah ditolak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move refused"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langkah ditolak"
+          }
+        }
+      }
+    },
+    "Lawan komputer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play the computer"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lawan komputer"
+          }
+        }
+      }
+    },
+    "Lewat lumbung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past store"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewat lumbung"
+          }
+        }
+      }
+    },
+    "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your store on the left gets a seed too; your opponent's store is skipped."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati."
+          }
+        }
+      }
+    },
+    "Main bareng dekat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play nearby"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main bareng dekat"
+          }
+        }
+      }
+    },
+    "Main lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Play again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main lagi"
+          }
+        }
+      }
+    },
+    "Masuk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk"
+          }
+        }
+      }
+    },
+    "Matikan musik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn music off"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan musik"
+          }
+        }
+      }
+    },
+    "Matikan suara" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn sound off"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan suara"
+          }
+        }
+      }
+    },
+    "Menabur · %lld biji di tangan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sowing · %lld seeds in hand"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menabur · %lld biji di tangan"
+          }
+        }
+      }
+    },
+    "Mencari room…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking for the room…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mencari room…"
+          }
+        }
+      }
+    },
+    "Menunggu host memulai lagi…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the host to start again…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu host memulai lagi…"
+          }
+        }
+      }
+    },
+    "Menunggu pemain lain…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for other players…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu pemain lain…"
+          }
+        }
+      }
+    },
+    "Mudah" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easy"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudah"
+          }
+        }
+      }
+    },
+    "Mulai" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mulai"
+          }
+        }
+      }
+    },
+    "Nyalakan musik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn music on"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyalakan musik"
+          }
+        }
+      }
+    },
+    "Nyalakan suara" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn sound on"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nyalakan suara"
+          }
+        }
+      }
+    },
+    "Pemain 1" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Player 1"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain 1"
+          }
+        }
+      }
+    },
+    "Pemain 2" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Player 2"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain 2"
+          }
+        }
+      }
+    },
+    "Pemain lain terputus. Menunggu dia kembali…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other player disconnected. Waiting for them to return…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain lain terputus. Menunggu dia kembali…"
+          }
+        }
+      }
+    },
+    "Permainan sudah dimulai" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The game has already started"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permainan sudah dimulai"
+          }
+        }
+      }
+    },
+    "Petunjuk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hint"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petunjuk"
+          }
+        }
+      }
+    },
+    "Petunjuk (tonton iklan)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hint (watch an ad)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petunjuk (tonton iklan)"
+          }
+        }
+      }
+    },
+    "Privasi iklan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ad privacy"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privasi iklan"
+          }
+        }
+      }
+    },
+    "Pulihkan pembelian" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore purchases"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulihkan pembelian"
+          }
+        }
+      }
+    },
+    "Room sudah penuh" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The room is full"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room sudah penuh"
+          }
+        }
+      }
+    },
+    "Satu perangkat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One device"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satu perangkat"
+          }
+        }
+      }
+    },
+    "Searah jarum jam · lumbungmu di kiri" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clockwise · your store is on the left"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searah jarum jam · lumbungmu di kiri"
+          }
+        }
+      }
+    },
+    "Sedang" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sedang"
+          }
+        }
+      }
+    },
+    "Seri!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw!"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri!"
+          }
+        }
+      }
+    },
+    "Sudah masuk. Menunggu host memulai…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're in. Waiting for the host to start…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah masuk. Menunggu host memulai…"
+          }
+        }
+      }
+    },
+    "Sulit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hard"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sulit"
+          }
+        }
+      }
+    },
+    "Terputus dari host" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnected from the host"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terputus dari host"
+          }
+        }
+      }
+    },
+    "Tidak bisa masuk room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't join the room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak bisa masuk room"
+          }
+        }
+      }
+    },
+    "Tingkat kesulitan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difficulty"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tingkat kesulitan"
+          }
+        }
+      }
+    },
+    "Tutup" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutup"
+          }
+        }
+      }
+    },
+    "Versi aplikasi berbeda. Perbarui aplikasi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different app version. Update the app."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versi aplikasi berbeda. Perbarui aplikasi."
+          }
+        }
+      }
+    },
+    "berpikir…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "thinking…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "berpikir…"
+          }
+        }
+      }
+    },
+    "gilirannya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "their turn"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gilirannya"
+          }
+        }
+      }
+    },
+    "menunggu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "waiting"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "menunggu"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

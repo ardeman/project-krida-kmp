@@ -34,13 +34,13 @@
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-4887874546732768~9588102946</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Krida memakai Bluetooth untuk main bareng teman di dekatmu tanpa internet.</string>
+	<string>Krida uses Bluetooth to play with friends nearby, without internet.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_krida._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Krida mencari teman di Wi-Fi yang sama untuk main bareng.</string>
+	<string>Krida looks for friends on the same Wi-Fi to play together.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

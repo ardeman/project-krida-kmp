@@ -60,7 +60,7 @@ final class HostTable: CongklakTable {
         session.onPlayersChanged = { [weak self] list in
             guard let self else { return }
             self.players = list
-            self.notice = list.contains { !$0.connected } ? String(localized: "Pemain lain terputus. Menunggu dia kembali…") : nil
+            self.notice = list.contains { !$0.connected } ? String(localized: "Pemain lain terputus. Menunggu dia kembali…", bundle: .app) : nil
         }
         session.onStateChanged = { [weak self, weak session] state in
             guard let self, let session, let state else { return }
@@ -123,8 +123,8 @@ final class GuestTable: CongklakTable {
             self.notice = nil
             self.deliver(state, seat: session.lastSeat?.int32Value, move: session.lastMove)
         }
-        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak") }
-        session.onDisconnected = { [weak self] in self?.notice = String(localized: "Terputus dari host") }
+        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
+        session.onDisconnected = { [weak self] in self?.notice = String(localized: "Terputus dari host", bundle: .app) }
         if let state = session.state { deliver(state, seat: nil, move: nil) }
     }
 

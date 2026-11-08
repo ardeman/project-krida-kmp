@@ -264,7 +264,7 @@ struct CongklakView: View {
 
     /// "Kamu" for this device's own seat; the player's name otherwise.
     private func displayName(_ seat: Int) -> String {
-        table.mySeat.map(Int.init) == seat ? String(localized: "Kamu") : name(seat)
+        table.mySeat.map(Int.init) == seat ? String(localized: "Kamu", bundle: .app) : name(seat)
     }
 
     /// The seat can be played from this device (own seat, or anyone in pass-and-play).
@@ -275,10 +275,10 @@ struct CongklakView: View {
     private func active(_ seat: Int) -> Bool { !model.finished && model.turn == seat }
 
     private func status(_ seat: Int) -> String {
-        guard active(seat) else { return String(localized: "menunggu") }
-        if model.animating && model.inHand > 0 { return String(localized: "Menabur · \(model.inHand) biji di tangan") }
-        if isLocal(seat) { return String(localized: "Giliranmu · pilih lubang yang menyala") }
-        return seat == botSeat ? String(localized: "berpikir…") : String(localized: "gilirannya")
+        guard active(seat) else { return String(localized: "menunggu", bundle: .app) }
+        if model.animating && model.inHand > 0 { return String(localized: "Menabur · \(model.inHand) biji di tangan", bundle: .app) }
+        if isLocal(seat) { return String(localized: "Giliranmu · pilih lubang yang menyala", bundle: .app) }
+        return seat == botSeat ? String(localized: "berpikir…", bundle: .app) : String(localized: "gilirannya", bundle: .app)
     }
 
     // MARK: HUD
@@ -397,7 +397,7 @@ struct CongklakView: View {
 
     /// Short label on a store: KAMU, KOM, or the player's name.
     private func storeTag(_ seat: Int) -> String {
-        if seat == botSeat { return String(localized: "KOM") }
+        if seat == botSeat { return String(localized: "KOM", bundle: .app) }
         return String(displayName(seat).uppercased().prefix(8))
     }
 
@@ -456,9 +456,9 @@ struct CongklakView: View {
 
     private func resultTitle(_ winner: Int?) -> String {
         guard let winner else { return "" }
-        if winner < 0 { return String(localized: "Seri!") }
-        if table.mySeat.map(Int.init) == winner { return String(localized: "Kamu menang!") }
-        return String(localized: "\(name(winner)) menang!")
+        if winner < 0 { return String(localized: "Seri!", bundle: .app) }
+        if table.mySeat.map(Int.init) == winner { return String(localized: "Kamu menang!", bundle: .app) }
+        return String(localized: "\(name(winner)) menang!", bundle: .app)
     }
 
     private func scoreTile(_ seat: Int, winner: Int?) -> some View {

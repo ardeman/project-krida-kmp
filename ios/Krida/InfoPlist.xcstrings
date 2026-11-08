@@ -1,0 +1,41 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "shouldTranslate" : false
+    },
+    "NSBluetoothAlwaysUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida uses Bluetooth to play with friends nearby, without internet."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida memakai Bluetooth untuk main bareng teman di dekatmu tanpa internet."
+          }
+        }
+      }
+    },
+    "NSLocalNetworkUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida looks for friends on the same Wi-Fi to play together."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida mencari teman di Wi-Fi yang sama untuk main bareng."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -5,8 +5,8 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
-  # User-facing text is Indonesian (Localizable.xcstrings).
-  developmentLanguage: id
+  # User-facing text is English (development language, the fallback) and Indonesian (Localizable.xcstrings).
+  developmentLanguage: en
 
 packages:
   # AdMob; brings Google's User Messaging Platform (consent form) along.
@@ -67,8 +67,9 @@ targets:
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSBluetoothAlwaysUsageDescription: "Krida memakai Bluetooth untuk main bareng teman di dekatmu tanpa internet."
-        NSLocalNetworkUsageDescription: "Krida mencari teman di Wi-Fi yang sama untuk main bareng."
+        # English here; Indonesian in Krida/InfoPlist.xcstrings.
+        NSBluetoothAlwaysUsageDescription: "Krida uses Bluetooth to play with friends nearby, without internet."
+        NSLocalNetworkUsageDescription: "Krida looks for friends on the same Wi-Fi to play together."
         # AdMob app id (real, from the AdMob console); ad unit ids are in Ads/AdIds.swift.
         GADApplicationIdentifier: ca-app-pub-4887874546732768~9588102946
         # Google's SKAdNetwork ids (its own first, then third-party buyers), copied 2026-11-08 from

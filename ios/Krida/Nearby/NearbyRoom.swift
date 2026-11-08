@@ -11,7 +11,7 @@ final class NearbyRoom: ObservableObject {
     @Published private(set) var players: [PlayerInfo] = []
     @Published private(set) var canStart = false
     /// Where the room stands, for the lobby.
-    @Published private(set) var status = String(localized: "Menunggu pemain lain…")
+    @Published private(set) var status = String(localized: "Menunggu pemain lain…", bundle: .app)
     @Published private(set) var table: CongklakTable?
 
     private let transport: Transport
@@ -58,10 +58,10 @@ final class NearbyRoom: ObservableObject {
         let session = GuestSession<CongklakState, CongklakMove>(
             rules: CongklakGame.shared, transport: ble, name: deviceName, platform: .ios, rejoinToken: nil
         )
-        room.status = String(localized: "Mencari room…")
+        room.status = String(localized: "Mencari room…", bundle: .app)
         session.onLobby = { [weak room] list in
             room?.players = list
-            room?.status = String(localized: "Sudah masuk. Menunggu host memulai…")
+            room?.status = String(localized: "Sudah masuk. Menunggu host memulai…", bundle: .app)
         }
         session.onState = { [weak room, weak session] _ in
             guard let room, let session, room.table == nil else { return }
@@ -69,13 +69,13 @@ final class NearbyRoom: ObservableObject {
         }
         session.onRejected = { [weak room] reason in
             room?.status = switch reason {
-            case RejectReason.shared.VERSION: String(localized: "Versi aplikasi berbeda. Perbarui aplikasi.")
-            case RejectReason.shared.FULL: String(localized: "Room sudah penuh")
-            case RejectReason.shared.STARTED: String(localized: "Permainan sudah dimulai")
-            default: String(localized: "Tidak bisa masuk room")
+            case RejectReason.shared.VERSION: String(localized: "Versi aplikasi berbeda. Perbarui aplikasi.", bundle: .app)
+            case RejectReason.shared.FULL: String(localized: "Room sudah penuh", bundle: .app)
+            case RejectReason.shared.STARTED: String(localized: "Permainan sudah dimulai", bundle: .app)
+            default: String(localized: "Tidak bisa masuk room", bundle: .app)
             }
         }
-        session.onDisconnected = { [weak room] in room?.status = String(localized: "Terputus dari host") }
+        session.onDisconnected = { [weak room] in room?.status = String(localized: "Terputus dari host", bundle: .app) }
         room.guest = session
         ble.start()
         return room
