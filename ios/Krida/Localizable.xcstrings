@@ -5,6 +5,7 @@
       "shouldTranslate" : false
     },
     "%@ menang!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -21,9 +22,6 @@
       }
     },
     "%@. %@" : {
-      "shouldTranslate" : false
-    },
-    "%lld" : {
       "shouldTranslate" : false
     },
     "2 pemain" : {
@@ -43,6 +41,7 @@
       }
     },
     "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -107,6 +106,7 @@
       }
     },
     "Bebas" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -123,6 +123,7 @@
       }
     },
     "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -154,7 +155,25 @@
         }
       }
     },
+    "berpikir…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "thinking…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "berpikir…"
+          }
+        }
+      }
+    },
     "Biji terakhir jatuh di lumbungmu: kamu main lagi." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -187,6 +206,7 @@
       }
     },
     "Buat room" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -222,6 +242,7 @@
       "shouldTranslate" : false
     },
     "Gabung pakai kode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -238,6 +259,7 @@
       }
     },
     "Giliranmu · pilih lubang yang menyala" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -249,6 +271,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Giliranmu · pilih lubang yang menyala"
+          }
+        }
+      }
+    },
+    "gilirannya" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "their turn"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gilirannya"
           }
         }
       }
@@ -270,6 +309,7 @@
       }
     },
     "Jatuh di lubang kosong di sisi lawan: giliranmu selesai." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -286,6 +326,7 @@
       }
     },
     "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -302,6 +343,7 @@
       }
     },
     "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -318,6 +360,7 @@
       }
     },
     "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -333,23 +376,8 @@
         }
       }
     },
-    "KOM" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CPU"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KOM"
-          }
-        }
-      }
-    },
     "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -366,6 +394,7 @@
       }
     },
     "Kamu" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -382,6 +411,7 @@
       }
     },
     "Kamu menang!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -414,6 +444,7 @@
       }
     },
     "Kembali" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -430,6 +461,7 @@
       }
     },
     "Kembali ke menu" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -477,7 +509,25 @@
         }
       }
     },
+    "KOM" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPU"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KOM"
+          }
+        }
+      }
+    },
     "Komputer" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -510,6 +560,7 @@
       }
     },
     "Langkah ditolak" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -542,6 +593,7 @@
       }
     },
     "Lewat lumbung" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -558,6 +610,7 @@
       }
     },
     "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -606,6 +659,7 @@
       }
     },
     "Masuk" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -622,6 +676,7 @@
       }
     },
     "Matikan musik" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -638,6 +693,7 @@
       }
     },
     "Matikan suara" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -654,6 +710,7 @@
       }
     },
     "Memuat" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -670,6 +727,7 @@
       }
     },
     "Menabur · %lld biji di tangan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -686,6 +744,7 @@
       }
     },
     "Mencari room…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -697,6 +756,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mencari room…"
+          }
+        }
+      }
+    },
+    "menunggu" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "waiting"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "menunggu"
           }
         }
       }
@@ -718,6 +794,7 @@
       }
     },
     "Menunggu pemain lain…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -734,6 +811,7 @@
       }
     },
     "Mudah" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -750,6 +828,7 @@
       }
     },
     "Mulai" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -766,6 +845,7 @@
       }
     },
     "Nyalakan musik" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -782,6 +862,7 @@
       }
     },
     "Nyalakan suara" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -798,6 +879,7 @@
       }
     },
     "Pemain 1" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -814,6 +896,7 @@
       }
     },
     "Pemain 2" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -830,6 +913,7 @@
       }
     },
     "Pemain lain terputus. Menunggu dia kembali…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -846,6 +930,7 @@
       }
     },
     "Permainan sudah dimulai" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -862,6 +947,7 @@
       }
     },
     "Petunjuk" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -878,6 +964,7 @@
       }
     },
     "Petunjuk (tonton iklan)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -910,6 +997,7 @@
       }
     },
     "Privasi iklan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -926,6 +1014,7 @@
       }
     },
     "Pulihkan pembelian" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -942,6 +1031,7 @@
       }
     },
     "Room sudah penuh" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -974,6 +1064,7 @@
       }
     },
     "Searah jarum jam · lumbungmu di kiri" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -990,6 +1081,7 @@
       }
     },
     "Sedang" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1006,6 +1098,7 @@
       }
     },
     "Seri!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1022,6 +1115,7 @@
       }
     },
     "Sudah masuk. Menunggu host memulai…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1038,6 +1132,7 @@
       }
     },
     "Sulit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1054,6 +1149,7 @@
       }
     },
     "Terputus dari host" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1070,6 +1166,7 @@
       }
     },
     "Tidak bisa masuk room" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1102,6 +1199,7 @@
       }
     },
     "Tutup" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1118,6 +1216,7 @@
       }
     },
     "Versi aplikasi berbeda. Perbarui aplikasi." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1129,54 +1228,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Versi aplikasi berbeda. Perbarui aplikasi."
-          }
-        }
-      }
-    },
-    "berpikir…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "thinking…"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "berpikir…"
-          }
-        }
-      }
-    },
-    "gilirannya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "their turn"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gilirannya"
-          }
-        }
-      }
-    },
-    "menunggu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "waiting"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "menunggu"
           }
         }
       }
