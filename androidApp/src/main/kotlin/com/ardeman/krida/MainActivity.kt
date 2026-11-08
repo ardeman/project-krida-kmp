@@ -7,9 +7,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
@@ -621,33 +623,47 @@ private fun <T> Segmented(
  */
 @Composable
 private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onReady: () -> Unit) {
-    val shape = RoundedCornerShape(22.dp)
     val games = Game.entries
-    fun step(d: Int) = onGame(games[(game.ordinal + d + games.size) % games.size])
+    val n = games.size
+    // A looping carousel: the pages repeat the games, starting far from both ends, so a swipe or
+    // an arrow slides the next card in attached to the current one.
+    val pager = rememberPagerState(initialPage = n * 500 + game.ordinal) { n * 1000 }
+    val scope = rememberCoroutineScope()
+    val pick by rememberUpdatedState(onGame)
+    LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.collect { pick(games[it % n]) } }
+    // The game can also change from outside (a room link picks congklak).
+    LaunchedEffect(game) {
+        val shown = games[pager.settledPage % n]
+        if (shown != game) pager.scrollToPage(pager.settledPage + game.ordinal - shown.ordinal)
+    }
+    fun step(d: Int) {
+        scope.launch { pager.animateScrollToPage(pager.targetPage + d, animationSpec = tween(380, easing = FastOutSlowInEasing)) }
+    }
+    Box(modifier.fillMaxWidth()) {
+        HorizontalPager(pager, Modifier.fillMaxSize(), pageSpacing = 12.dp, beyondViewportPageCount = 1, key = { it }) { page ->
+            GameCardFace(games[page % n], onReady)
+        }
+        // The arrows stay put above the sliding cards, so they're always in the same spot.
+        Row(Modifier.align(Alignment.TopEnd).padding(top = 12.dp, end = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SwitchArrow(R.drawable.ic_chevron_left, stringResource(R.string.menu_prev_game)) { step(-1) }
+            SwitchArrow(R.drawable.ic_chevron_right, stringResource(R.string.menu_next_game)) { step(1) }
+        }
+    }
+}
+
+@Composable
+private fun GameCardFace(game: Game, onReady: () -> Unit) {
+    val shape = RoundedCornerShape(22.dp)
     val cream = Color(0xFFF3DDBE)
-    val swipe = with(LocalDensity.current) { 48.dp.toPx() }
-    Box(
-        modifier.fillMaxWidth().background(game.edge, shape)
-            // Swipe the card sideways to switch games, like the arrows: left for the next one.
-            .pointerInput(game) {
-                var dx = 0f
-                detectHorizontalDragGestures(
-                    onDragStart = { dx = 0f },
-                    onDragEnd = { if (dx <= -swipe) step(1) else if (dx >= swipe) step(-1) },
-                ) { change, amount -> change.consume(); dx += amount }
-            },
-    ) {
+    Box(Modifier.fillMaxSize().background(game.edge, shape)) {
         Column(
             Modifier.fillMaxSize().padding(bottom = 6.dp).background(game.face, shape).padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(game.title), style = Theme.font(20, FontWeight.Black, Color(0xFFFFF6E8)).copy(lineHeight = 22.sp), maxLines = 2)
-                    Text(stringResource(game.players), style = Theme.font(13, FontWeight.Bold, cream), maxLines = 1)
-                }
-                SwitchArrow(R.drawable.ic_chevron_left, stringResource(R.string.menu_prev_game)) { step(-1) }
-                SwitchArrow(R.drawable.ic_chevron_right, stringResource(R.string.menu_next_game)) { step(1) }
+            // Room on the right for the arrows, which GameCard draws above the pages.
+            Column(Modifier.padding(end = 80.dp).heightIn(min = 34.dp), verticalArrangement = Arrangement.Center) {
+                Text(stringResource(game.title), style = Theme.font(20, FontWeight.Black, Color(0xFFFFF6E8)).copy(lineHeight = 22.sp), maxLines = 2)
+                Text(stringResource(game.players), style = Theme.font(13, FontWeight.Bold, cream), maxLines = 1)
             }
             val preview = Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).padding(end = 6.dp).clip(RoundedCornerShape(14.dp))
             when (game) {
