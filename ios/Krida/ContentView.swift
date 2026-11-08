@@ -9,6 +9,9 @@ struct ContentView: View {
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     @State private var joining = false
+    @State private var opponent: Opponent = .phone
+    /// The tembak rule for every mode started here (and rooms this device hosts).
+    @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
     /// The loading screen at app start, over the menu while its board snapshot renders.
     @State private var starting = true
     @State private var menuReady = false
@@ -34,6 +37,9 @@ struct ContentView: View {
         }
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
+        // A room link opens the app ready to join: the code field on "Teman dekat".
+        .onAppear { if !roomCode.isEmpty { openJoin() } }
+        .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
         .overlay { if starting { LoadingScreen().transition(.opacity) } }
         // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
         // comes (a join link straight into a room, a slow GPU). Same as Android.
@@ -45,6 +51,11 @@ struct ContentView: View {
             endStartup()
         }
         .onChange(of: menuReady) { _, ready in if ready && startMinDone { endStartup() } }
+    }
+
+    private func openJoin() {
+        opponent = .nearby
+        joining = true
     }
 
     private func endStartup() {
@@ -70,10 +81,7 @@ struct ContentView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(spacing: 10 * s) {
-                            passAndPlayCard
-                            vsComputerCard
-                            nearbyCard
-                            tembakCard
+                            playCard
                             AdButtons()
                         }
                         .frame(maxWidth: .infinity)
@@ -134,90 +142,92 @@ struct ContentView: View {
         .animation(.easeOut(duration: 0.2), value: moreBelow)
     }
 
-    private var passAndPlayCard: some View {
-        Button(action: startPassAndPlay) {
-            ModeCard(icon: "person.2") {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Satu perangkat").font(Theme.font(18 * s))
-                    Text("Berdua, gantian di satu HP").font(Theme.font(14 * s, .semibold)).foregroundStyle(Theme.muted)
+    /// One card for every way to play congklak: pick the opponent (a friend on this phone, the
+    /// computer, or a friend nearby over Bluetooth), the computer's level, the tembak rule, then
+    /// Mulai. Joining someone else's room with a code is a link on the card for "Teman dekat".
+    /// Same as Android.
+    private var playCard: some View {
+        VStack(alignment: .leading, spacing: 10 * s) {
+            SettingRow(label: "Lawan") {
+                Segmented(
+                    options: [(.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right")],
+                    selection: $opponent,
+                    label: "Lawan"
+                )
+            }
+            SettingRow(label: opponent == .computer ? "Tingkat" : nil) {
+                switch opponent {
+                case .computer:
+                    Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
+                case .phone:
+                    detail("Berdua, gantian di satu HP")
+                case .nearby:
+                    detail("Bluetooth, tanpa internet")
                 }
-                Spacer(minLength: 8 * s)
-                Image(systemName: "chevron.right").font(.system(size: 16 * s, weight: .bold)).foregroundStyle(Theme.muted)
             }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var vsComputerCard: some View {
-        ModeCard(icon: "desktopcomputer") {
-            VStack(alignment: .leading, spacing: 8 * s) {
-                Text("Lawan komputer").font(Theme.font(18 * s)).lineLimit(1)
-                LevelPicker(level: $level)
+            SettingRow(label: "Tembak") {
+                Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
             }
-            Spacer(minLength: 8 * s)
-            Button("Mulai") { startVsComputer(level) }
-                .buttonStyle(PrimaryButtonStyle(height: 48))
-        }
-    }
-
-    private var nearbyCard: some View {
-        ModeCard(icon: "antenna.radiowaves.left.and.right") {
-            VStack(alignment: .leading, spacing: 8 * s) {
-                HStack(alignment: .firstTextBaseline, spacing: 8 * s) {
-                    Text("Main bareng dekat").font(Theme.font(18 * s))
-                    Text("Bluetooth, tanpa internet").font(Theme.font(14 * s, .semibold)).foregroundStyle(Theme.muted)
+            Rectangle().fill(Theme.line).frame(height: 1.5)
+            if joining {
+                HStack(spacing: 8 * s) {
+                    TextField("Kode room", text: $roomCode)
+                        .font(Theme.font(17 * s))
+                        .tracking(2 * s)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                        .padding(.horizontal, 12 * s)
+                        .frame(height: 44 * s)
+                        .background(Color(hex: 0xFFFDF9), in: RoundedRectangle(cornerRadius: 12 * s))
+                        .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Color(hex: 0xD9C6AF), lineWidth: 1.5))
+                        .accessibilityLabel(Text("Kode room dari temanmu"))
+                        .onChange(of: roomCode) { _, code in
+                            let clean = String(code.uppercased().prefix(4))
+                            if clean != code { roomCode = clean }
+                        }
+                    Button { joining = false } label: {
+                        Image(systemName: "xmark").font(.system(size: 15 * s, weight: .bold))
+                            .foregroundStyle(Theme.muted)
+                            .frame(width: 44 * s, height: 44 * s)
+                            .background(Theme.track, in: RoundedRectangle(cornerRadius: 14 * s))
+                    }
+                    .accessibilityLabel(Text("Batal"))
+                    Button("Masuk") { room = NearbyRoom.join(code: roomCode) }
+                        .buttonStyle(PrimaryButtonStyle(height: 48))
+                        .disabled(!RoomCode.shared.isValid(code: roomCode))
+                        .opacity(RoomCode.shared.isValid(code: roomCode) ? 1 : 0.5)
+                }
+            } else {
+                HStack(spacing: 8 * s) {
+                    // Joining someone's room only makes sense when playing a friend nearby.
+                    if opponent == .nearby {
+                        Button("Gabung pakai kode") { joining = true }
+                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                    }
+                    Spacer(minLength: 0)
+                    Button(opponent == .nearby ? "Buat room" : "Mulai", action: start)
+                        .buttonStyle(PrimaryButtonStyle(height: 48))
                 }
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                if joining {
-                    HStack(spacing: 8 * s) {
-                        TextField("Kode room", text: $roomCode)
-                            .font(Theme.font(17 * s))
-                            .tracking(2 * s)
-                            .textInputAutocapitalization(.characters)
-                            .autocorrectionDisabled()
-                            .padding(.horizontal, 12 * s)
-                            .frame(height: 44 * s)
-                            .background(Color(hex: 0xFFFDF9), in: RoundedRectangle(cornerRadius: 12 * s))
-                            .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Color(hex: 0xD9C6AF), lineWidth: 1.5))
-                            .accessibilityLabel(Text("Kode room dari temanmu"))
-                            .onChange(of: roomCode) { _, code in
-                                let clean = String(code.uppercased().prefix(4))
-                                if clean != code { roomCode = clean }
-                            }
-                        Button { joining = false } label: {
-                            Image(systemName: "xmark").font(.system(size: 15 * s, weight: .bold))
-                                .foregroundStyle(Theme.muted)
-                                .frame(width: 44 * s, height: 44 * s)
-                                .background(Theme.track, in: RoundedRectangle(cornerRadius: 14 * s))
-                        }
-                        .accessibilityLabel(Text("Batal"))
-                        Button("Masuk") { room = NearbyRoom.join(code: roomCode) }
-                            .buttonStyle(PrimaryButtonStyle())
-                            .disabled(!RoomCode.shared.isValid(code: roomCode))
-                            .opacity(RoomCode.shared.isValid(code: roomCode) ? 1 : 0.5)
-                    }
-                } else {
-                    HStack(spacing: 8 * s) {
-                        Button("Buat room") { room = NearbyRoom.host() }
-                            .buttonStyle(PrimaryButtonStyle())
-                        Button("Gabung pakai kode") { joining = true }
-                            .buttonStyle(SecondaryButtonStyle())
-                    }
-                }
             }
-            Spacer(minLength: 0)
         }
+        .padding(.leading, 18 * s)
+        .padding(.trailing, 14 * s)
+        .padding(.vertical, 14 * s)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white, in: RoundedRectangle(cornerRadius: 20 * s))
+        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
     }
 
-    /// The tembak rule for every mode started here (and rooms this device hosts).
-    private var tembakCard: some View {
-        ModeCard(icon: "scope") {
-            VStack(alignment: .leading, spacing: 8 * s) {
-                Text("Aturan tembak").font(Theme.font(18 * s)).lineLimit(1)
-                TembakPicker()
-            }
-            Spacer(minLength: 0)
+    private func detail(_ text: LocalizedStringKey) -> some View {
+        Text(text).font(Theme.font(14 * s, .semibold)).foregroundStyle(Theme.muted).lineLimit(2)
+    }
+
+    private func start() {
+        switch opponent {
+        case .phone: startPassAndPlay()
+        case .computer: startVsComputer(level)
+        case .nearby: room = NearbyRoom.host()
         }
     }
 
@@ -281,60 +291,60 @@ private struct RemoveAdsButton: View {
     }
 }
 
-/// White rounded card with an icon tile, used for each way to play.
-private struct ModeCard<Content: View>: View {
-    let icon: String
+/// Who you play congklak against; the play card's first choice.
+private enum Opponent { case phone, computer, nearby }
+
+/// A small label above its control; no label keeps the rows' spacing. Same as Android.
+private struct SettingRow<Content: View>: View {
+    let label: LocalizedStringKey?
     @ViewBuilder let content: Content
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        HStack(spacing: 14 * s) {
-            Image(systemName: icon)
-                .font(.system(size: 20 * s, weight: .semibold))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 44 * s, height: 44 * s)
-                .background(Theme.chip, in: RoundedRectangle(cornerRadius: 14 * s))
-            content
+        VStack(alignment: .leading, spacing: 4 * s) {
+            Text(label ?? " ").font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted).lineLimit(1)
+                .accessibilityHidden(label == nil)
+            content.frame(maxWidth: .infinity, minHeight: 44 * s, alignment: .leading)
         }
-        .padding(.leading, 18 * s)
-        .padding(.trailing, 14 * s)
-        .padding(.vertical, 14 * s)
-        .frame(maxWidth: .infinity, minHeight: 76 * s, alignment: .leading)
-        .background(.white, in: RoundedRectangle(cornerRadius: 20 * s))
-        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
-        .contentShape(RoundedRectangle(cornerRadius: 20 * s))
     }
 }
 
-/// Mudah / Sedang / Sulit segmented picker.
-private struct LevelPicker: View {
-    @Binding var level: CongklakBot.Level
+/// Segmented picker on a track, the options sharing its full width: the chosen one is a
+/// raised white chip, with an optional SF Symbol before its text.
+private struct Segmented<T: Hashable>: View {
+    let options: [(T, LocalizedStringKey, String?)]
+    @Binding var selection: T
+    let label: LocalizedStringKey
     @Environment(\.uiScale) private var s
 
     var body: some View {
         HStack(spacing: 2 * s) {
-            option(.easy, "Mudah")
-            option(.normal, "Sedang")
-            option(.hard, "Sulit")
+            ForEach(options.indices, id: \.self) { i in option(options[i]) }
         }
         .padding(3 * s)
         .background(Theme.track, in: RoundedRectangle(cornerRadius: 12 * s))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text("Tingkat kesulitan"))
+        .accessibilityLabel(Text(label))
     }
 
-    private func option(_ value: CongklakBot.Level, _ label: LocalizedStringKey) -> some View {
-        let on = level == value
-        return Button { level = value } label: {
-            Text(label)
-                .font(Theme.font(14 * s))
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .foregroundStyle(on ? Theme.ink : Theme.muted)
-                .padding(.horizontal, 12 * s)
-                .frame(height: 38 * s)
-                .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
-                .shadow(color: on ? Theme.ink.opacity(0.18) : .clear, radius: 1.5, y: 1)
+    private func option(_ o: (T, LocalizedStringKey, String?)) -> some View {
+        let on = selection == o.0
+        return Button { selection = o.0 } label: {
+            HStack(spacing: 6 * s) {
+                if let icon = o.2 {
+                    Image(systemName: icon).font(.system(size: 13 * s, weight: .semibold))
+                        .foregroundStyle(on ? Theme.accent : Theme.muted)
+                }
+                Text(o.1).font(Theme.font(14 * s)).foregroundStyle(on ? Theme.ink : Theme.muted)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .padding(.horizontal, 6 * s)
+            .frame(maxWidth: .infinity)
+            .frame(height: 38 * s)
+            .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
+            .shadow(color: on ? Theme.ink.opacity(0.18) : .clear, radius: 1.5, y: 1)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(on ? .isSelected : [])
@@ -378,41 +388,6 @@ private struct CongklakCard: View {
 
     private var title: some View {
         Text("Congklak").font(Theme.font(22 * s, .black)).foregroundStyle(Color(hex: 0xFFF6E8))
-    }
-}
-
-/// The tembak rule for the next game: "Lewat lumbung" (the Indonesian rule, default:
-/// only after this turn has passed your own store) or "Bebas". Stored on this device.
-private struct TembakPicker: View {
-    @AppStorage(CongklakSettings.tembakAfterStoreKey) private var afterStore = true
-    @Environment(\.uiScale) private var s
-
-    var body: some View {
-        HStack(spacing: 2 * s) {
-            option(true, "Lewat lumbung")
-            option(false, "Bebas")
-        }
-        .padding(3 * s)
-        .background(Theme.track, in: RoundedRectangle(cornerRadius: 12 * s))
-        .lineLimit(1)
-        .minimumScaleFactor(0.75)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text("Aturan tembak"))
-    }
-
-    private func option(_ value: Bool, _ label: LocalizedStringKey) -> some View {
-        let on = afterStore == value
-        return Button { afterStore = value } label: {
-            Text(label)
-                .font(Theme.font(14 * s))
-                .foregroundStyle(on ? Theme.ink : Theme.muted)
-                .padding(.horizontal, 14 * s)
-                .frame(height: 38 * s)
-                .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
-                .shadow(color: on ? Theme.ink.opacity(0.18) : .clear, radius: 1.5, y: 1)
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }
 

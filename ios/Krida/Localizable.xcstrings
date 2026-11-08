@@ -308,6 +308,22 @@
         }
       }
     },
+    "HP ini" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This phone"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HP ini"
+          }
+        }
+      }
+    },
     "Jatuh di lubang kosong di sisi lawan: giliranmu selesai." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -576,18 +592,18 @@
         }
       }
     },
-    "Lawan komputer" : {
+    "Lawan" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Play the computer"
+            "value" : "Opponent"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lawan komputer"
+            "value" : "Lawan"
           }
         }
       }
@@ -622,22 +638,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati."
-          }
-        }
-      }
-    },
-    "Main bareng dekat" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play nearby"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Main bareng dekat"
           }
         }
       }
@@ -1047,22 +1047,6 @@
         }
       }
     },
-    "Satu perangkat" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One device"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Satu perangkat"
-          }
-        }
-      }
-    },
     "Searah jarum jam · lumbungmu di kiri" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1148,6 +1132,38 @@
         }
       }
     },
+    "Teman dekat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teman dekat"
+          }
+        }
+      }
+    },
+    "Tembak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shooting"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tembak"
+          }
+        }
+      }
+    },
     "Terputus dari host" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1178,6 +1194,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tidak bisa masuk room"
+          }
+        }
+      }
+    },
+    "Tingkat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Level"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tingkat"
           }
         }
       }

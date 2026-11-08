@@ -2,7 +2,7 @@ import Foundation
 import Shared
 import UIKit
 
-/// A congklak room over BLE ("Main bareng dekat"), from hosting or joining until the game
+/// A congklak room over BLE ("Teman dekat" on the play card), from hosting or joining until the game
 /// starts. Then `table` takes over the session and the board screen shows it.
 @MainActor
 final class NearbyRoom: ObservableObject {
