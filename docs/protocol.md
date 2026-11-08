@@ -57,6 +57,12 @@ passed the mover's own store. Guests play and animate by the flag in the state. 
 before the field ignores it and may animate such a move the old way; the next full snapshot
 puts its board right.
 
+Ular tangga's `state` carries `openingRolls` (optional, default empty): the host's opening
+dice-off, one array per round with a roll per seat (`0` for a seat already out). Every seat
+throws in the first round, the seats tied on the best roll throw again, and `firstTurn` is
+the seat left with the best roll. Guests animate the rounds from it; a guest that ignores it
+just starts at `turn`.
+
 ## BLE framing
 
 BLE writes/notifications are limited by MTU (iOS usually ~185 bytes, Android up to 512).

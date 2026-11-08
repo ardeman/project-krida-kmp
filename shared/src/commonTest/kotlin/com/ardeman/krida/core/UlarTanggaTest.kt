@@ -28,7 +28,7 @@ class UlarTanggaTest {
     ) = UlarTanggaState(positions.toList(), turn, finishOrder = finishOrder, options = options)
 
     @Test
-    fun startsOffTheBoardWithARouletteStarter() {
+    fun startsOffTheBoardWithADiceOffStarter() {
         val firsts = (0 until 40).map { game.initialState(4, Random(it)) }
         firsts.forEach {
             assertEquals(listOf(0, 0, 0, 0), it.positions)
@@ -36,6 +36,35 @@ class UlarTanggaTest {
             assertNull(it.lastRoll)
         }
         assertEquals(setOf(0, 1, 2, 3), firsts.map { it.turn }.toSet())
+    }
+
+    @Test
+    fun diceOffRethrowsTiesUntilOneSeatIsHighest() {
+        var sawTie = false
+        repeat(200) { seed ->
+            val s = game.initialState(4, Random(seed))
+            val rounds = s.openingRolls
+            assertTrue(rounds.isNotEmpty())
+            // Everyone throws first; then only the seats tied on the previous round's best.
+            var throwing = setOf(0, 1, 2, 3)
+            rounds.forEachIndexed { i, rolls ->
+                assertEquals(4, rolls.size)
+                rolls.forEachIndexed { seat, r -> assertEquals(seat in throwing, r in 1..6, "round $i seat $seat") }
+                val best = rolls.max()
+                throwing = rolls.indices.filter { rolls[it] == best }.toSet()
+                if (i < rounds.lastIndex) assertTrue(throwing.size > 1) else assertEquals(setOf(s.firstTurn), throwing)
+            }
+            if (rounds.size > 1) sawTie = true
+        }
+        assertTrue(sawTie)
+    }
+
+    @Test
+    fun stateWithoutOpeningRollsStillDecodes() {
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val s = json.decodeFromString(UlarTanggaState.serializer(), "{\"positions\":[0,0],\"turn\":1,\"firstTurn\":1}")
+        assertEquals(emptyList(), s.openingRolls)
+        assertEquals(1, s.turn)
     }
 
     @Test
