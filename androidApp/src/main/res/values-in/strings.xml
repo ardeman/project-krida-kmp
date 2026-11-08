@@ -93,9 +93,6 @@
     <string name="ular_player_yellow">Kuning</string>
     <string name="ular_computer_n">Komputer %1$d</string>
     <string name="play_players">Pemain</string>
-    <string name="play_colors">Warna</string>
-    <string name="ular_color_chip">Pemain %1$d: %2$s</string>
-    <string name="ular_color_change">Ganti warna</string>
     <string name="play_rules">Aturan</string>
     <string name="ular_detail_phone">HP digilir; semua melempar dadu saat gilirannya.</string>
     <string name="ular_detail_computer">Kamu melawan komputer.</string>
@@ -103,9 +100,11 @@
     <string name="ular_option_six_to_enter">6 untuk mulai</string>
     <string name="ular_option_bounce">Pantul di 100</string>
     <string name="ular_option_first_ends">Juara 1 selesai</string>
-    <string name="ular_rule_dice_off">Semua melempar dadu, angka tertinggi jalan duluan; yang seri melempar lagi. Lalu giliran berjalan berurutan.</string>
-    <string name="ular_dice_off">Siapa duluan? Lemparan tertinggi</string>
-    <string name="ular_dice_off_tie">Seri · lempar lagi</string>
+    <string name="ular_rule_dice_off">Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu.</string>
+    <string name="ular_dice_off_you">Lempar dadu untuk urutan main</string>
+    <string name="ular_dice_off_of">%1$s, lempar dadu untuk urutan main</string>
+    <string name="ular_dice_off_done">Urutan siap · %1$s duluan</string>
+    <string name="ular_dice_off_tie">Seri · %1$s lempar lagi</string>
     <string name="ular_rule_start">Semua mulai di luar papan; dadu 4 membawamu ke kotak 4.</string>
     <string name="ular_rule_six_to_enter">Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1.</string>
     <string name="ular_rule_ladders">Berhenti di kaki tangga: naik ke ujung atasnya.</string>

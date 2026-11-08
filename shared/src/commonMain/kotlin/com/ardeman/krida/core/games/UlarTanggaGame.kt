@@ -28,12 +28,16 @@ data class UlarTanggaOptions(
 /**
  * Ular tangga (snakes and ladders). [positions] holds one square per seat: 0 is off the
  * board (the start), 1..100 are squares. [finishOrder] lists the seats that reached 100, in
- * order (first entry = 1st place). [firstTurn] is the seat that won the opening dice-off,
- * and [openingRolls] its rounds so guests can animate it: one list per round with a roll
- * per seat, 0 for a seat that sat the round out (it lost an earlier one). Every seat throws
- * in the first round; the highest rolls tied go on to the next, until one is left.
- * [lastRoll] and [lastSeat] describe the move that produced this state, so guests can
- * animate it; both are absent before the first roll. [colors] is each seat's pawn color
+ * order (first entry = 1st place).
+ *
+ * A game opens with a dice-off that sets the play order: while [opening] is true each seat
+ * throws in turn ([turn] is the seat to throw) and [openingRolls] holds the rounds, one list
+ * per round with a roll per seat, 0 for a seat that does not throw that round (or has not
+ * thrown yet). Everyone throws in the first round; seats whose throws so far are all equal
+ * throw another round between themselves, until every seat's throws differ. Higher throws
+ * go earlier. [order] is the resulting play order (empty means seat order) and [firstTurn]
+ * its first seat. [lastRoll] and [lastSeat] describe the move that produced this state, so
+ * guests can animate it; both are absent until the first move after the dice-off. [colors] is each seat's pawn color
  * (0 red, 1 blue, 2 green, 3 yellow, all different); empty means seat order.
  */
 @Serializable
@@ -42,6 +46,8 @@ data class UlarTanggaState(
     val turn: Int,
     val firstTurn: Int = 0,
     val openingRolls: List<List<Int>> = emptyList(),
+    val opening: Boolean = false,
+    val order: List<Int> = emptyList(),
     val finishOrder: List<Int> = emptyList(),
     val finished: Boolean = false,
     val lastRoll: Int? = null,
@@ -51,6 +57,9 @@ data class UlarTanggaState(
 ) {
     /** [seat]'s pawn color, 0..3. */
     fun color(seat: Int): Int = colors.getOrNull(seat) ?: seat
+
+    /** Seats in play order. */
+    val playOrder: List<Int> get() = order.ifEmpty { positions.indices.toList() }
 
     /** 1st place, or null while nobody has reached 100. */
     val winner: Int? get() = finishOrder.firstOrNull()
@@ -79,8 +88,8 @@ data class UlarTanggaPlay(
 
 /**
  * Standard rules (2–4 players, one fixed board), each changeable in [UlarTanggaOptions]:
- * - Everyone throws the die and the highest goes first; tied players throw again until one
- *   is left. Turns then go round in seat order.
+ * - Everyone throws the die to set the play order, highest first; tied players throw again
+ *   between themselves. Turns then go round in that order.
  * - Everyone starts off the board (square 0); a roll of n moves to square n.
  * - Landing on the foot of a ladder climbs it; landing on a snake's head slides to its tail.
  * - You must land on 100 exactly: a roll that would pass it leaves the piece where it is.
@@ -118,18 +127,16 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
         initialState(players, options, emptyList(), random)
 
     /**
-     * A new game; the host rolls the opening dice-off with [random]. [colors] are the pawn
+     * A new game, waiting for seat 0's first throw of the dice-off. [colors] are the pawn
      * colors the players chose, by seat (see [seatColors]).
      */
     fun initialState(players: Int, options: UlarTanggaOptions, colors: List<Int>, random: Random): UlarTanggaState {
         require(players in minPlayers..maxPlayers) { "players must be $minPlayers..$maxPlayers" }
-        val rounds = diceOff(players, random)
-        val first = diceOffWinner(rounds)
         return UlarTanggaState(
             positions = List(players) { 0 },
-            turn = first,
-            firstTurn = first,
-            openingRolls = rounds,
+            turn = 0,
+            openingRolls = listOf(List(players) { 0 }),
+            opening = true,
             options = options,
             colors = seatColors(players, colors),
         )
@@ -148,24 +155,52 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     }
 
     /**
-     * The opening dice-off: every seat throws, the seats tied on the highest roll throw again,
-     * until one seat has the highest roll alone. Each round has a roll per seat, 0 for a seat
-     * that is out.
+     * Seats that throw in the dice-off round after [rounds] (all of them complete): everyone
+     * for the first round, then the seats whose throws so far equal another seat's. Empty
+     * when the order is settled.
      */
-    fun diceOff(players: Int, random: Random): List<List<Int>> {
-        val rounds = ArrayList<List<Int>>()
-        var throwing = (0 until players).toList()
-        while (throwing.size > 1) {
-            val rolls = List(players) { if (it in throwing) random.nextInt(1, 7) else 0 }
-            rounds += rolls
-            val best = rolls.max()
-            throwing = throwing.filter { rolls[it] == best }
-        }
-        return rounds
+    fun diceOffThrowers(rounds: List<List<Int>>, players: Int): List<Int> {
+        if (rounds.isEmpty()) return (0 until players).toList()
+        return (0 until players).groupBy { seat -> rounds.map { it[seat] } }.values
+            .filter { it.size > 1 }.flatten().sorted()
     }
 
-    /** The seat with the highest roll in the last round of a dice-off. */
-    fun diceOffWinner(rounds: List<List<Int>>): Int = rounds.last().let { it.indexOf(it.max()) }
+    /** Play order from the dice-off [rounds]: higher throws first, compared round by round. */
+    fun diceOffOrder(rounds: List<List<Int>>, players: Int): List<Int> =
+        (0 until players).sortedWith { a, b ->
+            rounds.firstOrNull { it[a] != it[b] }?.let { it[b].compareTo(it[a]) } ?: a.compareTo(b)
+        }
+
+    /** Applies [roll] (1..6) as [seat]'s dice-off throw. Public so tests and replays can pick the roll. */
+    fun diceOffThrow(state: UlarTanggaState, seat: Int, roll: Int): UlarTanggaState {
+        require(state.opening) { "the dice-off is over" }
+        require(roll in 1..6) { "roll must be 1..6" }
+        val n = state.positions.size
+        val earlier = state.openingRolls.dropLast(1)
+        val round = state.openingRolls.last().toMutableList().also { it[seat] = roll }
+        val rounds = earlier + listOf(round)
+        diceOffThrowers(earlier, n).firstOrNull { round[it] == 0 }?.let {
+            return state.copy(openingRolls = rounds, turn = it)
+        }
+        diceOffThrowers(rounds, n).firstOrNull()?.let {
+            return state.copy(openingRolls = rounds + listOf(List(n) { 0 }), turn = it)
+        }
+        val order = diceOffOrder(rounds, n)
+        return state.copy(openingRolls = rounds, opening = false, order = order, turn = order[0], firstTurn = order[0])
+    }
+
+    /**
+     * The dice-off throw that turned [before] into [after], as seat to roll, or null when
+     * [after] did not come from one. For animation.
+     */
+    fun diceOffThrowBetween(before: UlarTanggaState, after: UlarTanggaState): Pair<Int, Int>? {
+        if (!before.opening) return null
+        val i = before.openingRolls.lastIndex
+        val was = before.openingRolls.getOrNull(i) ?: return null
+        val now = after.openingRolls.getOrNull(i) ?: return null
+        val seat = was.indices.firstOrNull { was[it] == 0 && now.getOrElse(it) { 0 } != 0 } ?: return null
+        return seat to now[seat]
+    }
 
     override fun currentTurn(state: UlarTanggaState) = state.turn
 
@@ -173,7 +208,8 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
         if (state.finished) "finished" else null
 
     override fun apply(state: UlarTanggaState, seat: Int, move: UlarTanggaMove, random: Random) =
-        play(state, seat, random.nextInt(1, 7)).state
+        if (state.opening) diceOffThrow(state, seat, random.nextInt(1, 7))
+        else play(state, seat, random.nextInt(1, 7)).state
 
     override fun isFinished(state: UlarTanggaState) = state.finished
 
@@ -195,6 +231,7 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     /** Applies [roll] (1..6) for [seat]. Public so tests and replays can pick the roll. */
     fun play(state: UlarTanggaState, seat: Int, roll: Int): UlarTanggaPlay {
         require(roll in 1..6) { "roll must be 1..6" }
+        require(!state.opening) { "the dice-off is still on" }
         val o = state.options
         val start = state.positions[seat]
         val steps = ArrayList<Int>(roll)
@@ -222,7 +259,7 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
         val extraTurn = roll == 6 && o.sixRollsAgain && !reached
         val next = when {
             finished || extraTurn -> seat
-            else -> nextPlaying(positions, order, seat)
+            else -> nextPlaying(state.playOrder, order, seat)
         }
         val newState = state.copy(
             positions = positions,
@@ -235,11 +272,11 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
         return UlarTanggaPlay(newState, seat, roll, steps, jumpTo, extraTurn)
     }
 
-    /** The next seat after [seat] that has not reached 100. */
-    private fun nextPlaying(positions: List<Int>, order: List<Int>, seat: Int): Int {
-        var s = seat
-        do s = (s + 1) % positions.size while (s in order)
-        return s
+    /** The next seat after [seat] in [playOrder] that has not reached 100. */
+    private fun nextPlaying(playOrder: List<Int>, finished: List<Int>, seat: Int): Int {
+        var i = playOrder.indexOf(seat)
+        do i = (i + 1) % playOrder.size while (playOrder[i] in finished)
+        return playOrder[i]
     }
 
     /**

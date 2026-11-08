@@ -41,8 +41,10 @@ class UlarTanggaTable private constructor(
     init {
         session.onPlayersChanged = { players = it }
         session.onStateChanged = { state ->
-            // A restart's first state has no roll; only a roll right after the shown state animates.
-            val fresh = session.seq == seq + 1 && state.lastRoll != null
+            // A restart's first state has no throw yet; only a throw or roll right after the
+            // shown state animates.
+            val thrown = state.lastRoll != null || state.openingRolls.any { round -> round.any { it != 0 } }
+            val fresh = session.seq == seq + 1 && thrown
             seq = session.seq
             latest = state
             onUpdate?.invoke(UlarTanggaUpdate(state, fresh))

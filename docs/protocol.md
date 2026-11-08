@@ -57,16 +57,21 @@ passed the mover's own store. Guests play and animate by the flag in the state. 
 before the field ignores it and may animate such a move the old way; the next full snapshot
 puts its board right.
 
-Ular tangga's `state` carries `openingRolls` (optional, default empty): the host's opening
-dice-off, one array per round with a roll per seat (`0` for a seat already out). Every seat
-throws in the first round, the seats tied on the best roll throw again, and `firstTurn` is
-the seat left with the best roll. Guests animate the rounds from it; a guest that ignores it
-just starts at `turn`.
+Ular tangga opens with a dice-off that sets the play order, thrown by the players one at a
+time as ordinary moves. While `opening` (optional, default `false`) is true, `turn` is the
+seat to throw and a move is that seat's throw, rolled by the host. `openingRolls` (optional,
+default empty) holds the rounds, one array per round with a roll per seat: `0` for a seat
+that does not throw that round, or has not thrown yet. Everyone throws in the first round;
+seats whose throws so far are all equal throw another round between themselves, until every
+seat's throws differ. When the dice-off ends, `order` (optional, default empty = seat order)
+lists the seats in play order, higher throws first, `firstTurn` is its first seat, and turns
+go round in that order. `lastRoll`/`lastSeat` stay absent during the dice-off; guests find
+each throw as the newly filled entry of the last round. No ular tangga guest has shipped
+before these fields, so they replace the earlier host-rolled dice-off without a version bump.
 
 It also carries `colors` (optional, default empty): each seat's pawn colour, `0` red, `1`
-blue, `2` green, `3` yellow, all different, chosen by the players before the game. Empty
-means seat order (seat 0 red, seat 1 blue, ...), which is also what a guest from before the
-field shows.
+blue, `2` green, `3` yellow, all different. Empty means seat order (seat 0 red, seat 1 blue,
+...). Local games leave it empty for now.
 
 ## BLE framing
 

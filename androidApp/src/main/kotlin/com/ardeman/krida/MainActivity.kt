@@ -99,7 +99,6 @@ import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.ulartangga.UlarTanggaRenderer
 import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
-import com.ardeman.krida.ulartangga.pawnColor
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.session.RoomCode
@@ -373,9 +372,6 @@ class MainActivity : ComponentActivity() {
                     fill = true,
                 )
             }
-            if (ular) SettingRow(stringResource(R.string.play_colors)) {
-                ColorChips(colorNames)
-            }
             // The action row: what this opponent means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
@@ -400,7 +396,7 @@ class MainActivity : ComponentActivity() {
                             val n = UlarTanggaSettings.players
                             if (ular) when (opponent) {
                                 Opponent.COMPUTER -> ularTable = UlarTanggaTable.vsComputer(you, if (n == 2) listOf(computer) else computerN.take(n - 1))
-                                else -> ularTable = UlarTanggaTable.passAndPlay(UlarTanggaSettings.colors.take(n).map { colorNames[it] })
+                                else -> ularTable = UlarTanggaTable.passAndPlay(colorNames.take(n))
                             } else when (opponent) {
                                 Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
                                 Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
@@ -566,37 +562,6 @@ private fun SettingRow(label: String, content: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, style = Theme.font(13, FontWeight.Bold, Theme.muted), maxLines = 1)
         Box(Modifier.fillMaxWidth().heightIn(min = 44.dp), contentAlignment = Alignment.CenterStart) { content() }
-    }
-}
-
-/** One chip per ular tangga player with their pawn color; a tap moves it to the next color. */
-@Composable
-private fun ColorChips(names: List<String>) {
-    val change = stringResource(R.string.ular_color_change)
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        repeat(UlarTanggaSettings.players) { player ->
-            val color = UlarTanggaSettings.colors[player]
-            val label = stringResource(R.string.ular_color_chip, player + 1, names[color])
-            val shape = RoundedCornerShape(12.dp)
-            Row(
-                Modifier.weight(1f).height(44.dp).clip(shape).background(Theme.track, shape)
-                    .clickable(onClickLabel = change, role = Role.Button) { UlarTanggaSettings.nextColor(player) }
-                    .semantics(mergeDescendants = true) { contentDescription = label }
-                    .padding(horizontal = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-            ) {
-                val fill = pawnColor(color)
-                // Dark digits on a light pawn color (yellow), white on the rest, as in the game.
-                val digits = if (fill.red * 0.3f + fill.green * 0.59f + fill.blue * 0.11f > 0.6f) Theme.ink else Color.White
-                Box(Modifier.size(26.dp).background(fill, CircleShape), contentAlignment = Alignment.Center) {
-                    Text("${player + 1}", style = Theme.font(14, FontWeight.Black, digits))
-                }
-                if (UlarTanggaSettings.players < 4) {
-                    Text(names[color], style = Theme.font(14, color = Theme.ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-        }
     }
 }
 

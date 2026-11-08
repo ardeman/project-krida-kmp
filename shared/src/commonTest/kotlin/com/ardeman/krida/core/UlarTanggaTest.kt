@@ -28,35 +28,75 @@ class UlarTanggaTest {
     ) = UlarTanggaState(positions.toList(), turn, finishOrder = finishOrder, options = options)
 
     @Test
-    fun startsOffTheBoardWithADiceOffStarter() {
-        val firsts = (0 until 40).map { game.initialState(4, Random(it)) }
-        firsts.forEach {
-            assertEquals(listOf(0, 0, 0, 0), it.positions)
-            assertEquals(it.firstTurn, it.turn)
-            assertNull(it.lastRoll)
-        }
-        assertEquals(setOf(0, 1, 2, 3), firsts.map { it.turn }.toSet())
+    fun startsOffTheBoardWaitingForSeatZerosThrow() {
+        val s = game.initialState(4, Random(1))
+        assertEquals(listOf(0, 0, 0, 0), s.positions)
+        assertTrue(s.opening)
+        assertEquals(0, s.turn)
+        assertEquals(listOf(listOf(0, 0, 0, 0)), s.openingRolls)
+        assertNull(s.lastRoll)
+    }
+
+    private fun throwAll(s0: UlarTanggaState, vararg rolls: Int): UlarTanggaState =
+        rolls.fold(s0) { s, roll -> game.diceOffThrow(s, s.turn, roll) }
+
+    @Test
+    fun diceOffSetsTheWholePlayOrder() {
+        val s = throwAll(game.initialState(4, Random(1)), 2, 5, 3, 6)
+        assertFalse(s.opening)
+        assertEquals(listOf(3, 1, 2, 0), s.order)
+        assertEquals(3, s.turn)
+        assertEquals(3, s.firstTurn)
+        // Turns follow the order, not the seats.
+        assertEquals(1, game.play(s, 3, 2).state.turn)
+        assertEquals(2, game.play(game.play(s, 3, 2).state, 1, 2).state.turn)
     }
 
     @Test
-    fun diceOffRethrowsTiesUntilOneSeatIsHighest() {
-        var sawTie = false
-        repeat(200) { seed ->
-            val s = game.initialState(4, Random(seed))
-            val rounds = s.openingRolls
-            assertTrue(rounds.isNotEmpty())
-            // Everyone throws first; then only the seats tied on the previous round's best.
-            var throwing = setOf(0, 1, 2, 3)
-            rounds.forEachIndexed { i, rolls ->
-                assertEquals(4, rolls.size)
-                rolls.forEachIndexed { seat, r -> assertEquals(seat in throwing, r in 1..6, "round $i seat $seat") }
-                val best = rolls.max()
-                throwing = rolls.indices.filter { rolls[it] == best }.toSet()
-                if (i < rounds.lastIndex) assertTrue(throwing.size > 1) else assertEquals(setOf(s.firstTurn), throwing)
-            }
-            if (rounds.size > 1) sawTie = true
-        }
-        assertTrue(sawTie)
+    fun tiedSeatsThrowAgainBetweenThemselves() {
+        val start = game.initialState(4, Random(1))
+        // Seats 0 and 2 tie on 4, seats 1 and 3 on 2.
+        var s = throwAll(start, 4, 2, 4, 2)
+        assertTrue(s.opening)
+        assertEquals(2, s.openingRolls.size)
+        assertEquals(0, s.turn)
+        s = throwAll(s, 3)
+        assertEquals(1, s.turn)
+        s = throwAll(s, 5)
+        assertEquals(2, s.turn)
+        // Seat 2 ties seat 0 again; seat 3 beats seat 1.
+        s = throwAll(s, 3, 6)
+        assertTrue(s.opening)
+        assertEquals(listOf(3, 5, 3, 6), s.openingRolls[1])
+        assertEquals(listOf(0, 0, 0, 0), s.openingRolls[2])
+        assertEquals(0, s.turn)
+        s = throwAll(s, 1, 6)
+        assertFalse(s.opening)
+        assertEquals(listOf(2, 0, 3, 1), s.order)
+    }
+
+    @Test
+    fun diceOffThrowBetweenFindsTheThrow() {
+        val a = game.initialState(2, Random(1))
+        val b = game.diceOffThrow(a, 0, 4)
+        assertEquals(0 to 4, game.diceOffThrowBetween(a, b))
+        val c = game.diceOffThrow(b, 1, 4)
+        assertEquals(1 to 4, game.diceOffThrowBetween(b, c))
+        assertTrue(c.opening)
+        assertNull(game.diceOffThrowBetween(game.play(at(0, 0), 0, 2).state, at(0, 0)))
+    }
+
+    @Test
+    fun hostRunsTheDiceOffThroughMoves() {
+        val net = LoopbackNetwork()
+        val host = HostSession(UlarTanggaRules(UlarTanggaOptions()), net.host, roomCode = "ULAR", random = Random(5))
+        repeat(3) { host.addBot("Komputer ${it + 1}", Platform.ANDROID, UlarTanggaBot) }
+        host.start()
+        while (host.state!!.opening) assertTrue(host.stepBot())
+        val s = host.state!!
+        assertEquals(setOf(0, 1, 2), s.order.toSet())
+        assertEquals(s.order[0], s.turn)
+        assertNull(s.lastRoll)
     }
 
     @Test

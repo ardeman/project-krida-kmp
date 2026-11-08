@@ -101,9 +101,6 @@
     <string name="ular_player_yellow">Yellow</string>
     <string name="ular_computer_n">Computer %1$d</string>
     <string name="play_players">Players</string>
-    <string name="play_colors">Colours</string>
-    <string name="ular_color_chip">Player %1$d: %2$s</string>
-    <string name="ular_color_change">Change colour</string>
     <string name="play_rules">Rules</string>
     <string name="ular_detail_phone">Pass the phone round; everyone rolls on their turn.</string>
     <string name="ular_detail_computer">You against the computer.</string>
@@ -111,9 +108,11 @@
     <string name="ular_option_six_to_enter">6 to start</string>
     <string name="ular_option_bounce">Bounce off 100</string>
     <string name="ular_option_first_ends">First to 100 ends</string>
-    <string name="ular_rule_dice_off">Everyone throws the die and the highest goes first; tied players throw again. Turns then go round in order.</string>
-    <string name="ular_dice_off">Who goes first? Highest throw</string>
-    <string name="ular_dice_off_tie">A tie · throw again</string>
+    <string name="ular_rule_dice_off">Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order.</string>
+    <string name="ular_dice_off_you">Throw the die to set the playing order</string>
+    <string name="ular_dice_off_of">%1$s, throw the die to set the playing order</string>
+    <string name="ular_dice_off_done">Order set · %1$s goes first</string>
+    <string name="ular_dice_off_tie">A tie · %1$s throws again</string>
     <string name="ular_rule_start">Everyone starts off the board; a roll of 4 puts you on square 4.</string>
     <string name="ular_rule_six_to_enter">You need a 6 to get on the board; it puts you on square 1.</string>
     <string name="ular_rule_ladders">Land on the foot of a ladder: climb to its top.</string>

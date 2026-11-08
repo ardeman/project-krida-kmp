@@ -138,13 +138,8 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     /** How the local player threw the die, for the roll the table hasn't sent back yet. */
     val pendingToss = remember { arrayOfNulls<UlarTanggaRenderer.Toss>(1) }
     var animating by remember { mutableStateOf(false) }
-    /** The seat throwing in the opening dice-off. */
-    var spinning by remember { mutableStateOf<Int?>(null) }
-    /** During the dice-off: each seat's roll this round (0 = not yet, or out). */
-    var offRolls by remember { mutableStateOf<List<Int>?>(null) }
-    /** During the dice-off: seats that lost a round. */
-    var offOut by remember { mutableStateOf(emptySet<Int>()) }
-    var offTie by remember { mutableStateOf(false) }
+    /** Just after the dice-off: everyone's throws stay on the tiles for a moment. */
+    var offHold by remember { mutableStateOf(false) }
     var showRules by remember { mutableStateOf(false) }
     var renderer by remember { mutableStateOf<UlarTanggaRenderer?>(null) }
     val turned = LocalStageTurned.current
@@ -166,45 +161,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
 
     fun idle() {
         scope.launch {
+            while (loading()) delay(100)
             delay(BOT_PAUSE_MS)
             if (!animating && queue.isEmpty()) table.stepBot()
         }
-    }
-
-    /**
-     * Replays the host's opening dice-off: round by round each seat still in throws the die
-     * and its roll shows on its tile; seats below the best drop out, ties throw again.
-     */
-    suspend fun diceOff(s: UlarTanggaState) {
-        while (loading()) delay(100)
-        delay(300)
-        val rounds = s.openingRolls
-        rounds.forEachIndexed { i, rolls ->
-            offTie = i > 0
-            offRolls = List(rolls.size) { 0 }
-            for (seat in rolls.indices) {
-                val roll = rolls[seat]
-                if (roll == 0) continue
-                spinning = seat
-                val seconds = renderer?.throwDie(roll, UlarTanggaRenderer.Toss.Short) ?: 0f
-                delay((seconds * 1000).toLong() + 150)
-                offRolls = offRolls?.toMutableList()?.also { it[seat] = roll }
-                delay(350)
-                renderer?.recallDie()
-                delay(500)
-            }
-            spinning = null
-            val best = rolls.max()
-            offOut = rolls.indices.filter { rolls[it] != best }.toSet()
-            delay(900)
-        }
-        spinning = s.firstTurn
-        delay(600)
-        spinning = null
-        offRolls = null
-        offOut = emptySet()
-        offTie = false
-        announceTurn(table, s.firstTurn)
     }
 
     fun drain() {
@@ -215,7 +175,26 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             val next = update.state
             val seat = next.lastSeat
             val roll = next.lastRoll
-            if (update.fresh && seat != null && roll != null) {
+            val offThrow = if (update.fresh) UlarTanggaGame.diceOffThrowBetween(state, next) else null
+            if (offThrow != null) {
+                // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
+                val (thrower, value) = offThrow
+                val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
+                pendingToss[0] = null
+                val seconds = renderer?.throwDie(value, toss) ?: 0f
+                delay((seconds * 1000).toLong() + 150)
+                die = value
+                state = next
+                delay(450)
+                renderer?.recallDie()
+                if (!next.opening) {
+                    // The order is set: show every throw a moment, then the tiles line up in order.
+                    offHold = true
+                    delay(1800)
+                    offHold = false
+                    announceTurn(table, next.turn)
+                }
+            } else if (update.fresh && seat != null && roll != null) {
                 // Bots and remote players toss; the local player's tap or throw is replayed.
                 val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
                 pendingToss[0] = null
@@ -245,19 +224,19 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 state = next
                 announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
             } else {
-                // A new game (or the screen's first state): pawns to the start, then the dice-off.
+                // A new game (or the screen's first state): pawns to the start; the dice-off
+                // waits for the players' throws.
                 die = null
                 state = next
                 placeAll(next)
                 renderer?.recallDie()
-                if (next.lastRoll == null && !next.finished) diceOff(next)
             }
             animating = false
             drain()
         }
     }
 
-    // The first state runs through the queue too, so the opening dice-off plays.
+    // The first state runs through the queue too, so the pawns are placed.
     DisposableEffect(table) {
         table.onUpdate = { queue.addLast(it); drain() }
         queue.addLast(UlarTanggaUpdate(table.latest, fresh = false))
@@ -306,8 +285,19 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         onDispose { lifecycle.removeObserver(observer) }
     }
 
-    val highlighted = spinning ?: if (state.finished || queue.isNotEmpty()) null else state.turn
-    val ready = canRoll() && spinning == null && !loading()
+    val highlighted = if (state.finished || queue.isNotEmpty()) null else state.turn
+    val ready = canRoll() && !offHold && !loading()
+    // During the dice-off (and a moment after) the tiles show throws: this round's for the
+    // seats throwing, the last one, dimmed, for seats already placed.
+    val off = state.opening || offHold
+    val throwing = if (state.opening) UlarTanggaGame.diceOffThrowers(state.openingRolls.dropLast(1), players) else emptyList()
+    fun offRoll(seat: Int): Int? = when {
+        !off -> null
+        seat in throwing -> state.openingRolls.last()[seat].takeIf { it > 0 }
+        else -> state.openingRolls.lastOrNull { it[seat] > 0 }?.get(seat)
+    }
+    // Once the order is set, the tiles stand in play order.
+    val tileOrder = if (off) (0 until players).toList() else state.playOrder
     SideEffect { renderer?.dieReady = ready }
     val rollLabel = stringResource(R.string.ular_roll)
     val dieLabel = die?.toString() ?: ""
@@ -368,11 +358,11 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 Spacer(Modifier.height(4.dp))
                 // Two tiles a row.
                 Column(Modifier.hud("players"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    (0 until players).chunked(2).forEach { pair ->
+                    tileOrder.chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             pair.forEach { seat -> PlayerTile(
                                 table, state, seat, on = seat == highlighted,
-                                roll = offRolls?.getOrNull(seat)?.takeIf { it > 0 }, out = seat in offOut,
+                                roll = offRoll(seat), out = state.opening && seat !in throwing,
                                 modifier = Modifier.weight(1f),
                             ) }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
@@ -428,9 +418,8 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 Spacer(Modifier.height(10.dp))
                 Text(
                     when {
-                        offRolls == null -> status(table, state, animating || spinning != null)
-                        offTie -> stringResource(R.string.ular_dice_off_tie)
-                        else -> stringResource(R.string.ular_dice_off)
+                        offHold -> stringResource(R.string.ular_dice_off_done, displayName(table, state.turn))
+                        else -> status(table, state, animating)
                     },
                     style = Theme.font(14, FontWeight.Bold, Theme.muted),
                     textAlign = TextAlign.Center,
@@ -470,6 +459,10 @@ private fun status(table: UlarTanggaTable, state: UlarTanggaState, busy: Boolean
     return when {
         state.finished -> ""
         busy -> ""
+        state.opening && seat in table.botSeats -> stringResource(R.string.congklak_status_thinking)
+        state.opening && state.openingRolls.size > 1 -> stringResource(R.string.ular_dice_off_tie, displayName(table, seat))
+        state.opening && table.mySeat == seat -> stringResource(R.string.ular_dice_off_you)
+        state.opening -> stringResource(R.string.ular_dice_off_of, table.name(seat))
         state.lastSeat == seat && state.lastRoll == 6 && state.options.sixRollsAgain -> stringResource(R.string.ular_six_again)
         seat in table.botSeats -> stringResource(R.string.congklak_status_thinking)
         table.mySeat == seat -> stringResource(R.string.ular_your_turn)

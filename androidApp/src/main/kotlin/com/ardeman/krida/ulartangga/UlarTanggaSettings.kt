@@ -5,11 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.UlarTanggaOptions
 import com.ardeman.krida.core.games.UlarTanggaRules
 
-/** Ular tangga choices stored on this device: player count, pawn colors and the rule options. */
+/** Ular tangga choices stored on this device: player count and the rule options. */
 object UlarTanggaSettings {
     private const val PREFS = "ular_tangga"
     private const val KEY_PLAYERS = "ularTangga.players"
@@ -17,7 +16,6 @@ object UlarTanggaSettings {
     private const val KEY_SIX_ENTER = "ularTangga.sixToEnter"
     private const val KEY_FIRST_ENDS = "ularTangga.firstFinishEnds"
     private const val KEY_SIX_AGAIN = "ularTangga.sixRollsAgain"
-    private const val KEY_COLORS = "ularTangga.colors"
 
     private lateinit var app: Context
 
@@ -26,10 +24,6 @@ object UlarTanggaSettings {
         private set
 
     var options by mutableStateOf(UlarTanggaOptions())
-        private set
-
-    /** All four pawn colors in player order; player n takes the n-th. */
-    var colors by mutableStateOf(List(UlarTanggaGame.COLORS) { it })
         private set
 
     private val prefs get() = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -44,23 +38,6 @@ object UlarTanggaSettings {
             firstFinishEnds = p.getBoolean(KEY_FIRST_ENDS, false),
             sixRollsAgain = p.getBoolean(KEY_SIX_AGAIN, true),
         )
-        colors = UlarTanggaGame.seatColors(
-            UlarTanggaGame.COLORS,
-            p.getString(KEY_COLORS, null).orEmpty().mapNotNull { it.digitToIntOrNull() },
-        )
-    }
-
-    /**
-     * Gives [player] the next color no other player at the table has, swapping it with that
-     * spare color; with four players there is none, so it swaps with whoever has the next color.
-     */
-    fun nextColor(player: Int) {
-        val inUse = colors.take(players)
-        val current = colors[player]
-        val after = (1 until UlarTanggaGame.COLORS).map { (current + it) % UlarTanggaGame.COLORS }
-        val next = after.firstOrNull { it !in inUse } ?: after.first()
-        colors = colors.map { if (it == current) next else if (it == next) current else it }
-        prefs.edit().putString(KEY_COLORS, colors.joinToString("")).apply()
     }
 
     fun choosePlayers(count: Int) {
@@ -79,5 +56,5 @@ object UlarTanggaSettings {
     }
 
     /** Rules for a new host session, with the chosen options. */
-    val rules: UlarTanggaRules get() = UlarTanggaRules(options, colors.take(players))
+    val rules: UlarTanggaRules get() = UlarTanggaRules(options)
 }
