@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var startMinDone = false
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
+    @ObservedObject private var ads = Ads.shared
 
     var body: some View {
         Group {
@@ -84,11 +85,14 @@ struct ContentView: View {
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { menuViewport = $0 }
                     .overlay(alignment: .bottom) { moreBelowHint(proxy) }
                 }
-                HStack(spacing: 8 * s) {
-                    AdBanner()
-                    RemoveAdsButton()
+                // Only while the banner shows: with ads removed the cards take the full height.
+                if !ads.removed && ads.started {
+                    HStack(spacing: 8 * s) {
+                        AdBanner()
+                        RemoveAdsButton()
+                    }
+                    .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
                 }
-                .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
             }
         }
         .padding(.horizontal, 24 * s)
