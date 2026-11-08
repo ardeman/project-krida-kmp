@@ -7,6 +7,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
@@ -618,7 +621,18 @@ private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onR
     val games = Game.entries
     fun step(d: Int) = onGame(games[(game.ordinal + d + games.size) % games.size])
     val cream = Color(0xFFF3DDBE)
-    Box(modifier.fillMaxWidth().background(game.edge, shape)) {
+    val swipe = with(LocalDensity.current) { 48.dp.toPx() }
+    Box(
+        modifier.fillMaxWidth().background(game.edge, shape)
+            // Swipe the card sideways to switch games, like the arrows: left for the next one.
+            .pointerInput(game) {
+                var dx = 0f
+                detectHorizontalDragGestures(
+                    onDragStart = { dx = 0f },
+                    onDragEnd = { if (dx <= -swipe) step(1) else if (dx >= swipe) step(-1) },
+                ) { change, amount -> change.consume(); dx += amount }
+            },
+    ) {
         Column(
             Modifier.fillMaxSize().padding(bottom = 6.dp).background(game.face, shape).padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
