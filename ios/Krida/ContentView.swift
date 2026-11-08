@@ -49,6 +49,7 @@ struct ContentView: View {
                         passAndPlayCard
                         vsComputerCard
                         nearbyCard
+                        tembakCard
                         AdButtons()
                     }
                     .frame(maxWidth: .infinity)
@@ -140,6 +141,17 @@ struct ContentView: View {
                             .buttonStyle(SecondaryButtonStyle())
                     }
                 }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// The tembak rule for every mode started here (and rooms this device hosts).
+    private var tembakCard: some View {
+        ModeCard(icon: "scope") {
+            VStack(alignment: .leading, spacing: 8 * s) {
+                Text("Aturan tembak").font(Theme.font(18 * s)).lineLimit(1)
+                TembakPicker()
             }
             Spacer(minLength: 0)
         }
@@ -271,7 +283,6 @@ private struct CongklakCard: View {
                 .font(Theme.font(13 * s, .semibold))
                 .foregroundStyle(Color(hex: 0xF3DDBE))
                 .fixedSize(horizontal: false, vertical: true)
-            TembakPicker()
         }
         .padding(16 * s)
         .frame(maxHeight: .infinity)
@@ -286,22 +297,19 @@ private struct CongklakCard: View {
     }
 }
 
-/// The tembak rule for the next game (pass-and-play, vs computer, or a room you host):
-/// "Lewat lumbung" (the Indonesian rule, default) or "Bebas". Stored on this device.
+/// The tembak rule for the next game: "Lewat lumbung" (the Indonesian rule, default:
+/// only after this turn has passed your own store) or "Bebas". Stored on this device.
 private struct TembakPicker: View {
     @AppStorage(CongklakSettings.tembakAfterStoreKey) private var afterStore = true
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        HStack(spacing: 8 * s) {
-            Text("Tembak").font(Theme.font(13 * s, .bold)).foregroundStyle(Color(hex: 0xF3DDBE))
-            HStack(spacing: 2 * s) {
-                option(true, "Lewat lumbung")
-                option(false, "Bebas")
-            }
-            .padding(3 * s)
-            .background(Theme.woodDark, in: RoundedRectangle(cornerRadius: 11 * s))
+        HStack(spacing: 2 * s) {
+            option(true, "Lewat lumbung")
+            option(false, "Bebas")
         }
+        .padding(3 * s)
+        .background(Theme.track, in: RoundedRectangle(cornerRadius: 12 * s))
         .lineLimit(1)
         .minimumScaleFactor(0.75)
         .accessibilityElement(children: .contain)
@@ -310,17 +318,14 @@ private struct TembakPicker: View {
 
     private func option(_ value: Bool, _ label: LocalizedStringKey) -> some View {
         let on = afterStore == value
-        return Button {
-            Sounds.shared.play(.tap)
-            afterStore = value
-        } label: {
+        return Button { afterStore = value } label: {
             Text(label)
-                .font(Theme.font(13 * s))
-                .foregroundStyle(on ? Theme.ink : Color(hex: 0xF3DDBE))
-                .padding(.horizontal, 10 * s)
-                .frame(maxWidth: .infinity)
-                .frame(height: 32 * s)
-                .background(on ? Theme.seed : .clear, in: RoundedRectangle(cornerRadius: 8 * s))
+                .font(Theme.font(14 * s))
+                .foregroundStyle(on ? Theme.ink : Theme.muted)
+                .padding(.horizontal, 14 * s)
+                .frame(height: 38 * s)
+                .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
+                .shadow(color: on ? Theme.ink.opacity(0.18) : .clear, radius: 1.5, y: 1)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(on ? .isSelected : [])
