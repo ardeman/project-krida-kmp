@@ -133,6 +133,13 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     private var shaking = false
     private var shakeTime = 0f
     private var idleTime = 0f
+    /** Eased 0..1 amounts of the press, the shake and the idle rocking, so none of them snaps. */
+    private var pressAmt = 0f
+    private var shakeAmt = 0f
+    private var rockAmt = 0f
+    /** The die's pose as last drawn (shake included), so a throw starts where the eye sees it. */
+    private var drawnRot = dieRot
+    private val drawnPos = home.copyOf()
     private var fovDegrees = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
     private var shiftX = 0.0
     private var shiftY = 0.0
@@ -184,6 +191,10 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     fun throwDie(value: Int, toss: Toss): Float {
         pressed = false
         shaking = false
+        // Leave from the pose on screen, mid-shake or not.
+        drawnPos.copyInto(shown)
+        dieRot = drawnRot
+        pressAmt = 0f; shakeAmt = 0f; rockAmt = 0f
         dieValue = value
         val area = UlarTanggaBoard.dieLanding
         val long = toss == Toss.Long
@@ -278,32 +289,50 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
         }
         if (dieMode != DieMode.Home) return false
         home.copyInto(shown)
-        if (pressed || dieReady) {
-            if (shaking) shakeTime += dt
-            idleTime += dt
-            applyDie()
-            return true
-        }
+        // Ease toward the targets: quick to press, a little slower to build up a shake.
+        pressAmt = approach(pressAmt, if (pressed) 1f else 0f, dt, 0.06f)
+        shakeAmt = approach(shakeAmt, if (shaking) 1f else 0f, dt, if (shaking) 0.18f else 0.08f)
+        rockAmt = approach(rockAmt, if (dieReady && !pressed) 1f else 0f, dt, 0.15f)
+        val easing = pressAmt + shakeAmt + rockAmt > 0.002f
+        if (shaking || shakeAmt > 0.002f) shakeTime += dt
+        if (dieReady || rockAmt > 0.002f) idleTime += dt
         applyDie()
-        return false
+        return pressed || dieReady || easing
+    }
+
+    /** Exponential ease of [value] toward [target] with time constant [tau] seconds. */
+    private fun approach(value: Float, target: Float, dt: Float, tau: Float): Float {
+        val v = target + (value - target) * kotlin.math.exp(-dt / tau)
+        return if (kotlin.math.abs(v - target) < 0.001f) target else v
     }
 
     /** Sets the die and its shadow: pressed, shaken or rocking while it waits on screen. */
     private fun applyDie() {
         var q = dieRot
         var scale = 1f
+        val pos = shown.copyOf()
         if (dieMode == DieMode.Home) {
-            if (shaking) {
+            if (shakeAmt > 0f) {
+                // Rattled in a cupped hand: a smooth tumble on three axes plus a small toss
+                // up and down, growing for the first moment of the hold.
                 val s = shakeTime * 2 * PI.toFloat()
-                q = qMul(qMul(qAxis(1f, 0f, 0f, 0.35f * sin(s * 7.3f)), qAxis(0f, 0f, 1f, 0.35f * sin(s * 5.9f + 1f))), q)
-            } else if (dieReady && !pressed) {
-                q = qMul(qAxis(0f, 1f, 0f, 0.18f * sin(idleTime * 2 * PI.toFloat() / 1.6f)), q)
+                val a = shakeAmt * (0.25f + 0.2f * minOf(1f, shakeTime / 0.6f))
+                q = qMul(
+                    qMul(qAxis(1f, 0f, 0f, a * sin(s * 3.1f)), qAxis(0f, 0f, 1f, a * sin(s * 2.3f + 1.1f))),
+                    qMul(qAxis(0f, 1f, 0f, a * 0.6f * sin(s * 1.7f + 0.4f)), q),
+                )
+                val bob = UlarTanggaBoard.DIE * 0.12f * shakeAmt
+                pos[0] += bob * 0.5f * sin(s * 2.3f)
+                pos[1] += bob * kotlin.math.abs(sin(s * 3.1f))
             }
-            if (pressed) scale = 0.9f
+            if (rockAmt > 0f) q = qMul(qAxis(0f, 1f, 0f, rockAmt * 0.18f * sin(idleTime * 2 * PI.toFloat() / 1.6f)), q)
+            scale = 1f - 0.1f * pressAmt
         }
+        drawnRot = q
+        pos.copyInto(drawnPos)
         val m = qMatrix(q)
         for (i in 0..10) if (i % 4 != 3) m[i] *= scale
-        m[12] = shown[0]; m[13] = shown[1]; m[14] = shown[2]
+        m[12] = pos[0]; m[13] = pos[1]; m[14] = pos[2]
         setTransform(die, m)
         // The shadow on the tiles shrinks as the die rises.
         val sc = (1f - (shown[1] - restY) * 0.08f).coerceIn(0.3f, 1f)

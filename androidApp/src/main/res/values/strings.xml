@@ -108,7 +108,9 @@
     <string name="ular_option_six_to_enter">6 to start</string>
     <string name="ular_option_bounce">Bounce off 100</string>
     <string name="ular_option_first_ends">First to 100 ends</string>
-    <string name="ular_rule_roulette">A roulette picks who rolls first; turns then go round in order.</string>
+    <string name="ular_rule_dice_off">Everyone throws the die and the highest goes first; tied players throw again. Turns then go round in order.</string>
+    <string name="ular_dice_off">Who goes first? Highest throw</string>
+    <string name="ular_dice_off_tie">A tie · throw again</string>
     <string name="ular_rule_start">Everyone starts off the board; a roll of 4 puts you on square 4.</string>
     <string name="ular_rule_six_to_enter">You need a 6 to get on the board; it puts you on square 1.</string>
     <string name="ular_rule_ladders">Land on the foot of a ladder: climb to its top.</string>

@@ -60,10 +60,18 @@ object UlarTanggaBoard {
     private val WHITE = floatArrayOf(1f, 1f, 1f)
     private val BLACK = floatArrayOf(0.1f, 0.08f, 0.07f)
     private val TONGUE = floatArrayOf(0.86f, 0.16f, 0.18f)
-    private val DIE_WHITE = floatArrayOf(0.99f, 0.98f, 0.95f)
+    /** The die follows the brand die (docs/brand/die.svg): Krem body, Kayu gelap pips, and the four colours on the 4. */
+    private val DIE_WHITE = floatArrayOf(1f, 0.969f, 0.925f)
     /** Milder than the default, since the die turns and its baked shading turns with it. */
     private val DIE_SHADE = floatArrayOf(1f, 0.9f, 0.94f)
-    private val PIP_RED = floatArrayOf(0.85f, 0.15f, 0.17f)
+    private val PIP_WOOD = floatArrayOf(0.561f, 0.333f, 0.165f)
+    /** The 4's pips, by spot in [DIE_PIPS]: red and green on one diagonal, blue and yellow on the other. */
+    private val PIP_FOUR = arrayOf(
+        floatArrayOf(0.839f, 0.271f, 0.239f),
+        floatArrayOf(0.184f, 0.435f, 0.820f),
+        floatArrayOf(0.941f, 0.706f, 0.161f),
+        floatArrayOf(0.243f, 0.604f, 0.310f),
+    )
     private val SHADOW = floatArrayOf(0.85f, 0.81f, 0.73f)
 
     /** Piece colors by seat, sRGB: red, blue, green, yellow. The UI uses them too. */
@@ -194,9 +202,10 @@ object UlarTanggaBoard {
             // Two axes across the face, with a × b = -n so the quad winds outward like box().
             val a = if (n[0] != 0f) floatArrayOf(0f, 0f, 1f) else floatArrayOf(1f, 0f, 0f)
             val b = cross(a, n)
-            val rgb = if (value == 1 || value == 4) PIP_RED else BLACK
-            val size = if (value == 1) pip * 1.5f else pip
-            DIE_PIPS[i].forEach { (u, v) ->
+            // As on the brand die: a big single pip, and bigger pips on the 4.
+            val size = when (value) { 1 -> pip * 2.1f; 4 -> pip * 1.3f; else -> pip }
+            DIE_PIPS[i].forEachIndexed { k, (u, v) ->
+                val rgb = if (value == 4) PIP_FOUR[k] else PIP_WOOD
                 val c = FloatArray(3) { n[it] * (half + 0.01f) + a[it] * u * spread + b[it] * v * spread }
                 val s = size / 2
                 fun corner(du: Float, dv: Float) = FloatArray(3) { c[it] + a[it] * du + b[it] * dv }

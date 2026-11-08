@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -101,7 +102,7 @@ fun seatColor(seat: Int): Color = UlarTanggaBoard.seatColor(seat).let { Color(it
 /**
  * Ular tangga on a voxel board, driven by an [UlarTanggaTable]. Every snapshot is animated in
  * order: a roll is replayed from the shown state (die tumble, a hop per square, then the snake
- * or ladder), then the pawns settle; a new game starts with the roulette picking who goes first.
+ * or ladder), then the pawns settle; a new game starts with the dice-off for who goes first.
  */
 @Composable
 fun UlarTanggaScreen(table: UlarTanggaTable, onExit: () -> Unit) {
@@ -132,8 +133,13 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     /** How the local player threw the die, for the roll the table hasn't sent back yet. */
     val pendingToss = remember { arrayOfNulls<UlarTanggaRenderer.Toss>(1) }
     var animating by remember { mutableStateOf(false) }
-    /** The seat the roulette is passing over, while it spins. */
+    /** The seat throwing in the opening dice-off. */
     var spinning by remember { mutableStateOf<Int?>(null) }
+    /** During the dice-off: each seat's roll this round (0 = not yet, or out). */
+    var offRolls by remember { mutableStateOf<List<Int>?>(null) }
+    /** During the dice-off: seats that lost a round. */
+    var offOut by remember { mutableStateOf(emptySet<Int>()) }
+    var offTie by remember { mutableStateOf(false) }
     var showRules by remember { mutableStateOf(false) }
     var renderer by remember { mutableStateOf<UlarTanggaRenderer?>(null) }
     val turned = LocalStageTurned.current
@@ -160,19 +166,40 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         }
     }
 
-    /** Spins the highlight round the seats, slowing down, and stops on [first]. */
-    suspend fun roulette(first: Int) {
+    /**
+     * Replays the host's opening dice-off: round by round each seat still in throws the die
+     * and its roll shows on its tile; seats below the best drop out, ties throw again.
+     */
+    suspend fun diceOff(s: UlarTanggaState) {
         while (loading()) delay(100)
         delay(300)
-        val ticks = players * 3 + first + 1
-        for (i in 0 until ticks) {
-            spinning = i % players
-            Sounds.play(Sounds.Effect.Tap)
-            delay(60L + (i * i * 220L) / (ticks * ticks))
+        val rounds = s.openingRolls
+        rounds.forEachIndexed { i, rolls ->
+            offTie = i > 0
+            offRolls = List(rolls.size) { 0 }
+            for (seat in rolls.indices) {
+                val roll = rolls[seat]
+                if (roll == 0) continue
+                spinning = seat
+                val seconds = renderer?.throwDie(roll, UlarTanggaRenderer.Toss.Short) ?: 0f
+                delay((seconds * 1000).toLong() + 150)
+                offRolls = offRolls?.toMutableList()?.also { it[seat] = roll }
+                delay(350)
+                renderer?.recallDie()
+                delay(500)
+            }
+            spinning = null
+            val best = rolls.max()
+            offOut = rolls.indices.filter { rolls[it] != best }.toSet()
+            delay(900)
         }
-        delay(450)
+        spinning = s.firstTurn
+        delay(600)
         spinning = null
-        announceTurn(table, first)
+        offRolls = null
+        offOut = emptySet()
+        offTie = false
+        announceTurn(table, s.firstTurn)
     }
 
     fun drain() {
@@ -213,19 +240,19 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 state = next
                 announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
             } else {
-                // A new game (or the screen's first state): pawns to the start, then the roulette.
+                // A new game (or the screen's first state): pawns to the start, then the dice-off.
                 die = null
                 state = next
                 placeAll(next)
                 renderer?.recallDie()
-                if (next.lastRoll == null && !next.finished) roulette(next.firstTurn)
+                if (next.lastRoll == null && !next.finished) diceOff(next)
             }
             animating = false
             drain()
         }
     }
 
-    // The first state runs through the queue too, so the opening roulette plays.
+    // The first state runs through the queue too, so the opening dice-off plays.
     DisposableEffect(table) {
         table.onUpdate = { queue.addLast(it); drain() }
         queue.addLast(UlarTanggaUpdate(table.latest, fresh = false))
@@ -331,7 +358,11 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     (0 until players).chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            pair.forEach { seat -> PlayerTile(table, state, seat, on = seat == highlighted, Modifier.weight(1f)) }
+                            pair.forEach { seat -> PlayerTile(
+                                table, state, seat, on = seat == highlighted,
+                                roll = offRolls?.getOrNull(seat)?.takeIf { it > 0 }, out = seat in offOut,
+                                modifier = Modifier.weight(1f),
+                            ) }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
                         }
                     }
@@ -384,7 +415,11 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(
-                    status(table, state, animating || spinning != null),
+                    when {
+                        offRolls == null -> status(table, state, animating || spinning != null)
+                        offTie -> stringResource(R.string.ular_dice_off_tie)
+                        else -> stringResource(R.string.ular_dice_off)
+                    },
                     style = Theme.font(14, FontWeight.Bold, Theme.muted),
                     textAlign = TextAlign.Center,
                     maxLines = 3,
@@ -427,7 +462,15 @@ private fun status(table: UlarTanggaTable, state: UlarTanggaState, busy: Boolean
 
 /** A seat as a square tile: its square (or finishing place) inside a circle in its color, the name below. */
 @Composable
-private fun PlayerTile(table: UlarTanggaTable, state: UlarTanggaState, seat: Int, on: Boolean, modifier: Modifier = Modifier) {
+private fun PlayerTile(
+    table: UlarTanggaTable,
+    state: UlarTanggaState,
+    seat: Int,
+    on: Boolean,
+    roll: Int? = null,
+    out: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
     val shape = RoundedCornerShape(14.dp)
     val place = state.finishOrder.indexOf(seat)
     val square = state.positions[seat]
@@ -436,6 +479,7 @@ private fun PlayerTile(table: UlarTanggaTable, state: UlarTanggaState, seat: Int
     val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.ink else Color.White
     Column(
         modifier.aspectRatio(1f)
+            .alpha(if (out) 0.4f else 1f)
             .then(if (on) Modifier.shadow(8.dp, shape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
             .background(if (on) Theme.accent else Color.White, shape)
             .then(if (on) Modifier else Modifier.border(1.5.dp, Theme.line, shape))
@@ -449,9 +493,11 @@ private fun PlayerTile(table: UlarTanggaTable, state: UlarTanggaState, seat: Int
                 Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                val start = place < 0 && square == 0
+                // During the dice-off the circle shows the seat's throw.
+                val start = place < 0 && square == 0 && roll == null
                 Text(
                     when {
+                        roll != null -> roll.toString()
                         place >= 0 -> "#${place + 1}"
                         start -> stringResource(R.string.ular_start)
                         else -> square.toString()
@@ -555,7 +601,7 @@ private fun announce(table: UlarTanggaTable, after: UlarTanggaState, reached: Bo
 @Composable
 private fun RulesDialog(options: UlarTanggaOptions, onDismiss: () -> Unit) {
     val rules = listOfNotNull(
-        stringResource(R.string.ular_rule_roulette),
+        stringResource(R.string.ular_rule_dice_off),
         stringResource(if (options.sixToEnter) R.string.ular_rule_six_to_enter else R.string.ular_rule_start),
         stringResource(R.string.ular_rule_ladders),
         stringResource(R.string.ular_rule_snakes),

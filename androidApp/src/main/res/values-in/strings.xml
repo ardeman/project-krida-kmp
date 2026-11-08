@@ -100,7 +100,9 @@
     <string name="ular_option_six_to_enter">6 untuk mulai</string>
     <string name="ular_option_bounce">Pantul di 100</string>
     <string name="ular_option_first_ends">Juara 1 selesai</string>
-    <string name="ular_rule_roulette">Roda putar memilih siapa yang melempar duluan; lalu giliran berjalan berurutan.</string>
+    <string name="ular_rule_dice_off">Semua melempar dadu, angka tertinggi jalan duluan; yang seri melempar lagi. Lalu giliran berjalan berurutan.</string>
+    <string name="ular_dice_off">Siapa duluan? Lemparan tertinggi</string>
+    <string name="ular_dice_off_tie">Seri · lempar lagi</string>
     <string name="ular_rule_start">Semua mulai di luar papan; dadu 4 membawamu ke kotak 4.</string>
     <string name="ular_rule_six_to_enter">Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1.</string>
     <string name="ular_rule_ladders">Berhenti di kaki tangga: naik ke ujung atasnya.</string>
