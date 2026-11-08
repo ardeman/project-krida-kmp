@@ -22,7 +22,7 @@ Gradle needs JDK 17–21; Android Studio's bundled JDK 25 is too new (see `READM
 - Protocol changes follow the compatibility rule in `docs/protocol.md`: never change an existing field's meaning, add optional fields only, bump `protocol` for a breaking change. Update `docs/protocol.md` in the same commit.
 - Rendering and radios stay native: Filament (Android) and RealityKit (iOS), BLE and LAN per platform. No cross-platform engine or WebView.
 - Install size budget is under 15 MB per store download. Ask before adding a dependency; prefer generating voxel meshes in code over shipping assets, and use `.glb` with vertex colors (no textures) when an asset is needed.
-- User-facing text is Indonesian. On Android it belongs in `res/values/strings.xml`, on iOS in a string catalog; don't add more hardcoded strings. Code comments are in English.
+- User-facing text is Indonesian and English, English being the fallback for every other locale. On Android English goes in `res/values/strings.xml` and Indonesian in `res/values-in/strings.xml` (Android's resource folder for Indonesian; language tags elsewhere use `id`); on iOS both go in the string catalog. Add every string in both languages; don't add hardcoded strings. Code comments are in English.
 - When a step in the README's multiplayer roadmap or the "Status" line changes, update `README.md` in the same commit.
 
 ## Commit messages

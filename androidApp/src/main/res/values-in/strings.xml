@@ -1,0 +1,73 @@
+<resources>
+    <string name="congklak_card_players">2 pemain</string>
+    <string name="congklak_card_tagline">Kumpulkan biji terbanyak di lumbungmu.</string>
+    <string name="congklak_player_1">Pemain 1</string>
+    <string name="congklak_player_2">Pemain 2</string>
+    <string name="congklak_wins">%1$s menang!</string>
+    <string name="congklak_draw">Seri!</string>
+    <string name="congklak_play_again">Main lagi</string>
+    <string name="congklak_back">Kembali</string>
+    <string name="congklak_back_to_menu">Kembali ke menu</string>
+    <string name="congklak_to_menu">Ke menu</string>
+    <string name="congklak_you_win">Kamu menang!</string>
+    <string name="congklak_wait_host">Menunggu host memulai lagi…</string>
+    <string name="congklak_direction">Searah jarum jam · lumbungmu di kiri</string>
+    <string name="congklak_status_waiting">menunggu</string>
+    <string name="congklak_status_sowing">Menabur · %1$d biji di tangan</string>
+    <string name="congklak_status_your_turn">Giliranmu · pilih lubang yang menyala</string>
+    <string name="congklak_status_thinking">berpikir…</string>
+    <string name="congklak_status_their_turn">gilirannya</string>
+    <string name="congklak_store_bot">KOM</string>
+    <string name="congklak_rules_title">Cara main</string>
+    <string name="congklak_rules_close">Tutup</string>
+    <string-array name="congklak_rules">
+        <item>Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam.</item>
+        <item>Lumbungmu di kiri ikut diisi; lumbung lawan dilewati.</item>
+        <item>Biji terakhir jatuh di lumbungmu: kamu main lagi.</item>
+        <item>Jatuh di lubang yang berisi: ambil semuanya dan terus menabur.</item>
+        <item>Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</item>
+        <item>Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai.</item>
+        <item>Jatuh di lubang kosong di sisi lawan: giliranmu selesai.</item>
+        <item>Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.</item>
+    </string-array>
+    <string name="mode_pass_title">Satu perangkat</string>
+    <string name="mode_pass_detail">Berdua, gantian di satu HP</string>
+    <string name="bot_title">Lawan komputer</string>
+    <string name="bot_you">Kamu</string>
+    <string name="bot_name">Komputer</string>
+    <string name="bot_level">Tingkat kesulitan</string>
+    <string name="bot_easy">Mudah</string>
+    <string name="bot_normal">Sedang</string>
+    <string name="bot_hard">Sulit</string>
+    <string name="bot_start">Mulai</string>
+    <string name="nearby_title">Main bareng dekat</string>
+    <string name="nearby_detail">Bluetooth, tanpa internet</string>
+    <string name="nearby_host">Buat room</string>
+    <string name="nearby_join_with_code">Gabung pakai kode</string>
+    <string name="nearby_code">Kode room</string>
+    <string name="nearby_code_hint">Kode room dari temanmu</string>
+    <string name="nearby_cancel">Batal</string>
+    <string name="nearby_join">Masuk</string>
+    <string name="nearby_room_code">Kode room</string>
+    <string name="nearby_start">Mulai</string>
+    <string name="nearby_waiting">Menunggu pemain lain…</string>
+    <string name="nearby_searching">Mencari room…</string>
+    <string name="nearby_joined">Sudah masuk. Menunggu host memulai…</string>
+    <string name="nearby_permission_denied">Izin Bluetooth ditolak</string>
+    <string name="nearby_rejected">Tidak bisa masuk room</string>
+    <string name="nearby_rejected_version">Versi aplikasi berbeda. Perbarui aplikasi.</string>
+    <string name="nearby_rejected_full">Room sudah penuh</string>
+    <string name="nearby_rejected_started">Permainan sudah dimulai</string>
+    <string name="nearby_host_lost">Terputus dari host</string>
+    <string name="nearby_player_lost">Pemain lain terputus. Menunggu dia kembali…</string>
+    <string name="nearby_move_refused">Langkah ditolak</string>
+    <string name="sound_on">Nyalakan suara</string>
+    <string name="sound_off">Matikan suara</string>
+    <string name="music_on">Nyalakan musik</string>
+    <string name="music_off">Matikan musik</string>
+    <string name="shop_remove_ads">Hapus iklan · %1$s</string>
+    <string name="ads_privacy">Privasi iklan</string>
+    <string name="hint">Petunjuk (tonton iklan)</string>
+    <string name="hint_free">Petunjuk</string>
+    <string name="language">Bahasa</string>
+</resources>

@@ -2,6 +2,7 @@ package com.ardeman.krida
 
 import android.Manifest
 import android.os.Build
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -76,6 +77,8 @@ import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.ui.IconTile
+import com.ardeman.krida.ui.Language
+import com.ardeman.krida.ui.LanguagePicker
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
@@ -103,6 +106,10 @@ class MainActivity : ComponentActivity() {
             if (!permissionDenied) pendingAction?.invoke()
             pendingAction = null
         }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(Language.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,7 +157,11 @@ class MainActivity : ComponentActivity() {
                     alignment = Alignment.CenterStart,
                 )
                 CongklakCard(Modifier.weight(1f))
-                SoundToggles()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SoundToggles()
+                    Spacer(Modifier.weight(1f))
+                    LanguagePicker()
+                }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Column(

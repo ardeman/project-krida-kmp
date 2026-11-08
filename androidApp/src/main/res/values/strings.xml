@@ -1,74 +1,81 @@
 <resources>
-    <string name="app_name">Krida</string>
-    <string name="congklak_title">Congklak</string>
-    <string name="congklak_card_players">2 pemain</string>
-    <string name="congklak_card_tagline">Kumpulkan biji terbanyak di lumbungmu.</string>
-    <string name="congklak_player_1">Pemain 1</string>
-    <string name="congklak_player_2">Pemain 2</string>
-    <string name="congklak_wins">%1$s menang!</string>
-    <string name="congklak_draw">Seri!</string>
-    <string name="congklak_play_again">Main lagi</string>
-    <string name="congklak_back">Kembali</string>
-    <string name="congklak_back_to_menu">Kembali ke menu</string>
-    <string name="congklak_to_menu">Ke menu</string>
-    <string name="congklak_you_win">Kamu menang!</string>
-    <string name="congklak_wait_host">Menunggu host memulai lagi…</string>
-    <string name="congklak_direction">Searah jarum jam · lumbungmu di kiri</string>
-    <string name="congklak_status_waiting">menunggu</string>
-    <string name="congklak_status_sowing">Menabur · %1$d biji di tangan</string>
-    <string name="congklak_status_your_turn">Giliranmu · pilih lubang yang menyala</string>
-    <string name="congklak_status_thinking">berpikir…</string>
-    <string name="congklak_status_their_turn">gilirannya</string>
-    <string name="congklak_store_bot">KOM</string>
-    <string name="congklak_rules_title">Cara main</string>
-    <string name="congklak_rules_close">Tutup</string>
+    <!-- English is the fallback for every locale; Indonesian lives in values-in/. -->
+    <string name="app_name" translatable="false">Krida</string>
+    <string name="congklak_title" translatable="false">Congklak</string>
+    <string name="congklak_card_players">2 players</string>
+    <string name="congklak_card_tagline">Gather the most seeds in your store.</string>
+    <string name="congklak_player_1">Player 1</string>
+    <string name="congklak_player_2">Player 2</string>
+    <string name="congklak_wins">%1$s wins!</string>
+    <string name="congklak_draw">Draw!</string>
+    <string name="congklak_play_again">Play again</string>
+    <string name="congklak_back">Back</string>
+    <string name="congklak_back_to_menu">Back to menu</string>
+    <string name="congklak_to_menu">Menu</string>
+    <string name="congklak_you_win">You win!</string>
+    <string name="congklak_wait_host">Waiting for the host to start again…</string>
+    <string name="congklak_direction">Clockwise · your store is on the left</string>
+    <string name="congklak_status_waiting">waiting</string>
+    <string name="congklak_status_sowing">Sowing · %1$d seeds in hand</string>
+    <string name="congklak_status_your_turn">Your turn · pick a glowing hole</string>
+    <string name="congklak_status_thinking">thinking…</string>
+    <string name="congklak_status_their_turn">their turn</string>
+    <string name="congklak_store_bot">CPU</string>
+    <string name="congklak_rules_title">How to play</string>
+    <string name="congklak_rules_close">Close</string>
     <string-array name="congklak_rules">
-        <item>Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam.</item>
-        <item>Lumbungmu di kiri ikut diisi; lumbung lawan dilewati.</item>
-        <item>Biji terakhir jatuh di lumbungmu: kamu main lagi.</item>
-        <item>Jatuh di lubang yang berisi: ambil semuanya dan terus menabur.</item>
-        <item>Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</item>
-        <item>Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai.</item>
-        <item>Jatuh di lubang kosong di sisi lawan: giliranmu selesai.</item>
-        <item>Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.</item>
+        <item>Take all the seeds from one hole on your side and sow them one by one, clockwise.</item>
+        <item>Your store on the left gets a seed too; your opponent\'s store is skipped.</item>
+        <item>Last seed lands in your store: play again.</item>
+        <item>Lands in a hole with seeds: pick them all up and keep sowing.</item>
+        <item>Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store.</item>
+        <item>Haven\'t passed your store this turn? The seed stays in that hole and your turn ends.</item>
+        <item>Lands in an empty hole on your opponent\'s side: your turn ends.</item>
+        <item>If all your holes are empty on your turn, the game ends. Most seeds in the store wins.</item>
     </string-array>
-    <string name="mode_pass_title">Satu perangkat</string>
-    <string name="mode_pass_detail">Berdua, gantian di satu HP</string>
-    <string name="bot_title">Lawan komputer</string>
-    <string name="bot_you">Kamu</string>
-    <string name="bot_name">Komputer</string>
-    <string name="bot_level">Tingkat kesulitan</string>
-    <string name="bot_easy">Mudah</string>
-    <string name="bot_normal">Sedang</string>
-    <string name="bot_hard">Sulit</string>
-    <string name="bot_start">Mulai</string>
-    <string name="nearby_title">Main bareng dekat</string>
-    <string name="nearby_detail">Bluetooth, tanpa internet</string>
-    <string name="nearby_host">Buat room</string>
-    <string name="nearby_join_with_code">Gabung pakai kode</string>
-    <string name="nearby_code">Kode room</string>
-    <string name="nearby_code_hint">Kode room dari temanmu</string>
-    <string name="nearby_cancel">Batal</string>
-    <string name="nearby_join">Masuk</string>
-    <string name="nearby_room_code">Kode room</string>
-    <string name="nearby_start">Mulai</string>
-    <string name="nearby_waiting">Menunggu pemain lain…</string>
-    <string name="nearby_searching">Mencari room…</string>
-    <string name="nearby_joined">Sudah masuk. Menunggu host memulai…</string>
-    <string name="nearby_permission_denied">Izin Bluetooth ditolak</string>
-    <string name="nearby_rejected">Tidak bisa masuk room</string>
-    <string name="nearby_rejected_version">Versi aplikasi berbeda. Perbarui aplikasi.</string>
-    <string name="nearby_rejected_full">Room sudah penuh</string>
-    <string name="nearby_rejected_started">Permainan sudah dimulai</string>
-    <string name="nearby_host_lost">Terputus dari host</string>
-    <string name="nearby_player_lost">Pemain lain terputus. Menunggu dia kembali…</string>
-    <string name="nearby_move_refused">Langkah ditolak</string>
-    <string name="sound_on">Nyalakan suara</string>
-    <string name="sound_off">Matikan suara</string>
-    <string name="music_on">Nyalakan musik</string>
-    <string name="music_off">Matikan musik</string>
-    <string name="shop_remove_ads">Hapus iklan · %1$s</string>
-    <string name="ads_privacy">Privasi iklan</string>
-    <string name="hint">Petunjuk (tonton iklan)</string>
-    <string name="hint_free">Petunjuk</string>
+    <string name="mode_pass_title">One device</string>
+    <string name="mode_pass_detail">Two players, taking turns on one phone</string>
+    <string name="bot_title">Play the computer</string>
+    <string name="bot_you">You</string>
+    <string name="bot_name">Computer</string>
+    <string name="bot_level">Difficulty</string>
+    <string name="bot_easy">Easy</string>
+    <string name="bot_normal">Medium</string>
+    <string name="bot_hard">Hard</string>
+    <string name="bot_start">Start</string>
+    <string name="nearby_title">Play nearby</string>
+    <string name="nearby_detail">Bluetooth, no internet</string>
+    <string name="nearby_host">Create room</string>
+    <string name="nearby_join_with_code">Join with a code</string>
+    <string name="nearby_code">Room code</string>
+    <string name="nearby_code_hint">Room code from your friend</string>
+    <string name="nearby_cancel">Cancel</string>
+    <string name="nearby_join">Join</string>
+    <string name="nearby_room_code">Room code</string>
+    <string name="nearby_start">Start</string>
+    <string name="nearby_waiting">Waiting for other players…</string>
+    <string name="nearby_searching">Looking for the room…</string>
+    <string name="nearby_joined">You\'re in. Waiting for the host to start…</string>
+    <string name="nearby_permission_denied">Bluetooth permission denied</string>
+    <string name="nearby_rejected">Couldn\'t join the room</string>
+    <string name="nearby_rejected_version">Different app version. Update the app.</string>
+    <string name="nearby_rejected_full">The room is full</string>
+    <string name="nearby_rejected_started">The game has already started</string>
+    <string name="nearby_host_lost">Disconnected from the host</string>
+    <string name="nearby_player_lost">The other player disconnected. Waiting for them to return…</string>
+    <string name="nearby_move_refused">Move refused</string>
+    <string name="sound_on">Turn sound on</string>
+    <string name="sound_off">Turn sound off</string>
+    <string name="music_on">Turn music on</string>
+    <string name="music_off">Turn music off</string>
+    <string name="shop_remove_ads">Remove ads · %1$s</string>
+    <string name="ads_privacy">Ad privacy</string>
+    <string name="hint">Hint (watch an ad)</string>
+    <string name="hint_free">Hint</string>
+    <string name="language">Language</string>
+    <!-- Language picker: short codes on the buttons, each language named in itself for screen readers. -->
+    <string name="language_id_short" translatable="false">ID</string>
+    <string name="language_en_short" translatable="false">EN</string>
+    <string name="language_id_name" translatable="false">Bahasa Indonesia</string>
+    <string name="language_en_name" translatable="false">English</string>
 </resources>
