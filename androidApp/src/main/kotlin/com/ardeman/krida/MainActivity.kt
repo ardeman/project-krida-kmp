@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
+import com.ardeman.krida.congklak.CongklakSettings
 import com.ardeman.krida.congklak.BoardPreview
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.HostTable
@@ -141,6 +142,7 @@ class MainActivity : ComponentActivity() {
         // A language change recreates the activity, so this follows the picker.
         Sounds.english = Language.current(this) == Language.Lang.EN
         Ads.init(this)
+        CongklakSettings.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
             val r = room
@@ -220,6 +222,7 @@ class MainActivity : ComponentActivity() {
                     PassAndPlayCard()
                     VsComputerCard()
                     NearbyCard()
+                    TembakCard()
                     AdButtons()
                 }
                 Ads.Banner(trailing = { RemoveAdsButton() })
@@ -281,6 +284,22 @@ class MainActivity : ComponentActivity() {
                 onClick = { passAndPlay = HostTable.vsComputer(you, computer, level, levelName) },
                 height = 48.dp,
             )
+        }
+    }
+
+    /** The tembak rule for every mode started here (and rooms this device hosts). */
+    @Composable
+    private fun TembakCard() {
+        ModeCard(R.drawable.ic_scope) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.tembak_title), style = Theme.font(18, color = Theme.ink), maxLines = 1)
+                Segmented(
+                    options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
+                    current = CongklakSettings.tembakAfterStore,
+                    label = stringResource(R.string.tembak_title),
+                    onChange = CongklakSettings::chooseTembakAfterStore,
+                )
+            }
         }
     }
 
@@ -418,14 +437,22 @@ private fun ModeCard(icon: Int, onClick: (() -> Unit)? = null, content: @Composa
 
 /** Mudah / Sedang / Sulit segmented picker. */
 @Composable
-private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) -> Unit) {
-    val label = stringResource(R.string.bot_level)
+private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) -> Unit) = Segmented(
+    options = listOf(CongklakBot.Level.EASY, CongklakBot.Level.NORMAL, CongklakBot.Level.HARD).map { it to stringResource(levelLabel(it)) },
+    current = level,
+    label = stringResource(R.string.bot_level),
+    onChange = onChange,
+)
+
+/** Segmented picker on a track: the chosen option is a raised white chip. */
+@Composable
+private fun <T> Segmented(options: List<Pair<T, String>>, current: T, label: String, onChange: (T) -> Unit) {
     Row(
         Modifier.background(Theme.track, RoundedCornerShape(12.dp)).padding(3.dp).semantics { contentDescription = label },
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        listOf(CongklakBot.Level.EASY, CongklakBot.Level.NORMAL, CongklakBot.Level.HARD).forEach { value ->
-            val on = value == level
+        options.forEach { (value, text) ->
+            val on = value == current
             val shape = RoundedCornerShape(10.dp)
             Box(
                 Modifier.height(38.dp)
@@ -437,7 +464,7 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
                     .padding(horizontal = 14.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(stringResource(levelLabel(value)), style = Theme.font(14, color = if (on) Theme.ink else Theme.muted))
+                Text(text, style = Theme.font(14, color = if (on) Theme.ink else Theme.muted), maxLines = 1)
             }
         }
     }

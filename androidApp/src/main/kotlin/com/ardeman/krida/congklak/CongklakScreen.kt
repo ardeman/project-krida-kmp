@@ -354,7 +354,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         }
     }
 
-    if (showRules) RulesDialog { showRules = false }
+    if (showRules) RulesDialog(state.tembakAfterStore) { showRules = false }
 }
 
 /** Who sits where, and how each seat is named on this device. */
@@ -533,9 +533,13 @@ private fun announce(before: CongklakState, after: CongklakState, me: Int?) {
     }
 }
 
-/** "Cara main": the rule variant from shared/ CongklakGame, in short. */
+/** "Cara main": the rule variant from shared/ CongklakGame, in short, with this game's tembak rule. */
 @Composable
-private fun RulesDialog(onDismiss: () -> Unit) {
+private fun RulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
+    val all = stringArrayResource(R.array.congklak_rules)
+    val anytime = stringResource(R.string.congklak_rule_tembak_anytime)
+    // Items 4 and 5 are the "Lewat lumbung" tembak; "Bebas" has one simpler line instead.
+    val rules = if (tembakAfterStore) all.toList() else all.take(4) + anytime + all.drop(6)
     Dialog(onDismissRequest = onDismiss) {
         Column(
             Modifier.widthIn(max = 560.dp).background(Theme.cream, RoundedCornerShape(24.dp)).padding(vertical = 16.dp),
@@ -548,7 +552,7 @@ private fun RulesDialog(onDismiss: () -> Unit) {
                 Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                stringArrayResource(R.array.congklak_rules).forEach { rule ->
+                rules.forEach { rule ->
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         Box(Modifier.padding(top = 8.dp).size(7.dp).background(Theme.accent, CircleShape))
                         Text(rule, style = Theme.font(16, FontWeight.SemiBold, Theme.ink))

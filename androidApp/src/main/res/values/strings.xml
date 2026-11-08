@@ -79,4 +79,8 @@
     <string name="language_id_name" translatable="false">Bahasa Indonesia</string>
     <string name="language_en_name" translatable="false">English</string>
     <string name="loading">Loading</string>
+    <string name="tembak_title">Shooting rule</string>
+    <string name="tembak_after_store">Past store</string>
+    <string name="tembak_anytime">Anytime</string>
+    <string name="congklak_rule_tembak_anytime">Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.</string>
 </resources>

@@ -71,4 +71,8 @@
     <string name="hint_free">Petunjuk</string>
     <string name="language">Bahasa</string>
     <string name="loading">Memuat</string>
+    <string name="tembak_title">Aturan tembak</string>
+    <string name="tembak_after_store">Lewat lumbung</string>
+    <string name="tembak_anytime">Bebas</string>
+    <string name="congklak_rule_tembak_anytime">Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</string>
 </resources>
