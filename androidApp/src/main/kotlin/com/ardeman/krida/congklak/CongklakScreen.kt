@@ -4,8 +4,10 @@ import android.view.SurfaceView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -32,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -76,6 +79,7 @@ import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
+import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.Theme
 import kotlin.math.hypot
 import kotlin.random.Random
@@ -97,6 +101,31 @@ private val rimShadow = Shadow(Color.Black.copy(alpha = 0.35f), Offset(0f, 2f), 
  */
 @Composable
 fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
+    // Building the Filament engine and meshes blocks the main thread for a moment: put the
+    // loading screen up first, build the board under it, and fade it out once the board's
+    // first frame is on screen (or after a few seconds, if that never comes).
+    var mounted by remember { mutableStateOf(false) }
+    var rendered by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        withFrameNanos {}
+        withFrameNanos {}
+        mounted = true
+    }
+    LaunchedEffect(mounted, rendered) {
+        if (!mounted) return@LaunchedEffect
+        // A SurfaceView shows its frame a little after Filament renders it.
+        delay(if (rendered) 120L else 4000L)
+        loading = false
+    }
+    Box(Modifier.fillMaxSize()) {
+        if (mounted) Board(table, onExit, onFirstFrame = { rendered = true })
+        AnimatedVisibility(loading, enter = EnterTransition.None, exit = fadeOut(tween(250))) { LoadingScreen() }
+    }
+}
+
+@Composable
+private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> Unit) {
     val viewSeat = table.mySeat ?: 0
     var state by remember { mutableStateOf(table.latest!!) }
     val seeds = remember { CongklakSeeds(state.pits) }
@@ -237,6 +266,7 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
                     renderer = BoardRenderer(view).apply {
                         this.viewSeat = viewSeat
                         onPitsProjected = { pitsOnScreen = it }
+                        this.onFirstFrame = onFirstFrame
                         setSeedTargets(seeds.targets())
                         resume()
                     }

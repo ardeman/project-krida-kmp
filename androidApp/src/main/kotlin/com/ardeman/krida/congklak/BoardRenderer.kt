@@ -42,6 +42,9 @@ class BoardRenderer private constructor(attach: (UiHelper) -> Unit) : Choreograp
     var hasDrawn = false
         private set
 
+    /** Called after the first frame has been rendered, once per renderer. */
+    var onFirstFrame: (() -> Unit)? = null
+
 
     /** Pit centers on screen, in pixels; updated on resize. */
     var onPitsProjected: ((List<FloatArray>) -> Unit)? = null
@@ -210,6 +213,7 @@ class BoardRenderer private constructor(attach: (UiHelper) -> Unit) : Choreograp
             renderer.endFrame()
             dirty = false
             hasDrawn = true
+            onFirstFrame?.let { onFirstFrame = null; it() }
         }
     }
 

@@ -70,4 +70,5 @@
     <string name="hint">Petunjuk (tonton iklan)</string>
     <string name="hint_free">Petunjuk</string>
     <string name="language">Bahasa</string>
+    <string name="loading">Memuat</string>
 </resources>

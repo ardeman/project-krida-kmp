@@ -43,10 +43,10 @@ private var cached: Pair<IntSize, Bitmap>? = null
  * The real voxel board as a still picture, for the menu's congklak card: the start position
  * from the near side, cropped to the left end (your store and the first holes). It is drawn
  * once with Filament on a [TextureView], snapshotted, and then shown as an image, so the menu
- * doesn't keep a second renderer running.
+ * doesn't keep a second renderer running. [onReady] is called once the snapshot is shown.
  */
 @Composable
-fun BoardPreview(modifier: Modifier = Modifier) {
+fun BoardPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) {
     BoxWithConstraints(modifier.background(Theme.cream).clipToBounds().clearAndSetSemantics {}) {
         val size = IntSize((constraints.maxHeight * WIDTH_PER_HEIGHT).roundToInt(), constraints.maxHeight)
         if (size.height <= 0) return@BoxWithConstraints
@@ -54,16 +54,17 @@ fun BoardPreview(modifier: Modifier = Modifier) {
         val fill = Modifier.wrapContentWidth(Alignment.Start, unbounded = true).width(widthDp).fillMaxHeight()
 
         // A new size (the ad banner loading moves the card) starts over with a fresh renderer.
-        key(size) { Snapshot(size, fill) }
+        key(size) { Snapshot(size, fill, onReady) }
     }
 }
 
 /** Renders the board at [size] pixels once, then shows the snapshot in its place. */
 @Composable
-private fun Snapshot(size: IntSize, fill: Modifier) {
+private fun Snapshot(size: IntSize, fill: Modifier, onReady: () -> Unit) {
     var image by remember { mutableStateOf(cached?.takeIf { it.first == size }?.second) }
     val shown = image
     if (shown != null) {
+        LaunchedEffect(Unit) { onReady() }
         Image(shown.asImageBitmap(), contentDescription = null, modifier = fill, contentScale = ContentScale.FillBounds)
         return
     }

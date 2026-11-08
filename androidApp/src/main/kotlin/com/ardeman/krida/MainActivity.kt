@@ -3,11 +3,14 @@ package com.ardeman.krida
 import android.Manifest
 import android.os.Build
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -40,6 +43,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -51,8 +55,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -78,11 +80,14 @@ import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.ui.IconTile
 import com.ardeman.krida.ui.Language
 import com.ardeman.krida.ui.LanguagePicker
+import com.ardeman.krida.ui.LoadingScreen
+import com.ardeman.krida.ui.rememberLightWordmark
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.Theme
+import kotlinx.coroutines.delay
 
 /**
  * Menu: congklak pass-and-play or vs computer on this device, or a nearby room over BLE (host or join),
@@ -96,6 +101,9 @@ class MainActivity : ComponentActivity() {
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     private var pendingAction: (() -> Unit)? = null
+
+    /** The menu card's board snapshot is on screen; ends the startup loading screen. */
+    private var menuReady by mutableStateOf(false)
 
     private val myName: String get() = Build.MODEL ?: "Android"
 
@@ -141,6 +149,7 @@ class MainActivity : ComponentActivity() {
                 r != null -> Lobby(r)
                 else -> Menu()
             }
+            StartupCover()
         }
     }
 
@@ -160,6 +169,28 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    /**
+     * The loading screen at app start, over the menu while its board snapshot renders
+     * underneath: up for at least [STARTUP_MIN_MS] so it doesn't flash, at most [STARTUP_MAX_MS]
+     * in case the snapshot never comes (a deep link straight into a game, a slow GPU).
+     */
+    @Composable
+    private fun StartupCover() {
+        var minDone by remember { mutableStateOf(false) }
+        var maxDone by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            delay(STARTUP_MIN_MS)
+            minDone = true
+            delay(STARTUP_MAX_MS - STARTUP_MIN_MS)
+            maxDone = true
+        }
+        AnimatedVisibility(
+            visible = !(minDone && (menuReady || maxDone)),
+            enter = EnterTransition.None,
+            exit = fadeOut(tween(300)),
+        ) { LoadingScreen() }
+    }
+
     @Composable
     private fun Menu() {
         Row(
@@ -173,7 +204,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.height(40.dp),
                     alignment = Alignment.CenterStart,
                 )
-                CongklakCard(Modifier.weight(1f))
+                CongklakCard(Modifier.weight(1f), onReady = { menuReady = true })
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SoundToggles()
                     Spacer(Modifier.weight(1f))
@@ -351,18 +382,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/** The wordmark in its light-mode colors: the menu stays cream even when the system is dark. */
-@Composable
-private fun rememberLightWordmark(): ImageVector {
-    val context = LocalContext.current
-    return remember(context) {
-        val config = Configuration(context.resources.configuration).apply {
-            uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or Configuration.UI_MODE_NIGHT_NO
-        }
-        ImageVector.vectorResource(null, context.createConfigurationContext(config).resources, R.drawable.krida_wordmark)
-    }
-}
-
 private fun levelLabel(level: CongklakBot.Level) = when (level) {
     CongklakBot.Level.EASY -> R.string.bot_easy
     CongklakBot.Level.HARD -> R.string.bot_hard
@@ -414,7 +433,7 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
 
 /** The congklak tile on the home screen, with a snapshot of the real board. */
 @Composable
-private fun CongklakCard(modifier: Modifier) {
+private fun CongklakCard(modifier: Modifier, onReady: () -> Unit) {
     val shape = RoundedCornerShape(22.dp)
     Box(modifier.fillMaxWidth().background(Theme.woodShadow, shape)) {
         Column(
@@ -427,8 +446,14 @@ private fun CongklakCard(modifier: Modifier) {
                 Text(stringResource(R.string.congklak_card_players), style = Theme.font(13, FontWeight.Bold, Color(0xFFF3DDBE)))
             }
             // The real board, cropped to its left end; it takes whatever height the card has.
-            BoardPreview(Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).clip(RoundedCornerShape(14.dp)))
+            BoardPreview(
+                Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).clip(RoundedCornerShape(14.dp)),
+                onReady = onReady,
+            )
             Text(stringResource(R.string.congklak_card_tagline), style = Theme.font(13, FontWeight.SemiBold, Color(0xFFF3DDBE)))
         }
     }
 }
+
+private const val STARTUP_MIN_MS = 700L
+private const val STARTUP_MAX_MS = 3000L
