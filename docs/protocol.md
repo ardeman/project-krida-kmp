@@ -51,6 +51,12 @@ can animate it (e.g. congklak sowing). It is absent on the first snapshot. Anima
 when the snapshot's `seq` is exactly one more than the previous one; after a gap or a rejoin,
 just show the snapshot. `GuestSession.lastMove` already applies this rule.
 
+Congklak's `state` carries `tembakAfterStore` (optional, default `false`): the host's choice
+of the Indonesian tembak rule, under which a tembak only counts once the turn's sowing has
+passed the mover's own store. Guests play and animate by the flag in the state. A guest from
+before the field ignores it and may animate such a move the old way; the next full snapshot
+puts its board right.
+
 ## BLE framing
 
 BLE writes/notifications are limited by MTU (iOS usually ~185 bytes, Android up to 512).

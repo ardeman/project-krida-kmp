@@ -27,7 +27,8 @@
         <item>Lumbungmu di kiri ikut diisi; lumbung lawan dilewati.</item>
         <item>Biji terakhir jatuh di lumbungmu: kamu main lagi.</item>
         <item>Jatuh di lubang yang berisi: ambil semuanya dan terus menabur.</item>
-        <item>Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</item>
+        <item>Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</item>
+        <item>Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai.</item>
         <item>Jatuh di lubang kosong di sisi lawan: giliranmu selesai.</item>
         <item>Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.</item>
     </string-array>

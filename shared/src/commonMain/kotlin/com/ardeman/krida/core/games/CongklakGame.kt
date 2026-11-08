@@ -20,6 +20,12 @@ data class CongklakState(
     val pits: List<Int>,
     val turn: Int,
     val finished: Boolean = false,
+    /**
+     * The Indonesian tembak rule, chosen by the host before the game: a tembak only counts
+     * once this turn's sowing has passed the mover's own store. Absent (false) means tembak
+     * on any move, which is also what hosts from before this field played.
+     */
+    val tembakAfterStore: Boolean = false,
 )
 
 /** [hole] is 0..6, counted from the mover's own side (index 0 = first hole after the opponent's store). */
@@ -42,7 +48,9 @@ data class CongklakPlay(
  * - Last seed in your own store: you move again.
  * - Last seed in an empty hole on your side (tembak): move it plus everything in the facing
  *   hole into your store. If the facing hole is empty, the lone seed still goes to your
- *   store. Turn ends.
+ *   store. Turn ends. With [CongklakState.tembakAfterStore] (the Indonesian rule) this only
+ *   counts once this turn's sowing has passed your own store; before that the seed just
+ *   stays there and the turn ends.
  * - Last seed in an empty hole on the opponent's side: turn ends.
  * - If the player to move has no seeds in their holes, the game ends and the opponent
  *   collects what is left on their own side. Most seeds in store wins.
@@ -67,9 +75,12 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
     fun ownerOf(pit: Int) = pit / (HOLES + 1)
     fun isStore(pit: Int) = pit % (HOLES + 1) == HOLES
 
-    override fun initialState(players: Int, random: Random) = CongklakState(
+    override fun initialState(players: Int, random: Random) = initialState(tembakAfterStore = false)
+
+    fun initialState(tembakAfterStore: Boolean) = CongklakState(
         pits = List(PITS) { if (isStore(it)) 0 else SEEDS },
         turn = 0,
+        tembakAfterStore = tembakAfterStore,
     )
 
     override fun currentTurn(state: CongklakState) = state.turn
@@ -106,6 +117,8 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
         var hand = pits[pos].also { pits[pos] = 0 }
         var capturedFrom: Int? = null
         var extraTurn = false
+        /** This turn has dropped a seed in the mover's own store: tembak is allowed. */
+        var passedOwn = false
 
         while (true) {
             while (hand > 0) {
@@ -114,11 +127,12 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
                 pits[pos]++
                 hand--
                 path += pos
+                if (pos == own) passedOwn = true
             }
             when {
                 pos == own -> { extraTurn = true; break }
                 pits[pos] > 1 && path.size < MAX_SOWN -> { hand = pits[pos]; pits[pos] = 0 }
-                ownerOf(pos) == seat && pits[pos] == 1 -> {
+                ownerOf(pos) == seat && pits[pos] == 1 && (passedOwn || !state.tembakAfterStore) -> {
                     val facing = opposite(pos)
                     if (pits[facing] > 0) capturedFrom = facing
                     pits[own] += pits[facing] + 1
@@ -131,7 +145,7 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
         }
 
         val next = if (extraTurn) seat else 1 - seat
-        return CongklakPlay(settle(pits, next), path, capturedFrom, extraTurn)
+        return CongklakPlay(settle(pits, next).copy(tembakAfterStore = state.tembakAfterStore), path, capturedFrom, extraTurn)
     }
 
     /** Ends the game when [next] cannot move; the opponent sweeps their own side. */
@@ -145,4 +159,13 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
         }
         return CongklakState(pits, next, finished = true)
     }
+}
+
+/**
+ * Congklak with the tembak rule chosen before the game: [CongklakGame] in every respect,
+ * except that new games (and restarts) start with [tembakAfterStore]. Give this to the
+ * host's `HostSession`; guests read the rule from the state, so they need nothing.
+ */
+class CongklakRules(val tembakAfterStore: Boolean) : GameRules<CongklakState, CongklakMove> by CongklakGame {
+    override fun initialState(players: Int, random: Random) = CongklakGame.initialState(tembakAfterStore)
 }

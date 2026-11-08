@@ -11,6 +11,7 @@ import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.GuestTable
 import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.CongklakRules
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.core.protocol.Platform
@@ -59,7 +60,7 @@ class NearbyRoom private constructor(
             val code = RoomCode.generate()
             val ble = BleHostTransport(context, code)
             val room = NearbyRoom(code, isHost = true, transport = ble)
-            val session = HostSession(CongklakGame, ble, roomCode = code)
+            val session = HostSession(CongklakRules(tembakAfterStore = true), ble, roomCode = code)
             session.onPlayersChanged = { list ->
                 room.players = list
                 room.canStart = session.canStart()

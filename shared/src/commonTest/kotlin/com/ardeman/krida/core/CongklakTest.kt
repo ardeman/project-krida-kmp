@@ -5,6 +5,8 @@ import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakGame.PITS
 import com.ardeman.krida.core.games.CongklakMove
+import com.ardeman.krida.core.games.CongklakRules
+import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.games.CongklakState
 import kotlin.random.Random
 import kotlin.test.Test
@@ -18,8 +20,8 @@ class CongklakTest {
     private val g = CongklakGame
 
     /** Board with the given non-zero pits; everything else empty. */
-    private fun board(turn: Int, vararg seeds: Pair<Int, Int>) =
-        CongklakState(List(PITS) { i -> seeds.firstOrNull { it.first == i }?.second ?: 0 }, turn)
+    private fun board(turn: Int, vararg seeds: Pair<Int, Int>, afterStore: Boolean = true) =
+        CongklakState(List(PITS) { i -> seeds.firstOrNull { it.first == i }?.second ?: 0 }, turn, tembakAfterStore = afterStore)
 
     @Test
     fun initialBoard() {
@@ -41,10 +43,12 @@ class CongklakTest {
 
     @Test
     fun emptyOwnHoleCapturesFacingHole() {
-        val s = board(0, 0 to 1, 13 to 5, 10 to 2)
-        val p = g.play(s, 0, CongklakMove(0))
+        // 10 seeds from pit 6: 7 (own store), 8..14, 0, 1. Pit 1 was empty; 13 now holds 6.
+        val s = board(0, 6 to 10, 13 to 5)
+        val p = g.play(s, 0, CongklakMove(6))
+        assertEquals(listOf(7, 8, 9, 10, 11, 12, 13, 14, 0, 1), p.path)
         assertEquals(13, p.capturedFrom)
-        assertEquals(6, g.score(p.state, 0))
+        assertEquals(1 + 6 + 1, g.score(p.state, 0))
         assertEquals(0, p.state.pits[1])
         assertEquals(0, p.state.pits[13])
         assertEquals(1, p.state.turn)
@@ -52,12 +56,47 @@ class CongklakTest {
 
     @Test
     fun emptyOwnHoleWithEmptyFacingHoleBanksTheSeed() {
-        val s = board(0, 0 to 1, 10 to 2)
-        val p = g.play(s, 0, CongklakMove(0))
+        // 7 seeds from pit 6 end on 13 (now 3): pick up, sow 14, 0, 1. Facing 13 is empty.
+        val s = board(0, 6 to 7, 13 to 2)
+        val p = g.play(s, 0, CongklakMove(6))
+        assertEquals(listOf(7, 8, 9, 10, 11, 12, 13, 14, 0, 1), p.path)
         assertNull(p.capturedFrom)
         assertEquals(0, p.state.pits[1])
-        assertEquals(1, g.score(p.state, 0))
+        assertEquals(1 + 1, g.score(p.state, 0))
         assertEquals(1, p.state.turn)
+    }
+
+    @Test
+    fun noTembakBeforePassingOwnStore() {
+        // Pit 0 -> 1: empty own hole, but this turn never reached the store. The seed stays.
+        val s = board(0, 0 to 1, 13 to 5, 10 to 2)
+        val p = g.play(s, 0, CongklakMove(0))
+        assertNull(p.capturedFrom)
+        assertEquals(1, p.state.pits[1])
+        assertEquals(5, p.state.pits[13])
+        assertEquals(0, g.score(p.state, 0))
+        assertEquals(1, p.state.turn)
+        assertTrue(p.state.tembakAfterStore)
+    }
+
+    @Test
+    fun freeTembakCapturesWithoutPassingStore() {
+        // The same move without the Indonesian rule is a tembak.
+        val s = board(0, 0 to 1, 13 to 5, 10 to 2, afterStore = false)
+        val p = g.play(s, 0, CongklakMove(0))
+        assertEquals(13, p.capturedFrom)
+        assertEquals(6, g.score(p.state, 0))
+        assertEquals(0, p.state.pits[1])
+        assertFalse(p.state.tembakAfterStore)
+    }
+
+    @Test
+    fun rulesStartGamesWithTheChosenTembakRule() {
+        assertTrue(CongklakRules(tembakAfterStore = true).initialState(2, Random(1)).tembakAfterStore)
+        assertFalse(CongklakRules(tembakAfterStore = false).initialState(2, Random(1)).tembakAfterStore)
+        // Older hosts send no field: that decodes as the free rule.
+        val old = Codec.json.decodeFromString(CongklakState.serializer(), """{"pits":[${List(PITS) { 0 }.joinToString(",")}],"turn":0}""")
+        assertFalse(old.tembakAfterStore)
     }
 
     @Test

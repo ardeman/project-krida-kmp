@@ -90,7 +90,7 @@ final class HostTable: CongklakTable {
 
     static func passAndPlay(names: [String]) -> HostTable {
         let transport = LocalTransport()
-        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: transport, roomCode: "LOCAL")
+        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakSettings.rules, transport: transport, roomCode: "LOCAL")
         for name in names { _ = session.addLocalPlayer(name: name, platform: .ios) }
         session.start()
         return HostTable(session: session, mySeat: nil, transport: transport)
@@ -99,7 +99,7 @@ final class HostTable: CongklakTable {
     /// You (seat 0, moving first) against a `CongklakBot` on this device.
     static func vsComputer(you: String, computer: String, level: CongklakBot.Level, levelName: String) -> HostTable {
         let transport = LocalTransport()
-        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: transport, roomCode: "LOCAL")
+        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakSettings.rules, transport: transport, roomCode: "LOCAL")
         _ = session.addLocalPlayer(name: you, platform: .ios)
         _ = session.addBot(name: computer, platform: .ios, bot: CongklakBot(level: level))
         session.start()
@@ -136,4 +136,18 @@ final class GuestTable: CongklakTable {
     }
 
     override func leave() { session.leave() }
+}
+
+/// Congklak options chosen on the menu before a game, kept on this device. Only a host
+/// reads them; guests play by the rule in the host's state.
+enum CongklakSettings {
+    static let tembakAfterStoreKey = "congklak.tembakAfterStore"
+
+    /// The Indonesian tembak rule (only after passing your own store); on by default.
+    static var tembakAfterStore: Bool {
+        UserDefaults.standard.object(forKey: tembakAfterStoreKey) as? Bool ?? true
+    }
+
+    /// Rules for a new host session, with the chosen tembak rule.
+    static var rules: CongklakRules { CongklakRules(tembakAfterStore: tembakAfterStore) }
 }

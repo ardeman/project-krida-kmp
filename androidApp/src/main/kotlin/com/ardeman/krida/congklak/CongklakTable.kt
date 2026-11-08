@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.ardeman.krida.R
 import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.CongklakRules
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.core.protocol.Platform
@@ -100,7 +101,7 @@ class HostTable(
     companion object {
         fun passAndPlay(names: List<String>): HostTable {
             val transport = LocalTransport()
-            val session = HostSession(CongklakGame, transport, roomCode = "LOCAL")
+            val session = HostSession(CongklakRules(tembakAfterStore = true), transport, roomCode = "LOCAL")
             names.forEach { session.addLocalPlayer(it, Platform.ANDROID) }
             session.start()
             return HostTable(session, mySeat = null, transport = transport)
@@ -109,7 +110,7 @@ class HostTable(
         /** You (seat 0, moving first) against a [CongklakBot] on this device. */
         fun vsComputer(you: String, computer: String, level: CongklakBot.Level, levelName: String): HostTable {
             val transport = LocalTransport()
-            val session = HostSession(CongklakGame, transport, roomCode = "LOCAL")
+            val session = HostSession(CongklakRules(tembakAfterStore = true), transport, roomCode = "LOCAL")
             session.addLocalPlayer(you, Platform.ANDROID)
             session.addBot(computer, Platform.ANDROID, CongklakBot(level))
             session.start()

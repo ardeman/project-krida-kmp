@@ -40,7 +40,7 @@ final class NearbyRoom: ObservableObject {
         let code = RoomCode.shared.generate()
         let ble = BleHostTransport(roomCode: code)
         let room = NearbyRoom(code: code, isHost: true, transport: ble)
-        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakGame.shared, transport: ble, roomCode: code)
+        let session = HostSession<CongklakState, CongklakMove>(rules: CongklakSettings.rules, transport: ble, roomCode: code)
         session.onPlayersChanged = { [weak room, weak session] list in
             guard let room, let session else { return }
             room.players = list

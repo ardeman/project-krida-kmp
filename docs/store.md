@@ -29,7 +29,7 @@ Contact email: mail@ardeman.com.
 
 > Krida menghadirkan permainan tradisional Nusantara dalam gaya voxel 3D yang hangat. Yang pertama: congklak.
 >
-> Ambil biji dari lubangmu, tabur satu per satu, kumpulkan sebanyak mungkin di lumbung. Mendarat di lubang kosong milikmu? Tembak! Biji di seberangnya jadi milikmu.
+> Ambil biji dari lubangmu, tabur satu per satu, kumpulkan sebanyak mungkin di lumbung. Sudah lewat lumbungmu dan mendarat di lubang kosong milikmu? Tembak! Biji di seberangnya jadi milikmu.
 >
 > CARA MAIN
 > • Lawan komputer: pilih Mudah, Sedang, atau Sulit.
