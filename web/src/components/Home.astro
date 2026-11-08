@@ -1,0 +1,141 @@
+---
+import Base, { type Lang } from "../layouts/Base.astro";
+import Board from "./Board.astro";
+import LangSwitch from "./LangSwitch.astro";
+import Voxel from "./Voxel.astro";
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const root = import.meta.env.BASE_URL.replace(/\/$/, "");
+const alternates = { id: "", en: "en/" };
+
+// Game names stay Indonesian in both languages: they are the names players know them by.
+const colors = ["#c9783a", "#d64545", "#3f9b5a", "#2f7fc1", "#e0a526", "#7a5bb5"];
+const names = ["Congklak", "Ludo", "Ular Tangga", "Perang Kapal", "Macanan", "Dam-daman"];
+
+const copy = {
+  id: {
+    title: "Krida — Board games Nusantara, main bareng di mana saja",
+    description:
+      "Ludo, ular tangga, congklak, perang kapal dan lainnya dalam gaya voxel 3D. Main online atau offline lewat Bluetooth, Android dan iPhone bisa main bareng.",
+    gamesNav: "Permainan",
+    h1: "Main bareng, di mana saja.",
+    lead: "Congklak, ludo, ular tangga, perang kapal dan lainnya, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Online atau offline lewat Bluetooth.",
+    soon: "Segera hadir di Google Play dan App Store.",
+    notes: [
+      "Biji demi biji, lubang demi lubang",
+      "Bidak-bidak kecil menuju rumah",
+      "Naik tangga, awas ular",
+      "Pinisi lawan jukung",
+      "Satu macan lawan banyak orang",
+      "Dam ala Nusantara",
+    ],
+    whyTitle: "Kenapa Krida",
+    features: [
+      { title: "Main offline", body: "Lewat Bluetooth, tanpa internet. Cocok di rumah, di mobil, atau di warung." },
+      { title: "Android ↔ iPhone", body: "Semua bisa satu meja, apa pun HP-nya. Sampai 4 pemain." },
+      { title: "Online juga bisa", body: "Bagikan kode room ke teman yang jauh dan langsung main." },
+      { title: "Ringan", body: "Aplikasi native, ukuran kecil, lancar di tablet kelas menengah." },
+    ],
+    lemaDef: "Alasan untuk duduk satu meja, menjadi lawan selama satu ronde, lalu tertawa bersama sesudahnya.",
+    lemaSrc: "Dari Sanskerta",
+    lemaSrcGloss: "bermain",
+    privacy: "Kebijakan privasi",
+    privacyPath: "privasi/",
+  },
+  en: {
+    title: "Krida — Board games from Indonesia, play together anywhere",
+    description:
+      "Ludo, snakes and ladders, congklak, battleships and more in 3D voxel style. Play online or offline over Bluetooth; Android and iPhone play together.",
+    gamesNav: "Games",
+    h1: "Play together, anywhere.",
+    lead: "Congklak, ludo, snakes and ladders, battleships and more, remade as little toys you can play with family and friends. Online, or offline over Bluetooth.",
+    soon: "Coming soon to Google Play and the App Store.",
+    notes: [
+      "Seed by seed, hole by hole",
+      "Little pawns racing home",
+      "Climb the ladders, mind the snakes",
+      "Battleships, with Indonesian boats",
+      "One tiger against a crowd",
+      "Draughts, Indonesian style",
+    ],
+    whyTitle: "Why Krida",
+    features: [
+      { title: "Play offline", body: "Over Bluetooth, no internet needed. At home, in the car, or at a roadside café." },
+      { title: "Android ↔ iPhone", body: "Everyone at one table, whatever their phone. Up to 4 players." },
+      { title: "Online too", body: "Share a room code with a friend far away and start playing." },
+      { title: "Lightweight", body: "A native app, small download, smooth on a mid-range tablet." },
+    ],
+    lemaDef: "A reason to sit at one table, be rivals for a round, and laugh together afterwards.",
+    lemaSrc: "Indonesian, from Sanskrit",
+    lemaSrcGloss: "play",
+    privacy: "Privacy policy",
+    privacyPath: "en/privacy/",
+  },
+}[lang];
+
+const games = names.map((name, i) => ({ name, note: copy.notes[i], color: colors[i] }));
+const year = new Date().getFullYear();
+---
+
+<Base title={copy.title} description={copy.description} lang={lang} alternates={alternates}>
+  <main>
+    <header class="nav">
+      <a class="logo" href={`${root}/${alternates[lang]}`}><Wordmark height={30} /></a>
+      <span class="nav-links">
+        <a class="pill" href="#games">{copy.gamesNav}</a>
+        <LangSwitch lang={lang} alternates={alternates} />
+      </span>
+    </header>
+
+    <section class="hero">
+      <div class="hero-text">
+        <h1>{copy.h1}</h1>
+        <p class="lead">{copy.lead}</p>
+        <p class="soon">{copy.soon}</p>
+      </div>
+      <div class="hero-art"><Board /></div>
+    </section>
+
+    <section id="games" class="section">
+      <h2>{copy.gamesNav}</h2>
+      <div class="games">
+        {
+          games.map((g) => (
+            <article class="game">
+              <Voxel color={g.color} size={48} />
+              <h3 lang="id">{g.name}</h3>
+              <p>{g.note}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>{copy.whyTitle}</h2>
+      <div class="features">
+        {
+          copy.features.map((f) => (
+            <article class="feature">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p class="lema">
+        <span class="lema-head"><b lang="id">krida</b> <span class="lema-say">/kri·da/</span> <i>n.</i></span>
+        <span class="lema-def">{copy.lemaDef}</span>
+        <span class="lema-src">{copy.lemaSrc} <i lang="sa">krīḍā</i>: {copy.lemaSrcGloss}.</span>
+      </p>
+      <span class="footer-copy">© {year} Krida · krida.ardeman.com · <a href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a></span>
+    </footer>
+  </main>
+</Base>

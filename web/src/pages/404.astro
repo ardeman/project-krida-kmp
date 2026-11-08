@@ -9,6 +9,8 @@ const home = import.meta.env.BASE_URL;
     <Voxel color="#c9783a" size={72} />
     <h1>Waduh, bidaknya nyasar.</h1>
     <p class="lead">Halaman ini tidak ada.</p>
+    <p class="lead" lang="en">This page doesn’t exist.</p>
     <a class="store" href={home}>Kembali ke Krida</a>
+    <a class="store" href={`${home.replace(/\/$/, "")}/en/`} lang="en">Back to Krida</a>
   </main>
 </Base>

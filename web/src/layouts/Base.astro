@@ -1,25 +1,41 @@
 ---
 import "../styles/global.css";
 
+export type Lang = "id" | "en";
+
 interface Props {
   title: string;
   description: string;
+  lang?: Lang;
+  /** Paths of this page in each language, relative to the site base (e.g. "" and "en/"). */
+  alternates?: Record<Lang, string>;
 }
-const { title, description } = Astro.props;
+const { title, description, lang = "id", alternates } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const root = base.replace(/\/$/, "");
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const abs = (path: string) => new URL(`${root}/${path}`, Astro.site);
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href={`${base.replace(/\/$/, "")}/favicon.svg`} type="image/svg+xml" />
-    <link rel="apple-touch-icon" href={`${base.replace(/\/$/, "")}/apple-touch-icon.png`} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="id" href={abs(alternates.id)} />
+          <link rel="alternate" hreflang="en" href={abs(alternates.en)} />
+          <link rel="alternate" hreflang="x-default" href={abs(alternates.en)} />
+        </>
+      )
+    }
+    <link rel="icon" href={`${root}/favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${root}/apple-touch-icon.png`} />
     <meta name="theme-color" content="#fff7ec" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -28,7 +44,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="Krida" />
-    <meta property="og:locale" content="id_ID" />
+    <meta property="og:locale" content={lang === "en" ? "en_US" : "id_ID"} />
+    {alternates && <meta property="og:locale:alternate" content={lang === "en" ? "id_ID" : "en_US"} />}
     <meta property="og:type" content="website" />
   </head>
   <body>

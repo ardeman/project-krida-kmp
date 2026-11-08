@@ -1,0 +1,30 @@
+---
+import type { Lang } from "../layouts/Base.astro";
+
+interface Props {
+  lang: Lang;
+  alternates: Record<Lang, string>;
+}
+const { lang, alternates } = Astro.props;
+const root = import.meta.env.BASE_URL.replace(/\/$/, "");
+const langs: { code: Lang; label: string; name: string }[] = [
+  { code: "id", label: "ID", name: "Bahasa Indonesia" },
+  { code: "en", label: "EN", name: "English" },
+];
+---
+
+<span class="lang-switch">
+  {
+    langs.map((l) =>
+      l.code === lang ? (
+        <span class="lang-current" aria-current="page" title={l.name}>
+          {l.label}
+        </span>
+      ) : (
+        <a href={`${root}/${alternates[l.code]}`} hreflang={l.code} lang={l.code} title={l.name}>
+          {l.label}
+        </a>
+      ),
+    )
+  }
+</span>

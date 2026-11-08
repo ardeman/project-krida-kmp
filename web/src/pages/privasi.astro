@@ -1,17 +1,22 @@
 ---
 import Base from "../layouts/Base.astro";
 import Wordmark from "../components/Wordmark.astro";
+import LangSwitch from "../components/LangSwitch.astro";
 const home = import.meta.env.BASE_URL;
 const contact = "mail@ardeman.com";
+const alternates = { id: "privasi/", en: "en/privacy/" };
 ---
 
 <Base
   title="Kebijakan Privasi — Krida"
   description="Data apa yang dipakai Krida, untuk apa, dan siapa yang menerimanya."
+  lang="id"
+  alternates={alternates}
 >
   <main>
     <header class="nav">
       <a class="logo" href={home}><Wordmark height={30} /></a>
+      <LangSwitch lang="id" alternates={alternates} />
     </header>
 
     <article class="doc">

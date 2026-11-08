@@ -100,3 +100,9 @@ h3 { margin: 10px 0 2px; font-size: 18px; }
 .doc ul { padding-left: 20px; }
 .doc a, .footer a { color: var(--accent); }
 .doc-date { color: var(--muted); font-size: 15px; }
+
+.nav-links { display: inline-flex; align-items: center; gap: 12px; }
+.lang-switch { display: inline-flex; gap: 2px; font-size: 14px; }
+.lang-switch a, .lang-current { padding: 8px 6px; color: var(--muted); text-decoration: none; }
+.lang-switch a:hover { color: var(--ink); }
+.lang-current { color: var(--ink); font-weight: 700; }

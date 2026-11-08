@@ -5,7 +5,7 @@ Indonesian (the default language on both stores). Describe only what the shipped
 right now that is congklak (pass-and-play, vs computer, nearby play over Bluetooth or Wi-Fi).
 Update this file when a game or a data flow is added.
 
-Privacy policy: https://krida.ardeman.com/privasi/ (source `web/src/pages/privasi.astro`).
+Privacy policy: https://krida.ardeman.com/privasi/ (Indonesian, source `web/src/pages/privasi.astro`) and https://krida.ardeman.com/en/privacy/ (English, `web/src/pages/en/privacy.astro`).
 Contact email: mail@ardeman.com.
 
 ## Listing text
