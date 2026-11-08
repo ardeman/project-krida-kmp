@@ -32,7 +32,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import com.ardeman.krida.ui.gameInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -194,7 +195,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Menu() {
         Row(
-            Modifier.fillMaxSize().background(Theme.cream).safeDrawingPadding().padding(horizontal = 24.dp, vertical = 20.dp),
+            Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Column(Modifier.width(236.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -348,7 +349,7 @@ class MainActivity : ComponentActivity() {
         fun leave() { r.leave(); room = null }
         BackHandler(onBack = ::leave)
         Column(
-            Modifier.fillMaxSize().background(Theme.cream).safeDrawingPadding().padding(24.dp),
+            Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(R.string.congklak_title), style = Theme.font(24, FontWeight.Black, Theme.ink))

@@ -8,6 +8,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -131,3 +135,10 @@ fun RowScope.IconTile(@DrawableRes icon: Int) {
         Icon(painterResource(icon), contentDescription = null, tint = Theme.accent, modifier = Modifier.size(22.dp))
     }
 }
+
+/**
+ * What screens keep clear of. The system bars are hidden (they only slide in over the app
+ * on a swipe), so that is the camera cutout plus the keyboard, not the bars' space.
+ */
+val gameInsets: WindowInsets
+    @Composable get() = WindowInsets.displayCutout.union(WindowInsets.ime)
