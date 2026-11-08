@@ -2,10 +2,13 @@ package com.ardeman.krida.ads
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -123,28 +126,34 @@ object Ads {
         ad.show(activity) { earned = true }
     }
 
-    /** Anchored adaptive banner across the given width; nothing when ads are off or not allowed yet. */
+    /**
+     * Anchored adaptive banner across the given width, with [trailing] beside it (the menu's
+     * "Hapus iklan"); nothing when ads are off or not allowed yet.
+     */
     @Composable
-    fun Banner(modifier: Modifier = Modifier) {
+    fun Banner(modifier: Modifier = Modifier, trailing: @Composable () -> Unit = {}) {
         if (removed || !started) return
         val unit = stringResource(R.string.admob_banner)
         val context = LocalContext.current
-        BoxWithConstraints(modifier.fillMaxWidth()) {
-            val width = maxWidth.value.toInt()
-            val size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, width)
-            key(width) {
-                AndroidView(
-                    modifier = Modifier.fillMaxWidth().height(size.height.dp),
-                    factory = { ctx ->
-                        AdView(ctx).apply {
-                            setAdSize(size)
-                            adUnitId = unit
-                            loadAd(AdRequest.Builder().build())
-                        }
-                    },
-                    onRelease = { it.destroy() },
-                )
+        Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            BoxWithConstraints(Modifier.weight(1f)) {
+                val width = maxWidth.value.toInt()
+                val size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, width)
+                key(width) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxWidth().height(size.height.dp),
+                        factory = { ctx ->
+                            AdView(ctx).apply {
+                                setAdSize(size)
+                                adUnitId = unit
+                                loadAd(AdRequest.Builder().build())
+                            }
+                        },
+                        onRelease = { it.destroy() },
+                    )
+                }
             }
+            trailing()
         }
     }
 

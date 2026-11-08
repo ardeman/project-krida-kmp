@@ -222,23 +222,35 @@ class MainActivity : ComponentActivity() {
                     NearbyCard()
                     AdButtons()
                 }
-                Ads.Banner()
+                Ads.Banner(trailing = { RemoveAdsButton() })
             }
         }
     }
 
-    /** "Hapus iklan · Rp 15.000" while ads are on and Play knows the product; "Privasi iklan" where required. */
+    /** "Privasi iklan" where the consent rules require a way back into the form. */
     @Composable
     private fun AdButtons() {
-        val price = Ads.removeAdsPrice
-        if (price == null && !Ads.privacyOptionsRequired) return
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (price != null) {
-                SecondaryButton(stringResource(R.string.shop_remove_ads, price), onClick = { Ads.buyRemoveAds(this@MainActivity) })
-            }
-            if (Ads.privacyOptionsRequired) {
-                SecondaryButton(stringResource(R.string.ads_privacy), onClick = { Ads.showPrivacyOptions(this@MainActivity) }, tint = Theme.muted)
-            }
+        if (!Ads.privacyOptionsRequired) return
+        SecondaryButton(stringResource(R.string.ads_privacy), onClick = { Ads.showPrivacyOptions(this@MainActivity) }, tint = Theme.muted)
+    }
+
+    /**
+     * "Hapus iklan" with its price, beside the banner where the ad is: the cards above keep
+     * the full height. Only while ads are on and Play knows the product.
+     */
+    @Composable
+    private fun RemoveAdsButton() {
+        val price = Ads.removeAdsPrice ?: return
+        val shape = RoundedCornerShape(14.dp)
+        Column(
+            Modifier.height(50.dp).clip(shape).background(Color.White).border(1.5.dp, Theme.accent, shape)
+                .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); Ads.buyRemoveAds(this@MainActivity) }
+                .padding(horizontal = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(stringResource(R.string.shop_remove_ads), style = Theme.font(14, color = Theme.accent), maxLines = 1)
+            Text(price, style = Theme.font(12, FontWeight.Bold, Theme.muted), maxLines = 1)
         }
     }
 

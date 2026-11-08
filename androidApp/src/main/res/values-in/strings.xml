@@ -65,7 +65,7 @@
     <string name="sound_off">Matikan suara</string>
     <string name="music_on">Nyalakan musik</string>
     <string name="music_off">Matikan musik</string>
-    <string name="shop_remove_ads">Hapus iklan · %1$s</string>
+    <string name="shop_remove_ads">Hapus iklan</string>
     <string name="ads_privacy">Privasi iklan</string>
     <string name="hint">Petunjuk (tonton iklan)</string>
     <string name="hint_free">Petunjuk</string>
