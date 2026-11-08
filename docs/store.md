@@ -1,7 +1,7 @@
 # Store listings and privacy answers
 
 The single source for what goes into Play Console and App Store Connect. Listing text is in
-Indonesian (the default language on both stores). Describe only what the shipped build does:
+Indonesian (the default language on both stores) with an English translation below it. Describe only what the shipped build does:
 right now that is congklak (pass-and-play, vs computer, nearby play over Bluetooth or Wi-Fi).
 Update this file when a game or a data flow is added.
 
@@ -45,6 +45,54 @@ Contact email: mail@ardeman.com.
 > Permainan tradisional lain menyusul.
 >
 > Krida gratis dengan iklan. Beli "Hapus iklan" sekali untuk menghilangkan semua iklan dan memakai petunjuk tanpa menonton iklan.
+
+### English (en-US)
+
+Play Console: Grow → Store presence → Main store listing → Manage translations → Add your own
+translation text → English (United States). App Store Connect: add the English (U.S.)
+localization on App Information (name, subtitle, privacy policy URL) and on the version page
+(promotional text, description, keywords). Use the English privacy policy URL there:
+https://krida.ardeman.com/en/privacy/.
+
+**Name** (≤ 30): Krida: Traditional Games
+
+**Play short description** (≤ 80):
+
+> 3D congklak: play the computer or friends nearby, no internet needed.
+
+**App Store subtitle** (≤ 30): 3D congklak with friends
+
+**App Store keywords** (≤ 100, comma-separated, no spaces):
+`congklak,mancala,dakon,board game,traditional,offline,bluetooth,local multiplayer,indonesia`
+
+**App Store promotional text** (≤ 170):
+
+> Classic congklak in 3D voxel style. Play the computer, take turns on one phone, or play friends over Bluetooth, with Android and iPhone at the same table.
+
+**Full description** (Play ≤ 4000, App Store description):
+
+> Krida brings traditional games from across Indonesia to life in warm 3D voxel style. The first one: congklak, the Indonesian mancala.
+>
+> Pick up the seeds from one of your holes, sow them one by one, and gather as many as you can in your store. Passed your store and landed in an empty hole on your side? Shoot! The seeds in the hole opposite are yours.
+>
+> HOW TO PLAY
+> • Play the computer: choose Easy, Medium or Hard.
+> • Take turns on one phone or tablet, perfect for two players.
+> • Play friends nearby over Bluetooth or the same Wi-Fi, no internet needed. Android and iPhone can play together.
+>
+> WHY KRIDA
+> • A 3D voxel board with seeds sown one at a time.
+> • Seed sounds, a "Shoot!" call and gamelan music, each of which can be turned off.
+> • Move hints from the Hard computer when you're stuck.
+> • Play in English or Indonesian.
+> • Light and small to download.
+>
+> More traditional games are on the way.
+>
+> Krida is free with ads. Buy "Remove ads" once to remove all ads and get hints without watching an ad.
+
+**In-app purchase** `hapus_iklan`, English (U.S.) localization on both stores: display name
+"Remove ads", description "Removes all ads and unlocks hints without ads."
 
 **Category:** Play: Games → Board. App Store: Games (primary), Board (sub-category); secondary
 category Family is not used (the app is not in Families / Kids).
