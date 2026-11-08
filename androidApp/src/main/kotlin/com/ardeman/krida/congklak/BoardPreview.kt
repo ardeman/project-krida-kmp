@@ -17,6 +17,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -66,6 +67,19 @@ private fun Snapshot(size: IntSize, fill: Modifier, onReady: () -> Unit) {
     if (shown != null) {
         LaunchedEffect(Unit) { onReady() }
         Image(shown.asImageBitmap(), contentDescription = null, modifier = fill, contentScale = ContentScale.FillBounds)
+        return
+    }
+
+    // Building the Filament engine blocks the main thread for a moment: let the loading
+    // screen reach the screen first.
+    var mounted by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        withFrameNanos {}
+        withFrameNanos {}
+        mounted = true
+    }
+    if (!mounted) {
+        Box(fill.background(Theme.cream))
         return
     }
 

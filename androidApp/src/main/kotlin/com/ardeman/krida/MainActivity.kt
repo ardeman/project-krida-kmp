@@ -57,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -149,10 +150,16 @@ class MainActivity : ComponentActivity() {
         Sounds.init(this)
         // A language change recreates the activity, so this follows the picker.
         Sounds.english = Language.current(this) == Language.Lang.EN
-        Ads.init(this)
         CongklakSettings.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
+            // The ad SDK and the banner's WebView take about a second to start on older phones:
+            // start them once the loading screen is on screen, not before the first frame.
+            LaunchedEffect(Unit) {
+                withFrameNanos {}
+                withFrameNanos {}
+                Ads.init(this@MainActivity)
+            }
             LandscapeStage {
                 val r = room
                 val table = passAndPlay ?: r?.table
