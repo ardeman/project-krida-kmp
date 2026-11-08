@@ -653,6 +653,22 @@
         }
       }
     },
+    "Memuat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memuat"
+          }
+        }
+      }
+    },
     "Menabur · %lld biji di tangan" : {
       "localizations" : {
         "en" : {

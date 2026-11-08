@@ -6,7 +6,9 @@ import SwiftUI
 /// from the near side, cropped to the left end (your store and the first holes). It is drawn
 /// once with RealityKit, snapshotted, and then shown as an image, so the menu doesn't keep a
 /// second renderer running. The snapshot is kept for the next visit at the same size.
+/// `onReady` is called once the snapshot is shown.
 struct BoardPreview: View {
+    var onReady: () -> Void = {}
     @State private var image: UIImage?
     @State private var scene: BoardScene?
 
@@ -38,6 +40,7 @@ struct BoardPreview: View {
         guard size.width > 0, size.height > 0 else { return }
         if let cached = Self.cached, cached.size == size {
             image = cached.image
+            onReady()
             return
         }
         image = nil
@@ -59,6 +62,7 @@ struct BoardPreview: View {
                 if let shot {
                     Self.cached = (size, shot)
                     image = shot
+                    onReady()
                     scene = nil
                 } else if tries > 1 {
                     snapshot(board, size: size, tries: tries - 1)

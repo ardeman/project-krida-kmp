@@ -9,6 +9,10 @@ struct ContentView: View {
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     @State private var joining = false
+    /// The loading screen at app start, over the menu while its board snapshot renders.
+    @State private var starting = true
+    @State private var menuReady = false
+    @State private var startMinDone = false
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
 
@@ -26,6 +30,21 @@ struct ContentView: View {
         }
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
+        .overlay { if starting { LoadingScreen().transition(.opacity) } }
+        // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
+        // comes (a join link straight into a room, a slow GPU). Same as Android.
+        .task {
+            try? await Task.sleep(for: .milliseconds(700))
+            startMinDone = true
+            if menuReady { endStartup() }
+            try? await Task.sleep(for: .milliseconds(2300))
+            endStartup()
+        }
+        .onChange(of: menuReady) { _, ready in if ready && startMinDone { endStartup() } }
+    }
+
+    private func endStartup() {
+        withAnimation(.easeOut(duration: 0.3)) { starting = false }
     }
 
     /// Two columns at any size: on a big screen the menu grows with `uiScale` and keeps the
@@ -39,7 +58,7 @@ struct ContentView: View {
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
                     .environment(\.colorScheme, .light)
                     .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
-                CongklakCard()
+                CongklakCard { menuReady = true }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
@@ -261,6 +280,8 @@ private struct LevelPicker: View {
 
 /// The congklak tile on the home screen, with a picture of the real board.
 private struct CongklakCard: View {
+    /// Called once the board snapshot is on screen.
+    let onReady: () -> Void
     @Environment(\.uiScale) private var s
 
     var body: some View {
@@ -276,7 +297,7 @@ private struct CongklakCard: View {
             }
             .lineLimit(1)
             // The real board, cropped to its left end; it takes whatever height the card has.
-            BoardPreview()
+            BoardPreview(onReady: onReady)
                 .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 14 * s))
             Text("Kumpulkan biji terbanyak di lumbungmu.")

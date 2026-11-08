@@ -191,7 +191,36 @@ final class CongklakGameModel: ObservableObject {
     }
 }
 
+/// The game screen. Building the RealityKit board blocks the main thread for a moment, so the
+/// loading screen goes up first, the board is built under it, and the loading screen fades out
+/// once the board's first frames are drawn (or after a few seconds, if they never come).
 struct CongklakView: View {
+    let table: CongklakTable
+    let onExit: () -> Void
+    @State private var mounted = false
+    @State private var loading = true
+
+    var body: some View {
+        ZStack {
+            if mounted { CongklakBoardView(table: table, onExit: onExit, onDrawn: finishLoading) }
+            if loading { LoadingScreen().transition(.opacity) }
+        }
+        .task {
+            // Let the loading screen reach the display before the board is built.
+            try? await Task.sleep(for: .milliseconds(50))
+            mounted = true
+            try? await Task.sleep(for: .seconds(4))
+            finishLoading()
+        }
+    }
+
+    private func finishLoading() {
+        guard loading else { return }
+        withAnimation(.easeOut(duration: 0.25)) { loading = false }
+    }
+}
+
+private struct CongklakBoardView: View {
     @ObservedObject private var table: CongklakTable
     @StateObject private var model: CongklakGameModel
     @State private var showRules = false
@@ -201,11 +230,13 @@ struct CongklakView: View {
     /// Board size relative to the phone design: the board fills the view's width.
     @State private var boardScale: CGFloat = 1
     let onExit: () -> Void
+    let onDrawn: () -> Void
 
-    init(table: CongklakTable, onExit: @escaping () -> Void) {
+    init(table: CongklakTable, onExit: @escaping () -> Void, onDrawn: @escaping () -> Void) {
         self.table = table
         _model = StateObject(wrappedValue: CongklakGameModel(table: table))
         self.onExit = onExit
+        self.onDrawn = onDrawn
     }
 
     var body: some View {
@@ -224,7 +255,10 @@ struct CongklakView: View {
                 hud
                 if model.finished && !model.animating { gameOver }
             }
-            .onAppear { DispatchQueue.main.async { layout(geo.size) } }
+            .onAppear {
+                model.board.whenDrawn(onDrawn)
+                DispatchQueue.main.async { layout(geo.size) }
+            }
             .onChange(of: geo.size) { _, size in DispatchQueue.main.async { layout(size) } }
         }
         .ignoresSafeArea()

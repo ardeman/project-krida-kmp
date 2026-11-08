@@ -1,3 +1,4 @@
+import Combine
 import RealityKit
 import Shared
 import SwiftUI
@@ -17,6 +18,19 @@ final class BoardScene {
     private let anchor = AnchorEntity(world: .zero)
     private let camera = PerspectiveCamera()
     private var seeds: [ModelEntity] = []
+    private var frameWatch: Cancellable?
+
+    /// Calls `done` once the scene has updated `frames` times, i.e. the board is on screen.
+    func whenDrawn(frames: Int = 3, _ done: @escaping () -> Void) {
+        var left = frames
+        frameWatch = view.scene.subscribe(to: SceneEvents.Update.self) { [weak self] _ in
+            left -= 1
+            guard left == 0 else { return }
+            self?.frameWatch = nil
+            done()
+        }
+    }
+
     /// Gold rings marking playable holes, keyed by pit.
     private var rings: [Int: ModelEntity] = [:]
     private var placed = false
