@@ -14,6 +14,8 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.atan
+import kotlin.math.min
 import kotlin.math.tan
 import kotlin.random.Random
 
@@ -68,6 +70,16 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     }
 
     private var room: FloatArray? = null
+    private var focus: List<FloatArray>? = null
+
+    /**
+     * For the menu preview: zooms in on [points] (x, y, z), framing them as large as fits with
+     * some room around them, instead of fitting the whole board.
+     */
+    fun frame(points: List<FloatArray>) {
+        focus = points
+        if (width > 1) { onResize(); invalidate() }
+    }
     private var obstacles: List<FloatArray> = emptyList()
 
     private val pieces = IntArray(UlarTanggaBoard.PIECES) { entity(UlarTanggaGlb.pieceName(it)) }
@@ -453,18 +465,36 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
             }
             return best
         }
-        var lo = MIN_FOV
-        var hi = MAX_FOV
-        repeat(20) {
-            val mid = (lo + hi) / 2
-            if (place(scaleFor(mid)) != null) hi = mid else lo = mid
+        val points = focus
+        val hi: Float
+        val dx: Float
+        val dy: Float
+        if (points != null) {
+            val shot = points.map { (x, y, z) -> project(x, y, z) }
+            val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
+            val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
+            val k = FRAME_FILL * min(width / (x1 - x0), height / (y1 - y0))
+            hi = atan(tanBase / k) * 360f / PI.toFloat()
+            dx = cx - (cx + ((x0 + x1) / 2 - cx) * k)
+            dy = cy - (cy + ((y0 + y1) / 2 - cy) * k)
+        } else {
+            var lo = MIN_FOV
+            var top = MAX_FOV
+            repeat(20) {
+                val mid = (lo + top) / 2
+                if (place(scaleFor(mid)) != null) top = mid else lo = mid
+            }
+            hi = top
+            val best = place(scaleFor(hi)) ?: floatArrayOf(0f, 0f)
+            dx = best[0]
+            dy = best[1]
         }
-        val (dx, dy) = place(scaleFor(hi)) ?: floatArrayOf(0f, 0f)
         fovDegrees = hi
         camera.setProjection(hi.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
         shiftX = dx * 2.0 / width
         shiftY = -dy * 2.0 / height
-        camera.setShift(shiftX, shiftY)
+        // shiftX/shiftY are in NDC (2 across the view); Filament's shift is in whole views.
+        camera.setShift(shiftX / 2, shiftY / 2)
         updateHome()
     }
 
@@ -509,6 +539,8 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
         const val MAX_FOV = 90f
         /** Places tried along each axis when fitting the board. */
         const val FIT_STEPS = 24
+        /** Share of the view the framed points take, leaving room for what sits around them. */
+        const val FRAME_FILL = 0.8f
 
         /** The die as it waits on screen: [value] up, turned to show two more faces. */
         fun homeRotation(value: Int): FloatArray =

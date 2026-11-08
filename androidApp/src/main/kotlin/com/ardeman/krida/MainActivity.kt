@@ -670,10 +670,12 @@ private fun GameCardFace(game: Game, onReady: () -> Unit) {
                 // The real board, cropped to its left end; it takes whatever height the card has.
                 Game.CONGKLAK -> BoardPreview(preview, onReady = onReady)
                 Game.ULAR_TANGGA -> VoxelPreview("ular_tangga", null, preview, onReady) { view ->
+                    // Zoomed in on the start: the pawns waiting in the tray, the first rows,
+                    // ladder 4→25 and snake 27→5.
                     UlarTanggaRenderer(view).apply {
-                        listOf(23, 8, 0, 0).forEachIndexed { seat, square ->
-                            place(seat, UlarTanggaBoard.pieceSpot(square, seat, square == 0))
-                        }
+                        val pawns = (0 until UlarTanggaBoard.PIECES).map { UlarTanggaBoard.pieceSpot(0, it, true) }
+                        pawns.forEachIndexed { seat, spot -> place(seat, spot) }
+                        frame(pawns + listOf(1, 4, 5, 25, 27).map { UlarTanggaBoard.squareAnchor(it) })
                     }
                 }
             }
