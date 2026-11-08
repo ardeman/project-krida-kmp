@@ -62,6 +62,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -173,6 +174,9 @@ class MainActivity : ComponentActivity() {
                 withFrameNanos {}
                 Ads.init(this@MainActivity)
             }
+            // Keeps the menu's saved state (chosen game, opponent, level) while a game or
+            // lobby covers it, so leaving a game lands back on that game's card.
+            val menuState = rememberSaveableStateHolder()
             LandscapeStage {
                 val r = room
                 val table = passAndPlay ?: r?.table
@@ -181,7 +185,7 @@ class MainActivity : ComponentActivity() {
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
                     r != null -> Lobby(r)
-                    else -> Menu()
+                    else -> menuState.SaveableStateProvider("menu") { Menu() }
                 }
                 StartupCover()
             }
