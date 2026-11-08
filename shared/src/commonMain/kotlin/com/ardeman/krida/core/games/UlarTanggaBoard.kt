@@ -60,6 +60,11 @@ object UlarTanggaBoard {
     private val WHITE = floatArrayOf(1f, 1f, 1f)
     private val BLACK = floatArrayOf(0.1f, 0.08f, 0.07f)
     private val TONGUE = floatArrayOf(0.86f, 0.16f, 0.18f)
+    private val DIE_WHITE = floatArrayOf(0.99f, 0.98f, 0.95f)
+    /** Milder than the default, since the die turns and its baked shading turns with it. */
+    private val DIE_SHADE = floatArrayOf(1f, 0.9f, 0.94f)
+    private val PIP_RED = floatArrayOf(0.85f, 0.15f, 0.17f)
+    private val SHADOW = floatArrayOf(0.85f, 0.81f, 0.73f)
 
     /** Piece colors by seat, sRGB: red, blue, green, yellow. The UI uses them too. */
     private val SEAT_COLORS = arrayOf(
@@ -134,6 +139,94 @@ object UlarTanggaBoard {
             box(floatArrayOf(-0.24f * k, 1.12f * k, 0.26f * k), floatArrayOf(-0.1f * k, 1.24f * k, 0.34f * k), WHITE)
         }
     }
+
+    /** Edge of the die, in world units. */
+    const val DIE = 1.8f
+
+    /**
+     * Where a thrown die may come to rest on the board: the range its center keeps to, min x,
+     * min z, max x, max z, a tile in from the frame. It rests with its center at [DIE_REST_Y].
+     */
+    val dieLanding: FloatArray = floatArrayOf(-HALF + TILE, -HALF + TILE, HALF - TILE, HALF - TILE)
+
+    /** Height of a resting die's center on the tiles. */
+    const val DIE_REST_Y = TOP + DIE / 2
+
+    /**
+     * The face normal of each value, by value - 1: 1 up, 6 down, 2 and 5 front and back, 3 and
+     * 4 right and left, so opposite faces add up to seven.
+     */
+    internal val DIE_FACES = arrayOf(
+        floatArrayOf(0f, 1f, 0f),
+        floatArrayOf(0f, 0f, 1f),
+        floatArrayOf(1f, 0f, 0f),
+        floatArrayOf(-1f, 0f, 0f),
+        floatArrayOf(0f, 0f, -1f),
+        floatArrayOf(0f, -1f, 0f),
+    )
+
+    /**
+     * The die's rotation (a unit quaternion x, y, z, w) that turns [value]'s face up. Platforms
+     * end a roll on it, after any turn about the vertical axis.
+     */
+    fun dieRest(value: Int): FloatArray {
+        val h = sqrt(0.5f)
+        return when (value) {
+            1 -> floatArrayOf(0f, 0f, 0f, 1f)
+            2 -> floatArrayOf(-h, 0f, 0f, h) // -90° about x: front to top
+            3 -> floatArrayOf(0f, 0f, h, h) // +90° about z: right to top
+            4 -> floatArrayOf(0f, 0f, -h, h)
+            5 -> floatArrayOf(h, 0f, 0f, h)
+            6 -> floatArrayOf(1f, 0f, 0f, 0f)
+            else -> throw IllegalArgumentException("no face $value")
+        }
+    }
+
+    /** A white voxel die centered on the origin; the one and the four have red pips, as a dadu. */
+    fun dieMesh(): VoxelMesh {
+        val mesh = VoxelMesh()
+        val half = DIE / 2
+        mesh.box(floatArrayOf(-half, -half, -half), floatArrayOf(half, half, half), DIE_WHITE, DIE_SHADE, bottom = true)
+        val pip = DIE * 0.16f
+        val spread = DIE * 0.27f
+        DIE_FACES.forEachIndexed { i, n ->
+            val value = i + 1
+            // Two axes across the face, with a × b = -n so the quad winds outward like box().
+            val a = if (n[0] != 0f) floatArrayOf(0f, 0f, 1f) else floatArrayOf(1f, 0f, 0f)
+            val b = cross(a, n)
+            val rgb = if (value == 1 || value == 4) PIP_RED else BLACK
+            val size = if (value == 1) pip * 1.5f else pip
+            DIE_PIPS[i].forEach { (u, v) ->
+                val c = FloatArray(3) { n[it] * (half + 0.01f) + a[it] * u * spread + b[it] * v * spread }
+                val s = size / 2
+                fun corner(du: Float, dv: Float) = FloatArray(3) { c[it] + a[it] * du + b[it] * dv }
+                mesh.quad(arrayOf(corner(-s, -s), corner(-s, s), corner(s, s), corner(s, -s)), rgb)
+            }
+        }
+        return mesh
+    }
+
+    /** The die's shadow: a flat square on the floor, a little darker than the background. */
+    fun dieShadowMesh(): VoxelMesh {
+        val s = DIE * 0.55f
+        val y = 0.01f
+        return VoxelMesh().apply {
+            quad(arrayOf(VoxelMesh.p(-s, y, -s), VoxelMesh.p(-s, y, s), VoxelMesh.p(s, y, s), VoxelMesh.p(s, y, -s)), SHADOW)
+        }
+    }
+
+    private fun cross(a: FloatArray, b: FloatArray) =
+        floatArrayOf(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+    /** Pip spots per face, by value - 1, in face units (-1..1). */
+    private val DIE_PIPS: List<List<Pair<Float, Float>>> = listOf(
+        listOf(0f to 0f),
+        listOf(-1f to -1f, 1f to 1f),
+        listOf(-1f to -1f, 0f to 0f, 1f to 1f),
+        listOf(-1f to -1f, 1f to -1f, -1f to 1f, 1f to 1f),
+        listOf(-1f to -1f, 1f to -1f, 0f to 0f, -1f to 1f, 1f to 1f),
+        listOf(-1f to -1f, 1f to -1f, -1f to 0f, 1f to 0f, -1f to 1f, 1f to 1f),
+    )
 
     /** Frame, tiles, numbers, start pad, ladders and snakes. */
     fun boardMesh(): VoxelMesh {

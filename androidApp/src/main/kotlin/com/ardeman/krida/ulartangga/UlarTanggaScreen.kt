@@ -9,10 +9,13 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +50,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -56,11 +59,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -80,12 +85,11 @@ import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.Theme
 import com.ardeman.krida.ui.gameInsets
-import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private const val TUMBLE_MS = 70L
-private const val TUMBLES = 8
+/** How long the die stays shaking for a roll the host hasn't answered yet. */
+private const val ROLL_WAIT_MS = 4000L
 private const val HOP_MS = 230L
 private const val JUMP_UNITS_PER_SECOND = 9f
 private const val SETTLE_MS = 180L
@@ -125,6 +129,8 @@ fun UlarTanggaScreen(table: UlarTanggaTable, onExit: () -> Unit) {
 private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -> Unit, loading: () -> Boolean) {
     var state by remember { mutableStateOf(table.latest) }
     var die by remember { mutableStateOf<Int?>(null) }
+    /** How the local player threw the die, for the roll the table hasn't sent back yet. */
+    val pendingToss = remember { arrayOfNulls<UlarTanggaRenderer.Toss>(1) }
     var animating by remember { mutableStateOf(false) }
     /** The seat the roulette is passing over, while it spins. */
     var spinning by remember { mutableStateOf<Int?>(null) }
@@ -178,13 +184,12 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             val seat = next.lastSeat
             val roll = next.lastRoll
             if (update.fresh && seat != null && roll != null) {
-                repeat(TUMBLES) {
-                    die = Random.nextInt(1, 7)
-                    delay(TUMBLE_MS)
-                }
+                // Bots and remote players toss; the local player's tap or throw is replayed.
+                val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
+                pendingToss[0] = null
+                val seconds = renderer?.throwDie(roll, toss) ?: 0f
+                delay((seconds * 1000).toLong() + 200)
                 die = roll
-                Sounds.play(Sounds.Effect.Tap)
-                delay(250)
                 val play = UlarTanggaGame.play(state, seat, roll)
                 val r = renderer
                 for (square in play.steps) {
@@ -204,6 +209,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 }
                 repeat(next.positions.size) { renderer?.move(it, listOf(spot(next, it)), SETTLE_MS / 1000f) }
                 delay(SETTLE_MS)
+                renderer?.recallDie()
                 state = next
                 announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
             } else {
@@ -211,6 +217,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 die = null
                 state = next
                 placeAll(next)
+                renderer?.recallDie()
                 if (next.lastRoll == null && !next.finished) roulette(next.firstTurn)
             }
             animating = false
@@ -232,8 +239,21 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
 
     fun canRoll() = !animating && queue.isEmpty() && !state.finished && table.isLocal(state.turn)
 
-    fun roll() {
-        if (canRoll()) table.roll(state.turn)
+    /** Throws the die for the local player whose turn it is; it shakes until the roll comes back. */
+    fun roll(toss: UlarTanggaRenderer.Toss) {
+        val r = renderer
+        if (!canRoll() || pendingToss[0] != null) { r?.holdDie(false); return }
+        pendingToss[0] = toss
+        r?.holdDie(true, shake = toss == UlarTanggaRenderer.Toss.Long)
+        if (!table.roll(state.turn)) {
+            pendingToss[0] = null
+            r?.holdDie(false)
+            return
+        }
+        scope.launch {
+            delay(ROLL_WAIT_MS)
+            if (pendingToss[0] === toss && !animating) { pendingToss[0] = null; renderer?.holdDie(false) }
+        }
     }
 
     fun exit() {
@@ -255,6 +275,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     }
 
     val highlighted = spinning ?: if (state.finished || queue.isNotEmpty()) null else state.turn
+    val ready = canRoll() && spinning == null && !loading()
+    SideEffect { renderer?.dieReady = ready }
+    val rollLabel = stringResource(R.string.ular_roll)
+    val dieLabel = die?.toString() ?: ""
 
     Box(Modifier.fillMaxSize().background(Theme.cream)) {
         key(turned) { AndroidView(
@@ -265,6 +289,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 view.also {
                     renderer = (if (view is TextureView) UlarTanggaRenderer(view) else UlarTanggaRenderer(view as SurfaceView)).apply {
                         this.onFirstFrame = onFirstFrame
+                        onDieBounce = { Sounds.play(Sounds.Effect.Tap) }
                         resume()
                     }
                     view.tag = renderer
@@ -279,6 +304,9 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
 
         // Tell the renderer how much room the HUD columns take, so the board fits between them.
         var rootX by remember { mutableStateOf(0f) }
+        var rootY by remember { mutableStateOf(0f) }
+        var dieSpot by remember { mutableStateOf<FloatArray?>(null) }
+        LaunchedEffect(renderer, dieSpot) { renderer?.dieSpot = dieSpot }
         var rootW by remember { mutableStateOf(0f) }
         var leftEdge by remember { mutableStateOf(0f) }
         var rightEdge by remember { mutableStateOf(0f) }
@@ -289,20 +317,28 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             r.insets = floatArrayOf(leftEdge - rootX + margin, margin, rootX + rootW - rightEdge + margin, margin)
         }
         Row(
-            Modifier.fillMaxSize().onGloballyPositioned { rootX = it.positionInRoot().x; rootW = it.size.width.toFloat() }
+            Modifier.fillMaxSize().onGloballyPositioned { rootX = it.positionInRoot().x; rootY = it.positionInRoot().y; rootW = it.size.width.toFloat() }
                 .windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp),
         ) {
             // Left: back, then the players.
             Column(
-                Modifier.width(168.dp).fillMaxHeight().onGloballyPositioned { leftEdge = it.positionInRoot().x + it.size.width },
+                Modifier.width(136.dp).fillMaxHeight().onGloballyPositioned { leftEdge = it.positionInRoot().x + it.size.width },
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
                 Spacer(Modifier.height(4.dp))
-                repeat(players) { seat -> PlayerRow(table, state, seat, on = seat == highlighted) }
+                // Two tiles a row.
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    (0 until players).chunked(2).forEach { pair ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            pair.forEach { seat -> PlayerTile(table, state, seat, on = seat == highlighted, Modifier.weight(1f)) }
+                            if (pair.size == 1) Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
             }
             Spacer(Modifier.weight(1f))
-            // Right: sound and rules, then the die and its button.
+            // Right: sound and rules, then the die and whose turn it is.
             Column(
                 Modifier.width(136.dp).fillMaxHeight().onGloballyPositioned { rightEdge = it.positionInRoot().x },
                 horizontalAlignment = Alignment.End,
@@ -312,23 +348,49 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
                 Spacer(Modifier.weight(1f))
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Die(die, Modifier.pointerInput(Unit) { detectTapGestures { roll() } })
-                    Text(
-                        status(table, state, animating || spinning != null),
-                        style = Theme.font(14, FontWeight.Bold, Theme.muted),
-                        textAlign = TextAlign.Center,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    PrimaryButton(
-                        stringResource(R.string.ular_roll),
-                        onClick = ::roll,
-                        modifier = Modifier.fillMaxWidth(),
-                        height = 52.dp,
-                        enabled = canRoll(),
-                    )
-                }
+                // The die itself is 3D, drawn by the renderer over this spot; tap it to toss
+                // it, hold it to shake it and let go to throw it.
+                Box(
+                    Modifier.size(104.dp).align(Alignment.CenterHorizontally)
+                        .onGloballyPositioned {
+                            val p = it.positionInRoot()
+                            dieSpot = floatArrayOf(p.x - rootX + it.size.width / 2f, p.y - rootY + it.size.height / 2f, it.size.width * 0.45f)
+                        }
+                        .semantics {
+                            contentDescription = dieLabel
+                            onClick(rollLabel) { roll(UlarTanggaRenderer.Toss.Short); true }
+                        }
+                        .pointerInput(renderer) {
+                            val r = renderer ?: return@pointerInput
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                if (!canRoll()) return@awaitEachGesture
+                                down.consume()
+                                r.holdDie(true)
+                                var held = true
+                                val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                    waitForUpOrCancellation().also { held = false }
+                                }
+                                if (!held) {
+                                    if (up != null) { up.consume(); roll(UlarTanggaRenderer.Toss.Short) } else r.holdDie(false)
+                                    return@awaitEachGesture
+                                }
+                                r.holdDie(true, shake = true)
+                                Sounds.play(Sounds.Effect.Tap)
+                                waitForUpOrCancellation()?.consume()
+                                roll(UlarTanggaRenderer.Toss.Long)
+                            }
+                        },
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    status(table, state, animating || spinning != null),
+                    style = Theme.font(14, FontWeight.Bold, Theme.muted),
+                    textAlign = TextAlign.Center,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
 
@@ -363,46 +425,57 @@ private fun status(table: UlarTanggaTable, state: UlarTanggaState, busy: Boolean
     }
 }
 
+/** A seat as a square tile: its square (or finishing place) inside a circle in its color, the name below. */
 @Composable
-private fun PlayerRow(table: UlarTanggaTable, state: UlarTanggaState, seat: Int, on: Boolean) {
-    val shape = RoundedCornerShape(16.dp)
+private fun PlayerTile(table: UlarTanggaTable, state: UlarTanggaState, seat: Int, on: Boolean, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(14.dp)
     val place = state.finishOrder.indexOf(seat)
     val square = state.positions[seat]
-    Row(
-        Modifier.fillMaxWidth().height(46.dp)
+    val color = seatColor(seat)
+    // Dark digits on a light pawn color (yellow), white on the rest.
+    val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.ink else Color.White
+    Column(
+        modifier.aspectRatio(1f)
             .then(if (on) Modifier.shadow(8.dp, shape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
             .background(if (on) Theme.accent else Color.White, shape)
             .then(if (on) Modifier else Modifier.border(1.5.dp, Theme.line, shape))
-            .padding(start = 7.dp, end = 10.dp)
+            .padding(4.dp)
             .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Box(
-            Modifier.size(30.dp).background(if (on) Color.White else Theme.track, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
+        Box {
+            Box(
+                Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                val start = place < 0 && square == 0
+                Text(
+                    when {
+                        place >= 0 -> "#${place + 1}"
+                        start -> stringResource(R.string.ular_start)
+                        else -> square.toString()
+                    },
+                    style = Theme.font(if (start) 9 else 14, FontWeight.Black, digits).copy(lineHeight = 14.sp),
+                    maxLines = 1,
+                )
+            }
             if (seat in table.botSeats) {
-                Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = seatColor(seat), modifier = Modifier.size(18.dp))
-            } else {
-                Box(Modifier.size(16.dp).background(seatColor(seat), CircleShape))
+                Box(
+                    Modifier.align(Alignment.BottomEnd).padding(0.dp).size(16.dp).background(Color.White, CircleShape).border(1.dp, Theme.line, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = Theme.ink, modifier = Modifier.size(10.dp))
+                }
             }
         }
         Text(
             displayName(table, seat),
-            style = Theme.font(15, color = if (on) Color.White else Theme.ink),
+            style = Theme.font(11, FontWeight.Bold, if (on) Color.White else Theme.ink),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            when {
-                place >= 0 -> "#${place + 1}"
-                square == 0 -> stringResource(R.string.ular_start)
-                else -> square.toString()
-            },
-            style = Theme.font(15, FontWeight.Black, if (on) Theme.onAccent else Theme.muted),
-            maxLines = 1,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 3.dp),
         )
     }
 }
@@ -410,36 +483,6 @@ private fun PlayerRow(table: UlarTanggaTable, state: UlarTanggaState, seat: Int,
 @Composable
 private fun displayName(table: UlarTanggaTable, seat: Int) =
     if (table.mySeat == seat) stringResource(R.string.bot_you) else table.name(seat)
-
-/** A white die showing [value]'s pips; a faded six before the first roll. */
-@Composable
-private fun Die(value: Int?, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(22.dp)
-    val label = value?.toString() ?: ""
-    Box(
-        modifier.size(88.dp).shadow(6.dp, shape).background(Color.White, shape).border(1.5.dp, Theme.line, shape)
-            .semantics { contentDescription = label },
-    ) {
-        val pip = if (value == null) Theme.line else Theme.ink
-        Canvas(Modifier.fillMaxSize().padding(20.dp)) {
-            val spots = PIPS[(value ?: 6) - 1]
-            val r = size.minDimension * 0.11f
-            spots.forEach { (x, y) -> drawCircle(pip, r, Offset(x * size.width, y * size.height)) }
-        }
-    }
-}
-
-private val PIPS: List<List<Pair<Float, Float>>> = run {
-    val l = 0f; val m = 0.5f; val h = 1f
-    listOf(
-        listOf(m to m),
-        listOf(l to l, h to h),
-        listOf(l to l, m to m, h to h),
-        listOf(l to l, h to l, l to h, h to h),
-        listOf(l to l, h to l, m to m, l to h, h to h),
-        listOf(l to l, h to l, l to m, h to m, l to h, h to h),
-    )
-}
 
 /** The result card: the ranking, and Menu / Main lagi. */
 @Composable
