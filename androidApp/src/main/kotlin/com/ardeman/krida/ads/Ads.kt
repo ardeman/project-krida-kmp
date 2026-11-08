@@ -2,6 +2,7 @@ package com.ardeman.krida.ads
 
 import android.app.Activity
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -45,6 +46,8 @@ object Ads {
     private const val INTERSTITIAL_EVERY = 2
     private const val PREFS = "ads"
     private const val KEY_REMOVED = "removed"
+    private const val KEY_DEBUG_REMOVED = "debugRemoved"
+    private const val EXTRA_DEBUG_REMOVED = "adsRemoved"
 
     /** The player owns "Hapus iklan". Cached so ads never flash on before Play answers. */
     var removed by mutableStateOf(false)
@@ -55,6 +58,7 @@ object Ads {
         private set
 
     private var started by mutableStateOf(false)
+    private var debugRemoved = false
     private lateinit var app: Context
     private var interstitial: InterstitialAd? = null
     private var rewarded: RewardedAd? = null
@@ -67,7 +71,16 @@ object Ads {
 
     fun init(activity: Activity) {
         app = activity.applicationContext
-        removed = prefs().getBoolean(KEY_REMOVED, false)
+        // Debug builds only, to test the ad-free layout without a Play purchase:
+        // `adb shell am start -S -n com.ardeman.krida/.MainActivity --ez adsRemoved true`
+        // (false turns it off again). Kept across launches.
+        if (app.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            activity.intent?.takeIf { it.hasExtra(EXTRA_DEBUG_REMOVED) }?.let {
+                prefs().edit().putBoolean(KEY_DEBUG_REMOVED, it.getBooleanExtra(EXTRA_DEBUG_REMOVED, false)).apply()
+            }
+            debugRemoved = prefs().getBoolean(KEY_DEBUG_REMOVED, false)
+        }
+        removed = debugRemoved || prefs().getBoolean(KEY_REMOVED, false)
         Billing.connect(app, ::updateOwned)
 
         val consent = UserMessagingPlatform.getConsentInformation(activity)
@@ -165,10 +178,11 @@ object Ads {
         loadRewarded()
     }
 
-    private fun updateOwned(value: Boolean) {
+    private fun updateOwned(owned: Boolean) {
+        val value = owned || debugRemoved
         if (value == removed) return
         removed = value
-        prefs().edit().putBoolean(KEY_REMOVED, value).apply()
+        prefs().edit().putBoolean(KEY_REMOVED, owned).apply()
         if (value) {
             interstitial = null
             rewarded = null
