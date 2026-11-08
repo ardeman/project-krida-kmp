@@ -80,8 +80,11 @@ final class BoardScene {
         guard size.width > 0, size.height > 0 else { return }
         // RealityKit's field of view is vertical; the shared camera is defined horizontally.
         // Widen it so the board fits between the safe-area insets (Dynamic Island, corners).
+        // An inset on one side only is a corner punch hole (see `PunchHole`): the board's
+        // ends sit at mid-height, clear of it, so the board keeps the full width.
         let insets = view.safeAreaInsets
-        let safeWidth = max(size.width - 2 * max(insets.left, insets.right), size.width * 0.5)
+        let side = insets.left > 0 && insets.right > 0 ? max(insets.left, insets.right) : 0
+        let safeWidth = max(size.width - 2 * side, size.width * 0.5)
         let half = Float(CongklakBoard.shared.CAMERA_HORIZONTAL_FOV_DEGREES) * .pi / 360
         let tanHalf = tan(half) * Float(size.width / safeWidth)
         let aspect = Float(size.width / size.height)

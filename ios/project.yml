@@ -61,6 +61,9 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+        # Opt out of resizable windows so the landscape lock holds (iPad, unfolded foldables).
+        # Deprecated since iOS 26; LandscapeStage turns the layout itself where it is ignored.
+        UIRequiresFullScreen: true
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight

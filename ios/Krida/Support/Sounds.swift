@@ -88,9 +88,10 @@ final class Sounds: ObservableObject {
 /// Sound and music on/off, as two round buttons.
 struct SoundToggles: View {
     @ObservedObject private var sounds = Sounds.shared
+    @Environment(\.uiScale) private var s
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 8 * s) {
             CircleIconButton(systemImage: sounds.soundOn ? "speaker.wave.2.fill" : "speaker.slash.fill",
                              label: sounds.soundOn ? "Matikan suara" : "Nyalakan suara") { sounds.soundOn.toggle() }
             // SF Symbols has no slashed note, so music off is the note struck through.

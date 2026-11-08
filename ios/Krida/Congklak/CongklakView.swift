@@ -196,6 +196,10 @@ struct CongklakView: View {
     @StateObject private var model: CongklakGameModel
     @State private var showRules = false
     @ObservedObject private var ads = Ads.shared
+    @Environment(\.uiScale) private var s
+    @Environment(\.punchHole) private var hole
+    /// Board size relative to the phone design: the board fills the view's width.
+    @State private var boardScale: CGFloat = 1
     let onExit: () -> Void
 
     init(table: CongklakTable, onExit: @escaping () -> Void) {
@@ -220,13 +224,18 @@ struct CongklakView: View {
                 hud
                 if model.finished && !model.animating { gameOver }
             }
-            .onAppear { DispatchQueue.main.async { model.layout(size: geo.size) } }
-            .onChange(of: geo.size) { _, size in DispatchQueue.main.async { model.layout(size: size) } }
+            .onAppear { DispatchQueue.main.async { layout(geo.size) } }
+            .onChange(of: geo.size) { _, size in DispatchQueue.main.async { layout(size) } }
         }
         .ignoresSafeArea()
         .background(Theme.cream)
         .onChange(of: table.notice) { _, notice in if notice != nil { model.noticeChanged() } }
-        .sheet(isPresented: $showRules) { RulesSheet() }
+        .sheet(isPresented: $showRules) { RulesSheet(tembakAfterStore: model.state.tembakAfterStore) }
+    }
+
+    private func layout(_ size: CGSize) {
+        model.layout(size: size)
+        boardScale = size.width / LandscapeStage<EmptyView>.designSize.width
     }
 
     private func exit() {
@@ -275,11 +284,11 @@ struct CongklakView: View {
     // MARK: HUD
 
     private var hud: some View {
-        VStack(spacing: 0) {
-            HStack {
+        VStack(spacing: 0 * s) {
+            TopBar(gap: 8 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Kembali ke menu", action: exit)
-                Spacer()
-                HStack(spacing: 8) {
+                opponentPill
+                HStack(spacing: 8 * s) {
                     SoundToggles()
                     if model.canPlay && isLocal(model.turn) && model.hint == nil {
                         CircleIconButton(systemImage: "lightbulb", label: ads.removed ? "Petunjuk" : "Petunjuk (tonton iklan)", action: model.showHint)
@@ -287,21 +296,21 @@ struct CongklakView: View {
                     CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
                 }
             }
-            .overlay { opponentPill }
-            .padding(.horizontal, 24)
-            .padding(.top, 14)
+            .padding(.horizontal, 24 * s)
+            .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0)) // the back button clears a top-leading hole
+            .padding(.top, 14 * s)
             Spacer()
-            VStack(spacing: 8) {
+            VStack(spacing: 8 * s) {
                 if let notice = table.notice {
-                    Text(notice).font(Theme.font(14, .bold)).foregroundStyle(Color(hex: 0xB3261E))
+                    Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Color(hex: 0xB3261E))
                 } else {
                     Label("Searah jarum jam · lumbungmu di kiri", systemImage: "arrow.clockwise")
-                        .font(Theme.font(13, .bold))
+                        .font(Theme.font(13 * s, .bold))
                         .foregroundStyle(Theme.muted)
                 }
                 playerPill(nearSeat)
             }
-            .padding(.bottom, 14)
+            .padding(.bottom, 14 * s)
         }
         .foregroundStyle(Theme.ink)
     }
@@ -311,35 +320,34 @@ struct CongklakView: View {
         let seat = farSeat
         let on = active(seat)
         let detail = [table.botLevel.flatMap { seat == botSeat ? $0 : nil }, status(seat)].compactMap { $0 }.joined(separator: " · ")
-        return HStack(spacing: 10) {
-            avatar(seat, on: on, size: 30)
-            Text(displayName(seat)).font(Theme.font(16))
-            Text(detail).font(Theme.font(13, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
+        return HStack(spacing: 10 * s) {
+            avatar(seat, on: on, size: 30 * s)
+            Text(displayName(seat)).font(Theme.font(16 * s))
+            Text(detail).font(Theme.font(13 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
         }
         .lineLimit(1)
-        .padding(.leading, 6)
-        .padding(.trailing, 16)
-        .frame(height: 40)
+        .padding(.leading, 6 * s)
+        .padding(.trailing, 16 * s)
+        .frame(height: 40 * s)
         .foregroundStyle(on ? .white : Theme.ink)
         .background(on ? Theme.accent : .white, in: Capsule())
         .overlay(Capsule().stroke(on ? .clear : Theme.line, lineWidth: 1.5))
-        .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6)
-        .padding(.horizontal, 160) // clear of the back button and the three on the right
+        .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6 * s)
         .accessibilityElement(children: .combine)
     }
 
     /// The near seat, below the board; glows on its turn.
     private func playerPill(_ seat: Int) -> some View {
         let on = active(seat)
-        return HStack(spacing: 10) {
-            avatar(seat, on: on, size: 34)
-            Text(displayName(seat)).font(Theme.font(17, .black))
-            Text(status(seat)).font(Theme.font(15, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
+        return HStack(spacing: 10 * s) {
+            avatar(seat, on: on, size: 34 * s)
+            Text(displayName(seat)).font(Theme.font(17 * s, .black))
+            Text(status(seat)).font(Theme.font(15 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
         }
         .lineLimit(1)
-        .padding(.leading, 6)
-        .padding(.trailing, 20)
-        .frame(height: 46)
+        .padding(.leading, 6 * s)
+        .padding(.trailing, 20 * s)
+        .frame(height: 46 * s)
         .foregroundStyle(on ? .white : Theme.ink)
         .background(on ? Theme.accent : .white, in: Capsule())
         .overlay(Capsule().stroke(on ? Theme.gold.opacity(0.45) : Theme.line, lineWidth: on ? 4 : 1.5).padding(on ? -2 : 0))
@@ -368,22 +376,22 @@ struct CongklakView: View {
         let near = Int(model.game.ownerOf(pit: Int32(pit))) == nearSeat
         return Group {
             if store {
-                VStack(spacing: 3) {
-                    Text("\(model.counts[pit])").font(Theme.font(22, .black)).foregroundStyle(Color(hex: 0xFCEBD2))
+                VStack(spacing: 3 * s) {
+                    Text("\(model.counts[pit])").font(Theme.font(22 * s, .black)).foregroundStyle(Color(hex: 0xFCEBD2))
                     Text(storeTag(near ? nearSeat : farSeat))
-                        .font(Theme.font(11, .black))
+                        .font(Theme.font(11 * s, .black))
                         .foregroundStyle(near ? .white : Theme.ink)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(near ? Theme.accent : Theme.tan, in: RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal, 7 * s)
+                        .padding(.vertical, 2 * s)
+                        .background(near ? Theme.accent : Theme.tan, in: RoundedRectangle(cornerRadius: 8 * s))
                 }
             } else {
                 Text("\(model.counts[pit])")
-                    .font(Theme.font(15))
+                    .font(Theme.font(15 * s))
                     .foregroundStyle(near ? Color(hex: 0xFFF6E8) : Theme.tan)
             }
         }
-        .shadow(color: .black.opacity(0.35), radius: 1, y: 1)
+        .shadow(color: .black.opacity(0.35), radius: 1 * s, y: 1 * s)
         .allowsHitTesting(false)
     }
 
@@ -396,8 +404,9 @@ struct CongklakView: View {
     private func labelPosition(pit: Int, at p: CGPoint) -> CGPoint {
         let store = model.game.isStore(pit: Int32(pit))
         let near = model.game.ownerOf(pit: Int32(pit)) == model.viewSeat
-        if store { return CGPoint(x: p.x, y: p.y + 34) }
-        return CGPoint(x: p.x, y: p.y + (near ? 34 : -34))
+        let offset = 34 * boardScale
+        if store { return CGPoint(x: p.x, y: p.y + offset) }
+        return CGPoint(x: p.x, y: p.y + (near ? offset : -offset))
     }
 
     // MARK: End of game
@@ -406,17 +415,17 @@ struct CongklakView: View {
         let winner = model.game.winner(state: model.state)?.intValue
         return ZStack {
             Theme.ink.opacity(0.45).ignoresSafeArea()
-            VStack(spacing: 12) {
+            VStack(spacing: 12 * s) {
                 Image(systemName: winner == nil || winner! < 0 ? "equal.circle" : "trophy")
-                    .font(.system(size: 36, weight: .semibold))
+                    .font(.system(size: 36 * s, weight: .semibold))
                     .foregroundStyle(Color(hex: 0xC98A1B))
                     .accessibilityHidden(true)
-                Text(resultTitle(winner)).font(Theme.font(26, .black))
-                HStack(spacing: 10) {
+                Text(resultTitle(winner)).font(Theme.font(26 * s, .black))
+                HStack(spacing: 10 * s) {
                     scoreTile(nearSeat, winner: winner)
                     scoreTile(farSeat, winner: winner)
                 }
-                HStack(spacing: 10) {
+                HStack(spacing: 10 * s) {
                     Button { ads.afterGame(then: exit) } label: { Text("Ke menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
@@ -424,20 +433,20 @@ struct CongklakView: View {
                             .buttonStyle(PrimaryButtonStyle(height: 48))
                     } else {
                         Text("Menunggu host memulai lagi…")
-                            .font(Theme.font(14, .bold))
+                            .font(Theme.font(14 * s, .bold))
                             .foregroundStyle(Theme.muted)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity)
                     }
                 }
-                .padding(.top, 4)
+                .padding(.top, 4 * s)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 22)
-            .padding(.bottom, 20)
-            .frame(width: 380)
-            .background(.white, in: RoundedRectangle(cornerRadius: 28))
-            .shadow(color: Theme.ink.opacity(0.35), radius: 25, y: 20)
+            .padding(.horizontal, 24 * s)
+            .padding(.top, 22 * s)
+            .padding(.bottom, 20 * s)
+            .frame(width: 380 * s)
+            .background(.white, in: RoundedRectangle(cornerRadius: 28 * s))
+            .shadow(color: Theme.ink.opacity(0.35), radius: 25 * s, y: 20 * s)
             .foregroundStyle(Theme.ink)
             .accessibilityElement(children: .contain)
             .accessibilityAddTraits(.isModal)
@@ -454,21 +463,49 @@ struct CongklakView: View {
 
     private func scoreTile(_ seat: Int, winner: Int?) -> some View {
         let won = winner == seat
-        return VStack(spacing: 0) {
-            Text(displayName(seat)).font(Theme.font(14)).foregroundStyle(Theme.muted).lineLimit(1)
-            Text("\(score(seat))").font(Theme.font(30, .black)).foregroundStyle(won ? Theme.ink : Theme.muted)
+        return VStack(spacing: 0 * s) {
+            Text(displayName(seat)).font(Theme.font(14 * s)).foregroundStyle(Theme.muted).lineLimit(1)
+            Text("\(score(seat))").font(Theme.font(30 * s, .black)).foregroundStyle(won ? Theme.ink : Theme.muted)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 8 * s)
         .frame(maxWidth: .infinity)
-        .background(won ? Color(hex: 0xFBEFE3) : Color(hex: 0xF6F1EA), in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(won ? Theme.accent : .clear, lineWidth: 2))
+        .background(won ? Color(hex: 0xFBEFE3) : Color(hex: 0xF6F1EA), in: RoundedRectangle(cornerRadius: 16 * s))
+        .overlay(RoundedRectangle(cornerRadius: 16 * s).stroke(won ? Theme.accent : .clear, lineWidth: 2))
     }
 
     private func score(_ seat: Int) -> Int { Int(model.game.score(state: model.state, seat: Int32(seat))) }
 }
 
+/// The board's top bar: a leading view, a center view and a trailing view. The center sits
+/// in the middle of the bar when it fits, slides aside to clear the others when it doesn't,
+/// and is offered only the space left between them (so it truncates instead of overlapping).
+private struct TopBar: Layout {
+    var gap: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let height = subviews.map { $0.sizeThatFits(.unspecified).height }.max() ?? 0
+        return CGSize(width: proposal.width ?? subviews.map { $0.sizeThatFits(.unspecified).width }.reduce(0, +), height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 3 else { return }
+        let lead = subviews[0].sizeThatFits(.unspecified)
+        let trail = subviews[2].sizeThatFits(.unspecified)
+        let room = max(bounds.width - lead.width - trail.width - 2 * gap, 0)
+        let center = subviews[1].sizeThatFits(ProposedViewSize(width: room, height: nil))
+        let width = min(center.width, room)
+        let minX = bounds.minX + lead.width + gap
+        let x = min(max(bounds.midX - width / 2, minX), minX + room - width)
+        subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(lead))
+        subviews[1].place(at: CGPoint(x: x, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(width: width, height: center.height))
+        subviews[2].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing, proposal: ProposedViewSize(trail))
+    }
+}
+
 /// "Cara main": the rule variant from shared/ CongklakGame, in short.
 private struct RulesSheet: View {
+    /// The tembak rule this game is played with.
+    let tembakAfterStore: Bool
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -479,7 +516,12 @@ private struct RulesSheet: View {
                     rule("Lumbungmu di kiri ikut diisi; lumbung lawan dilewati.")
                     rule("Biji terakhir jatuh di lumbungmu: kamu main lagi.")
                     rule("Jatuh di lubang yang berisi: ambil semuanya dan terus menabur.")
-                    rule("Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.")
+                    if tembakAfterStore {
+                        rule("Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.")
+                        rule("Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai.")
+                    } else {
+                        rule("Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.")
+                    }
                     rule("Jatuh di lubang kosong di sisi lawan: giliranmu selesai.")
                     rule("Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.")
                 }

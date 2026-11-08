@@ -8,7 +8,10 @@ struct KridaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(roomCode: $roomCode)
+            // Every screen inside the landscape stage: it sets `uiScale` and `punchHole`.
+            LandscapeStage { ContentView(roomCode: $roomCode) }
+                // A game: no clock over the cards (iPad windows, the unfolded Duo).
+                .statusBarHidden()
                 // QR join links: krida://join?room=ABCD
                 .onOpenURL { url in
                     if let code = RoomCode.shared.parse(text: url.absoluteString) {
