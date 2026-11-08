@@ -31,6 +31,9 @@ object Sounds {
         Win(R.raw.sfx_win, 1f),
         Lose(R.raw.sfx_lose, 1f),
         Tap(R.raw.sfx_tap, 0.4f),
+        // Ular tangga: the die's clack on each bounce, and a pawn's softer tok on each square.
+        Die(R.raw.sfx_die, 0.6f),
+        Step(R.raw.sfx_step, 0.45f),
     }
 
     /** Each line in Indonesian and in English; [english] picks which one is spoken. */

@@ -221,7 +221,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 val r = renderer
                 for (square in play.steps) {
                     r?.move(seat, listOf(UlarTanggaBoard.pieceSpot(square, seat, false)), HOP_MS / 1000f * 0.9f, hop = 0.7f)
-                    Sounds.play(Sounds.Effect.Sow)
+                    Sounds.play(Sounds.Effect.Step)
                     delay(HOP_MS)
                 }
                 val landed = play.steps.lastOrNull()
@@ -316,7 +316,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 view.also {
                     renderer = (if (view is TextureView) UlarTanggaRenderer(view) else UlarTanggaRenderer(view as SurfaceView)).apply {
                         this.onFirstFrame = onFirstFrame
-                        onDieBounce = { Sounds.play(Sounds.Effect.Tap) }
+                        onDieBounce = { Sounds.play(Sounds.Effect.Die) }
                         resume()
                     }
                     view.tag = renderer
