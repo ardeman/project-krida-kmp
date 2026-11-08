@@ -70,6 +70,7 @@
     <string name="music_off">Turn music off</string>
     <string name="shop_remove_ads">Remove ads</string>
     <string name="ads_privacy">Ad privacy</string>
+    <string name="menu_more">More options below</string>
     <string name="hint">Hint (watch an ad)</string>
     <string name="hint_free">Hint</string>
     <string name="language">Language</string>

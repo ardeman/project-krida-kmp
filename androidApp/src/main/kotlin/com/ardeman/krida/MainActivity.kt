@@ -10,7 +10,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Brush
+import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -215,17 +221,48 @@ class MainActivity : ComponentActivity() {
                 }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    PassAndPlayCard()
-                    VsComputerCard()
-                    NearbyCard()
-                    TembakCard()
-                    AdButtons()
+                val scroll = rememberScrollState()
+                Box(Modifier.weight(1f)) {
+                    Column(
+                        Modifier.fillMaxSize().verticalScroll(scroll),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        PassAndPlayCard()
+                        VsComputerCard()
+                        NearbyCard()
+                        TembakCard()
+                        AdButtons()
+                    }
+                    MoreBelowHint(scroll, Modifier.align(Alignment.BottomCenter))
                 }
                 Ads.Banner(trailing = { RemoveAdsButton() })
+            }
+        }
+    }
+
+    /**
+     * The cards can end exactly at the column's bottom edge, so nothing tells a first-time
+     * player there is more below. While the column can still scroll: a cream fade over the
+     * bottom edge and a chevron that scrolls to the end.
+     */
+    @Composable
+    private fun MoreBelowHint(scroll: ScrollState, modifier: Modifier) {
+        val scope = rememberCoroutineScope()
+        val more = stringResource(R.string.menu_more)
+        AnimatedVisibility(scroll.canScrollForward, modifier, enter = fadeIn(), exit = fadeOut()) {
+            Box(
+                Modifier.fillMaxWidth().height(44.dp)
+                    .background(Brush.verticalGradient(listOf(Theme.cream.copy(alpha = 0f), Theme.cream))),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                Box(
+                    Modifier.size(32.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(Color.White)
+                        .clickable(role = Role.Button) { scope.launch { scroll.animateScrollTo(scroll.maxValue) } }
+                        .semantics { contentDescription = more },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(painterResource(R.drawable.ic_chevron_down), contentDescription = null, tint = Theme.accent, modifier = Modifier.size(22.dp))
+                }
             }
         }
     }

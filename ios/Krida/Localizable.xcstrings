@@ -893,6 +893,22 @@
         }
       }
     },
+    "Pilihan lain di bawah" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More options below"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilihan lain di bawah"
+          }
+        }
+      }
+    },
     "Privasi iklan" : {
       "localizations" : {
         "en" : {

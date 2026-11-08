@@ -12,6 +12,9 @@ struct ContentView: View {
     /// The loading screen at app start, over the menu while its board snapshot renders.
     @State private var starting = true
     @State private var menuReady = false
+    /// Menu column height and where its content ends, for the "more below" hint.
+    @State private var menuViewport: CGFloat = 0
+    @State private var menuEnd: CGFloat = 0
     @State private var startMinDone = false
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
@@ -63,17 +66,24 @@ struct ContentView: View {
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
             VStack(spacing: 10 * s) {
-                ScrollView {
-                    VStack(spacing: 10 * s) {
-                        passAndPlayCard
-                        vsComputerCard
-                        nearbyCard
-                        tembakCard
-                        AdButtons()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 10 * s) {
+                            passAndPlayCard
+                            vsComputerCard
+                            nearbyCard
+                            tembakCard
+                            AdButtons()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named("menu")).maxY } action: { menuEnd = $0 }
+                        .id("menuContent")
                     }
-                    .frame(maxWidth: .infinity)
+                    .scrollBounceBehavior(.basedOnSize)
+                    .coordinateSpace(name: "menu")
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { menuViewport = $0 }
+                    .overlay(alignment: .bottom) { moreBelowHint(proxy) }
                 }
-                .scrollBounceBehavior(.basedOnSize)
                 HStack(spacing: 8 * s) {
                     AdBanner()
                     RemoveAdsButton()
@@ -90,6 +100,34 @@ struct ContentView: View {
         .ignoresSafeArea(.container, edges: .bottom)
         .background(Theme.cream)
         .foregroundStyle(Theme.ink)
+    }
+
+    /// The cards can end exactly at the column's bottom edge, so nothing tells a first-time
+    /// player there is more below. While the column can still scroll: a cream fade over the
+    /// bottom edge and a chevron that scrolls to the end.
+    @ViewBuilder
+    private func moreBelowHint(_ proxy: ScrollViewProxy) -> some View {
+        let moreBelow = menuViewport > 0 && menuEnd > menuViewport + 1
+        ZStack(alignment: .bottom) {
+            LinearGradient(colors: [Theme.cream.opacity(0), Theme.cream], startPoint: .top, endPoint: .bottom)
+                .frame(height: 44 * s)
+                .allowsHitTesting(false)
+            Button {
+                withAnimation(.easeInOut(duration: 0.35)) { proxy.scrollTo("menuContent", anchor: .bottom) }
+            } label: {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 15 * s, weight: .bold))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 32 * s, height: 32 * s)
+                    .background(.white, in: Circle())
+                    .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text("Pilihan lain di bawah"))
+        }
+        .opacity(moreBelow ? 1 : 0)
+        .allowsHitTesting(moreBelow)
+        .animation(.easeOut(duration: 0.2), value: moreBelow)
     }
 
     private var passAndPlayCard: some View {
