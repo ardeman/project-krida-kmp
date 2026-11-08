@@ -378,9 +378,9 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 }
             }
             Spacer(Modifier.weight(1f))
-            // Right: sound and rules, then the die and whose turn it is.
+            // Right: sound and rules (three 44 dp buttons, so 148 dp wide), then the die and whose turn it is.
             Column(
-                Modifier.width(136.dp).fillMaxHeight(),
+                Modifier.width(148.dp).fillMaxHeight(),
                 horizontalAlignment = Alignment.End,
             ) {
                 Row(Modifier.hud("buttons"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
