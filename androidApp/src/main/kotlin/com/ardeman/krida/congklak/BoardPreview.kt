@@ -30,6 +30,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.ui.Theme
+import com.ardeman.krida.ui.VoxelStage
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
@@ -37,8 +38,8 @@ import kotlin.math.roundToInt
  *  card's height and only its left end shows. Same as iOS. */
 private const val WIDTH_PER_HEIGHT = 4.4f
 
-/** The last snapshot and the size it was rendered at, kept for the next visit to the menu. */
-private var cached: Pair<IntSize, Bitmap>? = null
+/** The last snapshot per game and the size it was rendered at, kept for the next visit to the menu. */
+private val cached = HashMap<String, Pair<IntSize, Bitmap>>()
 
 /**
  * The real voxel board as a still picture, for the menu's congklak card: the start position
@@ -47,22 +48,42 @@ private var cached: Pair<IntSize, Bitmap>? = null
  * doesn't keep a second renderer running. [onReady] is called once the snapshot is shown.
  */
 @Composable
-fun BoardPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) {
+fun BoardPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) = VoxelPreview("congklak", WIDTH_PER_HEIGHT, modifier, onReady) { view ->
+    BoardRenderer(view).apply {
+        setSeedTargets(CongklakSeeds(CongklakGame.initialState(tembakAfterStore = false).pits).targets())
+    }
+}
+
+/**
+ * A game's voxel scene as a still picture for the menu: [create] builds the renderer on a
+ * [TextureView], which is drawn once, snapshotted (cached under [key]) and shown as an image.
+ * With [widthPerHeight] the view is that many heights wide and cropped to its left end;
+ * without, it fills the box.
+ */
+@Composable
+fun VoxelPreview(
+    key: String,
+    widthPerHeight: Float?,
+    modifier: Modifier = Modifier,
+    onReady: () -> Unit = {},
+    create: (TextureView) -> VoxelStage,
+) {
     BoxWithConstraints(modifier.background(Theme.cream).clipToBounds().clearAndSetSemantics {}) {
-        val size = IntSize((constraints.maxHeight * WIDTH_PER_HEIGHT).roundToInt(), constraints.maxHeight)
-        if (size.height <= 0) return@BoxWithConstraints
+        val w = widthPerHeight?.let { (constraints.maxHeight * it).roundToInt() } ?: constraints.maxWidth
+        val size = IntSize(w, constraints.maxHeight)
+        if (size.height <= 0 || size.width <= 0) return@BoxWithConstraints
         val widthDp = with(LocalDensity.current) { size.width.toDp() }
         val fill = Modifier.wrapContentWidth(Alignment.Start, unbounded = true).width(widthDp).fillMaxHeight()
 
         // A new size (the ad banner loading moves the card) starts over with a fresh renderer.
-        key(size) { Snapshot(size, fill, onReady) }
+        key(key, size) { Snapshot(key, size, fill, onReady, create) }
     }
 }
 
-/** Renders the board at [size] pixels once, then shows the snapshot in its place. */
+/** Renders the scene at [size] pixels once, then shows the snapshot in its place. */
 @Composable
-private fun Snapshot(size: IntSize, fill: Modifier, onReady: () -> Unit) {
-    var image by remember { mutableStateOf(cached?.takeIf { it.first == size }?.second) }
+private fun Snapshot(key: String, size: IntSize, fill: Modifier, onReady: () -> Unit, create: (TextureView) -> VoxelStage) {
+    var image by remember { mutableStateOf(cached[key]?.takeIf { it.first == size }?.second) }
     val shown = image
     if (shown != null) {
         LaunchedEffect(Unit) { onReady() }
@@ -84,16 +105,13 @@ private fun Snapshot(size: IntSize, fill: Modifier, onReady: () -> Unit) {
     }
 
     var textureView by remember { mutableStateOf<TextureView?>(null) }
-    var renderer by remember { mutableStateOf<BoardRenderer?>(null) }
+    var renderer by remember { mutableStateOf<VoxelStage?>(null) }
     AndroidView(
         modifier = fill,
         factory = { ctx ->
             TextureView(ctx).also { view ->
                 textureView = view
-                renderer = BoardRenderer(view).apply {
-                    setSeedTargets(CongklakSeeds(CongklakGame.initialState(tembakAfterStore = false).pits).targets())
-                    resume()
-                }
+                renderer = create(view).apply { resume() }
             }
         },
         onRelease = { renderer?.destroy(); renderer = null; textureView = null },
@@ -110,7 +128,7 @@ private fun Snapshot(size: IntSize, fill: Modifier, onReady: () -> Unit) {
             if (!board.hasDrawn) return@repeat
             val shot = textureView?.bitmap
             if (shot != null && shot.getPixel(shot.width / 2, shot.height / 2) ushr 24 != 0) {
-                cached = size to shot
+                cached[key] = size to shot
                 image = shot
                 return@LaunchedEffect
             }

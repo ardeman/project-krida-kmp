@@ -28,6 +28,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -85,6 +88,12 @@ import com.ardeman.krida.congklak.CongklakSettings
 import com.ardeman.krida.congklak.BoardPreview
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.HostTable
+import com.ardeman.krida.congklak.VoxelPreview
+import com.ardeman.krida.core.games.UlarTanggaBoard
+import com.ardeman.krida.ulartangga.UlarTanggaRenderer
+import com.ardeman.krida.ulartangga.UlarTanggaScreen
+import com.ardeman.krida.ulartangga.UlarTanggaSettings
+import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
@@ -109,6 +118,7 @@ class MainActivity : ComponentActivity() {
     private var joining by mutableStateOf(false)
     private var room by mutableStateOf<NearbyRoom?>(null)
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
+    private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     private var pendingAction: (() -> Unit)? = null
 
@@ -150,6 +160,7 @@ class MainActivity : ComponentActivity() {
         // A language change recreates the activity, so this follows the picker.
         Sounds.english = Language.current(this) == Language.Lang.EN
         CongklakSettings.init(this)
+        UlarTanggaSettings.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
@@ -162,7 +173,9 @@ class MainActivity : ComponentActivity() {
             LandscapeStage {
                 val r = room
                 val table = passAndPlay ?: r?.table
+                val ular = ularTable
                 when {
+                    ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
                     r != null -> Lobby(r)
                     else -> Menu()
@@ -212,6 +225,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun Menu() {
+        // Until the game list exists, the left card switches between the games. A room
+        // link opens the app ready to join a congklak room.
+        var game by rememberSaveable { mutableStateOf(Game.CONGKLAK) }
+        if (joining && game != Game.CONGKLAK) game = Game.CONGKLAK
         // Capped at the phone design's size (as on iOS), so a tall stage doesn't stretch the cards.
         Box(Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets), contentAlignment = Alignment.Center) { Row(
             Modifier.sizeIn(maxWidth = 874.dp, maxHeight = 460.dp).fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
@@ -224,7 +241,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.height(40.dp),
                     alignment = Alignment.CenterStart,
                 )
-                CongklakCard(Modifier.weight(1f), onReady = { menuReady = true })
+                GameCard(game, onGame = { game = it }, Modifier.weight(1f), onReady = { menuReady = true })
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SoundToggles()
                     Spacer(Modifier.weight(1f))
@@ -238,7 +255,7 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().verticalScroll(scroll),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        PlayCard()
+                        PlayCard(game)
                         AdButtons()
                     }
                     MoreBelowHint(scroll, Modifier.align(Alignment.BottomCenter))
@@ -307,9 +324,15 @@ class MainActivity : ComponentActivity() {
      * computer's level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the tembak rule.
      */
     @Composable
-    private fun PlayCard() {
+    private fun PlayCard(game: Game) {
         // A room link opens the app ready to join: start on "Teman dekat".
         var opponent by rememberSaveable { mutableStateOf(if (joining) Opponent.NEARBY else Opponent.PHONE) }
+        if (game == Game.ULAR_TANGGA && opponent == Opponent.NEARBY) opponent = Opponent.PHONE
+        val ular = game == Game.ULAR_TANGGA
+        val opponents = if (ular) Opponent.entries - Opponent.NEARBY else Opponent.entries
+        val colors = listOf(R.string.ular_player_red, R.string.ular_player_blue, R.string.ular_player_green, R.string.ular_player_yellow)
+            .map { stringResource(it) }
+        val computerN = (1..3).map { stringResource(R.string.ular_computer_n, it) }
         var level by rememberSaveable { mutableStateOf(CongklakBot.Level.NORMAL) }
         val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
         val you = stringResource(R.string.bot_you)
@@ -323,24 +346,36 @@ class MainActivity : ComponentActivity() {
         ) {
             SettingRow(stringResource(R.string.play_opponent)) {
                 Segmented(
-                    options = Opponent.entries.map { it to stringResource(it.label) },
+                    options = opponents.map { it to stringResource(it.label) },
                     current = opponent,
                     label = stringResource(R.string.play_opponent),
                     onChange = { opponent = it; if (it != Opponent.NEARBY) joining = false },
-                    icons = Opponent.entries.map { it.icon },
+                    icons = opponents.map { it.icon },
+                    fill = true,
+                )
+            }
+            if (ular) SettingRow(stringResource(R.string.play_players)) {
+                Segmented(
+                    options = (2..4).map { it to it.toString() },
+                    current = UlarTanggaSettings.players,
+                    label = stringResource(R.string.play_players),
+                    onChange = UlarTanggaSettings::choosePlayers,
                     fill = true,
                 )
             }
             // The action row: what this opponent means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(if (opponent == Opponent.COMPUTER) stringResource(R.string.play_level) else "") {
+            SettingRow(if (opponent == Opponent.COMPUTER && !ular) stringResource(R.string.play_level) else "") {
                 if (joining) JoinRow() else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.weight(1f)) {
-                        when (opponent) {
+                        when {
+                            ular -> Detail(stringResource(if (opponent == Opponent.COMPUTER) R.string.ular_detail_computer else R.string.ular_detail_phone))
+                            else -> when (opponent) {
                             Opponent.COMPUTER -> LevelPicker(level) { level = it }
                             Opponent.PHONE -> Detail(stringResource(R.string.mode_pass_detail))
                             Opponent.NEARBY -> Detail(stringResource(R.string.nearby_detail))
+                            }
                         }
                     }
                     if (opponent == Opponent.NEARBY) {
@@ -349,7 +384,11 @@ class MainActivity : ComponentActivity() {
                     PrimaryButton(
                         stringResource(if (opponent == Opponent.NEARBY) R.string.nearby_host else R.string.bot_start),
                         onClick = {
-                            when (opponent) {
+                            val n = UlarTanggaSettings.players
+                            if (ular) when (opponent) {
+                                Opponent.COMPUTER -> ularTable = UlarTanggaTable.vsComputer(you, if (n == 2) listOf(computer) else computerN.take(n - 1))
+                                else -> ularTable = UlarTanggaTable.passAndPlay(colors.take(n))
+                            } else when (opponent) {
                                 Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
                                 Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
                                 Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) }
@@ -358,7 +397,9 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            SettingRow(stringResource(R.string.play_tembak)) {
+            if (ular) SettingRow(stringResource(R.string.play_rules)) {
+                UlarTanggaOptionChips()
+            } else SettingRow(stringResource(R.string.play_tembak)) {
                 Segmented(
                     options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
                     current = CongklakSettings.tembakAfterStore,
@@ -472,6 +513,40 @@ private enum class Opponent(val label: Int, val icon: Int) {
     NEARBY(R.string.opponent_nearby, R.drawable.ic_bluetooth),
 }
 
+/** The games the left card switches between, until the game list exists. */
+private enum class Game(val title: Int, val players: Int, val tagline: Int, val face: Color, val edge: Color) {
+    CONGKLAK(R.string.congklak_title, R.string.congklak_card_players, R.string.congklak_card_tagline, Theme.wood, Theme.woodShadow),
+    ULAR_TANGGA(R.string.ular_title, R.string.ular_card_players, R.string.ular_card_tagline, Color(0xFF4F8A3B), Color(0xFF3B6A2B)),
+}
+
+/** Ular tangga's rule options as toggle chips, saved as they change. */
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun UlarTanggaOptionChips() {
+    val o = UlarTanggaSettings.options
+    val chips = listOf(
+        Triple(R.string.ular_option_six_again, o.sixRollsAgain) { v: Boolean -> o.copy(sixRollsAgain = v) },
+        Triple(R.string.ular_option_six_to_enter, o.sixToEnter) { v: Boolean -> o.copy(sixToEnter = v) },
+        Triple(R.string.ular_option_bounce, o.bounceBack) { v: Boolean -> o.copy(bounceBack = v) },
+        Triple(R.string.ular_option_first_ends, o.firstFinishEnds) { v: Boolean -> o.copy(firstFinishEnds = v) },
+    )
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        chips.forEach { (label, on, change) ->
+            val shape = RoundedCornerShape(10.dp)
+            Box(
+                Modifier.height(34.dp).clip(shape)
+                    .background(if (on) Theme.chip else Color.White)
+                    .border(1.5.dp, if (on) Theme.accent else Theme.line, shape)
+                    .toggleable(value = on, role = Role.Checkbox) { UlarTanggaSettings.chooseOptions(change(it)) }
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(stringResource(label), style = Theme.font(13, color = if (on) Theme.accent else Theme.muted), maxLines = 1)
+            }
+        }
+    }
+}
+
 /** A small label above its control; an empty label keeps the rows' spacing. */
 @Composable
 private fun SettingRow(label: String, content: @Composable () -> Unit) {
@@ -533,27 +608,55 @@ private fun <T> Segmented(
     }
 }
 
-/** The congklak tile on the home screen, with a snapshot of the real board. */
+/**
+ * The game tile on the home screen, with a snapshot of the real board; the arrows switch to
+ * the other game (the play card on the right follows).
+ */
 @Composable
-private fun CongklakCard(modifier: Modifier, onReady: () -> Unit) {
+private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onReady: () -> Unit) {
     val shape = RoundedCornerShape(22.dp)
-    Box(modifier.fillMaxWidth().background(Theme.woodShadow, shape)) {
+    val games = Game.entries
+    fun step(d: Int) = onGame(games[(game.ordinal + d + games.size) % games.size])
+    val cream = Color(0xFFF3DDBE)
+    Box(modifier.fillMaxWidth().background(game.edge, shape)) {
         Column(
-            Modifier.fillMaxSize().padding(bottom = 6.dp).background(Theme.wood, shape).padding(16.dp),
+            Modifier.fillMaxSize().padding(bottom = 6.dp).background(game.face, shape).padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(stringResource(R.string.congklak_title), style = Theme.font(22, FontWeight.Black, Color(0xFFFFF6E8)))
-                Spacer(Modifier.weight(1f))
-                Text(stringResource(R.string.congklak_card_players), style = Theme.font(13, FontWeight.Bold, Color(0xFFF3DDBE)))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(game.title), style = Theme.font(20, FontWeight.Black, Color(0xFFFFF6E8)).copy(lineHeight = 22.sp), maxLines = 2)
+                    Text(stringResource(game.players), style = Theme.font(13, FontWeight.Bold, cream), maxLines = 1)
+                }
+                SwitchArrow(R.drawable.ic_chevron_left, stringResource(R.string.menu_prev_game)) { step(-1) }
+                SwitchArrow(R.drawable.ic_chevron_right, stringResource(R.string.menu_next_game)) { step(1) }
             }
-            // The real board, cropped to its left end; it takes whatever height the card has.
-            BoardPreview(
-                Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).clip(RoundedCornerShape(14.dp)),
-                onReady = onReady,
-            )
-            Text(stringResource(R.string.congklak_card_tagline), style = Theme.font(13, FontWeight.SemiBold, Color(0xFFF3DDBE)))
+            val preview = Modifier.fillMaxWidth().weight(1f).heightIn(min = 80.dp).padding(end = 6.dp).clip(RoundedCornerShape(14.dp))
+            when (game) {
+                // The real board, cropped to its left end; it takes whatever height the card has.
+                Game.CONGKLAK -> BoardPreview(preview, onReady = onReady)
+                Game.ULAR_TANGGA -> VoxelPreview("ular_tangga", null, preview, onReady) { view ->
+                    UlarTanggaRenderer(view).apply {
+                        listOf(23, 8, 0, 0).forEachIndexed { seat, square ->
+                            place(seat, UlarTanggaBoard.pieceSpot(square, seat, square == 0))
+                        }
+                    }
+                }
+            }
+            Text(stringResource(game.tagline), style = Theme.font(13, FontWeight.SemiBold, cream), modifier = Modifier.padding(end = 6.dp))
         }
+    }
+}
+
+@Composable
+private fun SwitchArrow(icon: Int, label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.size(34.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.18f))
+            .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() }
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = Color(0xFFFFF6E8), modifier = Modifier.size(20.dp))
     }
 }
 
