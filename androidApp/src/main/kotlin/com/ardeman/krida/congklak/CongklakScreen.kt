@@ -1,6 +1,7 @@
 package com.ardeman.krida.congklak
 
 import android.view.SurfaceView
+import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.gameInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +39,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,6 +54,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -64,7 +68,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -138,6 +141,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     var hint by remember { mutableStateOf<Int?>(null) } // hole suggested for the current turn
     val activity = LocalActivity.current
     var pitsOnScreen by remember { mutableStateOf<List<FloatArray>>(emptyList()) }
+    val turned = LocalStageTurned.current
     var renderer by remember { mutableStateOf<BoardRenderer?>(null) }
     val queue = remember { ArrayDeque<CongklakUpdate>() }
     val scope = rememberCoroutineScope()
@@ -260,21 +264,31 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     }
 
     Box(Modifier.fillMaxSize().background(Theme.cream)) {
-        AndroidView(
+        // Folding or unfolding can turn the stage: build the view again for the new kind.
+        key(turned) { AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
-                SurfaceView(ctx).also { view ->
-                    renderer = BoardRenderer(view).apply {
+                // A SurfaceView can't be turned with the stage; a TextureView can.
+                val view = if (turned) TextureView(ctx) else SurfaceView(ctx)
+                view.also {
+                    renderer = (if (view is TextureView) BoardRenderer(view) else BoardRenderer(view as SurfaceView)).apply {
                         this.viewSeat = viewSeat
                         onPitsProjected = { pitsOnScreen = it }
                         this.onFirstFrame = onFirstFrame
                         setSeedTargets(seeds.targets())
                         resume()
                     }
+                    view.tag = renderer
                 }
             },
-            onRelease = { renderer?.destroy(); renderer = null },
-        )
+            // The view for a newly turned stage is built before the old one is released:
+            // destroy this view's own renderer, not whichever is current.
+            onRelease = { view ->
+                val own = view.tag as? BoardRenderer
+                own?.destroy()
+                if (renderer === own) renderer = null
+            },
+        ) }
 
         // Taps go to the nearest hole on screen.
         Box(
@@ -312,15 +326,15 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
 
         // HUD: back, opponent, help on top; direction hint and your pill at the bottom.
         Column(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp)) {
-            Box(Modifier.fillMaxWidth()) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.align(Alignment.CenterStart))
+            TopBar(gap = 12.dp) {
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
                 OpponentPill(
                     seats = seats,
                     on = active(seats.far),
                     detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
-                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 160.dp), // clear of the buttons either side
+                    modifier = Modifier,
                 )
-                Row(Modifier.align(Alignment.CenterEnd), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SoundToggles()
                     if (canPlay() && seats.isLocal(state.turn) && hint == null) {
                         CircleIconButton(R.drawable.ic_hint, stringResource(if (Ads.removed) R.string.hint_free else R.string.hint), ::showHint)
@@ -540,9 +554,19 @@ private fun RulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
     val anytime = stringResource(R.string.congklak_rule_tembak_anytime)
     // Items 4 and 5 are the "Lewat lumbung" tembak; "Bebas" has one simpler line instead.
     val rules = if (tembakAfterStore) all.toList() else all.take(4) + anytime + all.drop(6)
-    Dialog(onDismissRequest = onDismiss) {
+    // An overlay inside the stage, not a Dialog: a Dialog is its own window and would stay
+    // upright when the stage is turned (see LandscapeStage).
+    BackHandler(onBack = onDismiss)
+    Box(
+        Modifier.fillMaxSize().background(Theme.ink.copy(alpha = 0.45f))
+            .pointerInput(Unit) { detectTapGestures { onDismiss() } }
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
         Column(
-            Modifier.widthIn(max = 560.dp).background(Theme.cream, RoundedCornerShape(24.dp)).padding(vertical = 16.dp),
+            Modifier.widthIn(max = 560.dp).background(Theme.cream, RoundedCornerShape(24.dp))
+                .pointerInput(Unit) { detectTapGestures { } }
+                .padding(vertical = 16.dp),
         ) {
             Row(Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.congklak_rules_title), style = Theme.font(20, FontWeight.Black, Theme.ink), modifier = Modifier.weight(1f))
@@ -560,6 +584,28 @@ private fun RulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/**
+ * Back button, opponent pill, buttons: the pill is centered on the bar when it fits and slides
+ * aside (and shrinks) when it doesn't, so it never covers a button. Expects exactly three children.
+ */
+@Composable
+private fun TopBar(gap: Dp, content: @Composable () -> Unit) = Layout(content, Modifier.fillMaxWidth()) { measurables, constraints ->
+    val loose = constraints.copy(minWidth = 0, minHeight = 0)
+    val lead = measurables[0].measure(loose)
+    val trail = measurables[2].measure(loose)
+    val gapPx = gap.roundToPx()
+    val room = (constraints.maxWidth - lead.width - trail.width - 2 * gapPx).coerceAtLeast(0)
+    val center = measurables[1].measure(loose.copy(maxWidth = room))
+    val height = maxOf(lead.height, center.height, trail.height)
+    layout(constraints.maxWidth, height) {
+        val minX = lead.width + gapPx
+        val x = ((constraints.maxWidth - center.width) / 2).coerceIn(minX, (minX + room - center.width).coerceAtLeast(minX))
+        lead.place(0, (height - lead.height) / 2)
+        center.place(x, (height - center.height) / 2)
+        trail.place(constraints.maxWidth - trail.width, (height - trail.height) / 2)
     }
 }
 

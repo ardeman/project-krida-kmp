@@ -8,6 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.ime
@@ -21,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,6 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
@@ -142,3 +152,59 @@ fun RowScope.IconTile(@DrawableRes icon: Int) {
  */
 val gameInsets: WindowInsets
     @Composable get() = WindowInsets.displayCutout.union(WindowInsets.ime)
+
+/** True inside a [LandscapeStage] that is turned a quarter turn (see there). */
+val LocalStageTurned = staticCompositionLocalOf { false }
+
+/** The phone design's landscape size, in dp (the same 874×402 as iOS). */
+private const val DESIGN_WIDTH = 874f
+private const val DESIGN_HEIGHT = 402f
+/** The tallest stage allowed, as height / width. */
+private const val MAX_HEIGHT_RATIO = 3f / 4f
+/** The most the phone design is grown on big screens. */
+private const val MAX_SCALE = 1.5f
+
+/**
+ * Keeps every screen in landscape, whatever shape the window has. Android 16 ignores the
+ * landscape-only orientation on large screens (tablets, an unfolded foldable) and in split
+ * screen, so the window can be portrait: the stage then turns the layout a quarter turn, as if
+ * the screen were locked to landscape. A landscape window taller than 4:3 gets a centered
+ * stage with cream bars above and below. Inside the stage the density grows with the stage
+ * (up to [MAX_SCALE]), so a tablet shows the phone design bigger rather than emptier.
+ *
+ * A turned stage keeps clear of the window's cutout itself, so [gameInsets] are consumed
+ * inside it (they would land on the wrong sides). A SurfaceView can't be turned with the
+ * layout; screens check [LocalStageTurned] and use a TextureView then.
+ */
+@Composable
+fun LandscapeStage(content: @Composable () -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(Theme.cream)) {
+        val turned = maxHeight > maxWidth
+        Box(
+            Modifier.fillMaxSize().then(if (turned) Modifier.windowInsetsPadding(gameInsets) else Modifier),
+            contentAlignment = Alignment.Center,
+        ) {
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val outerW = constraints.maxWidth
+                val outerH = constraints.maxHeight
+                val w = if (turned) outerH else outerW
+                val h = minOf(if (turned) outerW else outerH, (w * MAX_HEIGHT_RATIO).toInt())
+                val density = LocalDensity.current
+                val scale = (minOf(w / density.density / DESIGN_WIDTH, h / density.density / DESIGN_HEIGHT)).coerceIn(1f, MAX_SCALE)
+                Box(
+                    Modifier
+                        .layout { measurable, _ ->
+                            val placeable = measurable.measure(Constraints.fixed(w, h))
+                            layout(outerW, outerH) { placeable.place((outerW - w) / 2, (outerH - h) / 2) }
+                        }
+                        .graphicsLayer { rotationZ = if (turned) 90f else 0f },
+                ) {
+                    CompositionLocalProvider(
+                        LocalDensity provides Density(density.density * scale, density.fontScale),
+                        LocalStageTurned provides turned,
+                    ) { content() }
+                }
+            }
+        }
+    }
+}

@@ -39,8 +39,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import com.ardeman.krida.ui.LandscapeStage
 import com.ardeman.krida.ui.gameInsets
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -151,14 +153,16 @@ class MainActivity : ComponentActivity() {
         CongklakSettings.init(this)
         intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
         setContent {
-            val r = room
-            val table = passAndPlay ?: r?.table
-            when {
-                table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
-                r != null -> Lobby(r)
-                else -> Menu()
+            LandscapeStage {
+                val r = room
+                val table = passAndPlay ?: r?.table
+                when {
+                    table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
+                    r != null -> Lobby(r)
+                    else -> Menu()
+                }
+                StartupCover()
             }
-            StartupCover()
         }
     }
 
@@ -202,8 +206,9 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun Menu() {
-        Row(
-            Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 20.dp),
+        // Capped at the phone design's size (as on iOS), so a tall stage doesn't stretch the cards.
+        Box(Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets), contentAlignment = Alignment.Center) { Row(
+            Modifier.sizeIn(maxWidth = 874.dp, maxHeight = 460.dp).fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Column(Modifier.width(236.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -237,7 +242,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Ads.Banner(trailing = { RemoveAdsButton() })
             }
-        }
+        } }
     }
 
     /**
