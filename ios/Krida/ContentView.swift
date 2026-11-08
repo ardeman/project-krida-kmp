@@ -74,8 +74,11 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .scrollBounceBehavior(.basedOnSize)
-                AdBanner()
-                    .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
+                HStack(spacing: 8 * s) {
+                    AdBanner()
+                    RemoveAdsButton()
+                }
+                .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
             }
         }
         .padding(.horizontal, 24 * s)
@@ -190,7 +193,7 @@ struct ContentView: View {
     }
 }
 
-/// "Hapus iklan · Rp 15.000" and "Pulihkan pembelian" while ads are on; "Privasi iklan" where required.
+/// "Pulihkan pembelian" while ads are on; "Privasi iklan" where required. "Hapus iklan" sits beside the banner.
 private struct AdButtons: View {
     @ObservedObject private var ads = Ads.shared
     @Environment(\.uiScale) private var s
@@ -198,10 +201,6 @@ private struct AdButtons: View {
     var body: some View {
         if !ads.removed || ads.privacyOptionsRequired {
             HStack(spacing: 8 * s) {
-                if let price = ads.removeAdsPrice {
-                    Button("Hapus iklan · \(price)", action: ads.buyRemoveAds)
-                        .buttonStyle(SecondaryButtonStyle())
-                }
                 if !ads.removed {
                     Button("Pulihkan pembelian", action: ads.restorePurchases)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
@@ -214,6 +213,30 @@ private struct AdButtons: View {
             }
             .lineLimit(1)
             .minimumScaleFactor(0.8)
+        }
+    }
+}
+
+/// "Hapus iklan" with its price, beside the banner where the ad is: the cards above keep the
+/// full height. Only while the banner shows and the App Store knows the product. Same as Android.
+private struct RemoveAdsButton: View {
+    @ObservedObject private var ads = Ads.shared
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        if !ads.removed && ads.started, let price = ads.removeAdsPrice {
+            Button(action: ads.buyRemoveAds) {
+                VStack(spacing: 0) {
+                    Text("Hapus iklan").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
+                    Text(price).font(Theme.font(12 * s, .bold)).foregroundStyle(Theme.muted)
+                }
+                .lineLimit(1)
+                .padding(.horizontal, 14 * s)
+                .frame(height: 50 * s)
+                .background(.white, in: RoundedRectangle(cornerRadius: 14 * s))
+                .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(Theme.accent, lineWidth: 1.5))
+            }
+            .buttonStyle(.plain)
         }
     }
 }

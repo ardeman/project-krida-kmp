@@ -253,18 +253,18 @@
         }
       }
     },
-    "Hapus iklan · %@" : {
+    "Hapus iklan" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove ads · %@"
+            "value" : "Remove ads"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hapus iklan · %@"
+            "value" : "Hapus iklan"
           }
         }
       }
