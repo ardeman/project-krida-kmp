@@ -3,6 +3,8 @@ package com.ardeman.krida.core
 import com.ardeman.krida.core.games.UlarTanggaBot
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.UlarTanggaMove
+import com.ardeman.krida.core.games.UlarTanggaOptions
+import com.ardeman.krida.core.games.UlarTanggaRules
 import com.ardeman.krida.core.games.UlarTanggaState
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.session.HostSession
@@ -18,15 +20,22 @@ import kotlin.test.assertTrue
 class UlarTanggaTest {
     private val game = UlarTanggaGame
 
-    private fun at(vararg positions: Int, turn: Int = 0) =
-        UlarTanggaState(positions = positions.toList(), turn = turn)
+    private fun at(
+        vararg positions: Int,
+        turn: Int = 0,
+        finishOrder: List<Int> = emptyList(),
+        options: UlarTanggaOptions = UlarTanggaOptions(),
+    ) = UlarTanggaState(positions.toList(), turn, finishOrder = finishOrder, options = options)
 
     @Test
-    fun startsOffTheBoard() {
-        val s = game.initialState(4, Random(0))
-        assertEquals(listOf(0, 0, 0, 0), s.positions)
-        assertEquals(0, s.turn)
-        assertNull(s.lastRoll)
+    fun startsOffTheBoardWithARouletteStarter() {
+        val firsts = (0 until 40).map { game.initialState(4, Random(it)) }
+        firsts.forEach {
+            assertEquals(listOf(0, 0, 0, 0), it.positions)
+            assertEquals(it.firstTurn, it.turn)
+            assertNull(it.lastRoll)
+        }
+        assertEquals(setOf(0, 1, 2, 3), firsts.map { it.turn }.toSet())
     }
 
     @Test
@@ -52,28 +61,77 @@ class UlarTanggaTest {
     }
 
     @Test
-    fun sixRollsAgain() {
+    fun sixRollsAgainUnlessSwitchedOff() {
         val p = game.play(at(0, 0), 0, 6)
         assertTrue(p.extraTurn)
         assertEquals(0, p.state.turn)
+
+        val off = game.play(at(0, 0, options = UlarTanggaOptions(sixRollsAgain = false)), 0, 6)
+        assertFalse(off.extraTurn)
+        assertEquals(1, off.state.turn)
     }
 
     @Test
-    fun overshootBouncesBack() {
+    fun overshootStaysPut() {
         val p = game.play(at(98, 0), 0, 5)
+        assertTrue(p.steps.isEmpty())
+        assertNull(p.jumpTo)
+        assertEquals(98, p.state.positions[0])
+        assertEquals(1, p.state.turn)
+    }
+
+    @Test
+    fun overshootBouncesBackAsAnOption() {
+        val p = game.play(at(98, 0, options = UlarTanggaOptions(bounceBack = true)), 0, 5)
         assertEquals(listOf(99, 100, 99, 98, 97), p.steps)
         // 97 is a snake head.
         assertEquals(61, p.state.positions[0])
-        assertFalse(p.state.finished)
     }
 
     @Test
-    fun exactHundredWins() {
-        val p = game.play(at(10, 94, turn = 1), 1, 6)
+    fun sixToEnterAsAnOption() {
+        val o = UlarTanggaOptions(sixToEnter = true)
+        val miss = game.play(at(0, 0, options = o), 0, 5)
+        assertTrue(miss.steps.isEmpty())
+        assertEquals(0, miss.state.positions[0])
+        assertEquals(1, miss.state.turn)
+
+        val enter = game.play(at(0, 0, options = o), 0, 6)
+        assertEquals(listOf(1), enter.steps)
+        assertEquals(1, enter.state.positions[0])
+        assertEquals(0, enter.state.turn)
+    }
+
+    @Test
+    fun playGoesOnUntilOnePlayerIsLeft() {
+        // Seat 1 finishes first; seats 0 and 2 play on, skipping seat 1.
+        val first = game.play(at(10, 94, 20, turn = 1), 1, 6)
+        assertFalse(first.extraTurn)
+        assertFalse(first.state.finished)
+        assertEquals(listOf(1), first.state.finishOrder)
+        assertEquals(2, first.state.turn)
+
+        val skip = game.play(first.state.copy(turn = 0), 0, 1)
+        assertEquals(2, skip.state.turn)
+
+        // Seat 2 finishes second: only seat 0 is left, so the game ends.
+        val last = game.play(skip.state.copy(positions = listOf(11, 100, 96), turn = 2), 2, 5)
+        assertEquals(96, last.state.positions[2]) // overshoot: stays
+        val done = game.play(last.state.copy(positions = listOf(11, 100, 96), turn = 2), 2, 4)
+        assertTrue(done.state.finished)
+        assertEquals(listOf(1, 2), done.state.finishOrder)
+        assertEquals(1, done.state.winner)
+        assertEquals(listOf(1, 2, 0), game.ranking(done.state))
+        assertEquals("finished", game.validate(done.state, 0, UlarTanggaMove()))
+    }
+
+    @Test
+    fun firstFinishEndsAsAnOption() {
+        val o = UlarTanggaOptions(firstFinishEnds = true)
+        val p = game.play(at(10, 94, 20, turn = 1, options = o), 1, 6)
         assertTrue(p.state.finished)
         assertEquals(1, p.state.winner)
-        assertFalse(p.extraTurn)
-        assertEquals("finished", game.validate(p.state, 1, UlarTanggaMove()))
+        assertEquals(listOf(1, 2, 0), game.ranking(p.state))
     }
 
     @Test
@@ -96,14 +154,17 @@ class UlarTanggaTest {
     @Test
     fun botsPlayAFullFourPlayerGame() {
         val net = LoopbackNetwork()
-        val host = HostSession(game, net.host, roomCode = "ULAR", random = Random(7))
+        val rules = UlarTanggaRules(UlarTanggaOptions(sixToEnter = true))
+        val host = HostSession(rules, net.host, roomCode = "ULAR", random = Random(7))
         repeat(4) { host.addBot("Komputer ${it + 1}", Platform.ANDROID, UlarTanggaBot) }
         host.start()
+        assertTrue(host.state!!.options.sixToEnter)
         var moves = 0
         while (host.stepBot()) moves++
         val s = assertNotNull(host.state)
         assertTrue(s.finished)
-        assertEquals(100, s.positions[assertNotNull(s.winner)])
+        assertEquals(3, s.finishOrder.size)
+        assertTrue(s.finishOrder.all { s.positions[it] == 100 })
         assertTrue(moves > 0)
     }
 }

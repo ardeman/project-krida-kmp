@@ -7,19 +7,45 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 
 /**
+ * Rule options the host picks before the game. The defaults are the standard Krida rules;
+ * each option switches on a common alternative.
+ */
+@Serializable
+data class UlarTanggaOptions(
+    /** A roll past 100 walks back down the extra squares instead of the piece staying put. */
+    val bounceBack: Boolean = false,
+    /** A piece needs a 6 to enter the board; that 6 puts it on square 1. */
+    val sixToEnter: Boolean = false,
+    /** The game ends when the first player reaches 100, instead of when one player is left. */
+    val firstFinishEnds: Boolean = false,
+    /** A 6 rolls again. */
+    val sixRollsAgain: Boolean = true,
+) {
+    /** For Swift, which does not see Kotlin default arguments. */
+    constructor() : this(false, false, false, true)
+}
+
+/**
  * Ular tangga (snakes and ladders). [positions] holds one square per seat: 0 is off the
- * board (the start), 1..100 are squares. [lastRoll] and [lastSeat] describe the move that
- * produced this state, so guests can animate it; both are absent before the first roll.
+ * board (the start), 1..100 are squares. [finishOrder] lists the seats that reached 100, in
+ * order (first entry = 1st place). [firstTurn] is the seat the starting roulette picked.
+ * [lastRoll] and [lastSeat] describe the move that produced this state, so guests can
+ * animate it; both are absent before the first roll.
  */
 @Serializable
 data class UlarTanggaState(
     val positions: List<Int>,
     val turn: Int,
+    val firstTurn: Int = 0,
+    val finishOrder: List<Int> = emptyList(),
     val finished: Boolean = false,
-    val winner: Int? = null,
     val lastRoll: Int? = null,
     val lastSeat: Int? = null,
-)
+    val options: UlarTanggaOptions = UlarTanggaOptions(),
+) {
+    /** 1st place, or null while nobody has reached 100. */
+    val winner: Int? get() = finishOrder.firstOrNull()
+}
 
 /** The only intent: roll the die. The host rolls it. */
 @Serializable
@@ -31,6 +57,7 @@ class UlarTanggaMove {
 /**
  * Result of one roll, for animation: the piece walks [steps] one square at a time (a
  * bounce off 100 walks back down), then slides or climbs from the last step to [jumpTo].
+ * [steps] is empty when the piece could not move (overshoot, or no 6 to enter).
  */
 data class UlarTanggaPlay(
     val state: UlarTanggaState,
@@ -42,14 +69,14 @@ data class UlarTanggaPlay(
 )
 
 /**
- * Rule variant (2–4 players, one fixed board):
+ * Standard rules (2–4 players, one fixed board), each changeable in [UlarTanggaOptions]:
+ * - A roulette picks who goes first; turns then go round in seat order.
  * - Everyone starts off the board (square 0); a roll of n moves to square n.
- * - Roll one die and move that many squares.
  * - Landing on the foot of a ladder climbs it; landing on a snake's head slides to its tail.
- * - You must land on 100 exactly: the rest of a roll that overshoots walks back down
- *   (from 98, a 5 ends on 97). Snakes and ladders still apply where you end.
- * - A 6 rolls again (unless it wins).
- * - The first to reach 100 wins, and the game ends.
+ * - You must land on 100 exactly: a roll that would pass it leaves the piece where it is.
+ * - A 6 rolls again, unless that roll brought the piece to 100.
+ * - Players who reach 100 leave the board in finishing order; the game ends when one
+ *   player is left, who takes last place.
  */
 object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     const val SIZE = 10
@@ -71,9 +98,19 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     override val stateSerializer: KSerializer<UlarTanggaState> = UlarTanggaState.serializer()
     override val moveSerializer: KSerializer<UlarTanggaMove> = UlarTanggaMove.serializer()
 
-    override fun initialState(players: Int, random: Random): UlarTanggaState {
+    override fun initialState(players: Int, random: Random) =
+        initialState(players, UlarTanggaOptions(), random)
+
+    /** The roulette: [random] picks the seat that rolls first. */
+    fun initialState(players: Int, options: UlarTanggaOptions, random: Random): UlarTanggaState {
         require(players in minPlayers..maxPlayers) { "players must be $minPlayers..$maxPlayers" }
-        return UlarTanggaState(positions = List(players) { 0 }, turn = 0)
+        val first = random.nextInt(players)
+        return UlarTanggaState(
+            positions = List(players) { 0 },
+            turn = first,
+            firstTurn = first,
+            options = options,
+        )
     }
 
     override fun currentTurn(state: UlarTanggaState) = state.turn
@@ -104,30 +141,72 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     /** Applies [roll] (1..6) for [seat]. Public so tests and replays can pick the roll. */
     fun play(state: UlarTanggaState, seat: Int, roll: Int): UlarTanggaPlay {
         require(roll in 1..6) { "roll must be 1..6" }
+        val o = state.options
+        val start = state.positions[seat]
         val steps = ArrayList<Int>(roll)
-        var pos = state.positions[seat]
-        var dir = 1
-        repeat(roll) {
-            if (pos == LAST) dir = -1
-            pos += dir
-            steps += pos
+        when {
+            start == 0 && o.sixToEnter -> if (roll == 6) steps += 1
+            start + roll > LAST && !o.bounceBack -> Unit
+            else -> {
+                var pos = start
+                var dir = 1
+                repeat(roll) {
+                    if (pos == LAST) dir = -1
+                    pos += dir
+                    steps += pos
+                }
+            }
         }
-        val jumpTo = jump(pos)
-        val end = jumpTo ?: pos
+        val landed = steps.lastOrNull() ?: start
+        val jumpTo = if (steps.isEmpty()) null else jump(landed)
+        val end = jumpTo ?: landed
         val positions = state.positions.toMutableList().also { it[seat] = end }
-        val won = end == LAST
-        val extraTurn = roll == 6 && !won
-        val next = if (won || extraTurn) seat else (seat + 1) % positions.size
-        val newState = UlarTanggaState(
+
+        val reached = end == LAST
+        val order = if (reached) state.finishOrder + seat else state.finishOrder
+        val finished = reached && (o.firstFinishEnds || order.size >= positions.size - 1)
+        val extraTurn = roll == 6 && o.sixRollsAgain && !reached
+        val next = when {
+            finished || extraTurn -> seat
+            else -> nextPlaying(positions, order, seat)
+        }
+        val newState = state.copy(
             positions = positions,
             turn = next,
-            finished = won,
-            winner = if (won) seat else null,
+            finishOrder = order,
+            finished = finished,
             lastRoll = roll,
             lastSeat = seat,
         )
         return UlarTanggaPlay(newState, seat, roll, steps, jumpTo, extraTurn)
     }
+
+    /** The next seat after [seat] that has not reached 100. */
+    private fun nextPlaying(positions: List<Int>, order: List<Int>, seat: Int): Int {
+        var s = seat
+        do s = (s + 1) % positions.size while (s in order)
+        return s
+    }
+
+    /**
+     * Final ranking once the game is over: the finishers in order, then everyone else by how
+     * far along they are (ties keep seat order). Before the end, the current standing.
+     */
+    fun ranking(state: UlarTanggaState): List<Int> =
+        state.finishOrder + state.positions.indices
+            .filter { it !in state.finishOrder }
+            .sortedByDescending { state.positions[it] }
+}
+
+/**
+ * Ular tangga with the options chosen before the game: [UlarTanggaGame] in every respect,
+ * except that new games (and restarts) start with [options]. Give this to the host's
+ * `HostSession`; guests read the options from the state, so they need nothing.
+ */
+class UlarTanggaRules(val options: UlarTanggaOptions) :
+    GameRules<UlarTanggaState, UlarTanggaMove> by UlarTanggaGame {
+    override fun initialState(players: Int, random: Random) =
+        UlarTanggaGame.initialState(players, options, random)
 }
 
 /** There is nothing to decide in ular tangga, so the computer just rolls. */

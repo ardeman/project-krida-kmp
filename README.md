@@ -124,9 +124,11 @@ for a hint ("Petunjuk": the hard bot's move). The "Hapus iklan" purchase (non-co
 makes hints free. The real AdMob ids are in `res/values/ads.xml` and `ios/Krida/Ads/AdIds.swift`
 (app id in `ios/project.yml`); debug builds use Google's test ad units (`src/debug/res/values/ads.xml`,
 `#if DEBUG`). `hapus_iklan` exists in App Store Connect; the Play product still needs a build upload.
-Ular tangga rules for 2–4 players are in the shared core (`UlarTanggaGame.kt`: fixed board,
-exact 100 with bounce-back, a 6 rolls again; `UlarTanggaBot` just rolls); its boards on Android
-and iOS are next, then offline BLE for up to 4 players.
+Ular tangga rules for 2–4 players are in the shared core (`UlarTanggaGame.kt`: fixed board, a
+roulette picks who starts, exact 100 or stay put, a 6 rolls again, play on until one player is
+left; bounce-back, six-to-enter, first-finish-ends and no-reroll are host options in
+`UlarTanggaOptions`; `UlarTanggaBot` just rolls). Its boards on Android and iOS are next, then
+offline BLE for up to 4 players.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's
