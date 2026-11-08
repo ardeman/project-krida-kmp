@@ -308,7 +308,8 @@ class MainActivity : ComponentActivity() {
      */
     @Composable
     private fun PlayCard() {
-        var opponent by rememberSaveable { mutableStateOf(Opponent.PHONE) }
+        // A room link opens the app ready to join: start on "Teman dekat".
+        var opponent by rememberSaveable { mutableStateOf(if (joining) Opponent.NEARBY else Opponent.PHONE) }
         var level by rememberSaveable { mutableStateOf(CongklakBot.Level.NORMAL) }
         val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
         val you = stringResource(R.string.bot_you)
@@ -368,7 +369,10 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
+                    // Joining someone's room only makes sense when playing a friend nearby.
+                    if (opponent == Opponent.NEARBY) {
+                        SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
+                    }
                     Spacer(Modifier.weight(1f))
                     PrimaryButton(
                         stringResource(if (opponent == Opponent.NEARBY) R.string.nearby_host else R.string.bot_start),
