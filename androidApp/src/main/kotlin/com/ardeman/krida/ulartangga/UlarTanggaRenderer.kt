@@ -132,6 +132,8 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     private var pressed = false
     private var shaking = false
     private var shakeTime = 0f
+    /** Radians the held die has spun; it settles back to a whole turn when the hold ends. */
+    private var spinAngle = 0f
     private var idleTime = 0f
     /** Eased 0..1 amounts of the press, the shake and the idle rocking, so none of them snaps. */
     private var pressAmt = 0f
@@ -177,7 +179,7 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
     /** Presses the die where it waits; [shake] rattles it, as in a hand, until [throwDie]. */
     fun holdDie(held: Boolean, shake: Boolean = false) {
         if (dieMode != DieMode.Home) return
-        if (shake && !shaking) shakeTime = 0f
+        if (shake && !shaking) { shakeTime = 0f; spinAngle = 0f }
         pressed = held
         shaking = held && shake
         invalidate()
@@ -194,7 +196,7 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
         // Leave from the pose on screen, mid-shake or not.
         drawnPos.copyInto(shown)
         dieRot = drawnRot
-        pressAmt = 0f; shakeAmt = 0f; rockAmt = 0f
+        pressAmt = 0f; shakeAmt = 0f; rockAmt = 0f; spinAngle = 0f
         dieValue = value
         val area = UlarTanggaBoard.dieLanding
         val long = toss == Toss.Long
@@ -295,9 +297,19 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
         rockAmt = approach(rockAmt, if (dieReady && !pressed) 1f else 0f, dt, 0.15f)
         val easing = pressAmt + shakeAmt + rockAmt > 0.002f
         if (shaking || shakeAmt > 0.002f) shakeTime += dt
+        val turn = 2 * PI.toFloat()
+        if (shaking) {
+            // Spin up from about one turn a second to three over the first moment of the hold.
+            spinAngle += dt * turn * shakeAmt * (1f + 2f * minOf(1f, shakeTime / 0.8f))
+        } else if (spinAngle != 0f) {
+            // Let go without a throw: finish the turn it is on and come to rest.
+            val rest = kotlin.math.ceil(spinAngle / turn) * turn
+            spinAngle = approach(spinAngle, rest, dt, 0.12f)
+            if (spinAngle == rest) spinAngle = 0f
+        }
         if (dieReady || rockAmt > 0.002f) idleTime += dt
         applyDie()
-        return pressed || dieReady || easing
+        return pressed || dieReady || easing || spinAngle != 0f
     }
 
     /** Exponential ease of [value] toward [target] with time constant [tau] seconds. */
@@ -312,15 +324,19 @@ class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
         var scale = 1f
         val pos = shown.copyOf()
         if (dieMode == DieMode.Home) {
+            if (spinAngle != 0f) {
+                // Spinning in the air before the throw: whole turns about a tilted axis that
+                // slowly sweeps round, so every face flashes past.
+                val p = shakeTime * 1.3f
+                val ax = 0.7f * sin(p)
+                val az = 0.7f * kotlin.math.cos(p)
+                val ay = 0.6f
+                val n = kotlin.math.sqrt(ax * ax + ay * ay + az * az)
+                q = qMul(qAxis(ax / n, ay / n, az / n, spinAngle), q)
+            }
             if (shakeAmt > 0f) {
-                // Rattled in a cupped hand: a smooth tumble on three axes plus a small toss
-                // up and down, growing for the first moment of the hold.
+                // A small toss up and down while it spins.
                 val s = shakeTime * 2 * PI.toFloat()
-                val a = shakeAmt * (0.25f + 0.2f * minOf(1f, shakeTime / 0.6f))
-                q = qMul(
-                    qMul(qAxis(1f, 0f, 0f, a * sin(s * 3.1f)), qAxis(0f, 0f, 1f, a * sin(s * 2.3f + 1.1f))),
-                    qMul(qAxis(0f, 1f, 0f, a * 0.6f * sin(s * 1.7f + 0.4f)), q),
-                )
                 val bob = UlarTanggaBoard.DIE * 0.12f * shakeAmt
                 pos[0] += bob * 0.5f * sin(s * 2.3f)
                 pos[1] += bob * kotlin.math.abs(sin(s * 3.1f))
