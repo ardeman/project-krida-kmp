@@ -143,8 +143,8 @@ struct ContentView: View {
     }
 
     /// One card for every way to play congklak: pick the opponent (a friend on this phone, the
-    /// computer, or a friend nearby over Bluetooth), the computer's level, the tembak rule, then
-    /// Mulai. Joining someone else's room with a code is a link on the card for "Teman dekat".
+    /// computer, or a friend nearby over Bluetooth); right below it what that means (or the
+    /// computer's level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the tembak rule.
     /// Same as Android.
     private var playCard: some View {
         VStack(alignment: .leading, spacing: 10 * s) {
@@ -154,61 +154,37 @@ struct ContentView: View {
                     selection: $opponent,
                     label: "Lawan"
                 )
+                .onChange(of: opponent) { _, o in if o != .nearby { joining = false } }
             }
+            // The action row: what this opponent means (or the computer's level), then the
+            // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
+            // "Teman dekat") turns the row into the code field.
             SettingRow(label: opponent == .computer ? "Tingkat" : nil) {
-                switch opponent {
-                case .computer:
-                    Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
-                case .phone:
-                    detail("Berdua, gantian di satu HP")
-                case .nearby:
-                    detail("Bluetooth, tanpa internet")
+                if joining {
+                    joinRow
+                } else {
+                    HStack(spacing: 8 * s) {
+                        switch opponent {
+                        case .computer:
+                            Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
+                        case .phone:
+                            detail("Berdua, gantian di satu HP")
+                        case .nearby:
+                            detail("Bluetooth, tanpa internet")
+                        }
+                        if opponent != .computer { Spacer(minLength: 0) }
+                        if opponent == .nearby {
+                            Button("Gabung pakai kode") { joining = true }
+                                .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                        }
+                        Button(opponent == .nearby ? "Buat room" : "Mulai", action: start)
+                            .buttonStyle(PrimaryButtonStyle())
+                    }
+                    .lineLimit(1)
                 }
             }
             SettingRow(label: "Tembak") {
                 Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
-            }
-            Rectangle().fill(Theme.line).frame(height: 1.5)
-            if joining {
-                HStack(spacing: 8 * s) {
-                    TextField("Kode room", text: $roomCode)
-                        .font(Theme.font(17 * s))
-                        .tracking(2 * s)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .padding(.horizontal, 12 * s)
-                        .frame(height: 44 * s)
-                        .background(Color(hex: 0xFFFDF9), in: RoundedRectangle(cornerRadius: 12 * s))
-                        .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Color(hex: 0xD9C6AF), lineWidth: 1.5))
-                        .accessibilityLabel(Text("Kode room dari temanmu"))
-                        .onChange(of: roomCode) { _, code in
-                            let clean = String(code.uppercased().prefix(4))
-                            if clean != code { roomCode = clean }
-                        }
-                    Button { joining = false } label: {
-                        Image(systemName: "xmark").font(.system(size: 15 * s, weight: .bold))
-                            .foregroundStyle(Theme.muted)
-                            .frame(width: 44 * s, height: 44 * s)
-                            .background(Theme.track, in: RoundedRectangle(cornerRadius: 14 * s))
-                    }
-                    .accessibilityLabel(Text("Batal"))
-                    Button("Masuk") { room = NearbyRoom.join(code: roomCode) }
-                        .buttonStyle(PrimaryButtonStyle(height: 48))
-                        .disabled(!RoomCode.shared.isValid(code: roomCode))
-                        .opacity(RoomCode.shared.isValid(code: roomCode) ? 1 : 0.5)
-                }
-            } else {
-                HStack(spacing: 8 * s) {
-                    // Joining someone's room only makes sense when playing a friend nearby.
-                    if opponent == .nearby {
-                        Button("Gabung pakai kode") { joining = true }
-                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    }
-                    Spacer(minLength: 0)
-                    Button(opponent == .nearby ? "Buat room" : "Mulai", action: start)
-                        .buttonStyle(PrimaryButtonStyle(height: 48))
-                }
-                .lineLimit(1)
             }
         }
         .padding(.leading, 18 * s)
@@ -219,8 +195,40 @@ struct ContentView: View {
         .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
     }
 
+    /// The room code field, cancel and Masuk, in place of the "Teman dekat" description.
+    private var joinRow: some View {
+        HStack(spacing: 8 * s) {
+            TextField("Kode room", text: $roomCode)
+                .font(Theme.font(17 * s))
+                .tracking(2 * s)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+                .padding(.horizontal, 12 * s)
+                .frame(height: 44 * s)
+                .background(Color(hex: 0xFFFDF9), in: RoundedRectangle(cornerRadius: 12 * s))
+                .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Color(hex: 0xD9C6AF), lineWidth: 1.5))
+                .accessibilityLabel(Text("Kode room dari temanmu"))
+                .onChange(of: roomCode) { _, code in
+                    let clean = String(code.uppercased().prefix(4))
+                    if clean != code { roomCode = clean }
+                }
+            Button { joining = false } label: {
+                Image(systemName: "xmark").font(.system(size: 15 * s, weight: .bold))
+                    .foregroundStyle(Theme.muted)
+                    .frame(width: 44 * s, height: 44 * s)
+                    .background(Theme.track, in: RoundedRectangle(cornerRadius: 14 * s))
+            }
+            .accessibilityLabel(Text("Batal"))
+            Button("Masuk") { room = NearbyRoom.join(code: roomCode) }
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(!RoomCode.shared.isValid(code: roomCode))
+                .opacity(RoomCode.shared.isValid(code: roomCode) ? 1 : 0.5)
+        }
+    }
+
     private func detail(_ text: LocalizedStringKey) -> some View {
         Text(text).font(Theme.font(14 * s, .semibold)).foregroundStyle(Theme.muted).lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func start() {

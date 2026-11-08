@@ -303,8 +303,8 @@ class MainActivity : ComponentActivity() {
 
     /**
      * One card for every way to play congklak: pick the opponent (a friend on this phone, the
-     * computer, or a friend nearby over Bluetooth), the computer's level, the tembak rule, then
-     * Mulai. Joining someone else's room with a code stays a link on the same card.
+     * computer, or a friend nearby over Bluetooth); right below it what that means (or the
+     * computer's level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the tembak rule.
      */
     @Composable
     private fun PlayCard() {
@@ -326,16 +326,36 @@ class MainActivity : ComponentActivity() {
                     options = Opponent.entries.map { it to stringResource(it.label) },
                     current = opponent,
                     label = stringResource(R.string.play_opponent),
-                    onChange = { opponent = it },
+                    onChange = { opponent = it; if (it != Opponent.NEARBY) joining = false },
                     icons = Opponent.entries.map { it.icon },
                     fill = true,
                 )
             }
+            // The action row: what this opponent means (or the computer's level), then the
+            // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
+            // "Teman dekat") turns the row into the code field.
             SettingRow(if (opponent == Opponent.COMPUTER) stringResource(R.string.play_level) else "") {
-                when (opponent) {
-                    Opponent.COMPUTER -> LevelPicker(level) { level = it }
-                    Opponent.PHONE -> Detail(stringResource(R.string.mode_pass_detail))
-                    Opponent.NEARBY -> Detail(stringResource(R.string.nearby_detail))
+                if (joining) JoinRow() else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.weight(1f)) {
+                        when (opponent) {
+                            Opponent.COMPUTER -> LevelPicker(level) { level = it }
+                            Opponent.PHONE -> Detail(stringResource(R.string.mode_pass_detail))
+                            Opponent.NEARBY -> Detail(stringResource(R.string.nearby_detail))
+                        }
+                    }
+                    if (opponent == Opponent.NEARBY) {
+                        SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
+                    }
+                    PrimaryButton(
+                        stringResource(if (opponent == Opponent.NEARBY) R.string.nearby_host else R.string.bot_start),
+                        onClick = {
+                            when (opponent) {
+                                Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
+                                Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
+                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) }
+                            }
+                        },
+                    )
                 }
             }
             SettingRow(stringResource(R.string.play_tembak)) {
@@ -347,49 +367,32 @@ class MainActivity : ComponentActivity() {
                     fill = true,
                 )
             }
-            Box(Modifier.fillMaxWidth().height(1.5.dp).background(Theme.line))
-            if (joining) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    CodeField(Modifier.weight(1f))
-                    val cancel = stringResource(R.string.nearby_cancel)
-                    Box(
-                        Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Theme.track)
-                            .clickable(role = Role.Button, onClickLabel = cancel) { joining = false }
-                            .semantics { contentDescription = cancel },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
-                    }
-                    PrimaryButton(
-                        stringResource(R.string.nearby_join),
-                        onClick = { withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) } },
-                        enabled = RoomCode.isValid(roomCode),
-                        height = 48.dp,
-                    )
-                }
-            } else {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Joining someone's room only makes sense when playing a friend nearby.
-                    if (opponent == Opponent.NEARBY) {
-                        SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
-                    }
-                    Spacer(Modifier.weight(1f))
-                    PrimaryButton(
-                        stringResource(if (opponent == Opponent.NEARBY) R.string.nearby_host else R.string.bot_start),
-                        onClick = {
-                            when (opponent) {
-                                Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
-                                Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
-                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) }
-                            }
-                        },
-                        height = 48.dp,
-                    )
-                }
-            }
             if (permissionDenied) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
+        }
+    }
+
+    /** The room code field, cancel and Gabung, in place of the "Teman dekat" description. */
+    @Composable
+    private fun JoinRow() {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            CodeField(Modifier.weight(1f))
+            val cancel = stringResource(R.string.nearby_cancel)
+            Box(
+                Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Theme.track)
+                    .clickable(role = Role.Button, onClickLabel = cancel) { joining = false }
+                    .semantics { contentDescription = cancel },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
+            }
+            PrimaryButton(
+                stringResource(R.string.nearby_join),
+                onClick = { withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) } },
+                enabled = RoomCode.isValid(roomCode),
+                height = 44.dp,
+            )
         }
     }
 
