@@ -30,9 +30,14 @@
         <item>Jatuh di lubang kosong di sisi lawan: giliranmu selesai.</item>
         <item>Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.</item>
     </string-array>
-    <string name="mode_pass_title">Satu perangkat</string>
+    <!-- The merged play card on the menu. -->
+    <string name="play_opponent">Lawan</string>
+    <string name="play_level">Tingkat</string>
+    <string name="play_tembak">Tembak</string>
+    <string name="opponent_phone">HP ini</string>
+    <string name="opponent_computer">Komputer</string>
+    <string name="opponent_nearby">Teman dekat</string>
     <string name="mode_pass_detail">Berdua, gantian di satu HP</string>
-    <string name="bot_title">Lawan komputer</string>
     <string name="bot_you">Kamu</string>
     <string name="bot_name">Komputer</string>
     <string name="bot_level">Tingkat kesulitan</string>
@@ -40,7 +45,6 @@
     <string name="bot_normal">Sedang</string>
     <string name="bot_hard">Sulit</string>
     <string name="bot_start">Mulai</string>
-    <string name="nearby_title">Main bareng dekat</string>
     <string name="nearby_detail">Bluetooth, tanpa internet</string>
     <string name="nearby_host">Buat room</string>
     <string name="nearby_join_with_code">Gabung pakai kode</string>

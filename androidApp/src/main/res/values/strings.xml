@@ -33,9 +33,14 @@
         <item>Lands in an empty hole on your opponent\'s side: your turn ends.</item>
         <item>If all your holes are empty on your turn, the game ends. Most seeds in the store wins.</item>
     </string-array>
-    <string name="mode_pass_title">One device</string>
+    <!-- The merged play card on the menu. -->
+    <string name="play_opponent">Opponent</string>
+    <string name="play_level">Level</string>
+    <string name="play_tembak">Shooting</string>
+    <string name="opponent_phone">This phone</string>
+    <string name="opponent_computer">Computer</string>
+    <string name="opponent_nearby">Nearby</string>
     <string name="mode_pass_detail">Two players, taking turns on one phone</string>
-    <string name="bot_title">Play the computer</string>
     <string name="bot_you">You</string>
     <string name="bot_name">Computer</string>
     <string name="bot_level">Difficulty</string>
@@ -43,7 +48,6 @@
     <string name="bot_normal">Medium</string>
     <string name="bot_hard">Hard</string>
     <string name="bot_start">Start</string>
-    <string name="nearby_title">Play nearby</string>
     <string name="nearby_detail">Bluetooth, no internet</string>
     <string name="nearby_host">Create room</string>
     <string name="nearby_join_with_code">Join with a code</string>

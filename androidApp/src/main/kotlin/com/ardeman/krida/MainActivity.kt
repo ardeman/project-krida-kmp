@@ -88,7 +88,6 @@ import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
-import com.ardeman.krida.ui.IconTile
 import com.ardeman.krida.ui.Language
 import com.ardeman.krida.ui.LanguagePicker
 import com.ardeman.krida.ui.LoadingScreen
@@ -239,10 +238,7 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().verticalScroll(scroll),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        PassAndPlayCard()
-                        VsComputerCard()
-                        NearbyCard()
-                        TembakCard()
+                        PlayCard()
                         AdButtons()
                     }
                     MoreBelowHint(scroll, Modifier.align(Alignment.BottomCenter))
@@ -305,96 +301,90 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * One card for every way to play congklak: pick the opponent (a friend on this phone, the
+     * computer, or a friend nearby over Bluetooth), the computer's level, the tembak rule, then
+     * Mulai. Joining someone else's room with a code stays a link on the same card.
+     */
     @Composable
-    private fun PassAndPlayCard() {
-        val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
-        ModeCard(R.drawable.ic_people, onClick = { passAndPlay = HostTable.passAndPlay(names) }) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.mode_pass_title), style = Theme.font(18, color = Theme.ink))
-                Text(stringResource(R.string.mode_pass_detail), style = Theme.font(14, FontWeight.SemiBold, Theme.muted))
-            }
-            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = Theme.muted)
-        }
-    }
-
-    @Composable
-    private fun VsComputerCard() {
+    private fun PlayCard() {
+        var opponent by rememberSaveable { mutableStateOf(Opponent.PHONE) }
         var level by rememberSaveable { mutableStateOf(CongklakBot.Level.NORMAL) }
+        val names = listOf(stringResource(R.string.congklak_player_1), stringResource(R.string.congklak_player_2))
         val you = stringResource(R.string.bot_you)
         val computer = stringResource(R.string.bot_name)
         val levelName = stringResource(levelLabel(level))
-        ModeCard(R.drawable.ic_computer) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.bot_title), style = Theme.font(18, color = Theme.ink), maxLines = 1)
-                LevelPicker(level) { level = it }
+        val shape = RoundedCornerShape(20.dp)
+        Column(
+            Modifier.fillMaxWidth().clip(shape).background(Color.White).border(1.5.dp, Theme.line, shape)
+                .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            SettingRow(stringResource(R.string.play_opponent)) {
+                Segmented(
+                    options = Opponent.entries.map { it to stringResource(it.label) },
+                    current = opponent,
+                    label = stringResource(R.string.play_opponent),
+                    onChange = { opponent = it },
+                    icons = Opponent.entries.map { it.icon },
+                    fill = true,
+                )
             }
-            PrimaryButton(
-                stringResource(R.string.bot_start),
-                onClick = { passAndPlay = HostTable.vsComputer(you, computer, level, levelName) },
-                height = 48.dp,
-            )
-        }
-    }
-
-    /** The tembak rule for every mode started here (and rooms this device hosts). */
-    @Composable
-    private fun TembakCard() {
-        ModeCard(R.drawable.ic_scope) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.tembak_title), style = Theme.font(18, color = Theme.ink), maxLines = 1)
+            SettingRow(if (opponent == Opponent.COMPUTER) stringResource(R.string.play_level) else "") {
+                when (opponent) {
+                    Opponent.COMPUTER -> LevelPicker(level) { level = it }
+                    Opponent.PHONE -> Detail(stringResource(R.string.mode_pass_detail))
+                    Opponent.NEARBY -> Detail(stringResource(R.string.nearby_detail))
+                }
+            }
+            SettingRow(stringResource(R.string.play_tembak)) {
                 Segmented(
                     options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
                     current = CongklakSettings.tembakAfterStore,
                     label = stringResource(R.string.tembak_title),
                     onChange = CongklakSettings::chooseTembakAfterStore,
+                    fill = true,
                 )
             }
-        }
-    }
-
-    @Composable
-    private fun NearbyCard() {
-        ModeCard(R.drawable.ic_bluetooth) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.nearby_title), style = Theme.font(18, color = Theme.ink), maxLines = 1)
-                    Text(
-                        stringResource(R.string.nearby_detail),
-                        style = Theme.font(14, FontWeight.SemiBold, Theme.muted),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+            Box(Modifier.fillMaxWidth().height(1.5.dp).background(Theme.line))
+            if (joining) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    CodeField(Modifier.weight(1f))
+                    val cancel = stringResource(R.string.nearby_cancel)
+                    Box(
+                        Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Theme.track)
+                            .clickable(role = Role.Button, onClickLabel = cancel) { joining = false }
+                            .semantics { contentDescription = cancel },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
+                    }
+                    PrimaryButton(
+                        stringResource(R.string.nearby_join),
+                        onClick = { withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) } },
+                        enabled = RoomCode.isValid(roomCode),
+                        height = 48.dp,
                     )
                 }
-                if (joining) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        CodeField(Modifier.weight(1f))
-                        val cancel = stringResource(R.string.nearby_cancel)
-                        Box(
-                            Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Theme.track)
-                                .clickable(role = Role.Button, onClickLabel = cancel) { joining = false }
-                                .semantics { contentDescription = cancel },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
-                        }
-                        PrimaryButton(
-                            stringResource(R.string.nearby_join),
-                            onClick = { withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) } },
-                            enabled = RoomCode.isValid(roomCode),
-                        )
-                    }
-                } else {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PrimaryButton(
-                            stringResource(R.string.nearby_host),
-                            onClick = { withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) } },
-                        )
-                        SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true })
-                    }
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
+                    Spacer(Modifier.weight(1f))
+                    PrimaryButton(
+                        stringResource(if (opponent == Opponent.NEARBY) R.string.nearby_host else R.string.bot_start),
+                        onClick = {
+                            when (opponent) {
+                                Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
+                                Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
+                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) }
+                            }
+                        },
+                        height = 48.dp,
+                    )
                 }
-                if (permissionDenied) {
-                    Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
-                }
+            }
+            if (permissionDenied) {
+                Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
         }
     }
@@ -468,25 +458,30 @@ private fun levelLabel(level: CongklakBot.Level) = when (level) {
     else -> R.string.bot_normal
 }
 
-/** White rounded card with an icon tile, used for each way to play. */
+/** Who you play congklak against; the merged play card's first choice. */
+private enum class Opponent(val label: Int, val icon: Int) {
+    PHONE(R.string.opponent_phone, R.drawable.ic_people),
+    COMPUTER(R.string.opponent_computer, R.drawable.ic_computer),
+    NEARBY(R.string.opponent_nearby, R.drawable.ic_bluetooth),
+}
+
+/** A small label above its control; an empty label keeps the rows' spacing. */
 @Composable
-private fun ModeCard(icon: Int, onClick: (() -> Unit)? = null, content: @Composable RowScope.() -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 76.dp).clip(shape).background(Color.White).border(1.5.dp, Theme.line, shape)
-            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
-            .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        IconTile(icon)
-        content()
+private fun SettingRow(label: String, content: @Composable () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(label, style = Theme.font(13, FontWeight.Bold, Theme.muted), maxLines = 1)
+        Box(Modifier.fillMaxWidth().heightIn(min = 44.dp), contentAlignment = Alignment.CenterStart) { content() }
     }
 }
+
+@Composable
+private fun Detail(text: String) =
+    Text(text, style = Theme.font(14, FontWeight.SemiBold, Theme.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
 
 /** Mudah / Sedang / Sulit segmented picker. */
 @Composable
 private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) -> Unit) = Segmented(
+    fill = true,
     options = listOf(CongklakBot.Level.EASY, CongklakBot.Level.NORMAL, CongklakBot.Level.HARD).map { it to stringResource(levelLabel(it)) },
     current = level,
     label = stringResource(R.string.bot_level),
@@ -495,25 +490,37 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
 
 /** Segmented picker on a track: the chosen option is a raised white chip. */
 @Composable
-private fun <T> Segmented(options: List<Pair<T, String>>, current: T, label: String, onChange: (T) -> Unit) {
+private fun <T> Segmented(
+    options: List<Pair<T, String>>,
+    current: T,
+    label: String,
+    onChange: (T) -> Unit,
+    icons: List<Int>? = null,
+    fill: Boolean = false,
+) {
     Row(
-        Modifier.background(Theme.track, RoundedCornerShape(12.dp)).padding(3.dp).semantics { contentDescription = label },
+        Modifier.then(if (fill) Modifier.fillMaxWidth() else Modifier).background(Theme.track, RoundedCornerShape(12.dp)).padding(3.dp).semantics { contentDescription = label },
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        options.forEach { (value, text) ->
+        options.forEachIndexed { i, (value, text) ->
             val on = value == current
             val shape = RoundedCornerShape(10.dp)
             Box(
-                Modifier.height(38.dp)
+                Modifier.then(if (fill) Modifier.weight(1f) else Modifier).height(38.dp)
                     .then(if (on) Modifier.shadow(1.5.dp, shape) else Modifier)
                     .clip(shape)
                     .background(if (on) Color.White else Color.Transparent)
                     .clickable(role = Role.Tab) { onChange(value) }
                     .semantics { selected = on }
-                    .padding(horizontal = 14.dp),
+                    .padding(horizontal = if (fill) 6.dp else 14.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text, style = Theme.font(14, color = if (on) Theme.ink else Theme.muted), maxLines = 1)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    icons?.getOrNull(i)?.let {
+                        Icon(painterResource(it), contentDescription = null, tint = if (on) Theme.accent else Theme.muted, modifier = Modifier.size(16.dp))
+                    }
+                    Text(text, style = Theme.font(14, color = if (on) Theme.ink else Theme.muted), maxLines = 1)
+                }
             }
         }
     }
