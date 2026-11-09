@@ -51,6 +51,8 @@ class GuestSession<S, M>(
 
     var onLobby: ((List<PlayerInfo>) -> Unit)? = null
     var onState: ((S) -> Unit)? = null
+    /** The player list changed during a game without a move (connected / bot flags). */
+    var onPlayers: ((List<PlayerInfo>) -> Unit)? = null
     var onRejected: ((String) -> Unit)? = null
     var onInvalid: ((String) -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
@@ -97,7 +99,14 @@ class GuestSession<S, M>(
                 onLobby?.invoke(players)
             }
             is Message.State -> {
-                if (msg.seq <= stateSeq) return // stale/duplicate
+                if (msg.seq < stateSeq) return // stale
+                if (msg.seq == stateSeq) {
+                    // Same game state, new player list (someone dropped out, rejoined, or
+                    // was handed to the computer).
+                    players = msg.players
+                    onPlayers?.invoke(players)
+                    return
+                }
                 val decoded = try {
                     Codec.json.decodeFromJsonElement(rules.stateSerializer, msg.state)
                 } catch (e: Exception) {

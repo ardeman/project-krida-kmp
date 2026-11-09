@@ -46,6 +46,13 @@ marks a computer player; bots run only on the host, which moves for them like an
 seat, so guests just show them (e.g. as "Komputer") and never act for them. Older guests
 ignore the field.
 
+The host also sends a `state` with the same `seq` when only `players` changed during a
+game: a guest dropped out (`connected: false`), rejoined, or was handed to the computer.
+Guests take the new `players` from it and keep the game state as it is. A guest that is gone
+longer than the reconnect grace can no longer rejoin; the host may then play its seat with a
+bot (`HostSession.replaceWithBot`), so the seat turns `bot: true` and keeps its name. Older
+guests drop same-`seq` snapshots and catch up on the next move.
+
 `last` (optional, `{seat, move}`) is the move that produced this snapshot, so every device
 can animate it (e.g. congklak sowing). It is absent on the first snapshot. Animate it only
 when the snapshot's `seq` is exactly one more than the previous one; after a gap or a rejoin,
