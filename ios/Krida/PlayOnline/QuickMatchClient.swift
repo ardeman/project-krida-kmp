@@ -23,7 +23,7 @@ actor QuickMatchClient {
         isRunning = true
         
         // Connect to /v1/match/<GAME>/<PLAYER_COUNT>
-        let urlString = "\(Krida.RELAY_URL)/v1/match/\(game)/\(playerCount)"
+        let urlString = "\(Krida.shared.RELAY_URL)/v1/match/\(game)/\(playerCount)"
         guard let url = URL(string: urlString) else {
             onError("Invalid URL")
             return

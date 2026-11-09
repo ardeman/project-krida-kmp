@@ -94,14 +94,10 @@ private struct SelectPlayersCard: View {
             }
             
             HStack(spacing: 10 * s) {
-                SecondaryButton(
-                    label: "Cancel",
-                    action: onCancel
-                )
-                PrimaryButton(
-                    label: "Search",
-                    action: onStart
-                )
+                Button("Cancel", action: onCancel)
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                Button("Search", action: onStart)
+                    .buttonStyle(PrimaryButtonStyle())
             }
         }
         .padding(20 * s)
@@ -193,7 +189,8 @@ private struct WaitingForMatchCard: View {
                 .font(Theme.font(32 * s, .black))
                 .foregroundStyle(Theme.accent)
             
-            SecondaryButton(label: "Cancel", action: onCancel)
+            Button("Cancel", action: onCancel)
+                .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
         }
         .padding(20 * s)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
@@ -212,7 +209,8 @@ private struct WaitingForMatchCard: View {
             }
             .multilineTextAlignment(.center)
             
-            PrimaryButton(label: "Play Computer", action: onCancel)
+            Button("Play Computer", action: onCancel)
+                .buttonStyle(PrimaryButtonStyle())
         }
         .padding(20 * s)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
@@ -232,10 +230,12 @@ private struct WaitingForMatchCard: View {
             .multilineTextAlignment(.center)
             
             HStack(spacing: 10 * s) {
-                SecondaryButton(label: "Cancel", action: onCancel)
-                PrimaryButton(label: "Retry", action: {
+                Button("Cancel", action: onCancel)
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                Button("Retry", action: {
                     // Retry logic would go here
                 })
+                    .buttonStyle(PrimaryButtonStyle())
             }
         }
         .padding(20 * s)

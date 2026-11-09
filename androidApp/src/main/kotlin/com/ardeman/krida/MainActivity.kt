@@ -494,24 +494,25 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     if (online) {
-                        // For online play, show quick match button
-                        PrimaryButton(
+                        SecondaryButton(
                             stringResource(R.string.play_online_quick_match),
                             onClick = {
                                 playingQuickMatch = true
                                 quickMatchGame = if (ular) "ular-tangga" else "congklak"
-                            }
+                            },
+                            tint = Theme.muted,
                         )
-                    } else {
-                        PrimaryButton(
-                            stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
-                            onClick = {
-                                when {
-                                    nearby -> withBlePermissions {
-                                        room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
-                                    }
-                                    ular -> {
-                                        var nextComputer = 0
+                    }
+                    PrimaryButton(
+                        stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
+                        onClick = {
+                            when {
+                                online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
+                                nearby -> withBlePermissions {
+                                    room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
+                                }
+                                ular -> {
+                                    var nextComputer = 0
                                     val players = seats.mapIndexedNotNull { i, kind ->
                                         when (kind) {
                                             LocalSeat.EMPTY -> null

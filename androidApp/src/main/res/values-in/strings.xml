@@ -218,6 +218,7 @@
     <string name="play_online_timeout_title">Tidak ada orang</string>
     <string name="play_online_timeout_detail">Kami tidak bisa menemukan pemain lain. Main melawan komputer saja?</string>
     <string name="play_online_error_title">Ada yang salah</string>
+    <string name="button_cancel">Batal</string>
     <string name="button_search">Cari</string>
     <string name="button_retry">Coba lagi</string>
     <string name="button_play_computer">Main Komputer</string>

@@ -19,7 +19,6 @@ struct ContentView: View {
     @State private var joining = false
     /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
     @State private var joinOnline = false
-    /// Quick match for online play
     @State private var playingQuickMatch = false
     @State private var quickMatchGame: String = ""
     /// Under the join screen's code: the scanner can't open or read another QR.
@@ -317,25 +316,23 @@ struct ContentView: View {
                         detail("HP digilir; komputer melempar dadunya sendiri.")
                     }
                     if !level { Spacer(minLength: 0) }
-                    if online {
-                        Button("Pencarian Cepat") {
-                            playingQuickMatch = true
-                            quickMatchGame = ular ? "ular-tangga" : "congklak"
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                    } else if nearby {
+                    if nearby {
                         Button("Gabung") {
                             if joinOnline != online { roomCode = "" }
                             joinOnline = online
                             joining = true
                         }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                        Button(nearby ? "Buat room" : "Mulai", action: start)
-                            .buttonStyle(PrimaryButtonStyle())
-                    } else {
-                        Button(nearby ? "Buat room" : "Mulai", action: start)
-                            .buttonStyle(PrimaryButtonStyle())
                     }
+                    if online {
+                        Button("Pencarian Cepat") {
+                            playingQuickMatch = true
+                            quickMatchGame = ular ? "ular-tangga" : "congklak"
+                        }
+                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                    }
+                    Button(nearby ? "Buat room" : "Mulai", action: start)
+                        .buttonStyle(PrimaryButtonStyle())
                 }
                 .lineLimit(1)
             }

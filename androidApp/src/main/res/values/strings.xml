@@ -226,6 +226,7 @@
     <string name="play_online_timeout_title">No one around</string>
     <string name="play_online_timeout_detail">We couldn\'t find another player. Play against the computer instead?</string>
     <string name="play_online_error_title">Something went wrong</string>
+    <string name="button_cancel">Cancel</string>
     <string name="button_search">Search</string>
     <string name="button_retry">Retry</string>
     <string name="button_play_computer">Play Computer</string>
