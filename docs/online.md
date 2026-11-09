@@ -80,8 +80,10 @@ and the Pixel on different networks (one on mobile data).
    during the game. Forgotten after leaving a lobby or a finished game, when the host
    refuses, or when the room is gone. Device test open: drop and return (airplane mode, app
    to background, leave and rejoin) for guest and host, nearby and online.
-6. [ ] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
+6. [x] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
    the computer. Moved up from step 9 (2026-11-09): playing strangers comes before share links.
+   Code done on Android and iOS: PlayOnlineScreens with player count selection, QuickMatchClient
+   connecting to /v1/match/{game}/{playerCount}, timeout fallback to computer. Device tests pending.
 7. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
    `apple-app-site-association`, intent filter and associated domain; share sheet button.
 8. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not

@@ -105,9 +105,11 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
 3. **Offline BLE** — main offline mode, iOS ↔ Android, up to 4 players
 4. Online rooms — Cloudflare Workers relay over WebSocket, plan in `docs/online.md`; relay
    live, Android and iOS rooms by code, rejoin a running game from the menu (iPhone ↔ Pixel
-   check next, then quick match)
-5. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
-6. Wi‑Fi Aware — later, once device support is broad
+   check; now adding quick match for strangers)
+5. Quick match — matchmaker Durable Object pairs players online with 20s search; falls back
+   to computer play if no match (Android and iOS UI done; device tests pending)
+6. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
+7. Wi‑Fi Aware — later, once device support is broad
 
 All of them plug into the same `Transport` interface; game code never changes.
 
