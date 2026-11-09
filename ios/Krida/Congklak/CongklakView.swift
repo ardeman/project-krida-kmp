@@ -288,7 +288,7 @@ private struct CongklakBoardView: View {
         .background(Theme.backdropGradient)
         .onDisappear { model.stop() }
         .onChange(of: table.notice) { _, notice in if notice != nil { model.noticeChanged() } }
-        .sheet(isPresented: $showRules) { RulesSheet(tembakAfterStore: model.state.tembakAfterStore) }
+        .sheet(isPresented: $showRules) { CongklakRulesSheet(tembakAfterStore: model.state.tembakAfterStore) }
     }
 
     private func layout(_ size: CGSize) {
@@ -563,7 +563,7 @@ private struct TopBar: Layout {
 }
 
 /// "Cara main": the rule variant from shared/ CongklakGame, in short.
-private struct RulesSheet: View {
+struct CongklakRulesSheet: View {
     /// The tembak rule this game is played with.
     let tembakAfterStore: Bool
     @Environment(\.dismiss) private var dismiss

@@ -28,6 +28,9 @@ final class NearbyRoom: ObservableObject {
     @Published private(set) var stage: Stage
     /// This device's seat: 0 for the host, the host's choice for a guest (nil until then).
     @Published private(set) var mySeat: Int?
+    /// The host's rule options, for a guest's lobby; nil from older hosts (and the other game).
+    @Published private(set) var congklakOptions: CongklakOptions?
+    @Published private(set) var ularOptions: UlarTanggaOptions?
     /// Pawn colours to pick from in the lobby (ular tangga); 0 when the game has none.
     @Published private(set) var colorCount = 0
     /// The host can fill empty seats with computers (ular tangga only).
@@ -149,7 +152,11 @@ final class NearbyRoom: ObservableObject {
         let session = GuestSession<S, M>(rules: rules, join: join)
         session.onLobby = { [weak self, weak session] list in
             guard let self else { return }
-            if let session { self.maxPlayers = Int(session.lobbyCapacity) }
+            if let session {
+                self.maxPlayers = Int(session.lobbyCapacity)
+                self.congklakOptions = self.game == CongklakGame.shared.id ? LobbyOptions.shared.congklak(options: session.lobbyOptions) : nil
+                self.ularOptions = self.game == UlarTanggaGame.shared.id ? LobbyOptions.shared.ularTangga(options: session.lobbyOptions) : nil
+            }
             self.players = list
             self.mySeat = session?.seat.map { $0.intValue }
             self.stage = .lobby

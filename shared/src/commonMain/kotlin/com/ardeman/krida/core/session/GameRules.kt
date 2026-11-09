@@ -2,6 +2,7 @@ package com.ardeman.krida.core.session
 
 import kotlin.random.Random
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.JsonElement
 
 /**
  * Pure rules for one game. No I/O, no rendering, no clocks: the same code runs on an
@@ -41,4 +42,13 @@ interface SeatColorRules<S> {
     val colorCount: Int
 
     fun initialState(players: Int, colors: List<Int>, random: Random): S
+}
+
+/**
+ * Games whose host picks rule options before the game. [HostSession] sends [lobbyOptions] in
+ * every `lobby` message, so guests can show the rules while they wait; they read them with
+ * `LobbyOptions`.
+ */
+interface LobbyOptionRules {
+    val lobbyOptions: JsonElement
 }

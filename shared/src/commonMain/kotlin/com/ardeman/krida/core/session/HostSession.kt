@@ -275,7 +275,7 @@ class HostSession<S, M>(
         val s = seats.firstOrNull { it.peer == peer && it.connected } ?: return
         if (!changeColor(s, pick.color)) {
             // Refused: resend the lobby so the guest's picker shows the colour it still has.
-            if (!started) send(peer, Message.Lobby(players, you = seats.indexOf(s), capacity = capacity()))
+            if (!started) send(peer, Message.Lobby(players, you = seats.indexOf(s), capacity = capacity(), options = options()))
         }
     }
 
@@ -347,7 +347,7 @@ class HostSession<S, M>(
         val list = players
         seats.forEachIndexed { i, s ->
             val peer = s.peer
-            if (peer != null && s.connected) send(peer, Message.Lobby(list, you = i, capacity = capacity()))
+            if (peer != null && s.connected) send(peer, Message.Lobby(list, you = i, capacity = capacity(), options = options()))
         }
         onPlayersChanged?.invoke(list)
     }
@@ -360,6 +360,8 @@ class HostSession<S, M>(
     private fun remotePeers(): List<String> = seats.filter { it.connected }.mapNotNull { it.peer }
 
     private fun send(peer: String, message: Message) = transport.send(peer, Codec.encode(message))
+
+    private fun options() = (rules as? LobbyOptionRules)?.lobbyOptions
 
     private fun capacity(): Int = minOf(rules.maxPlayers, Krida.MAX_PLAYERS, maxSeats.coerceAtLeast(rules.minPlayers))
 

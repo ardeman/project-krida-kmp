@@ -92,6 +92,7 @@ struct RoomLobby: View {
     @ObservedObject var room: NearbyRoom
     let onLeave: () -> Void
     @Environment(\.uiScale) private var s
+    @State private var showRules = false
 
     var body: some View {
         let hostName = room.players.first { $0.seat == 0 }?.name ?? ""
@@ -179,6 +180,19 @@ struct RoomLobby: View {
             .font(Theme.font(14 * s, .bold))
             .foregroundStyle(Theme.muted)
             .multilineTextAlignment(.center)
+            // "Cara main" with the host's options, so a guest knows the rules before the start.
+            // Older hosts send none; the game's own Rules button has them then.
+            if room.congklakOptions != nil || room.ularOptions != nil {
+                Button { showRules = true } label: { Text("Cara main") }
+                    .buttonStyle(SecondaryButtonStyle())
+            }
+        }
+        .sheet(isPresented: $showRules) {
+            if let options = room.congklakOptions {
+                CongklakRulesSheet(tembakAfterStore: options.tembakAfterStore)
+            } else if let options = room.ularOptions {
+                UlarTanggaRulesSheet(options: options)
+            }
         }
     }
 

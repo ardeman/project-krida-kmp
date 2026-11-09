@@ -30,7 +30,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?` |
 | `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
-| `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves), `capacity?` (selected lobby size; absent = game maximum) |
+| `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves), `capacity?` (selected lobby size; absent = game maximum), `options?` (the host's rule options; see below) |
 | `color` | guest → host | `color` (pawn colour wanted, before the game starts) |
 | `intent` | guest → host | `seq`, `move` |
 | `state` | host → all | `seq`, `turn`, `finished`, `state`, `players`, `last?` |
@@ -48,6 +48,13 @@ marks a computer player; bots run only on the host, which moves for them like an
 seat, so guests just show them (e.g. as "Komputer") and never act for them. Older guests
 ignore the field. The host may add bots to the lobby before the game starts and remove
 them again; the seats after a removed one move up, as when a guest leaves.
+
+`options` (optional) in `lobby` is the rule options the host chose, as game-specific JSON,
+so guests can show the rules before the game starts: congklak `{ "tembakAfterStore": true }`,
+ular tangga the `UlarTanggaOptions` fields (`bounceBack`, `sixToEnter`, `firstFinishEnds`,
+`sixRollsAgain`). Fields at their default may be left out. The game's `state` still carries
+the options the game is played with. Older hosts leave it out (guests then show no rules in
+the lobby); older guests ignore it.
 
 `color` (optional) is the seat's pawn colour in games where players pick one (ular tangga:
 `0` red, `1` blue, `2` green, `3` yellow); it is absent in other games. Every new seat,

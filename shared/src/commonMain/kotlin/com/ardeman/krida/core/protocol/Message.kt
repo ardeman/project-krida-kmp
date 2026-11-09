@@ -61,10 +61,19 @@ sealed class Message {
     @SerialName("reject")
     data class Reject(val reason: String) : Message()
 
-    /** host -> each guest: player list before the game starts. [you] is the receiver's seat. */
+    /**
+     * host -> each guest: player list before the game starts. [you] is the receiver's seat.
+     * [options] is the game's rule options the host chose (game-specific JSON, see
+     * `LobbyOptionRules`), so guests can read the rules before the first state. Optional.
+     */
     @Serializable
     @SerialName("lobby")
-    data class Lobby(val players: List<PlayerInfo>, val you: Int, val capacity: Int? = null) : Message()
+    data class Lobby(
+        val players: List<PlayerInfo>,
+        val you: Int,
+        val capacity: Int? = null,
+        val options: JsonElement? = null,
+    ) : Message()
 
     /**
      * guest -> host, before the game starts: "I want this pawn colour". The host takes it if

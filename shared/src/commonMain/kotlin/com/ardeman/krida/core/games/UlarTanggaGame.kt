@@ -1,7 +1,9 @@
 package com.ardeman.krida.core.games
 
 import com.ardeman.krida.core.session.Bot
+import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.session.GameRules
+import com.ardeman.krida.core.session.LobbyOptionRules
 import com.ardeman.krida.core.session.SeatColorRules
 import kotlin.random.Random
 import kotlinx.serialization.KSerializer
@@ -343,12 +345,14 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove>, SeatColorRul
  * Ular tangga with the choices made before the game: [UlarTanggaGame] in every respect,
  * except that new games (and restarts) start with [options]. As [SeatColorRules] it takes the
  * pawn colours the players picked in the host's `HostSession` lobby.
- * Give this to the host's `HostSession`; guests read both from the state, so they need nothing.
+ * Give this to the host's `HostSession`; guests read both from the state (and [options] from the lobby).
  */
 class UlarTanggaRules(val options: UlarTanggaOptions) :
-    GameRules<UlarTanggaState, UlarTanggaMove> by UlarTanggaGame, SeatColorRules<UlarTanggaState> {
+    GameRules<UlarTanggaState, UlarTanggaMove> by UlarTanggaGame, SeatColorRules<UlarTanggaState>, LobbyOptionRules {
 
     override val colorCount = UlarTanggaGame.COLORS
+
+    override val lobbyOptions = Codec.json.encodeToJsonElement(UlarTanggaOptions.serializer(), options)
 
     override fun initialState(players: Int, random: Random) =
         UlarTanggaGame.initialState(players, options, emptyList(), random)

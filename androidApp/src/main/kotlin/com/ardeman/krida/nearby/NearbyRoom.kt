@@ -22,6 +22,7 @@ import com.ardeman.krida.core.protocol.RejectReason
 import com.ardeman.krida.core.session.GameRules
 import com.ardeman.krida.core.session.GuestJoin
 import com.ardeman.krida.core.session.GuestSession
+import kotlinx.serialization.json.JsonElement
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.core.session.SavedRoom
@@ -69,6 +70,10 @@ class NearbyRoom private constructor(
 
     /** This device's seat: 0 for the host, the host's choice for a guest (null until then). */
     var mySeat by mutableStateOf<Int?>(if (isHost) 0 else null)
+        private set
+
+    /** The host's rule options, for a guest's lobby (read with `LobbyOptions`); null from older hosts. */
+    var lobbyOptions by mutableStateOf<JsonElement?>(null)
         private set
 
     /** Pawn colours to pick from in the lobby (ular tangga); 0 when the game has none. */
@@ -195,6 +200,7 @@ class NearbyRoom private constructor(
         val session = GuestSession(rules, join)
         session.onLobby = { list ->
             maxPlayers = session.lobbyCapacity
+            lobbyOptions = session.lobbyOptions
             players = list
             mySeat = session.seat
             stage = Stage.LOBBY

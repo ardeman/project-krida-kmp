@@ -34,7 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -63,7 +65,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ardeman.krida.R
+import com.ardeman.krida.congklak.CongklakRulesDialog
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.LobbyOptions
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.PlayerInfo
@@ -76,6 +80,7 @@ import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.Theme
 import com.ardeman.krida.ui.gameInsets
+import com.ardeman.krida.ulartangga.UlarTanggaRulesDialog
 import com.ardeman.krida.ulartangga.pawnColor
 
 /*
@@ -240,6 +245,22 @@ private fun ColumnScope.JoinedNote(room: NearbyRoom, names: List<String>) {
         style = Theme.font(14, FontWeight.Bold, Theme.muted),
         textAlign = TextAlign.Center,
     )
+    LobbyRules(room)
+}
+
+/** "Cara main" with the host's options, so a guest knows the rules before the game starts. */
+@Composable
+private fun LobbyRules(room: NearbyRoom) {
+    var show by remember { mutableStateOf(false) }
+    val options = room.lobbyOptions
+    val congklak = if (room.game == CongklakGame.id) LobbyOptions.congklak(options) else null
+    val ular = if (room.game == UlarTanggaGame.id) LobbyOptions.ularTangga(options) else null
+    if (congklak == null && ular == null) return // older host: the game's Rules button has them
+    SecondaryButton(stringResource(R.string.congklak_rules_title), onClick = { show = true })
+    if (show) {
+        congklak?.let { CongklakRulesDialog(it.tembakAfterStore) { show = false } }
+        ular?.let { UlarTanggaRulesDialog(it) { show = false } }
+    }
 }
 
 @Composable

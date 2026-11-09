@@ -7,6 +7,7 @@ import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.core.transport.Transport
 import com.ardeman.krida.core.transport.TransportListener
+import kotlinx.serialization.json.JsonElement
 
 /**
  * A remote player's view of a room. Sends intents, renders whatever the host says.
@@ -29,6 +30,9 @@ class GuestSession<S, M>(
         private set
     /** Optional host-selected lobby size; older hosts use the game maximum. */
     var lobbyCapacity: Int = rules.maxPlayers
+        private set
+    /** The host's rule options from the lobby (read them with `LobbyOptions`); null from older hosts. */
+    var lobbyOptions: JsonElement? = null
         private set
 
     var players: List<PlayerInfo> = emptyList()
@@ -129,6 +133,7 @@ class GuestSession<S, M>(
             is Message.Lobby -> {
                 lobbyCapacity = (msg.capacity ?: rules.maxPlayers).coerceIn(rules.minPlayers, rules.maxPlayers)
                 seat = msg.you
+                lobbyOptions = msg.options
                 players = msg.players
                 onLobby?.invoke(players)
             }

@@ -1,6 +1,8 @@
 package com.ardeman.krida.core.games
 
+import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.session.GameRules
+import com.ardeman.krida.core.session.LobbyOptionRules
 import kotlin.random.Random
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -161,6 +163,13 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
     }
 }
 
+/** The congklak rule options guests see in the lobby (see `LobbyOptions`). */
+@Serializable
+data class CongklakOptions(val tembakAfterStore: Boolean = false) {
+    /** For Swift, which does not see Kotlin default arguments. */
+    constructor() : this(false)
+}
+
 /** Who moves first in a new game: [ME] is seat 0 (this device's player, or the host). */
 enum class CongklakStarter { ME, OPPONENT, RANDOM }
 
@@ -168,14 +177,16 @@ enum class CongklakStarter { ME, OPPONENT, RANDOM }
  * Congklak with options chosen before the game: [CongklakGame] in every respect, except
  * that new games (and restarts) start with [tembakAfterStore] and the [starter]'s turn
  * ([CongklakStarter.RANDOM] draws from the host's `Random` for each game). Give this to the
- * host's `HostSession`; guests read the rule and the turn from the state, so they need nothing.
+ * host's `HostSession`; guests read the rule and the turn from the state (and the rule from the lobby).
  */
 class CongklakRules(
     val tembakAfterStore: Boolean,
     val starter: CongklakStarter,
-) : GameRules<CongklakState, CongklakMove> by CongklakGame {
+) : GameRules<CongklakState, CongklakMove> by CongklakGame, LobbyOptionRules {
     /** Seat 0 moves first, as before the starter option. */
     constructor(tembakAfterStore: Boolean) : this(tembakAfterStore, CongklakStarter.ME)
+
+    override val lobbyOptions = Codec.json.encodeToJsonElement(CongklakOptions.serializer(), CongklakOptions(tembakAfterStore))
 
     override fun initialState(players: Int, random: Random): CongklakState {
         val turn = when (starter) {

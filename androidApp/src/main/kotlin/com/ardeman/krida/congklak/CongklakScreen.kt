@@ -379,7 +379,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         }
     }
 
-    if (showRules) RulesDialog(state.tembakAfterStore) { showRules = false }
+    if (showRules) CongklakRulesDialog(state.tembakAfterStore) { showRules = false }
 }
 
 /** Who sits where, and how each seat is named on this device. */
@@ -560,7 +560,7 @@ private fun announce(before: CongklakState, after: CongklakState, me: Int?) {
 
 /** "Cara main": the rule variant from shared/ CongklakGame, in short, with this game's tembak rule. */
 @Composable
-private fun RulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
+internal fun CongklakRulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
     val all = stringArrayResource(R.array.congklak_rules)
     val anytime = stringResource(R.string.congklak_rule_tembak_anytime)
     // Items 4 and 5 are the "Lewat lumbung" tembak; "Bebas" has one simpler line instead.

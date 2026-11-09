@@ -364,7 +364,7 @@ private struct UlarTanggaBoardView: View {
         }
         .onChange(of: model.animating) { _, _ in model.updateReady() }
         .onChange(of: model.offHold) { _, _ in model.updateReady() }
-        .sheet(isPresented: $showRules) { RulesSheet(options: model.state.options) }
+        .sheet(isPresented: $showRules) { UlarTanggaRulesSheet(options: model.state.options) }
     }
 
     private static let hudKeys = ["back", "players", "buttons", "die", "status"]
@@ -659,7 +659,7 @@ private struct FrameReader: ViewModifier {
 }
 
 /// "Cara main" with this game's options.
-private struct RulesSheet: View {
+struct UlarTanggaRulesSheet: View {
     let options: UlarTanggaOptions
     @Environment(\.dismiss) private var dismiss
 

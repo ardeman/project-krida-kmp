@@ -1,5 +1,9 @@
 package com.ardeman.krida.core
 
+import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.CongklakOptions
+import com.ardeman.krida.core.games.CongklakRules
+import com.ardeman.krida.core.games.LobbyOptions
 import com.ardeman.krida.core.games.UlarTanggaBot
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.UlarTanggaMove
@@ -81,6 +85,30 @@ class UlarTanggaSessionTest {
             limited.start()
             assertEquals(2, guest.state!!.positions.size)
         }
+    }
+
+    @Test
+    fun guestsSeeHostRuleOptionsInLobby() {
+        val options = UlarTanggaOptions(bounceBack = true, sixToEnter = true, firstFinishEnds = false, sixRollsAgain = false)
+        val network = LoopbackNetwork()
+        HostSession(UlarTanggaRules(options), network.host).addLocalPlayer("Host", Platform.ANDROID)
+        val guest = GuestSession(UlarTanggaGame, network.guest("guest"), "Guest", Platform.IOS, null)
+        network.connect("guest")
+        assertEquals(options, LobbyOptions.ularTangga(guest.lobbyOptions))
+        assertNull(LobbyOptions.congklak(null))
+
+        val congklakNetwork = LoopbackNetwork()
+        HostSession(CongklakRules(true), congklakNetwork.host).addLocalPlayer("Host", Platform.ANDROID)
+        val congklakGuest = GuestSession(CongklakGame, congklakNetwork.guest("guest"), "Guest", Platform.IOS, null)
+        congklakNetwork.connect("guest")
+        assertEquals(CongklakOptions(true), LobbyOptions.congklak(congklakGuest.lobbyOptions))
+
+        // Hosts without options (and older hosts) send none.
+        val plainNetwork = LoopbackNetwork()
+        HostSession(UlarTanggaGame, plainNetwork.host).addLocalPlayer("Host", Platform.ANDROID)
+        val plainGuest = GuestSession(UlarTanggaGame, plainNetwork.guest("guest"), "Guest", Platform.IOS, null)
+        plainNetwork.connect("guest")
+        assertNull(plainGuest.lobbyOptions)
     }
 
     @Test

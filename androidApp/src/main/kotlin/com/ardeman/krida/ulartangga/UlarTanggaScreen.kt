@@ -484,7 +484,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         }
     }
 
-    if (showRules) RulesDialog(state.options) { showRules = false }
+    if (showRules) UlarTanggaRulesDialog(state.options) { showRules = false }
 }
 
 /** [hud] key of the space the board may use. */
@@ -660,7 +660,7 @@ private fun announce(table: UlarTanggaTable, after: UlarTanggaState, reached: Bo
 
 /** "Cara main" with this game's options. */
 @Composable
-private fun RulesDialog(options: UlarTanggaOptions, onDismiss: () -> Unit) {
+internal fun UlarTanggaRulesDialog(options: UlarTanggaOptions, onDismiss: () -> Unit) {
     val rules = listOfNotNull(
         stringResource(R.string.ular_rule_dice_off),
         stringResource(if (options.sixToEnter) R.string.ular_rule_six_to_enter else R.string.ular_rule_start),
