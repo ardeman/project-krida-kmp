@@ -209,4 +209,16 @@
     <string name="rejoin_detail">Room %1$s · kursimu masih ada</string>
     <string name="rejoin_button">Gabung lagi</string>
     <string name="rejoin_forget">Lupakan</string>
+    <!-- Quick match screen (Play online) -->
+    <string name="play_online_title">Main Online</string>
+    <string name="play_online_description">Temukan pemain dan main lewat internet</string>
+    <string name="play_online_quick_match">Pencarian Cepat</string>
+    <string name="play_online_searching_title">Mencari pemain…</string>
+    <string name="play_online_searching_detail">Menunggu %1$d pemain</string>
+    <string name="play_online_timeout_title">Tidak ada orang</string>
+    <string name="play_online_timeout_detail">Kami tidak bisa menemukan pemain lain. Main melawan komputer saja?</string>
+    <string name="play_online_error_title">Ada yang salah</string>
+    <string name="button_search">Cari</string>
+    <string name="button_retry">Coba lagi</string>
+    <string name="button_play_computer">Main Komputer</string>
 </resources>

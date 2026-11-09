@@ -217,4 +217,16 @@
     <string name="rejoin_detail">Room %1$s · your seat is waiting</string>
     <string name="rejoin_button">Rejoin</string>
     <string name="rejoin_forget">Forget</string>
+    <!-- Quick match screen (Play online) -->
+    <string name="play_online_title">Play Online</string>
+    <string name="play_online_description">Find a player and play through the internet</string>
+    <string name="play_online_quick_match">Quick Match</string>
+    <string name="play_online_searching_title">Finding a player…</string>
+    <string name="play_online_searching_detail">Waiting for %1$d players</string>
+    <string name="play_online_timeout_title">No one around</string>
+    <string name="play_online_timeout_detail">We couldn\'t find another player. Play against the computer instead?</string>
+    <string name="play_online_error_title">Something went wrong</string>
+    <string name="button_search">Search</string>
+    <string name="button_retry">Retry</string>
+    <string name="button_play_computer">Play Computer</string>
 </resources>

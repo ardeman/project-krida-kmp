@@ -152,12 +152,12 @@ final class NearbyRoom: ObservableObject {
         if !failed { stage = .lost }
     }
 
-    static func host(game: Game, online: Bool = false) -> NearbyRoom {
-        let code = online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate()
-        let relay = online ? OnlineHostTransport(code: code) : nil
-        let ble = online ? nil : BleHostTransport(roomCode: code)
+    static func host(game: Game, online: Bool = false, code: String? = nil) -> NearbyRoom {
+        let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
+        let relay = online ? OnlineHostTransport(code: roomCode) : nil
+        let ble = online ? nil : BleHostTransport(roomCode: roomCode)
         let transport: Transport = (relay as Transport?) ?? ble!
-        let room = NearbyRoom(code: code, isHost: true, online: online, transport: transport)
+        let room = NearbyRoom(code: roomCode, isHost: true, online: online, transport: transport)
         room.hostGame = game
         switch game {
         case .congklak:

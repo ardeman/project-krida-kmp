@@ -19,6 +19,9 @@ struct ContentView: View {
     @State private var joining = false
     /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
     @State private var joinOnline = false
+    /// Quick match for online play
+    @State private var playingQuickMatch = false
+    @State private var quickMatchGame: String = ""
     /// Under the join screen's code: the scanner can't open or read another QR.
     @State private var joinError: LocalizedStringKey?
     @State private var scanning = false
@@ -55,6 +58,21 @@ struct ContentView: View {
                     onRetry: { self.room = room.retry() }
                 )
                 .id(ObjectIdentifier(room))
+            } else if playingQuickMatch {
+                PlayOnlineView(
+                    game: quickMatchGame,
+                    onCancel: { playingQuickMatch = false; quickMatchGame = "" },
+                    onHost: { code, game in
+                        room = NearbyRoom.host(game: game == "ular-tangga" ? .ularTangga : .congklak, online: true, code: code)
+                        playingQuickMatch = false
+                    },
+                    onJoin: { code, game in
+                        roomCode = code
+                        joinOnline = true
+                        joining = true
+                        playingQuickMatch = false
+                    }
+                )
             } else if joining {
                 JoinScreen(code: $roomCode, online: joinOnline, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
             } else {
@@ -299,16 +317,25 @@ struct ContentView: View {
                         detail("HP digilir; komputer melempar dadunya sendiri.")
                     }
                     if !level { Spacer(minLength: 0) }
-                    if nearby {
+                    if online {
+                        Button("Pencarian Cepat") {
+                            playingQuickMatch = true
+                            quickMatchGame = ular ? "ular-tangga" : "congklak"
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                    } else if nearby {
                         Button("Gabung") {
                             if joinOnline != online { roomCode = "" }
                             joinOnline = online
                             joining = true
                         }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                        Button(nearby ? "Buat room" : "Mulai", action: start)
+                            .buttonStyle(PrimaryButtonStyle())
+                    } else {
+                        Button(nearby ? "Buat room" : "Mulai", action: start)
+                            .buttonStyle(PrimaryButtonStyle())
                     }
-                    Button(nearby ? "Buat room" : "Mulai", action: start)
-                        .buttonStyle(PrimaryButtonStyle())
                 }
                 .lineLimit(1)
             }

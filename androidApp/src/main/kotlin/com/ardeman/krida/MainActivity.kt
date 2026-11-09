@@ -120,6 +120,7 @@ import com.ardeman.krida.nearby.LastRoom
 import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.nearby.RoomLobby
 import com.ardeman.krida.nearby.gameTitle
+import com.ardeman.krida.playonline.PlayOnlineScreen
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -144,6 +145,8 @@ class MainActivity : ComponentActivity() {
     private var joining by mutableStateOf(false)
     /** The join screen takes a 6-letter online code instead of a 4-letter nearby one. */
     private var joinOnline by mutableStateOf(false)
+    private var playingQuickMatch by mutableStateOf(false)
+    private var quickMatchGame by mutableStateOf("")
     private var room by mutableStateOf<NearbyRoom?>(null)
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
@@ -218,6 +221,20 @@ class MainActivity : ComponentActivity() {
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null; joining = false })
                     r != null -> Lobby(r)
+                    playingQuickMatch -> PlayOnlineScreen(
+                        game = quickMatchGame,
+                        onCancel = { playingQuickMatch = false; quickMatchGame = "" },
+                        onHost = { code, game ->
+                            room = NearbyRoom.host(this@MainActivity, myName, if (game == "ular-tangga") NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true, code = code)
+                            playingQuickMatch = false
+                        },
+                        onJoin = { code, game ->
+                            roomCode = code
+                            joinOnline = true
+                            joining = true
+                            playingQuickMatch = false
+                        }
+                    )
                     joining -> JoinScreen(
                         code = roomCode,
                         onCode = { roomCode = it; joinError = null },
@@ -476,16 +493,25 @@ class MainActivity : ComponentActivity() {
                             tint = Theme.muted,
                         )
                     }
-                    PrimaryButton(
-                        stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
-                        onClick = {
-                            when {
-                                online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
-                                nearby -> withBlePermissions {
-                                    room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
-                                }
-                                ular -> {
-                                    var nextComputer = 0
+                    if (online) {
+                        // For online play, show quick match button
+                        PrimaryButton(
+                            stringResource(R.string.play_online_quick_match),
+                            onClick = {
+                                playingQuickMatch = true
+                                quickMatchGame = if (ular) "ular-tangga" else "congklak"
+                            }
+                        )
+                    } else {
+                        PrimaryButton(
+                            stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
+                            onClick = {
+                                when {
+                                    nearby -> withBlePermissions {
+                                        room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
+                                    }
+                                    ular -> {
+                                        var nextComputer = 0
                                     val players = seats.mapIndexedNotNull { i, kind ->
                                         when (kind) {
                                             LocalSeat.EMPTY -> null

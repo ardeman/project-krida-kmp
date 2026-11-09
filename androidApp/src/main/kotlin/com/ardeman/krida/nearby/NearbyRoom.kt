@@ -207,10 +207,10 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false): NearbyRoom {
-            val code = if (online) RoomCode.generateOnline() else RoomCode.generate()
-            val transport: Transport = if (online) OnlineHostTransport(code) else BleHostTransport(context, code)
-            val room = NearbyRoom(code, isHost = true, online = online, transport = transport)
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null): NearbyRoom {
+            val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
+            val transport: Transport = if (online) OnlineHostTransport(roomCode) else BleHostTransport(context, roomCode)
+            val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport)
             room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
