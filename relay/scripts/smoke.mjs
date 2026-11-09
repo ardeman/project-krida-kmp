@@ -36,8 +36,8 @@ function open(query) {
   return ws;
 }
 
-function timeout(p, what) {
-  return Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`timed out: ${what}`)), 10000))]);
+function timeout(p, what, ms = 10000) {
+  return Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`timed out: ${what}`)), ms))]);
 }
 
 function expect(got, want, label) {
@@ -90,7 +90,8 @@ back.close(1000);
 // Local workerd never finishes a close the relay starts outside a message handler (the
 // grace alarm's 4010 doesn't arrive locally either), so check this one live only.
 if (!/localhost|127\.0\.0\.1/.test(base)) {
-  expect({ code: await timeout(b.closed, "close") }, { code: 4010 }, "host leaving on purpose ends the room (4010)");
+  // Node's client reports a close the relay starts about 10 s late.
+  expect({ code: await timeout(b.closed, "close", 25000) }, { code: 4010 }, "host leaving on purpose ends the room (4010)");
 } else b.close();
 console.log("all ok");
 process.exit(0);

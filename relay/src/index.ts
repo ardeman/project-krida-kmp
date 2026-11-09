@@ -180,8 +180,7 @@ export class Room implements DurableObject {
     } else if (this.hosts(ws).length === 0) {
       // Not a replaced socket: the host is really gone. Guests wait; the alarm ends the room.
       for (const guest of this.guests(ws)) sendQuietly(guest, frame(KIND_DISCONNECTED, HOST_PEER));
-      // A host leaving on purpose ends the room now. Through the alarm, not here: a close
-      // started inside this handler never reaches the guest.
+      // A host leaving on purpose (1000) ends the room now, through the same alarm.
       await this.ctx.storage.setAlarm(Date.now() + (onPurpose ? 0 : HOST_GRACE_MS));
     }
   }
