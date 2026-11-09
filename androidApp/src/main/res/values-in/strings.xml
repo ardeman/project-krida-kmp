@@ -203,7 +203,10 @@
     <string name="online_lost_detail">Sambungan internet ke host hilang.</string>
     <string name="online_offline_title">Krida online tidak terjangkau</string>
     <string name="online_offline_detail">Cek koneksi internet HP ini, lalu coba lagi.</string>
-    <string name="online_waiting_for">Menunggu %1$s… %2$d</string>
+    <string name="online_waiting_for">Menunggu %1$s…</string>
+    <plurals name="seconds_left">
+        <item quantity="other">%d detik lagi</item>
+    </plurals>
     <!-- A running game this device left as a guest (menu card); %1$s is the game's name or the room code. -->
     <string name="rejoin_title">%1$s masih berjalan</string>
     <string name="rejoin_detail">Room %1$s · kursimu masih ada</string>
@@ -224,11 +227,17 @@
     <string name="button_play_computer">Main Komputer</string>
     <string name="match_two_players">2 pemain · kamu dan lawan</string>
     <string name="match_fallback_hint">Setelah 20 detik, sepakati main dengan pemain yang ketemu atau tambah komputer.</string>
-    <string name="match_search_detail">%1$d dari %2$d pemain ketemu · tersisa %3$d dtk</string>
+    <string name="match_search_detail">%1$d dari %2$d pemain ketemu</string>
     <string name="match_offer_title">Masih menunggu pemain</string>
-    <string name="match_offer_detail">%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nSemua pemain harus sepakat cara mulai.</string>
+    <string name="match_offer_detail">%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nPilih cara mulai. Pilihan dengan suara terbanyak menang.</string>
     <string name="match_play_bots">Main dengan komputer</string>
-    <string name="match_agreed">Setuju · %1$d/%2$d</string>
+    <string name="match_restart_no_votes">Tidak ada yang memilih. Mencari lagi…</string>
+    <string name="match_restart_tie">Suara seimbang. Mencari lagi…</string>
+    <string name="match_votes">%1$d/%2$d suara</string>
+    <string name="match_your_vote">Pilihanmu · %1$d/%2$d</string>
+    <plurals name="match_undecided">
+        <item quantity="other">%d pemain masih memilih</item>
+    </plurals>
     <string name="match_keep_searching">Lanjut mencari</string>
     <string name="match_error_title">Tidak bisa terhubung</string>
     <string name="match_error_detail">Cek koneksi internet kamu, lalu coba lagi.</string>

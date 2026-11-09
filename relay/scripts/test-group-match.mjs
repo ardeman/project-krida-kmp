@@ -229,3 +229,84 @@ test('solo choice is ignored when another human joins', async t => {
   assert.equal(a.last.type, 'queue');
   assert.equal(a.last.humans, 2);
 });
+
+test('vote timer: more votes wins when time runs out', async t => {
+  const f = setup(t, 4), a = await f.add(), b = await f.add(), c = await f.add();
+  await f.advance(20_000);
+  assert.equal(a.last.offer, true);
+  assert.equal(a.last.voteRemaining, 15);
+  await f.action(a, 'accept_bots');
+  await f.action(b, 'accept_bots');
+  assert.equal(a.last.type, 'queue');
+  await f.advance(15_000);
+  const host = [a, b, c].find(ws => ws.last.type === 'prepare_host');
+  assert.ok(host);
+  assert.equal(host.last.seats, 4);
+  assert.equal(host.last.bots, 1);
+});
+
+test('vote timer: humans-only majority starts with just the humans', async t => {
+  const f = setup(t, 4), a = await f.add(), b = await f.add(), c = await f.add();
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  await f.advance(15_000);
+  const host = [a, b, c].find(ws => ws.last.type === 'prepare_host');
+  assert.ok(host);
+  assert.equal(host.last.seats, 3);
+  assert.equal(host.last.bots, 0);
+});
+
+test('vote timer: a tie or no votes keeps searching', async t => {
+  const f = setup(t, 4), a = await f.add(), b = await f.add();
+  await f.advance(20_000);
+  await f.action(a, 'accept_bots');
+  await f.action(b, 'accept_humans');
+  await f.advance(15_000);
+  assert.equal(a.last.type, 'queue');
+  assert.equal(a.last.offer, false);
+  assert.equal(a.last.agreed, 0);
+  assert.equal(a.last.voteRemaining, undefined);
+});
+
+test('vote timer restarts on membership change; lone players have none', async t => {
+  const f = setup(t, 4), a = await f.add();
+  await f.advance(20_000);
+  assert.equal(a.last.offer, true);
+  assert.equal(a.last.voteRemaining, undefined);
+  const b = await f.add();
+  assert.equal(b.last.voteRemaining, 15);
+  await f.advance(10_000);
+  await f.action(a, 'accept_bots');
+  assert.equal(a.last.voteRemaining, 5);
+  const c = await f.add();
+  assert.equal(c.last.voteRemaining, 15);
+  assert.equal(a.last.agreed, 0);
+});
+
+test('vote ends early once everyone has voted and one choice leads', async t => {
+  const f = setup(t, 4), a = await f.add(), b = await f.add(), c = await f.add();
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  await f.action(b, 'accept_bots');
+  assert.equal(a.last.type, 'queue');
+  await f.action(c, 'accept_humans');
+  const host = [a, b, c].find(ws => ws.last.type === 'prepare_host');
+  assert.ok(host);
+  assert.equal(host.last.seats, 3);
+});
+
+test('a full tie waits for the timer; nobody voting says why the search restarted', async t => {
+  const f = setup(t, 4), a = await f.add(), b = await f.add();
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  await f.action(b, 'accept_bots');
+  assert.equal(a.last.offer, true);
+  await f.advance(15_000);
+  assert.equal(a.last.restart, 'tie');
+  await f.advance(20_000);
+  assert.equal(a.last.offer, true);
+  await f.advance(15_000);
+  assert.equal(a.last.offer, false);
+  assert.equal(a.last.restart, 'no_votes');
+  assert.equal(b.last.restart, 'no_votes');
+});

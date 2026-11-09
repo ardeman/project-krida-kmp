@@ -92,6 +92,7 @@ in: RoundedRectangle(cornerRadius: 20 * s))` + `.overlay(... .stroke(Theme.line,
 | "Online · lewat internet" / "Teman dekat · Bluetooth" | `subtitle(online)` | `placeLine(online)` |
 | Seat tiles, colour swatches, dashed empty seat | `NearbyScreens.kt` | `NearbyScreens.swift` |
 | Loading | `LoadingIndicator` / `LoadingScreen` (`ui/Loading.kt`) | `LoadingIndicator` / `LoadingScreen` (`Support/Loading.swift`) |
+| Countdown | `CountdownRing` / `CountdownNotice` (`ui/CountdownRing.kt`) | `CountdownRing` / `CountdownNotice` (`Support/CountdownRing.swift`) |
 | Tap sound | built into the buttons | `.tapSound(...)` (built into the button styles) |
 
 `NearbyFrame` is internal on Android; iOS should expose its existing frame when adapting
@@ -117,7 +118,8 @@ spinners.
 **Status screen** (searching, connecting, not found, timed out, error): one centred card,
 width 480, inside `NearbyFrame`, in this order:
 
-1. The shared 64 cube/K `LoadingIndicator` while waiting, using the startup animation.
+1. The shared 64 cube/K `LoadingIndicator` while waiting, using the startup animation; a
+   `CountdownRing` instead whenever the wait has a known length (every timer uses it).
    After a failure, a 64 circle with `error` at 14 % and the error icon.
 2. Title, 22 Black.
 3. Detail, 14 Bold muted, from a string resource, never a raw error or exception text.

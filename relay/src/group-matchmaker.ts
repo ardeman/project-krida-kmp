@@ -12,7 +12,12 @@ type Ticket = {
   seats?: number;
   host?: boolean;
   discover?: boolean;
+  /** End of the vote once the offer is open to two or more humans; absent means no limit. */
+  voteDeadline?: number;
 };
+
+/** How long a group of humans has to vote once the offer opens. */
+const VOTE_MS = 15_000;
 
 export class GroupMatchmaker implements DurableObject {
   constructor(private ctx: DurableObjectState, private env?: Env) {}
@@ -90,7 +95,7 @@ export class GroupMatchmaker implements DurableObject {
         ws.close(1000, "matched");
       } else if (action === "keep_searching") {
         for (const member of this.group(current.group)) {
-          member.serializeAttachment({ ...this.ticket(member), phase: "searching", consent: false, humanConsent: false, revision: current.revision + 1, deadline: Date.now() + 20_000 });
+          member.serializeAttachment({ ...this.ticket(member), phase: "searching", consent: false, humanConsent: false, voteDeadline: undefined, revision: current.revision + 1, deadline: Date.now() + 20_000 });
         }
         await this.update(current.group);
       }
@@ -119,9 +124,11 @@ export class GroupMatchmaker implements DurableObject {
   private resetConsent(id: string): void {
     const group = this.group(id);
     const revision = Math.max(0, ...group.map(ws => this.ticket(ws).revision)) + 1;
-    for (const ws of group) ws.serializeAttachment({ ...this.ticket(ws), consent: false, humanConsent: false, revision });
+    // A new composition gets a fresh vote: restart the timer, or drop it for a lone player.
+    const voteDeadline = group.length >= 2 && group.some(ws => this.ticket(ws).phase === "offer") ? Date.now() + VOTE_MS : undefined;
+    for (const ws of group) ws.serializeAttachment({ ...this.ticket(ws), consent: false, humanConsent: false, revision, voteDeadline });
   }
-  private async update(id: string): Promise<void> {
+  private async update(id: string, restart?: "no_votes" | "tie"): Promise<void> {
     const group = this.group(id);
     if (!group.length) return;
     const t = this.ticket(group[0]);
@@ -156,6 +163,11 @@ export class GroupMatchmaker implements DurableObject {
       // Membership may have changed while the Room checked availability. Its next alarm retries.
       if (this.group(id).length !== group.length || this.ticket(group[0]).revision !== t.revision) return;
     }
+    // Everyone has voted and one choice leads: no need to wait for the timer.
+    if (t.phase === "offer" && group.length >= 2 && group.every(ws => this.ticket(ws).consent || this.ticket(ws).humanConsent)) {
+      const bots = group.filter(ws => this.ticket(ws).consent).length;
+      if (bots !== group.length - bots && bots !== 0 && bots !== group.length) { await this.closeVote(id); return; }
+    }
     const humansOnly = group.length >= 2 && group.every(ws => this.ticket(ws).humanConsent);
     if (group.length === t.target || (t.phase === "offer" && (humansOnly || group.every(ws => this.ticket(ws).consent)))) {
       if (group.length === 1) {
@@ -175,7 +187,9 @@ export class GroupMatchmaker implements DurableObject {
       offer: t.phase === "offer", revision: t.revision, accepted: this.ticket(ws).consent,
       agreed: group.filter(member => this.ticket(member).consent).length,
       acceptedHumans: this.ticket(ws).humanConsent === true,
-      agreedHumans: group.filter(member => this.ticket(member).humanConsent).length });
+      agreedHumans: group.filter(member => this.ticket(member).humanConsent).length,
+      ...(t.phase === "offer" && t.voteDeadline ? { voteRemaining: Math.max(0, Math.ceil((t.voteDeadline - Date.now()) / 1000)) } : {}),
+      ...(restart ? { restart } : {}) });
   }
   private async expire(): Promise<void> {
     const groups = new Set(this.members().map(ws => this.ticket(ws).group));
@@ -183,13 +197,31 @@ export class GroupMatchmaker implements DurableObject {
       const group = this.group(id);
       if (!group.length) continue;
       const t = this.ticket(group[0]);
+      if (t.phase === "offer") {
+        if (t.voteDeadline && t.voteDeadline <= Date.now()) await this.closeVote(id);
+        continue;
+      }
       if (t.deadline > Date.now()) continue;
       if (t.phase === "preparing") this.fail(id);
       else if (t.phase === "searching") {
-        group.forEach(ws => ws.serializeAttachment({ ...this.ticket(ws), phase: "offer" }));
+        const voteDeadline = group.length >= 2 ? Date.now() + VOTE_MS : undefined;
+        group.forEach(ws => ws.serializeAttachment({ ...this.ticket(ws), phase: "offer", voteDeadline }));
         await this.update(id);
       }
     }
+  }
+  /** Time is up: the choice with more votes starts for everyone; a tie or no votes searches on. */
+  private async closeVote(id: string): Promise<void> {
+    const group = this.group(id);
+    const bots = group.filter(ws => this.ticket(ws).consent).length;
+    const humans = group.filter(ws => this.ticket(ws).humanConsent).length;
+    const revision = Math.max(0, ...group.map(ws => this.ticket(ws).revision)) + 1;
+    for (const ws of group) {
+      const t = this.ticket(ws);
+      if (bots === humans) ws.serializeAttachment({ ...t, phase: "searching", consent: false, humanConsent: false, voteDeadline: undefined, revision, deadline: Date.now() + 20_000 });
+      else ws.serializeAttachment({ ...t, consent: bots > humans, humanConsent: humans > bots, voteDeadline: undefined });
+    }
+    await this.update(id, bots === humans ? (bots === 0 ? "no_votes" : "tie") : undefined);
   }
   private fail(id: string): void {
     for (const ws of this.group(id)) {
@@ -199,7 +231,7 @@ export class GroupMatchmaker implements DurableObject {
     }
   }
   private async schedule(): Promise<void> {
-    const deadlines = this.members().map(ws => this.ticket(ws)).filter(t => t.phase !== "offer").map(t => t.deadline);
+    const deadlines = this.members().map(ws => this.ticket(ws)).flatMap(t => t.phase !== "offer" ? [t.deadline] : t.voteDeadline ? [t.voteDeadline] : []);
     if (this.members().some(ws => this.ticket(ws).discover && this.ticket(ws).phase !== "preparing")) deadlines.push(Date.now() + 2_000);
     if (deadlines.length) await this.ctx.storage.setAlarm(Math.min(...deadlines));
     else await this.ctx.storage.deleteAlarm();

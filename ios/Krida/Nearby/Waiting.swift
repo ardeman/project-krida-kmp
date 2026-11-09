@@ -1,14 +1,14 @@
 import Foundation
 import Shared
 
-/// "Menunggu Ayu… 15": a dropped player and the seconds left before the computer (or, for
+/// "Menunggu Ayu…" beside a ring of 15: a dropped player and the seconds left before the computer (or, for
 /// the host, the end). Same as Android's `online/Waiting.kt`.
 struct Waiting {
     let name: String
     let seconds: Int
     var host = false
 
-    var text: String { String(localized: "Menunggu \(name)… \(seconds)", bundle: .app) }
+    var text: String { String(localized: "Menunggu \(name)…", bundle: .app) }
 }
 
 /// Runs `tick` on the main thread once a second until `stop`.

@@ -76,7 +76,9 @@ import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakState
+import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
+import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.PrimaryButton
@@ -351,9 +353,10 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             Spacer(Modifier.weight(1f))
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val away = table.waiting
-                val notice = away?.let { stringResource(R.string.online_waiting_for, it.name, it.seconds) }
-                    ?: table.notice?.let { stringResource(it) }
-                if (notice != null) {
+                val notice = table.notice?.let { stringResource(it) }
+                if (away != null) {
+                    CountdownNotice(stringResource(R.string.online_waiting_for, away.name), away.seconds, (Krida.HANDOFF_WAIT_MS / 1000).toInt())
+                } else if (notice != null) {
                     Text(notice, style = Theme.font(14, FontWeight.Bold, Theme.error))
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {

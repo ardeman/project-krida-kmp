@@ -211,7 +211,11 @@
     <string name="online_lost_detail">The internet connection to the host was lost.</string>
     <string name="online_offline_title">Can\'t reach Krida online</string>
     <string name="online_offline_detail">Check this phone\'s internet connection, then try again.</string>
-    <string name="online_waiting_for">Waiting for %1$s… %2$d</string>
+    <string name="online_waiting_for">Waiting for %1$s…</string>
+    <plurals name="seconds_left">
+        <item quantity="one">%d second left</item>
+        <item quantity="other">%d seconds left</item>
+    </plurals>
     <!-- A running game this device left as a guest (menu card); %1$s is the game's name or the room code. -->
     <string name="rejoin_title">%1$s is still on</string>
     <string name="rejoin_detail">Room %1$s · your seat is waiting</string>
@@ -232,11 +236,18 @@
     <string name="button_play_computer">Play Computer</string>
     <string name="match_two_players">2 players · you and an opponent</string>
     <string name="match_fallback_hint">After 20 seconds, agree to play with the players found or add computers.</string>
-    <string name="match_search_detail">%1$d of %2$d players found · %3$d s remaining</string>
+    <string name="match_search_detail">%1$d of %2$d players found</string>
     <string name="match_offer_title">Still waiting for players</string>
-    <string name="match_offer_detail">%1$d of %2$d players found · %3$d empty seats.\nEveryone must agree on how to start.</string>
+    <string name="match_offer_detail">%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins.</string>
     <string name="match_play_bots">Play with computers</string>
-    <string name="match_agreed">Agreed · %1$d/%2$d</string>
+    <string name="match_restart_no_votes">No one voted. Searching again…</string>
+    <string name="match_restart_tie">The vote was tied. Searching again…</string>
+    <string name="match_votes">%1$d/%2$d votes</string>
+    <string name="match_your_vote">Your vote · %1$d/%2$d</string>
+    <plurals name="match_undecided">
+        <item quantity="one">%d player still choosing</item>
+        <item quantity="other">%d players still choosing</item>
+    </plurals>
     <string name="match_keep_searching">Keep searching</string>
     <string name="match_error_title">Unable to connect</string>
     <string name="match_error_detail">Check your internet connection, then try again.</string>

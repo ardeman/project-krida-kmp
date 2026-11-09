@@ -76,7 +76,9 @@ import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.UlarTanggaOptions
 import com.ardeman.krida.core.games.UlarTanggaState
+import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
+import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -457,9 +459,11 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     modifier = Modifier.fillMaxWidth().hud("status"),
                 )
                 val away = table.waiting
-                val notice = away?.let { stringResource(R.string.online_waiting_for, it.name, it.seconds) }
-                    ?: table.notice?.let { stringResource(it) }
-                notice?.let { notice ->
+                val notice = table.notice?.let { stringResource(it) }
+                if (away != null) CountdownNotice(
+                    stringResource(R.string.online_waiting_for, away.name), away.seconds, (Krida.HANDOFF_WAIT_MS / 1000).toInt(),
+                    Modifier.fillMaxWidth().hud("notice"), fontSize = 13,
+                ) else notice?.let { notice ->
                     Text(
                         notice,
                         style = Theme.font(13, FontWeight.Bold, Theme.error),

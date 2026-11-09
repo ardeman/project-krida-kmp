@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +21,7 @@ import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.nearby.card
 import com.ardeman.krida.nearby.gameTitle
 import com.ardeman.krida.nearby.subtitle
+import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.LoadingIndicator
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
@@ -68,6 +70,8 @@ private fun MatchSearch(
     var agreed by remember { mutableIntStateOf(0) }
     var acceptedHumans by remember { mutableStateOf(false) }
     var agreedHumans by remember { mutableIntStateOf(0) }
+    var voteSeconds by remember { mutableStateOf<Int?>(null) }
+    var restart by remember { mutableStateOf<String?>(null) }
     var soloSeats by remember { mutableIntStateOf(target) }
     var preparing by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
@@ -92,6 +96,10 @@ private fun MatchSearch(
                     agreed = number("agreed")
                     acceptedHumans = event["acceptedHumans"]?.jsonPrimitive?.boolean == true
                     agreedHumans = event["agreedHumans"]?.jsonPrimitive?.int ?: 0
+                    voteSeconds = event["voteRemaining"]?.jsonPrimitive?.int
+                    // Why the search started over (vote timed out); kept until the next offer.
+                    event["restart"]?.jsonPrimitive?.content?.let { restart = it }
+                    if (offer) restart = null
                     revision = number("revision")
                 }
                 "prepare_host" -> {
@@ -124,17 +132,25 @@ private fun MatchSearch(
     LaunchedEffect(countdownVersion, offer, preparing, failed) {
         while (!offer && !preparing && !failed && seconds > 0) { delay(1000); seconds-- }
     }
+    LaunchedEffect(countdownVersion, preparing, failed) {
+        while (!preparing && !failed && (voteSeconds ?: 0) > 0) { delay(1000); voteSeconds = voteSeconds?.minus(1) }
+    }
     Column(
         Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = if (offer) 16.dp else 22.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(if (offer) 6.dp else 12.dp),
     ) {
-        Box(Modifier.size(if (offer && !preparing && !failed) 32.dp else 64.dp).background(if (failed) Theme.error.copy(alpha = 0.14f) else if (offer && !preparing) Theme.chip else androidx.compose.ui.graphics.Color.Transparent, CircleShape), contentAlignment = Alignment.Center) {
-            when {
-                failed -> Icon(painterResource(R.drawable.ic_error), null, Modifier.size(32.dp), tint = Theme.error)
-                offer && !preparing -> Icon(painterResource(R.drawable.ic_computer), null, Modifier.size(32.dp), tint = Theme.accent)
-                else -> LoadingIndicator()
+        val voting = voteSeconds
+        when {
+            failed -> Box(Modifier.size(64.dp).background(Theme.error.copy(alpha = 0.14f), CircleShape), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_error), null, Modifier.size(32.dp), tint = Theme.error)
             }
+            preparing -> LoadingIndicator()
+            offer && voting != null -> CountdownRing(voting, VOTE_SECONDS, size = 52.dp)
+            offer -> Box(Modifier.size(32.dp).background(Theme.chip, CircleShape), contentAlignment = Alignment.Center) {
+                Icon(painterResource(R.drawable.ic_computer), null, Modifier.size(32.dp), tint = Theme.accent)
+            }
+            else -> CountdownRing(seconds, SEARCH_SECONDS, size = 64.dp)
         }
         Title(stringResource(when {
             failed -> R.string.match_error_title
@@ -147,30 +163,45 @@ private fun MatchSearch(
             preparing -> stringResource(R.string.match_preparing_detail)
             offer && humans == 1 -> stringResource(R.string.match_solo_detail)
             offer -> stringResource(R.string.match_offer_detail, humans, target, target - humans)
-            else -> stringResource(R.string.match_search_detail, humans, target, seconds)
+            else -> listOfNotNull(
+                when (restart) {
+                    "no_votes" -> stringResource(R.string.match_restart_no_votes)
+                    "tie" -> stringResource(R.string.match_restart_tie)
+                    else -> null
+                },
+                stringResource(R.string.match_search_detail, humans, target),
+            ).joinToString("\n")
         })
         if (offer && !preparing && !failed) {
             if (humans == 1 && game == UlarTanggaGame.id) Segmented(
                 (2..4).map { it to "$it" }, soloSeats, stringResource(R.string.play_players), { soloSeats = it }, fill = true,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (humans >= 2) PrimaryButton(
-                    if (acceptedHumans) stringResource(R.string.match_agreed, agreedHumans, humans)
-                    else stringResource(R.string.match_play_humans, humans),
-                    { client.acceptHumans(revision) }, Modifier.weight(1f), enabled = !acceptedHumans,
+            if (humans >= 2) {
+                // A live poll: every player sees how the group is voting before and after choosing.
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        PrimaryButton(stringResource(R.string.match_play_humans, humans), { client.acceptHumans(revision) }, Modifier.fillMaxWidth(), enabled = !acceptedHumans)
+                        VoteTally(agreedHumans, humans, acceptedHumans)
+                    }
+                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        PrimaryButton(stringResource(R.string.match_play_bots), { client.acceptBots(revision) }, Modifier.fillMaxWidth(), enabled = !accepted)
+                        VoteTally(agreed, humans, accepted)
+                    }
+                }
+                val undecided = (humans - agreed - agreedHumans).coerceAtLeast(0)
+                if (undecided > 0) Text(
+                    pluralStringResource(R.plurals.match_undecided, undecided, undecided),
+                    style = Theme.font(12, FontWeight.Bold, Theme.muted), textAlign = TextAlign.Center,
                 )
-                PrimaryButton(
-                    if (accepted) stringResource(R.string.match_agreed, agreed, humans) else stringResource(R.string.match_play_bots),
-                    {
-                        if (humans == 1) {
-                            // Leave the queue before starting locally; no relay approval is needed.
-                            client.close()
-                            onComputer(soloSeats)
-                        } else client.acceptBots(revision)
-                    },
-                    Modifier.weight(1f), enabled = !accepted,
-                )
-            }
+            } else PrimaryButton(
+                stringResource(R.string.match_play_bots),
+                {
+                    // Leave the queue before starting locally; no relay approval is needed.
+                    client.close()
+                    onComputer(soloSeats)
+                },
+                Modifier.width(220.dp),
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 SecondaryButton(stringResource(R.string.nearby_cancel), onCancel, Modifier.weight(1f), tint = Theme.muted)
                 SecondaryButton(stringResource(R.string.match_keep_searching), { client.keepSearching() }, Modifier.weight(1f), tint = Theme.muted)
@@ -181,6 +212,25 @@ private fun MatchSearch(
         }
     }
 }
+
+/** One dot per player found, filled for each vote this option has, plus the count. */
+@Composable
+private fun VoteTally(votes: Int, players: Int, mine: Boolean) = Row(
+    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+) {
+    repeat(players) { index ->
+        Box(Modifier.size(8.dp).background(if (index < votes) Theme.accent else Theme.line, CircleShape))
+    }
+    Spacer(Modifier.width(4.dp))
+    Text(
+        if (mine) stringResource(R.string.match_your_vote, votes, players) else stringResource(R.string.match_votes, votes, players),
+        style = Theme.font(12, FontWeight.Bold, if (mine) Theme.accent else Theme.muted),
+    )
+}
+
+/** The relay's search window and vote window (relay/src/group-matchmaker.ts), for the rings. */
+private const val SEARCH_SECONDS = 20
+private const val VOTE_SECONDS = 15
 
 @Composable
 private fun Title(text: String) = Text(text, style = Theme.font(22, FontWeight.Black, Theme.ink), textAlign = TextAlign.Center)

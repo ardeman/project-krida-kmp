@@ -16,7 +16,7 @@ class CongklakTable: ObservableObject {
     /// Shown under the score (disconnects, refusals), or nil.
     @Published fileprivate(set) var notice: String?
     /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
-    @Published fileprivate(set) var waiting: String?
+    @Published fileprivate(set) var waiting: Waiting?
 
     /// The computer's difficulty, shown next to its name; nil without a computer player.
     fileprivate(set) var botLevel: String?
@@ -85,7 +85,7 @@ final class HostTable: CongklakTable {
                 for s in session.expiredSeats() {
                     _ = session.replaceWithBot(seat: s.int32Value, bot: CongklakBot(level: .normal))
                 }
-                self.waiting = hostWaiting(players: session.players) { session.handOffInMs(seat: $0) }?.text
+                self.waiting = hostWaiting(players: session.players) { session.handOffInMs(seat: $0) }
             }
             ticker?.start()
         }
@@ -164,7 +164,7 @@ final class GuestTable: CongklakTable {
         ticker = SecondTicker { [weak self] in
             guard let self else { return }
             let w = self.away.current(self.players)
-            self.waiting = w.flatMap { $0.seconds > 0 ? $0.text : nil }
+            self.waiting = w.flatMap { $0.seconds > 0 ? $0 : nil }
             if let w, w.host, w.seconds == 0, self.notice == nil {
                 self.notice = String(localized: "Terputus dari host", bundle: .app)
             }

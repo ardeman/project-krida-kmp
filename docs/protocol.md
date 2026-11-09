@@ -200,6 +200,15 @@ Optional group-flow fields: `queue` adds `acceptedHumans` (your humans-only vote
 and match events may include `seats`, the agreed total; absent means `target`. `target`
 remains the original search selection. `humans` and `bots` always describe the actual room.
 
+Vote timer (optional fields): once the offer opens for two or more humans, `queue` adds
+`voteRemaining`, the seconds left in a 15 s vote; absent means no limit (a lone player).
+Any join or leave clears the votes and restarts the timer. When every human has voted and
+one choice has more votes, it starts at once. When the timer runs out, the choice with more
+votes starts for everyone (undecided players go along); a tie or no votes at all sends the
+group back to searching for another 20 s, and that `queue` carries `restart`: `"no_votes"`
+or `"tie"`. Unanimous agreement still starts immediately. Clients that ignore these fields
+still work: they see the group start or the offer close.
+
 Client actions are `{ "type": "accept_bots", "revision": <queue revision> }`, `{ "type": "keep_searching" }`, and
 `{ "type": "host_ready" }`. The first two only apply after the offer. Computer seats
 require every human's explicit agreement. A new arrival or departure clears all prior
@@ -208,8 +217,8 @@ the group's 20 s window and clears agreement while keeping its players together.
 gets `matched` with `role: "solo"` and starts a local game with `target - 1` computers.
 
 After the offer, `{ "type": "accept_humans", "revision": <queue revision> }` votes to
-start with only the humans found (at least two). Every human must choose the same option;
-changing a vote replaces that player's previous choice. Membership changes and continuing
+start with only the humans found (at least two). A unanimous choice starts at once;
+otherwise the vote timer above decides. Changing a vote replaces that player's previous choice. Membership changes and continuing
 the search clear both kinds of votes. Unanimous humans-only agreement produces zero bots
 and `seats` equal to the human count. A lone player may instead send
 `{ "type": "play_solo", "revision": <queue revision>, "seats": <total> }` to choose

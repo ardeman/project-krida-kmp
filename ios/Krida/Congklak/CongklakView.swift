@@ -359,7 +359,9 @@ private struct CongklakBoardView: View {
             .padding(.top, 14 * s)
             Spacer()
             VStack(spacing: 8 * s) {
-                if let notice = table.waiting ?? table.notice {
+                if let away = table.waiting {
+                    CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000))
+                } else if let notice = table.notice {
                     Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
                 } else {
                     Label("Searah jarum jam · lumbungmu di kiri", systemImage: "arrow.clockwise")

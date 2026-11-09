@@ -1440,6 +1440,102 @@
         }
       }
     },
+    "match_restart_tie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The vote was tied. Searching again…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suara seimbang. Mencari lagi…"
+          }
+        }
+      }
+    },
+    "match_undecided_one" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d player still choosing"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pemain masih memilih"
+          }
+        }
+      }
+    },
+    "match_undecided_other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d players still choosing"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pemain masih memilih"
+          }
+        }
+      }
+    },
+    "match_restart_no_votes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No one voted. Searching again…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ada yang memilih. Mencari lagi…"
+          }
+        }
+      }
+    },
+    "match_votes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$d/%2$d votes"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$d/%2$d suara"
+          }
+        }
+      }
+    },
+    "match_your_vote" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your vote · %1$d/%2$d"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilihanmu · %1$d/%2$d"
+          }
+        }
+      }
+    },
     "menunggu" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3237,18 +3333,50 @@
         }
       }
     },
-    "Menunggu %@… %lld" : {
+    "Menunggu %@…" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Waiting for %1$@… %2$lld"
+            "value" : "Waiting for %@…"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menunggu %1$@… %2$lld"
+            "value" : "Menunggu %@…"
+          }
+        }
+      }
+    },
+    "seconds_left_one" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d second left"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d detik lagi"
+          }
+        }
+      }
+    },
+    "seconds_left_other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d seconds left"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d detik lagi"
           }
         }
       }
@@ -3354,13 +3482,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d of %2$d players found · %3$d s remaining"
+            "value" : "%1$d of %2$d players found"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ketemu · tersisa %3$d dtk"
+            "value" : "%1$d dari %2$d pemain ketemu"
           }
         }
       }
@@ -3386,13 +3514,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d of %2$d players found · %3$d empty seats.\nEveryone must agree on how to start."
+            "value" : "%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nSemua pemain harus sepakat cara mulai."
+            "value" : "%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nPilih cara mulai. Pilihan dengan suara terbanyak menang."
           }
         }
       }
@@ -3441,22 +3569,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Main dengan komputer"
-          }
-        }
-      }
-    },
-    "match_agreed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agreed · %1$d/%2$d"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Setuju · %1$d/%2$d"
           }
         }
       }
