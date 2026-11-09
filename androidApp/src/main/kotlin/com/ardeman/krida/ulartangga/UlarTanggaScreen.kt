@@ -429,6 +429,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth().hud("status"),
                 )
+                table.notice?.let { notice ->
+                    Text(
+                        stringResource(notice),
+                        style = Theme.font(13, FontWeight.Bold, Theme.error),
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        modifier = Modifier.fillMaxWidth().hud("notice"),
+                    )
+                }
             }
         }
 
@@ -581,7 +590,15 @@ private fun GameOver(table: UlarTanggaTable, state: UlarTanggaState, onExit: () 
             }
             Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 SecondaryButton(stringResource(R.string.congklak_to_menu), onExit, Modifier.weight(1f), height = 48.dp, tint = Theme.ink)
-                PrimaryButton(stringResource(R.string.congklak_play_again), onRestart, Modifier.weight(1f), height = 48.dp)
+                if (table.canRestart) {
+                    PrimaryButton(stringResource(R.string.congklak_play_again), onRestart, Modifier.weight(1f), height = 48.dp)
+                } else {
+                    Text(
+                        stringResource(R.string.congklak_wait_host),
+                        style = Theme.font(14, FontWeight.Bold, Theme.muted),
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }

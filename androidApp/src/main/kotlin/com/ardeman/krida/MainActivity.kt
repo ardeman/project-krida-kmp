@@ -99,8 +99,11 @@ import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.ulartangga.UlarTanggaRenderer
 import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
+import com.ardeman.krida.ulartangga.UlarTanggaHostTable
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
+import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.CongklakStarter
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
@@ -185,10 +188,10 @@ class MainActivity : ComponentActivity() {
             val menuState = rememberSaveableStateHolder()
             LandscapeStage {
                 val r = room
-                val table = passAndPlay ?: r?.table
-                val ular = ularTable
+                val table = passAndPlay ?: r?.congklak
+                val ular = ularTable ?: r?.ular
                 when {
-                    ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null })
+                    ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
                     r != null -> Lobby(r)
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
@@ -239,9 +242,8 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Menu() {
         // Until the game list exists, the left card switches between the games. A room
-        // link opens the app ready to join a congklak room.
+        // link opens the app ready to join; the host's Welcome says which game it plays.
         var game by rememberSaveable { mutableStateOf(Game.CONGKLAK) }
-        if (joining && game != Game.CONGKLAK) game = Game.CONGKLAK
         // Capped at the phone design's size (as on iOS), so a tall stage doesn't stretch the cards.
         Box(Modifier.fillMaxSize().background(Theme.backdropBrush).windowInsetsPadding(gameInsets), contentAlignment = Alignment.Center) { Row(
             Modifier.sizeIn(maxWidth = 874.dp, maxHeight = 460.dp).fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
@@ -340,9 +342,8 @@ class MainActivity : ComponentActivity() {
     private fun PlayCard(game: Game) {
         // A room link opens the app ready to join: start on "Teman dekat".
         var opponent by rememberSaveable { mutableStateOf(if (joining) Opponent.NEARBY else Opponent.PHONE) }
-        if (game == Game.ULAR_TANGGA && opponent == Opponent.NEARBY) opponent = Opponent.PHONE
         val ular = game == Game.ULAR_TANGGA
-        val opponents = if (ular) Opponent.entries - Opponent.NEARBY else Opponent.entries
+        val opponents = Opponent.entries
         val colorNames = listOf(R.string.ular_player_red, R.string.ular_player_blue, R.string.ular_player_green, R.string.ular_player_yellow)
             .map { stringResource(it) }
         val computerN = (1..3).map { stringResource(R.string.ular_computer_n, it) }
@@ -367,7 +368,8 @@ class MainActivity : ComponentActivity() {
                     fill = true,
                 )
             }
-            if (ular) SettingRow(stringResource(R.string.play_players)) {
+            // In a nearby room everyone who joins plays, up to 4.
+            if (ular && opponent != Opponent.NEARBY) SettingRow(stringResource(R.string.play_players)) {
                 Segmented(
                     options = (2..4).map { it to it.toString() },
                     current = UlarTanggaSettings.players,
@@ -383,7 +385,11 @@ class MainActivity : ComponentActivity() {
                 if (joining) JoinRow() else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.weight(1f)) {
                         when {
-                            ular -> Detail(stringResource(if (opponent == Opponent.COMPUTER) R.string.ular_detail_computer else R.string.ular_detail_phone))
+                            ular -> Detail(stringResource(when (opponent) {
+                                Opponent.COMPUTER -> R.string.ular_detail_computer
+                                Opponent.PHONE -> R.string.ular_detail_phone
+                                Opponent.NEARBY -> R.string.ular_detail_nearby
+                            }))
                             else -> when (opponent) {
                             Opponent.COMPUTER -> LevelPicker(level) { level = it }
                             Opponent.PHONE -> Detail(stringResource(R.string.mode_pass_detail))
@@ -399,12 +405,13 @@ class MainActivity : ComponentActivity() {
                         onClick = {
                             val n = UlarTanggaSettings.players
                             if (ular) when (opponent) {
-                                Opponent.COMPUTER -> ularTable = UlarTanggaTable.vsComputer(you, if (n == 2) listOf(computer) else computerN.take(n - 1))
-                                else -> ularTable = UlarTanggaTable.passAndPlay(colorNames.take(n))
+                                Opponent.COMPUTER -> ularTable = UlarTanggaHostTable.vsComputer(you, if (n == 2) listOf(computer) else computerN.take(n - 1))
+                                Opponent.PHONE -> ularTable = UlarTanggaHostTable.passAndPlay(colorNames.take(n))
+                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName, NearbyRoom.Game.ULAR_TANGGA) }
                             } else when (opponent) {
                                 Opponent.PHONE -> passAndPlay = HostTable.passAndPlay(names)
                                 Opponent.COMPUTER -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
-                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName) }
+                                Opponent.NEARBY -> withBlePermissions { room = NearbyRoom.host(this@MainActivity, myName, NearbyRoom.Game.CONGKLAK) }
                             }
                         },
                     )
@@ -495,10 +502,18 @@ class MainActivity : ComponentActivity() {
             Modifier.fillMaxSize().background(Theme.backdropBrush).windowInsetsPadding(gameInsets).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.congklak_title), style = Theme.font(24, FontWeight.Black, Theme.ink))
+            val title = when (r.game) {
+                UlarTanggaGame.id -> stringResource(R.string.ular_title)
+                CongklakGame.id -> stringResource(R.string.congklak_title)
+                else -> ""
+            }
+            Text(title, style = Theme.font(24, FontWeight.Black, Theme.ink))
             Text(stringResource(R.string.nearby_room_code), style = Theme.font(15, FontWeight.SemiBold, Theme.muted))
             Text(r.code, style = Theme.font(44, FontWeight.Bold, Theme.ink).copy(fontFamily = FontFamily.Monospace))
             Text(stringResource(r.status), style = Theme.font(16, FontWeight.SemiBold, Theme.ink))
+            if (r.game != null) {
+                Text(stringResource(R.string.nearby_player_count, r.players.size, r.maxPlayers), style = Theme.font(14, FontWeight.SemiBold, Theme.muted))
+            }
             r.players.forEach { p ->
                 Text("${p.seat + 1}. ${p.name}", style = Theme.font(16, FontWeight.SemiBold, Theme.ink))
             }
@@ -648,7 +663,7 @@ private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onR
     val scope = rememberCoroutineScope()
     val pick by rememberUpdatedState(onGame)
     LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.collect { pick(games[it % n]) } }
-    // The game can also change from outside (a room link picks congklak).
+    // Keeps the pager on [game] if it changes from outside.
     LaunchedEffect(game) {
         val shown = games[pager.settledPage % n]
         if (shown != game) pager.scrollToPage(pager.settledPage + game.ordinal - shown.ordinal)

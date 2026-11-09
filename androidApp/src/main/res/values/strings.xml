@@ -68,6 +68,10 @@
     <string name="nearby_host_lost">Disconnected from the host</string>
     <string name="nearby_player_lost">The other player disconnected. Waiting for them to return…</string>
     <string name="nearby_move_refused">Move refused</string>
+    <string name="nearby_player_count">%1$d of %2$d players</string>
+    <string name="nearby_unknown_game">This room plays a game this app doesn\'t have. Update the app.</string>
+    <string name="ular_player_lost">A player disconnected. The computer takes over after a minute.</string>
+    <string name="ular_detail_nearby">Up to 4 phones over Bluetooth, no internet</string>
     <string name="sound_on">Turn sound on</string>
     <string name="sound_off">Turn sound off</string>
     <string name="music_on">Turn music on</string>
