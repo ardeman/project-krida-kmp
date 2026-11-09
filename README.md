@@ -58,7 +58,7 @@ npm run build                            # static site in web/dist
 # Online relay (Cloudflare Worker)
 cd relay && npm install && npm run dev   # ws://localhost:8787
 npm run smoke                            # host + guests test client against the dev relay
-npm run deploy                           # needs `npx wrangler login` once
+# Deploys from CI: .github/workflows/relay.yml on push to main (relay/ changes) or by hand
 ```
 
 ## Landing page hosting (GitHub Pages)
