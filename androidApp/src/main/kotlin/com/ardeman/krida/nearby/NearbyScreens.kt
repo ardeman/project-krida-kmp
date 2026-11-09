@@ -88,11 +88,12 @@ private val okGreen = Color(0xFF3F7D2E)
 
 private fun Modifier.card() = clip(cardShape).background(Theme.surface).border(1.5.dp, Theme.line, cardShape)
 
-/** Back button, title and the "Teman dekat" line, over the screen's cards. */
+/** Back button, title and the "Teman dekat" or "Online" line, over the screen's cards. */
 @Composable
 private fun NearbyFrame(
     title: String,
     subtitle: String,
+    online: Boolean,
     backLabel: String,
     onBack: () -> Unit,
     content: @Composable RowScope.() -> Unit,
@@ -108,7 +109,7 @@ private fun NearbyFrame(
                 Column {
                     Text(title, style = Theme.font(20, FontWeight.Black, Theme.ink), maxLines = 1)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(painterResource(R.drawable.ic_bluetooth), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(14.dp))
+                        Icon(painterResource(if (online) R.drawable.ic_globe else R.drawable.ic_bluetooth), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(14.dp))
                         Text(subtitle, style = Theme.font(13, FontWeight.Bold, Theme.muted), maxLines = 1)
                     }
                 }
@@ -148,6 +149,7 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
     NearbyFrame(
         title,
         subtitle,
+        room.online,
         stringResource(if (room.isHost) R.string.congklak_back else R.string.nearby_leave_room),
         onLeave,
     ) {
@@ -462,7 +464,7 @@ fun JoinScreen(
     online: Boolean,
 ) {
     val valid = if (online) RoomCode.isValidOnline(code) else RoomCode.isValid(code)
-    NearbyFrame(stringResource(R.string.nearby_join_title), subtitle(online), stringResource(R.string.congklak_back), onBack) {
+    NearbyFrame(stringResource(R.string.nearby_join_title), subtitle(online), online, stringResource(R.string.congklak_back), onBack) {
         Column(
             Modifier.weight(1f).fillMaxHeight().card().padding(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -591,7 +593,7 @@ fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit
     }
     val failed = room.failed
     val cancel = stringResource(if (failed) R.string.congklak_back else R.string.nearby_cancel)
-    NearbyFrame(gameTitle(room.game), subtitle(room.online), cancel, onCancel) {
+    NearbyFrame(gameTitle(room.game), subtitle(room.online), room.online, cancel, onCancel) {
         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
                 Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = 22.dp),
