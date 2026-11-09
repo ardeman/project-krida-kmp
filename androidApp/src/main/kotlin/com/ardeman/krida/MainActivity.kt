@@ -199,9 +199,13 @@ class MainActivity : ComponentActivity() {
         CongklakSettings.init(this)
         UlarTanggaSettings.init(this)
         LastRoom.init(this)
-        intent?.data?.toString()?.let { link ->
-            RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true }
-                ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true }
+        // Language and theme changes recreate this activity with its original launch intent.
+        // Apply a room link only on the initial launch so leaving it is not undone later.
+        if (savedInstanceState == null) {
+            intent?.data?.toString()?.let { link ->
+                RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true }
+                    ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true }
+            }
         }
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
