@@ -69,9 +69,7 @@ struct ContentView: View {
     private var menu: some View {
         HStack(alignment: .top, spacing: 24 * s) {
             VStack(alignment: .leading, spacing: 14 * s) {
-                // Light variant always: the menu stays cream even when the system is dark.
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
-                    .environment(\.colorScheme, .light)
                     .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
                 CongklakCard { menuReady = true }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
@@ -110,18 +108,18 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // Full height like the board: down over the home indicator strip.
         .ignoresSafeArea(.container, edges: .bottom)
-        .background(Theme.cream)
+        .background(Theme.backdropGradient)
         .foregroundStyle(Theme.ink)
     }
 
     /// The cards can end exactly at the column's bottom edge, so nothing tells a first-time
-    /// player there is more below. While the column can still scroll: a cream fade over the
+    /// player there is more below. While the column can still scroll: a backdrop fade over the
     /// bottom edge and a chevron that scrolls to the end.
     @ViewBuilder
     private func moreBelowHint(_ proxy: ScrollViewProxy) -> some View {
         let moreBelow = menuViewport > 0 && menuEnd > menuViewport + 1
         ZStack(alignment: .bottom) {
-            LinearGradient(colors: [Theme.cream.opacity(0), Theme.cream], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: [Theme.backdrop.opacity(0), Theme.backdrop], startPoint: .top, endPoint: .bottom)
                 .frame(height: 44 * s)
                 .allowsHitTesting(false)
             Button {
@@ -131,7 +129,7 @@ struct ContentView: View {
                     .font(.system(size: 15 * s, weight: .bold))
                     .foregroundStyle(Theme.accent)
                     .frame(width: 32 * s, height: 32 * s)
-                    .background(.white, in: Circle())
+                    .background(Theme.surface, in: Circle())
                     .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
             }
             .buttonStyle(.plain)
@@ -191,7 +189,7 @@ struct ContentView: View {
         .padding(.trailing, 14 * s)
         .padding(.vertical, 14 * s)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white, in: RoundedRectangle(cornerRadius: 20 * s))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
     }
 
@@ -205,8 +203,8 @@ struct ContentView: View {
                 .autocorrectionDisabled()
                 .padding(.horizontal, 12 * s)
                 .frame(height: 44 * s)
-                .background(Color(hex: 0xFFFDF9), in: RoundedRectangle(cornerRadius: 12 * s))
-                .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Color(hex: 0xD9C6AF), lineWidth: 1.5))
+                .background(Theme.surfaceSoft, in: RoundedRectangle(cornerRadius: 12 * s))
+                .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Theme.border, lineWidth: 1.5))
                 .accessibilityLabel(Text("Kode room dari temanmu"))
                 .onChange(of: roomCode) { _, code in
                     let clean = String(code.uppercased().prefix(4))
@@ -291,7 +289,7 @@ private struct RemoveAdsButton: View {
                 .lineLimit(1)
                 .padding(.horizontal, 14 * s)
                 .frame(height: 50 * s)
-                .background(.white, in: RoundedRectangle(cornerRadius: 14 * s))
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14 * s))
                 .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(Theme.accent, lineWidth: 1.5))
             }
             .buttonStyle(.plain)
@@ -318,7 +316,7 @@ private struct SettingRow<Content: View>: View {
 }
 
 /// Segmented picker on a track, the options sharing its full width: the chosen one is a
-/// raised white chip, with an optional SF Symbol before its text.
+/// raised surface chip, with an optional SF Symbol before its text.
 private struct Segmented<T: Hashable>: View {
     let options: [(T, LocalizedStringKey, String?)]
     @Binding var selection: T
@@ -350,7 +348,7 @@ private struct Segmented<T: Hashable>: View {
             .padding(.horizontal, 6 * s)
             .frame(maxWidth: .infinity)
             .frame(height: 38 * s)
-            .background(on ? Color.white : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
+            .background(on ? Theme.raised : .clear, in: RoundedRectangle(cornerRadius: 10 * s))
             .shadow(color: on ? Theme.ink.opacity(0.18) : .clear, radius: 1.5, y: 1)
             .contentShape(Rectangle())
         }
@@ -439,7 +437,7 @@ private struct RoomView: View {
         }
         .padding(24 * s)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(Theme.cream)
+        .background(Theme.backdropGradient)
         .foregroundStyle(Theme.ink)
     }
 }

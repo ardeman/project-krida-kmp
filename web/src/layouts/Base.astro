@@ -36,7 +36,8 @@ const abs = (path: string) => new URL(`${root}/${path}`, Astro.site);
     }
     <link rel="icon" href={`${root}/favicon.svg`} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={`${root}/apple-touch-icon.png`} />
-    <meta name="theme-color" content="#fff7ec" />
+    <meta name="theme-color" content="#e39a5c" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#120e0b" media="(prefers-color-scheme: dark)" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,600,100&display=swap" />

@@ -1,6 +1,5 @@
 package com.ardeman.krida.ulartangga
 
-import android.view.SurfaceView
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -302,14 +301,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     val rollLabel = stringResource(R.string.ular_roll)
     val dieLabel = die?.toString() ?: ""
 
-    Box(Modifier.fillMaxSize().background(Theme.cream)) {
+    Box(Modifier.fillMaxSize().background(Theme.backdropBrush)) {
         key(turned) { AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
-                // A SurfaceView can't be turned with the stage; a TextureView can.
-                val view = if (turned) TextureView(ctx) else SurfaceView(ctx)
+                // A TextureView: it turns with the stage, and it is transparent, so the
+                // backdrop gradient shows around the board.
+                val view = TextureView(ctx)
                 view.also {
-                    renderer = (if (view is TextureView) UlarTanggaRenderer(view) else UlarTanggaRenderer(view as SurfaceView)).apply {
+                    renderer = UlarTanggaRenderer(view).apply {
                         this.onFirstFrame = onFirstFrame
                         onDieBounce = { Sounds.play(Sounds.Effect.Die) }
                         resume()
@@ -486,12 +486,12 @@ private fun PlayerTile(
     val square = state.positions[seat]
     val color = seatColor(state, seat)
     // Dark digits on a light pawn color (yellow), white on the rest.
-    val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.ink else Color.White
+    val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.inkOnLight else Color.White
     Column(
         modifier.aspectRatio(1f)
             .alpha(if (out) 0.4f else 1f)
             .then(if (on) Modifier.shadow(8.dp, shape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
-            .background(if (on) Theme.accent else Color.White, shape)
+            .background(if (on) Theme.accent else Theme.surface, shape)
             .then(if (on) Modifier else Modifier.border(1.5.dp, Theme.line, shape))
             .padding(4.dp)
             .semantics(mergeDescendants = true) {},
@@ -518,7 +518,7 @@ private fun PlayerTile(
             }
             if (seat in table.botSeats) {
                 Box(
-                    Modifier.align(Alignment.BottomEnd).padding(0.dp).size(16.dp).background(Color.White, CircleShape).border(1.dp, Theme.line, CircleShape),
+                    Modifier.align(Alignment.BottomEnd).padding(0.dp).size(16.dp).background(Theme.surface, CircleShape).border(1.dp, Theme.line, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = Theme.ink, modifier = Modifier.size(10.dp))
@@ -552,7 +552,7 @@ private fun GameOver(table: UlarTanggaTable, state: UlarTanggaState, onExit: () 
         Column(
             Modifier.width(380.dp)
                 .shadow(25.dp, RoundedCornerShape(28.dp), spotColor = Theme.ink)
-                .background(Color.White, RoundedCornerShape(28.dp))
+                .background(Theme.surface, RoundedCornerShape(28.dp))
                 .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 20.dp)
                 .semantics { isTraversalGroup = true },
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -566,7 +566,7 @@ private fun GameOver(table: UlarTanggaTable, state: UlarTanggaState, onExit: () 
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 ranking.forEachIndexed { i, seat ->
                     Row(
-                        Modifier.fillMaxWidth().background(if (i == 0) Color(0xFFFBEFE3) else Color(0xFFF6F1EA), RoundedCornerShape(12.dp))
+                        Modifier.fillMaxWidth().background(if (i == 0) Theme.highlight else Theme.surfaceSoft, RoundedCornerShape(12.dp))
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -628,7 +628,7 @@ private fun RulesDialog(options: UlarTanggaOptions, onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            Modifier.widthIn(max = 560.dp).background(Theme.cream, RoundedCornerShape(24.dp))
+            Modifier.widthIn(max = 560.dp).background(Theme.surface, RoundedCornerShape(24.dp))
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(vertical = 16.dp),
         ) {

@@ -28,8 +28,6 @@ object CongklakBoard {
     val cameraTarget = floatArrayOf(0f, 0f, 0.6f)
     const val CAMERA_HORIZONTAL_FOV_DEGREES = 62f
 
-    /** Background behind the board, sRGB. */
-    val background = floatArrayOf(0.96f, 0.93f, 0.86f)
 
     private const val CELL = 0.5f
     private const val HALF_X = 15f

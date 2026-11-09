@@ -1,10 +1,10 @@
 <resources>
-    <!-- Android 12+ always shows a system splash: cream with the launcher icon, then the
-         in-app loading screen (ui/Loading.kt) on the same cream. -->
+    <!-- Android 12+ always shows a system splash: terracotta with the launcher icon, then the
+         in-app loading screen (ui/Loading.kt) on the same backdrop. -->
     <style name="Theme.Krida" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">#FBF4EA</item>
-        <item name="android:statusBarColor">#FBF4EA</item>
+        <item name="android:windowBackground">#E39A5C</item>
+        <item name="android:statusBarColor">#E39A5C</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowSplashScreenBackground">#FBF4EA</item>
+        <item name="android:windowSplashScreenBackground">#E39A5C</item>
     </style>
 </resources>

@@ -1,17 +1,20 @@
 :root {
-  --bg: #fff7ec;
-  --surface: #ffffff;
+  /* Backdrop: a radial glow from the top-left, as in the apps; --bg is its edge. */
+  --bg: #e39a5c;
+  --glow: #f7d7b5;
+  --surface: #fff7ec;
   --ink: #2b211a;
-  --muted: #7a6a5d;
-  --line: #efe2d0;
-  --accent: #c9783a;
+  --muted: #5a4537;
+  --line: rgba(43, 33, 26, 0.18);
+  --accent: #7a3d14;
   --radius: 10px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1b1612;
+    --bg: #120e0b;
+    --glow: #3a2a1e;
     --surface: #26201a;
     --ink: #f6eadc;
     --muted: #b7a593;
@@ -26,7 +29,8 @@
 html, body { margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
+  background: var(--bg) radial-gradient(circle at 35% 25%, var(--glow), var(--bg) 90%) fixed;
+  min-height: 100vh;
   color: var(--ink);
   font-family: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;

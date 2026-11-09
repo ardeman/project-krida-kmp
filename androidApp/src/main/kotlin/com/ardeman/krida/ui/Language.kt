@@ -92,7 +92,7 @@ fun LanguagePicker(modifier: Modifier = Modifier) {
                 Modifier.height(38.dp)
                     .then(if (on) Modifier.shadow(1.5.dp, shape) else Modifier)
                     .clip(shape)
-                    .background(if (on) Color.White else Color.Transparent)
+                    .background(if (on) Theme.raised else Color.Transparent)
                     .clickable(role = Role.Tab) { Sounds.play(Sounds.Effect.Tap); Language.set(activity, lang) }
                     .semantics { selected = on; contentDescription = spoken }
                     .padding(horizontal = 12.dp),

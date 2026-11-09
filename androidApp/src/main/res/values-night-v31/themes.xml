@@ -1,0 +1,10 @@
+<resources>
+    <!-- Android 12+ always shows a system splash: the dark backdrop with the launcher icon,
+         then the in-app loading screen (ui/Loading.kt) on the same backdrop. -->
+    <style name="Theme.Krida" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#120E0B</item>
+        <item name="android:statusBarColor">#120E0B</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowSplashScreenBackground">#120E0B</item>
+    </style>
+</resources>

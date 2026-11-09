@@ -14,22 +14,20 @@ struct LoadingScreen: View {
 
     var body: some View {
         VStack(spacing: 22 * s) {
-            // Light variant always: the loading screen stays cream even when the system is dark.
             Image("Wordmark").resizable().scaledToFit().frame(height: 48 * s)
-                .environment(\.colorScheme, .light)
             TimelineView(.animation) { context in
                 let t = context.date.timeIntervalSince(start).truncatingRemainder(dividingBy: Self.cycle)
                 let sown = t / Self.cycle * Double(Self.holes + 2)
                 HStack(spacing: 10 * s) {
                     ForEach(0..<Self.holes, id: \.self) { i in
-                        Circle().fill(Theme.wood).frame(width: 12 * s, height: 12 * s)
+                        Circle().fill(Theme.loadingSeed).frame(width: 12 * s, height: 12 * s)
                             .opacity(sown > Double(i) ? 1 : 0.22)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.cream)
+        .background(Theme.backdropGradient)
         .contentShape(Rectangle())
         .onTapGesture {}
         .ignoresSafeArea()

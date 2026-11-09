@@ -1,6 +1,5 @@
 package com.ardeman.krida.ui
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -26,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -38,7 +37,7 @@ import com.ardeman.krida.R
 private const val HOLES = 7
 
 /**
- * Cream screen with the wordmark and a row of seeds filling one by one, as if sown. Shown at
+ * Backdrop-colored screen with the wordmark and a row of seeds filling one by one, as if sown. Shown at
  * app start until the menu's board snapshot is ready, and before each game until the board's
  * first frame is on screen. It swallows taps so nothing underneath reacts.
  */
@@ -54,17 +53,17 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
     Box(
         modifier
             .fillMaxSize()
-            .background(Theme.cream)
+            .background(Theme.backdropBrush)
             .clickable(remember { MutableInteractionSource() }, indication = null) {}
             .clearAndSetSemantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(22.dp)) {
-            Image(rememberLightWordmark(), contentDescription = null, modifier = Modifier.height(48.dp))
+            Image(rememberWordmark(), contentDescription = null, modifier = Modifier.height(48.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 repeat(HOLES) { i ->
                     Box(
-                        Modifier.size(12.dp).alpha(if (sown > i) 1f else 0.22f).background(Theme.wood, CircleShape),
+                        Modifier.size(12.dp).alpha(if (sown > i) 1f else 0.22f).background(if (Theme.dark) Color(0xFFB8743F) else Theme.wood, CircleShape),
                     )
                 }
             }
@@ -72,14 +71,6 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
     }
 }
 
-/** The wordmark in its light-mode colors: the cream screens stay cream even when the system is dark. */
+/** The wordmark; its letters follow the system's light or dark theme (@color/krida_ink). */
 @Composable
-fun rememberLightWordmark(): ImageVector {
-    val context = LocalContext.current
-    return remember(context) {
-        val config = Configuration(context.resources.configuration).apply {
-            uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or Configuration.UI_MODE_NIGHT_NO
-        }
-        ImageVector.vectorResource(null, context.createConfigurationContext(config).resources, R.drawable.krida_wordmark)
-    }
-}
+fun rememberWordmark(): ImageVector = ImageVector.vectorResource(R.drawable.krida_wordmark)

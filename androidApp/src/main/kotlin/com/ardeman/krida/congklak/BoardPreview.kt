@@ -68,7 +68,7 @@ fun VoxelPreview(
     onReady: () -> Unit = {},
     create: (TextureView) -> VoxelStage,
 ) {
-    BoxWithConstraints(modifier.background(Theme.cream).clipToBounds().clearAndSetSemantics {}) {
+    BoxWithConstraints(modifier.background(Theme.backdropBrush).clipToBounds().clearAndSetSemantics {}) {
         val w = widthPerHeight?.let { (constraints.maxHeight * it).roundToInt() } ?: constraints.maxWidth
         val size = IntSize(w, constraints.maxHeight)
         if (size.height <= 0 || size.width <= 0) return@BoxWithConstraints
@@ -100,7 +100,7 @@ private fun Snapshot(key: String, size: IntSize, fill: Modifier, onReady: () -> 
         mounted = true
     }
     if (!mounted) {
-        Box(fill.background(Theme.cream))
+        Box(fill.background(Theme.backdropBrush))
         return
     }
 
@@ -118,7 +118,7 @@ private fun Snapshot(key: String, size: IntSize, fill: Modifier, onReady: () -> 
     )
     // Covers the live view until the snapshot replaces it: an empty TextureView shows white,
     // and hiding the view itself (alpha 0) stops it from taking new frames.
-    Box(Modifier.fillMaxSize().background(Theme.cream))
+    Box(Modifier.fillMaxSize().background(Theme.backdropBrush))
     LaunchedEffect(renderer) {
         val board = renderer ?: return@LaunchedEffect
         // A rendered frame takes a moment to reach the texture, and the first one can be

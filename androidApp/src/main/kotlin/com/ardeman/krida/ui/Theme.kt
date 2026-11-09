@@ -33,6 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
@@ -46,15 +51,56 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Colors and type from the agreed UI mockup (warm cream, wood, terracotta accent); same values as iOS Theme.swift. */
+/**
+ * Colors and type from the agreed UI mockup (terracotta backdrop, wood, cream cards); same values as
+ * iOS Theme.swift. The screen colors follow the system's light or dark theme ([dark], set when
+ * the activity is created; a theme change recreates it). Wood, pit, seed and gold are the
+ * boards' own colors and stay the same in both themes.
+ */
 object Theme {
-    val cream = Color(0xFFFBF4EA)
-    val ink = Color(0xFF2B1D14)
-    val muted = Color(0xFF6E5A4B)
-    val accent = Color(0xFFA65A26)
-    val line = Color(0xFFEADCCB)
-    val chip = Color(0xFFF6E6D3)
-    val track = Color(0xFFF3EADF)
+    /** True in the system's dark theme. */
+    var dark = false
+
+    private fun pick(light: Long, night: Long) = Color(if (dark) night else light)
+
+    /** The backdrop's glow, top-left: a light terracotta, or a warm brown in the dark theme. */
+    val backdropGlow get() = pick(0xFFF7D7B5, 0xFF3A2A1E)
+    /** The backdrop's edges and the solid stand-in for it (fades, window background). */
+    val backdrop get() = pick(0xFFE39A5C, 0xFF120E0B)
+
+    /**
+     * Screen backdrop behind menus and boards: a radial glow from the top-left, so the cream die
+     * and the logo stand out. Same gradient as iOS and the website.
+     */
+    val backdropBrush: Brush
+        get() {
+            val colors = listOf(backdropGlow, backdrop)
+            return object : ShaderBrush() {
+                override fun createShader(size: Size) = RadialGradientShader(
+                    center = Offset(size.width * 0.35f, size.height * 0.25f),
+                    radius = size.maxDimension * 0.9f,
+                    colors = colors,
+                )
+            }
+        }
+    /** Cards, buttons and dialogs on the backdrop. */
+    val surface get() = pick(0xFFFFFFFF, 0xFF2A221C)
+    /** A softer card: the menu's game list, rows in a result list. */
+    val surfaceSoft get() = pick(0xFFFFFBF5, 0xFF241D17)
+    /** The highlighted row in a result list. */
+    val highlight get() = pick(0xFFFBEFE3, 0xFF3A2C20)
+    /** The chosen segment of a toggle, raised above [track]. */
+    val raised get() = pick(0xFFFFFFFF, 0xFF4A3C30)
+    val ink get() = pick(0xFF2B1D14, 0xFFF6EADC)
+    /** Text on the boards' fixed light colors (tan, gold, seed), the same in both themes. */
+    val inkOnLight = Color(0xFF2B1D14)
+    val muted get() = pick(0xFF5A4537, 0xFFB7A593)
+    val accent get() = pick(0xFFA65A26, 0xFFC9783A)
+    val line get() = pick(0xFFE2CFB7, 0xFF3A3027)
+    val chip get() = pick(0xFFF6E6D3, 0xFF3A2C20)
+    val track get() = pick(0xFFE8D7C1, 0xFF2F2720)
+    val border get() = pick(0xFFD9C6AF, 0xFF4A3D31)
+    val error get() = pick(0xFFB3261E, 0xFFF2B8B5)
     val wood = Color(0xFF8A5A2E)
     val woodShadow = Color(0xFF6B4320)
     val woodDark = Color(0xFF6E4422)
@@ -62,9 +108,7 @@ object Theme {
     val seed = Color(0xFFF3E3C8)
     val tan = Color(0xFFF1D9B8)
     val gold = Color(0xFFF2B84B)
-    val border = Color(0xFFD9C6AF)
     val onAccent = Color(0xFFFBE7D3)
-    val error = Color(0xFFB3261E)
 
     fun font(size: Int, weight: FontWeight = FontWeight.ExtraBold, color: Color = Color.Unspecified) =
         TextStyle(fontSize = size.sp, fontWeight = weight, color = color)
@@ -88,7 +132,7 @@ fun SecondaryButton(
     modifier: Modifier = Modifier,
     height: Dp = 44.dp,
     tint: Color = Theme.accent,
-) = KridaButton(text, onClick, modifier, height, true, Color.White, tint, BorderStroke(1.5.dp, if (tint == Theme.accent) Theme.accent else Theme.border))
+) = KridaButton(text, onClick, modifier, height, true, Theme.surface, tint, BorderStroke(1.5.dp, if (tint == Theme.accent) Theme.accent else Theme.border))
 
 @Composable
 private fun KridaButton(
@@ -126,7 +170,7 @@ fun CircleIconButton(@DrawableRes icon: Int, label: String, onClick: () -> Unit,
         modifier
             .size(44.dp)
             .clip(CircleShape)
-            .background(Color.White)
+            .background(Theme.surface)
             .border(1.5.dp, Theme.line, CircleShape)
             .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() },
         contentAlignment = Alignment.Center,
@@ -178,7 +222,7 @@ private const val MAX_SCALE = 1.5f
  */
 @Composable
 fun LandscapeStage(content: @Composable () -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxSize().background(Theme.cream)) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(Theme.backdropBrush)) {
         val turned = maxHeight > maxWidth
         Box(
             Modifier.fillMaxSize().then(if (turned) Modifier.windowInsetsPadding(gameInsets) else Modifier),

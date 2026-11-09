@@ -2,9 +2,7 @@ package com.ardeman.krida.ui
 
 import android.view.Choreographer
 import android.view.Surface
-import android.view.SurfaceView
 import android.view.TextureView
-import com.ardeman.krida.congklak.GlbWriter
 import com.google.android.filament.Camera
 import com.google.android.filament.ColorGrading
 import com.google.android.filament.Engine
@@ -24,11 +22,11 @@ import com.google.android.filament.gltfio.UbershaderProvider
 import java.nio.ByteBuffer
 
 /**
- * A Filament scene of one unlit voxel .glb on a [SurfaceView] or a [TextureView] (which Compose
- * can turn, clip and snapshot). Frames are only rendered while something changes: subclasses
- * animate in [step] and call [invalidate]. Call everything on the main thread.
+ * A Filament scene of one unlit voxel .glb on a transparent [TextureView] (which Compose can
+ * turn, clip and snapshot), so the screen's backdrop gradient shows around the board. Frames
+ * are only rendered while something changes: subclasses animate in [step] and call [invalidate]. Call everything on the main thread.
  */
-abstract class VoxelStage(attach: (UiHelper) -> Unit, glb: ByteBuffer, background: FloatArray) : Choreographer.FrameCallback {
+abstract class VoxelStage(textureView: TextureView, glb: ByteBuffer) : Choreographer.FrameCallback {
 
     /** True once a frame has been rendered to the current surface. */
     var hasDrawn = false
@@ -73,10 +71,11 @@ abstract class VoxelStage(attach: (UiHelper) -> Unit, glb: ByteBuffer, backgroun
         view.camera = camera
         view.colorGrading = ColorGrading.Builder().toneMapper(ToneMapper.Linear()).build(engine)
         view.multiSampleAntiAliasingOptions = View.MultiSampleAntiAliasingOptions().apply { enabled = true; sampleCount = 4 }
+        // Clear to transparent: the backdrop is drawn by Compose behind the view.
+        view.blendMode = View.BlendMode.TRANSLUCENT
         renderer.clearOptions = Renderer.ClearOptions().apply {
             clear = true
-            val bg = background.map(GlbWriter::srgbToLinear)
-            clearColor = floatArrayOf(bg[0], bg[1], bg[2], 1f)
+            clearColor = floatArrayOf(0f, 0f, 0f, 0f)
         }
 
         materials = UbershaderProvider(engine)
@@ -111,7 +110,8 @@ abstract class VoxelStage(attach: (UiHelper) -> Unit, glb: ByteBuffer, backgroun
                 dirty = true
             }
         }
-        attach(uiHelper)
+        uiHelper.isOpaque = false
+        uiHelper.attachTo(textureView)
     }
 
     /** The surface changed size ([width], [height]): set the camera's projection here. */
@@ -216,3 +216,4 @@ abstract class VoxelStage(attach: (UiHelper) -> Unit, glb: ByteBuffer, backgroun
         }
     }
 }
+

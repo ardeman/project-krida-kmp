@@ -1,6 +1,5 @@
 package com.ardeman.krida.congklak
 
-import android.view.SurfaceView
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -118,7 +117,7 @@ fun CongklakScreen(table: CongklakTable, onExit: () -> Unit) {
     }
     LaunchedEffect(mounted, rendered) {
         if (!mounted) return@LaunchedEffect
-        // A SurfaceView shows its frame a little after Filament renders it.
+        // The view shows its frame a little after Filament renders it.
         delay(if (rendered) 120L else 4000L)
         loading = false
     }
@@ -263,15 +262,16 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         else -> statusTheirs
     }
 
-    Box(Modifier.fillMaxSize().background(Theme.cream)) {
+    Box(Modifier.fillMaxSize().background(Theme.backdropBrush)) {
         // Folding or unfolding can turn the stage: build the view again for the new kind.
         key(turned) { AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
-                // A SurfaceView can't be turned with the stage; a TextureView can.
-                val view = if (turned) TextureView(ctx) else SurfaceView(ctx)
+                // A TextureView: it turns with the stage, and it is transparent, so the
+                // backdrop gradient shows around the board.
+                val view = TextureView(ctx)
                 view.also {
-                    renderer = (if (view is TextureView) BoardRenderer(view) else BoardRenderer(view as SurfaceView)).apply {
+                    renderer = BoardRenderer(view).apply {
                         this.viewSeat = viewSeat
                         onPitsProjected = { pitsOnScreen = it }
                         this.onFirstFrame = onFirstFrame
@@ -397,7 +397,7 @@ private fun StoreLabel(count: Int, tag: String, near: Boolean) {
         Text(count.toString(), style = Theme.font(22, FontWeight.Black, Color(0xFFFCEBD2)).copy(shadow = rimShadow))
         Text(
             tag,
-            style = Theme.font(11, FontWeight.Black, if (near) Color.White else Theme.ink),
+            style = Theme.font(11, FontWeight.Black, if (near) Color.White else Theme.inkOnLight),
             modifier = Modifier.background(if (near) Theme.accent else Theme.tan, RoundedCornerShape(8.dp)).padding(horizontal = 7.dp, vertical = 2.dp),
         )
     }
@@ -440,7 +440,7 @@ private fun Pill(
             .then(if (glow) Modifier.shadow(10.dp, CircleShape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
             .height(height)
             .clip(CircleShape)
-            .background(if (on) Theme.accent else Color.White)
+            .background(if (on) Theme.accent else Theme.surface)
             .then(if (on) Modifier else Modifier.border(1.5.dp, Theme.line, CircleShape))
             .padding(start = 6.dp, end = endPadding)
             .semantics(mergeDescendants = true) {},
@@ -454,7 +454,7 @@ private fun Pill(
 private fun Avatar(seats: Seats, seat: Int, on: Boolean, size: Dp) {
     val tint = if (on) Theme.accent else Theme.muted
     Box(
-        Modifier.size(size).background(if (on) Color.White else Color(0xFFEFE3D4), CircleShape).clearAndSetSemantics {},
+        Modifier.size(size).background(if (on) Theme.raised else Theme.track, CircleShape).clearAndSetSemantics {},
         contentAlignment = Alignment.Center,
     ) {
         if (seat == seats.botSeat) {
@@ -476,7 +476,7 @@ private fun GameOver(table: CongklakTable, seats: Seats, state: CongklakState, o
         Column(
             Modifier.width(380.dp)
                 .shadow(25.dp, RoundedCornerShape(28.dp), spotColor = Theme.ink)
-                .background(Color.White, RoundedCornerShape(28.dp))
+                .background(Theme.surface, RoundedCornerShape(28.dp))
                 .padding(start = 24.dp, end = 24.dp, top = 22.dp, bottom = 20.dp)
                 .semantics { isTraversalGroup = true },
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -520,7 +520,7 @@ private fun RowScope.ScoreTile(seats: Seats, seat: Int, score: Int, won: Boolean
     val shape = RoundedCornerShape(16.dp)
     Column(
         Modifier.weight(1f)
-            .background(if (won) Color(0xFFFBEFE3) else Color(0xFFF6F1EA), shape)
+            .background(if (won) Theme.highlight else Theme.surfaceSoft, shape)
             .then(if (won) Modifier.border(2.dp, Theme.accent, shape) else Modifier)
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -564,7 +564,7 @@ private fun RulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            Modifier.widthIn(max = 560.dp).background(Theme.cream, RoundedCornerShape(24.dp))
+            Modifier.widthIn(max = 560.dp).background(Theme.surface, RoundedCornerShape(24.dp))
                 .pointerInput(Unit) { detectTapGestures { } }
                 .padding(vertical = 16.dp),
         ) {

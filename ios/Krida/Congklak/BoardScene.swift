@@ -38,8 +38,10 @@ final class BoardScene {
     init() {
         view = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
         view.renderOptions = [.disableHDR, .disableMotionBlur, .disableDepthOfField, .disableGroundingShadows, .disableCameraGrain]
-        let bg = Self.floats(CongklakBoard.shared.background)
-        view.environment.background = .color(UIColor(red: CGFloat(bg[0]), green: CGFloat(bg[1]), blue: CGFloat(bg[2]), alpha: 1))
+        // Transparent: the screen's backdrop gradient (SwiftUI) shows around the board.
+        view.environment.background = .color(.clear)
+        view.backgroundColor = .clear
+        view.isOpaque = false
 
         let palette = Palette()
         palette.add(CongklakBoard.shared.boardMesh())

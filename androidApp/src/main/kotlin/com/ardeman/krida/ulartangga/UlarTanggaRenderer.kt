@@ -1,12 +1,10 @@
 package com.ardeman.krida.ulartangga
 
-import android.view.SurfaceView
 import android.view.TextureView
 import com.ardeman.krida.congklak.GlbWriter
 import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
-import com.google.android.filament.android.UiHelper
 import java.nio.ByteBuffer
 import kotlin.math.PI
 import kotlin.math.acos
@@ -42,11 +40,7 @@ object UlarTanggaGlb {
  * [recallDie] brings it back. Frames are
  * only rendered while something moves. Call everything on the main thread.
  */
-class UlarTanggaRenderer private constructor(attach: (UiHelper) -> Unit) :
-    VoxelStage(attach, UlarTanggaGlb.build(), UlarTanggaBoard.background) {
-
-    constructor(surfaceView: SurfaceView) : this({ it.attachTo(surfaceView) })
-    constructor(textureView: TextureView) : this({ it.attachTo(textureView) })
+class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, UlarTanggaGlb.build()) {
 
     private class Motion(val path: List<FloatArray>, val seconds: Float, val hop: Float) {
         var elapsed = 0f

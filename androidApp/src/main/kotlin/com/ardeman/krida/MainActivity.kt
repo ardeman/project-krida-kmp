@@ -106,7 +106,7 @@ import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.ui.Language
 import com.ardeman.krida.ui.LanguagePicker
 import com.ardeman.krida.ui.LoadingScreen
-import com.ardeman.krida.ui.rememberLightWordmark
+import com.ardeman.krida.ui.rememberWordmark
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
@@ -160,6 +160,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A system theme change recreates the activity, so reading it once here is enough.
+        Theme.dark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
         WindowCompat.setDecorFitsSystemWindows(window, false)
         hideSystemBars()
         Sounds.init(this)
@@ -239,13 +242,13 @@ class MainActivity : ComponentActivity() {
         var game by rememberSaveable { mutableStateOf(Game.CONGKLAK) }
         if (joining && game != Game.CONGKLAK) game = Game.CONGKLAK
         // Capped at the phone design's size (as on iOS), so a tall stage doesn't stretch the cards.
-        Box(Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets), contentAlignment = Alignment.Center) { Row(
+        Box(Modifier.fillMaxSize().background(Theme.backdropBrush).windowInsetsPadding(gameInsets), contentAlignment = Alignment.Center) { Row(
             Modifier.sizeIn(maxWidth = 874.dp, maxHeight = 460.dp).fillMaxSize().padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Column(Modifier.width(236.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Image(
-                    rememberLightWordmark(),
+                    rememberWordmark(),
                     contentDescription = stringResource(R.string.app_name),
                     modifier = Modifier.height(40.dp),
                     alignment = Alignment.CenterStart,
@@ -276,7 +279,7 @@ class MainActivity : ComponentActivity() {
 
     /**
      * The cards can end exactly at the column's bottom edge, so nothing tells a first-time
-     * player there is more below. While the column can still scroll: a cream fade over the
+     * player there is more below. While the column can still scroll: a backdrop fade over the
      * bottom edge and a chevron that scrolls to the end.
      */
     @Composable
@@ -286,11 +289,11 @@ class MainActivity : ComponentActivity() {
         AnimatedVisibility(scroll.canScrollForward, modifier, enter = fadeIn(), exit = fadeOut()) {
             Box(
                 Modifier.fillMaxWidth().height(44.dp)
-                    .background(Brush.verticalGradient(listOf(Theme.cream.copy(alpha = 0f), Theme.cream))),
+                    .background(Brush.verticalGradient(listOf(Theme.backdrop.copy(alpha = 0f), Theme.backdrop))),
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 Box(
-                    Modifier.size(32.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(Color.White)
+                    Modifier.size(32.dp).shadow(2.dp, CircleShape).clip(CircleShape).background(Theme.surface)
                         .clickable(role = Role.Button) { scope.launch { scroll.animateScrollTo(scroll.maxValue) } }
                         .semantics { contentDescription = more },
                     contentAlignment = Alignment.Center,
@@ -318,7 +321,7 @@ class MainActivity : ComponentActivity() {
         if (Ads.removeAdsPrice == null) return
         val shape = RoundedCornerShape(14.dp)
         Box(
-            Modifier.height(50.dp).clip(shape).background(Color.White).border(1.5.dp, Theme.accent, shape)
+            Modifier.height(50.dp).clip(shape).background(Theme.surface).border(1.5.dp, Theme.accent, shape)
                 .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); Ads.buyRemoveAds(this@MainActivity) }
                 .padding(horizontal = 14.dp),
             contentAlignment = Alignment.Center,
@@ -349,7 +352,7 @@ class MainActivity : ComponentActivity() {
         val levelName = stringResource(levelLabel(level))
         val shape = RoundedCornerShape(20.dp)
         Column(
-            Modifier.fillMaxWidth().clip(shape).background(Color.White).border(1.5.dp, Theme.line, shape)
+            Modifier.fillMaxWidth().clip(shape).background(Theme.surface).border(1.5.dp, Theme.line, shape)
                 .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -460,7 +463,7 @@ class MainActivity : ComponentActivity() {
             modifier = modifier.height(44.dp).semantics { contentDescription = hint },
             decorationBox = { inner ->
                 Box(
-                    Modifier.fillMaxSize().background(Color(0xFFFFFDF9), shape).border(1.5.dp, Theme.border, shape).padding(horizontal = 12.dp),
+                    Modifier.fillMaxSize().background(Theme.surfaceSoft, shape).border(1.5.dp, Theme.border, shape).padding(horizontal = 12.dp),
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     if (roomCode.isEmpty()) Text(stringResource(R.string.nearby_code), style = Theme.font(17, FontWeight.SemiBold, Theme.muted))
@@ -475,7 +478,7 @@ class MainActivity : ComponentActivity() {
         fun leave() { r.leave(); room = null }
         BackHandler(onBack = ::leave)
         Column(
-            Modifier.fillMaxSize().background(Theme.cream).windowInsetsPadding(gameInsets).padding(24.dp),
+            Modifier.fillMaxSize().background(Theme.backdropBrush).windowInsetsPadding(gameInsets).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(stringResource(R.string.congklak_title), style = Theme.font(24, FontWeight.Black, Theme.ink))
@@ -544,7 +547,7 @@ private fun UlarTanggaOptionChips() {
             val shape = RoundedCornerShape(10.dp)
             Box(
                 Modifier.height(34.dp).clip(shape)
-                    .background(if (on) Theme.chip else Color.White)
+                    .background(if (on) Theme.chip else Theme.surface)
                     .border(1.5.dp, if (on) Theme.accent else Theme.line, shape)
                     .toggleable(value = on, role = Role.Checkbox) { UlarTanggaSettings.chooseOptions(change(it)) }
                     .padding(horizontal = 12.dp),
@@ -600,7 +603,7 @@ private fun <T> Segmented(
                 Modifier.then(if (fill) Modifier.weight(1f) else Modifier).height(38.dp)
                     .then(if (on) Modifier.shadow(1.5.dp, shape) else Modifier)
                     .clip(shape)
-                    .background(if (on) Color.White else Color.Transparent)
+                    .background(if (on) Theme.raised else Color.Transparent)
                     .clickable(role = Role.Tab) { onChange(value) }
                     .semantics { selected = on }
                     .padding(horizontal = if (fill) 6.dp else 14.dp),

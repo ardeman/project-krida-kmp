@@ -21,8 +21,6 @@ object UlarTanggaBoard {
     val cameraTarget = floatArrayOf(-0.8f, 0f, 1.2f)
     const val CAMERA_VERTICAL_FOV_DEGREES = 38f
 
-    /** Background behind the board, sRGB (the same cream as congklak). */
-    val background = floatArrayOf(0.96f, 0.93f, 0.86f)
 
     private const val TILE = 2f
     private const val HALF = TILE * UlarTanggaGame.SIZE / 2

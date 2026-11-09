@@ -58,7 +58,7 @@ struct LanguagePicker: View {
                         .frame(height: 38 * s)
                         .background {
                             if on {
-                                RoundedRectangle(cornerRadius: 10 * s).fill(.white).shadow(color: .black.opacity(0.12), radius: 1.5)
+                                RoundedRectangle(cornerRadius: 10 * s).fill(Theme.raised).shadow(color: .black.opacity(0.12), radius: 1.5)
                             }
                         }
                 }

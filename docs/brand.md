@@ -28,10 +28,13 @@ outline the "Krida" letters into paths, so no font ships in the apps or on the w
 | Token | Light | Dark | Use |
 |---|---|---|---|
 | Aksen | `#C9783A` | `#E39A5C` | Icon background, links, primary actions |
-| Krem | `#FFF7EC` | — | Light background, die top |
-| Malam | `#1B1612` | — | Dark background |
+| Latar (backdrop) | radial glow `#F7D7B5` → `#E39A5C` | glow `#3A2A1E` → `#120E0B` | Behind menus, 3D boards and the website: the glow sits top-left (35 %, 25 %) and fades to the edge colour; solid stand-in is the edge colour |
+| Krem | `#FFF7EC` | — | Die top, cards on the web |
+| Malam | `#1B1612` | — | Dark surfaces (cards are `#2A221C`) |
 | Tinta | `#2B211A` | `#F6EADC` | Text, wordmark letters |
 | Kayu terang / Kayu / Kayu gelap | `#E3A66B` / `#B8743F` / `#8F552A` | same | Wood: boards, the K and the single pip on the die use Kayu gelap, so they stand out from the accent background |
+
+The apps and the website follow the system's light or dark setting. The 3D boards render on a transparent view, so the backdrop gradient shows around them.
 
 Player colours, seat 1–4: Merah `#D6453D`, Biru `#2F6FD1`, Hijau `#3E9A4F`, Kuning `#F0B429`.
 

@@ -1,15 +1,44 @@
 import SwiftUI
 
-/// Colors and type from the agreed UI mockup (warm cream, wood, terracotta accent).
+/// Colors and type from the agreed UI mockup (terracotta backdrop, wood, cream cards); same values as
+/// Android's Theme.kt. The screen colors follow the system's light or dark appearance. Wood, pit,
+/// seed and gold are the boards' own colors and stay the same in both.
 enum Theme {
-    static let cream = Color(hex: 0xFBF4EA)
-    static let ink = Color(hex: 0x2B1D14)
-    static let muted = Color(hex: 0x6E5A4B)
-    static let accent = Color(hex: 0xA65A26)
-    static let line = Color(hex: 0xEADCCB)
-    static let chip = Color(hex: 0xF6E6D3)
-    static let track = Color(hex: 0xF3EADF)
+    /// The backdrop's glow, top-left: a light terracotta, or a warm brown in dark appearance.
+    static let backdropGlow = Color(light: 0xF7D7B5, dark: 0x3A2A1E)
+    /// The backdrop's edges and its solid stand-in (fades, launch screen): the `Backdrop` color set.
+    static let backdrop = Color("Backdrop")
+    /// Screen backdrop behind menus and boards: a radial glow from the top-left, so the cream die
+    /// and the logo stand out. Same gradient as Android and the website.
+    static var backdropGradient: some View {
+        GeometryReader { geo in
+            RadialGradient(
+                colors: [backdropGlow, backdrop], center: UnitPoint(x: 0.35, y: 0.25),
+                startRadius: 0, endRadius: max(geo.size.width, geo.size.height) * 0.9
+            )
+        }
+    }
+    /// Cards, buttons and dialogs on the backdrop.
+    static let surface = Color(light: 0xFFFFFF, dark: 0x2A221C)
+    /// A softer card: the menu's game list, rows in a result list.
+    static let surfaceSoft = Color(light: 0xFFFBF5, dark: 0x241D17)
+    /// The highlighted row in a result list.
+    static let highlight = Color(light: 0xFBEFE3, dark: 0x3A2C20)
+    /// The chosen segment of a toggle, raised above `track`.
+    static let raised = Color(light: 0xFFFFFF, dark: 0x4A3C30)
+    static let ink = Color(light: 0x2B1D14, dark: 0xF6EADC)
+    /// Text on the boards' fixed light colors (tan, gold, seed), the same in both appearances.
+    static let inkOnLight = Color(hex: 0x2B1D14)
+    static let muted = Color(light: 0x5A4537, dark: 0xB7A593)
+    static let accent = Color(light: 0xA65A26, dark: 0xC9783A)
+    static let line = Color(light: 0xE2CFB7, dark: 0x3A3027)
+    static let chip = Color(light: 0xF6E6D3, dark: 0x3A2C20)
+    static let track = Color(light: 0xE8D7C1, dark: 0x2F2720)
+    static let border = Color(light: 0xD9C6AF, dark: 0x4A3D31)
+    static let error = Color(light: 0xB3261E, dark: 0xF2B8B5)
     static let wood = Color(hex: 0x8A5A2E)
+    /// The loading screen's seeds: wood, lighter in dark appearance so they show on Malam.
+    static let loadingSeed = Color(light: 0x8A5A2E, dark: 0xB8743F)
     static let woodShadow = Color(hex: 0x6B4320)
     static let woodDark = Color(hex: 0x6E4422)
     static let pit = Color(hex: 0x3F2611)
@@ -63,7 +92,7 @@ extension EnvironmentValues {
 /// landscape-only orientations (resizable scenes: iPad windows, an unfolded foldable) and
 /// hands over a portrait window, the stage turns the layout a quarter turn, as if the
 /// screen were locked to landscape. A landscape window taller than 4:3 gets a centered
-/// stage with cream bars above and below. Inside the stage, `uiScale`
+/// stage with backdrop bars above and below. Inside the stage, `uiScale`
 /// grows with the stage so an iPad shows the phone design bigger rather than emptier.
 ///
 /// A safe-area inset on one side only means a corner punch hole: the stage then takes the
@@ -105,7 +134,7 @@ struct LandscapeStage<Content: View>: View {
             .safeAreaPadding(island ? islandEdge : [], island ? max(insets.leading, insets.trailing) : 0)
             .ignoresSafeArea(.container, edges: hole == nil && !island ? [] : .horizontal)
         }
-        .background(Theme.cream.ignoresSafeArea())
+        .background(Theme.backdropGradient.ignoresSafeArea())
         .onAppear(perform: updateIsland)
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
             // The scene takes a moment to turn after the device does.
@@ -184,7 +213,7 @@ struct SecondaryButtonStyle: ButtonStyle {
                 .foregroundStyle(tint)
                 .padding(.horizontal, 18 * s)
                 .frame(height: height * s)
-                .background(.white.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 14 * s))
+                .background(Theme.surface.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 14 * s))
                 .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(tint == Theme.accent ? Theme.accent : Color(hex: 0xD9C6AF), lineWidth: 1.5))
                 .tapSound(configuration.isPressed)
         }
@@ -221,9 +250,20 @@ struct CircleIconButton: View {
                     }
                 }
                 .frame(width: 44 * s, height: 44 * s)
-                .background(.white, in: Circle())
+                .background(Theme.surface, in: Circle())
                 .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
         }
         .accessibilityLabel(Text(label))
+    }
+}
+
+extension Color {
+    /// A color that follows the system's light or dark appearance.
+    init(light: UInt32, dark: UInt32) {
+        func ui(_ hex: UInt32) -> UIColor {
+            UIColor(red: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
+                    blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
+        }
+        self.init(UIColor { $0.userInterfaceStyle == .dark ? ui(dark) : ui(light) })
     }
 }

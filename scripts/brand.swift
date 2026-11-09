@@ -15,6 +15,9 @@ import UniformTypeIdentifiers
 // MARK: Palette (keep in sync with docs/brand.md)
 
 enum Brand {
+    // Backdrop gradient edge (light / dark); the glow is #F7D7B5 / #3A2A1E (see docs/brand.md).
+    static let backdrop = "#E39A5C"
+    static let backdropDark = "#120E0B"
     static let krem = "#FFF7EC"
     static let malam = "#1B1612"
     static let ink = "#2B211A"
@@ -370,6 +373,7 @@ write(json([
 let assets = "ios/Krida/Assets.xcassets"
 write(json(["info": ["author": "xcode", "version": 1]]), to: "\(assets)/Contents.json")
 write(colorset(Brand.accent, Brand.accentDark), to: "\(assets)/AccentColor.colorset/Contents.json")
+write(colorset(Brand.backdrop, Brand.backdropDark), to: "\(assets)/Backdrop.colorset/Contents.json")
 write(svg(mark, size: markSize, ink: Brand.ink), to: "\(assets)/Wordmark.imageset/wordmark.svg")
 write(svg(mark, size: markSize, ink: Brand.inkDark), to: "\(assets)/Wordmark.imageset/wordmark-dark.svg")
 write(json([
@@ -412,12 +416,12 @@ func colorsXml(_ entries: [(String, String)]) -> String {
 }
 write(colorsXml([
     ("ic_launcher_background", Brand.accent),
-    ("krida_accent", Brand.accent), ("krida_ink", Brand.ink), ("krida_background", Brand.krem),
+    ("krida_accent", Brand.accent), ("krida_ink", Brand.ink), ("krida_background", Brand.backdrop),
     ("krida_kayu_terang", Brand.kayuTerang), ("krida_kayu", Brand.kayu), ("krida_kayu_gelap", Brand.kayuGelap),
     ("krida_merah", Brand.merah), ("krida_biru", Brand.biru), ("krida_hijau", Brand.hijau), ("krida_kuning", Brand.kuning),
 ]), to: "\(res)/values/brand_colors.xml")
 write(colorsXml([
-    ("krida_accent", Brand.accentDark), ("krida_ink", Brand.inkDark), ("krida_background", Brand.malam),
+    ("krida_accent", Brand.accentDark), ("krida_ink", Brand.inkDark), ("krida_background", Brand.backdropDark),
 ]), to: "\(res)/values-night/brand_colors.xml")
 
 print("Brand assets written.")

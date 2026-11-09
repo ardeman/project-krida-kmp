@@ -262,7 +262,7 @@ private struct CongklakBoardView: View {
             .onChange(of: geo.size) { _, size in DispatchQueue.main.async { layout(size) } }
         }
         .ignoresSafeArea()
-        .background(Theme.cream)
+        .background(Theme.backdropGradient)
         .onChange(of: table.notice) { _, notice in if notice != nil { model.noticeChanged() } }
         .sheet(isPresented: $showRules) { RulesSheet(tembakAfterStore: model.state.tembakAfterStore) }
     }
@@ -336,7 +336,7 @@ private struct CongklakBoardView: View {
             Spacer()
             VStack(spacing: 8 * s) {
                 if let notice = table.notice {
-                    Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Color(hex: 0xB3261E))
+                    Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
                 } else {
                     Label("Searah jarum jam · lumbungmu di kiri", systemImage: "arrow.clockwise")
                         .font(Theme.font(13 * s, .bold))
@@ -364,7 +364,7 @@ private struct CongklakBoardView: View {
         .padding(.trailing, 16 * s)
         .frame(height: 40 * s)
         .foregroundStyle(on ? .white : Theme.ink)
-        .background(on ? Theme.accent : .white, in: Capsule())
+        .background(on ? Theme.accent : Theme.surface, in: Capsule())
         .overlay(Capsule().stroke(on ? .clear : Theme.line, lineWidth: 1.5))
         .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6 * s)
         .accessibilityElement(children: .combine)
@@ -383,7 +383,7 @@ private struct CongklakBoardView: View {
         .padding(.trailing, 20 * s)
         .frame(height: 46 * s)
         .foregroundStyle(on ? .white : Theme.ink)
-        .background(on ? Theme.accent : .white, in: Capsule())
+        .background(on ? Theme.accent : Theme.surface, in: Capsule())
         .overlay(Capsule().stroke(on ? Theme.gold.opacity(0.45) : Theme.line, lineWidth: on ? 4 : 1.5).padding(on ? -2 : 0))
         .animation(.easeOut(duration: 0.2), value: on)
         .accessibilityElement(children: .combine)
@@ -399,7 +399,7 @@ private struct CongklakBoardView: View {
         }
         .foregroundStyle(on ? Theme.accent : Theme.muted)
         .frame(width: size, height: size)
-        .background(on ? Color.white : Color(hex: 0xEFE3D4), in: Circle())
+        .background(on ? Theme.raised : Theme.track, in: Circle())
         .accessibilityHidden(true)
     }
 
@@ -414,7 +414,7 @@ private struct CongklakBoardView: View {
                     Text("\(model.counts[pit])").font(Theme.font(22 * s, .black)).foregroundStyle(Color(hex: 0xFCEBD2))
                     Text(storeTag(near ? nearSeat : farSeat))
                         .font(Theme.font(11 * s, .black))
-                        .foregroundStyle(near ? .white : Theme.ink)
+                        .foregroundStyle(near ? .white : Theme.inkOnLight)
                         .padding(.horizontal, 7 * s)
                         .padding(.vertical, 2 * s)
                         .background(near ? Theme.accent : Theme.tan, in: RoundedRectangle(cornerRadius: 8 * s))
@@ -479,7 +479,7 @@ private struct CongklakBoardView: View {
             .padding(.top, 22 * s)
             .padding(.bottom, 20 * s)
             .frame(width: 380 * s)
-            .background(.white, in: RoundedRectangle(cornerRadius: 28 * s))
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 28 * s))
             .shadow(color: Theme.ink.opacity(0.35), radius: 25 * s, y: 20 * s)
             .foregroundStyle(Theme.ink)
             .accessibilityElement(children: .contain)
@@ -503,7 +503,7 @@ private struct CongklakBoardView: View {
         }
         .padding(.vertical, 8 * s)
         .frame(maxWidth: .infinity)
-        .background(won ? Color(hex: 0xFBEFE3) : Color(hex: 0xF6F1EA), in: RoundedRectangle(cornerRadius: 16 * s))
+        .background(won ? Theme.highlight : Theme.surfaceSoft, in: RoundedRectangle(cornerRadius: 16 * s))
         .overlay(RoundedRectangle(cornerRadius: 16 * s).stroke(won ? Theme.accent : .clear, lineWidth: 2))
     }
 
@@ -561,7 +561,7 @@ private struct RulesSheet: View {
                 }
                 .padding(24)
             }
-            .background(Theme.cream)
+            .background(Theme.surface)
             .navigationTitle(Text("Cara main"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

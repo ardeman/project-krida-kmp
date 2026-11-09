@@ -1,28 +1,22 @@
 package com.ardeman.krida.congklak
 
-import android.view.SurfaceView
 import android.view.TextureView
 import com.ardeman.krida.core.games.CongklakBoard
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
-import com.google.android.filament.android.UiHelper
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
 /**
- * Draws the voxel congklak board with Filament on a [SurfaceView] (the game) or a
- * [TextureView] (the menu card's preview, which Compose can clip and snapshot). Seeds glide toward the
+ * Draws the voxel congklak board with Filament on a transparent [TextureView] (the game, or the
+ * menu card's preview, which Compose clips and snapshots). Seeds glide toward the
  * targets set with [setSeedTargets]; frames are only rendered while something changes.
  * Call everything on the main thread.
  */
-class BoardRenderer private constructor(attach: (UiHelper) -> Unit) :
-    VoxelStage(attach, CongklakGlb.build(), CongklakBoard.background) {
-
-    constructor(surfaceView: SurfaceView) : this({ it.attachTo(surfaceView) })
-    constructor(textureView: TextureView) : this({ it.attachTo(textureView) })
+class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, CongklakGlb.build()) {
 
     /** Pit centers on screen, in pixels; updated on resize. */
     var onPitsProjected: ((List<FloatArray>) -> Unit)? = null

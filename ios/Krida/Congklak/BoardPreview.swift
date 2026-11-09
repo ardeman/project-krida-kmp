@@ -32,7 +32,7 @@ struct BoardPreview: View {
             .onAppear { draw(render) }
             .onChange(of: render) { _, size in draw(size) }
         }
-        .background(Theme.cream)
+        .background(Theme.backdropGradient)
         .accessibilityHidden(true)
     }
 

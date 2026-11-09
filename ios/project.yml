@@ -57,7 +57,8 @@ targets:
       path: Krida/Info.plist
       properties:
         CFBundleDisplayName: Krida
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: Backdrop
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
