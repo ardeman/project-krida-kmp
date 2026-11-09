@@ -22,7 +22,7 @@ class QuickMatchClient(private val game: String, private val playerCount: Int) {
     fun start(onEvent: (JsonObject) -> Unit, onError: () -> Unit) {
         if (closed || socket != null) return
         socket = httpClient.newWebSocket(
-            Request.Builder().url("${Krida.RELAY_URL}/v1/match/$game/$playerCount?flow=group").build(),
+            Request.Builder().url("${Krida.RELAY_URL}/v1/match/$game/$playerCount?flow=group&public=1").build(),
             object : WebSocketListener() {
                 private fun receive(text: String) {
                     main.post {

@@ -31,6 +31,8 @@ class HostSession<S, M>(
     val roomCode: String = RoomCode.generate(),
     private val random: Random = Random.Default,
     private val clock: () -> Long = defaultClock(),
+    /** Lobby capacity chosen by the host, bounded by the game's player limits. */
+    private val maxSeats: Int = rules.maxPlayers,
 ) : TransportListener {
 
     /** Swift-friendly constructor (Kotlin default arguments are not visible from Swift). */
@@ -269,7 +271,7 @@ class HostSession<S, M>(
         val s = seats.firstOrNull { it.peer == peer && it.connected } ?: return
         if (!changeColor(s, pick.color)) {
             // Refused: resend the lobby so the guest's picker shows the colour it still has.
-            if (!started) send(peer, Message.Lobby(players, you = seats.indexOf(s)))
+            if (!started) send(peer, Message.Lobby(players, you = seats.indexOf(s), capacity = capacity()))
         }
     }
 
@@ -341,7 +343,7 @@ class HostSession<S, M>(
         val list = players
         seats.forEachIndexed { i, s ->
             val peer = s.peer
-            if (peer != null && s.connected) send(peer, Message.Lobby(list, you = i))
+            if (peer != null && s.connected) send(peer, Message.Lobby(list, you = i, capacity = capacity()))
         }
         onPlayersChanged?.invoke(list)
     }
@@ -355,7 +357,7 @@ class HostSession<S, M>(
 
     private fun send(peer: String, message: Message) = transport.send(peer, Codec.encode(message))
 
-    private fun capacity(): Int = minOf(rules.maxPlayers, Krida.MAX_PLAYERS)
+    private fun capacity(): Int = minOf(rules.maxPlayers, Krida.MAX_PLAYERS, maxSeats.coerceAtLeast(rules.minPlayers))
 
     private fun newToken(): String =
         buildString { repeat(16) { append("0123456789abcdef"[random.nextInt(16)]) } }

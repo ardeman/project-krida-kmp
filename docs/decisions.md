@@ -91,6 +91,15 @@ in the same commit as the code.
   locally; congklak stays at two total seats. A partial human group stays online.
 - **Matchmaking UI alignment approved:** reuse the room header and compact status cards;
   see [mockup](mockups/matchmaking.svg). Implement Android first, then iOS next session.
+- **Public rooms and combined joining (2026-11-10):** online home offers Create room and
+  Join room. Creation puts Room setup on the left and Private / Public plus Create room
+  on the right; default Private. Public rooms are discoverable by matchmaking and still
+  accept code/QR joins. Private rooms accept code/QR only. Join room combines searching
+  with manual code/QR. Search prefers an available public lobby for the same game and
+  selected total seats, then retains group matchmaking and its existing fallback offers.
+  Waiting groups stay together. Existing public-room hosts keep their rule choices and
+  manual Start; full, started and disconnected rooms cannot receive matches. Approved
+  [mockup](mockups/public-rooms.md). Android and relay first; iOS next session.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 

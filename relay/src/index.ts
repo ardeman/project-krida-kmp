@@ -85,6 +85,9 @@ export default {
 } satisfies ExportedHandler<Env>;
 
 type Attachment = { role: "host" } | { role: "guest"; id: number };
+type RoomListing = { code: string; game: string; seats: number; public: boolean; started: boolean; bots: number };
+type Reservation = { token: string; expires: number };
+
 
 interface Bucket {
   tokens: number;
@@ -101,16 +104,63 @@ export class Room implements DurableObject {
   ) {}
 
   async fetch(request: Request): Promise<Response> {
-    const url = new URL(request.url);
-    return url.searchParams.get("role") === "host"
-      ? this.acceptHost(url.searchParams.get("key")!)
-      : this.acceptGuest();
+    return this.ctx.blockConcurrencyWhile(async () => {
+      const url = new URL(request.url);
+      // Internal DO routes are never exposed by the Worker's /v1 router.
+      if (url.pathname === "/reserve") return this.reserve(await request.json());
+      if (url.pathname === "/release") {
+        const { tokens } = await request.json() as { tokens: string[] };
+        const reservations = await this.reservations();
+        await this.ctx.storage.put("reservations", reservations.filter(r => !tokens.includes(r.token)));
+        return Response.json({ ok: true });
+      }
+      return url.searchParams.get("role") === "host"
+        ? this.acceptHost(url.searchParams.get("key")!, url)
+        : this.acceptGuest(url.searchParams.get("reservation"));
+    });
   }
 
-  private async acceptHost(key: string): Promise<Response> {
+  private async reservations(): Promise<Reservation[]> {
+    return ((await this.ctx.storage.get<Reservation[]>("reservations")) ?? []).filter(r => r.expires > Date.now());
+  }
+
+  private async reserve(body: unknown): Promise<Response> {
+    const { game, seats, count } = body as { game: string; seats: number; count: number };
+    const room = await this.ctx.storage.get<RoomListing>("listing");
+    const reservations = await this.reservations();
+    if (!room || !room.public || room.started || !this.hosts().length || room.game !== game || room.seats !== seats ||
+        !Number.isInteger(count) || count < 1 || 1 + room.bots + this.guests().length + reservations.length + count > room.seats) {
+      return Response.json({ tokens: [] });
+    }
+    const added = Array.from({ length: count }, () => ({ token: crypto.randomUUID(), expires: Date.now() + 15_000 }));
+    await this.ctx.storage.put("reservations", [...reservations, ...added]);
+    return Response.json({ tokens: added.map(r => r.token) });
+  }
+
+  private async publish(): Promise<void> {
+    const room = await this.ctx.storage.get<RoomListing>("listing");
+    if (!room) return;
+    const available = room.public && !room.started && this.hosts().length > 0;
+    const directory = this.env.GROUP_MATCHMAKERS.get(this.env.GROUP_MATCHMAKERS.idFromName(`${room.game}/${room.seats}`));
+    await directory.fetch(new Request("https://internal/public-room", {
+      method: "POST", body: JSON.stringify({ code: room.code, available }),
+    }));
+  }
+
+  private async acceptHost(key: string, url: URL): Promise<Response> {
     const stored = await this.ctx.storage.get<string>("hostKey");
     if (stored !== undefined && stored !== key) return rejectSocket(CLOSE.roomTaken, "room taken");
-    if (stored === undefined) await this.ctx.storage.put("hostKey", key);
+    if (stored === undefined) {
+      const game = url.searchParams.get("game");
+      const seats = Number(url.searchParams.get("seats"));
+      if (game !== null && !(game === "congklak" && seats === 2 || game === "ular_tangga" && seats >= 2 && seats <= 4 && Number.isInteger(seats))) {
+        return rejectSocket(CLOSE.badRequest, "bad room setup");
+      }
+      await this.ctx.storage.put("hostKey", key);
+      if (game !== null) await this.ctx.storage.put("listing", {
+        code: url.pathname.split("/").pop()!, game, seats, public: url.searchParams.get("public") === "1", started: false, bots: 0,
+      } satisfies RoomListing);
+    }
 
     // A host reconnecting before its old socket timed out takes over from it.
     for (const old of this.hosts()) closeQuietly(old, CLOSE.replaced, "replaced");
@@ -124,14 +174,24 @@ export class Room implements DurableObject {
       sendQuietly(server, frame(KIND_CONNECTED, guestId(guest)));
       sendQuietly(guest, frame(KIND_CONNECTED, HOST_PEER));
     }
+    await this.publish();
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  private async acceptGuest(): Promise<Response> {
+  private async acceptGuest(reservation: string | null): Promise<Response> {
     if ((await this.ctx.storage.get<string>("hostKey")) === undefined) {
       return rejectSocket(CLOSE.noRoom, "no such room");
     }
     const guests = this.guests();
+    const room = await this.ctx.storage.get<RoomListing>("listing");
+    const reservations = await this.reservations();
+    const held = reservation && reservations.find(r => r.token === reservation);
+    if (reservation && (!held || !room?.public || room.started || !this.hosts().length)) return rejectSocket(CLOSE.full, "reservation expired");
+    // A running game's reconnects still go through the host's rejoin-token validation.
+    if (room && !room.started && 1 + room.bots + guests.length + reservations.length - (held ? 1 : 0) >= room.seats) {
+      return rejectSocket(CLOSE.full, "room full");
+    }
+    if (held) await this.ctx.storage.put("reservations", reservations.filter(r => r.token !== reservation));
     if (guests.length >= MAX_GUESTS) return rejectSocket(CLOSE.full, "room full");
 
     const id = await this.nextGuestId(new Set(guests.map(guestId)));
@@ -154,6 +214,10 @@ export class Room implements DurableObject {
   }
 
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    return this.ctx.blockConcurrencyWhile(() => this.message(ws, message));
+  }
+
+  private async message(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
     if (typeof message === "string") return closeQuietly(ws, CLOSE.badRequest, "binary frames only");
     if (message.byteLength > MAX_MESSAGE) return closeQuietly(ws, CLOSE.tooLarge, "message too large");
     if (!this.allow(ws)) return closeQuietly(ws, CLOSE.rateLimited, "rate limited");
@@ -170,7 +234,37 @@ export class Room implements DurableObject {
       return;
     }
 
+    if (kind === 5) {
+      const room = await this.ctx.storage.get<RoomListing>("listing");
+      if (!room) return;
+      try {
+        const status = JSON.parse(new TextDecoder().decode(bytes.subarray(2)));
+        if (!Number.isInteger(status.bots) || status.bots < 0 || status.bots >= room.seats || typeof status.started !== "boolean") return;
+        room.bots = status.bots;
+        room.started ||= status.started;
+        await this.ctx.storage.put("listing", room);
+        if (room.started) await this.ctx.storage.delete("reservations");
+        await this.publish();
+      } catch { closeQuietly(ws, CLOSE.badRequest, "bad lobby status"); }
+      return;
+    }
+
     if (kind === KIND_DATA) {
+      const room = await this.ctx.storage.get<RoomListing>("listing");
+      if (room) {
+        try {
+          const message = JSON.parse(new TextDecoder().decode(bytes.subarray(2)));
+          if (message.type === "state" && !room.started) {
+            room.started = true;
+            await this.ctx.storage.put("listing", room);
+            await this.ctx.storage.delete("reservations");
+            await this.publish();
+          } else if (message.type === "lobby" && Array.isArray(message.players)) {
+            room.bots = message.players.filter((p: { bot?: boolean }) => p.bot).length;
+            await this.ctx.storage.put("listing", room);
+          }
+        } catch { /* Game payloads remain opaque unless they carry lobby lifecycle metadata. */ }
+      }
       const out = frame(KIND_DATA, HOST_PEER, bytes.subarray(2));
       for (const guest of this.guests()) {
         if (peer === BROADCAST || guestId(guest) === peer) sendQuietly(guest, out);
@@ -183,11 +277,11 @@ export class Room implements DurableObject {
   }
 
   async webSocketClose(ws: WebSocket, code: number): Promise<void> {
-    await this.left(ws, code === 1000);
+    await this.ctx.blockConcurrencyWhile(() => this.left(ws, code === 1000));
   }
 
   async webSocketError(ws: WebSocket): Promise<void> {
-    await this.left(ws);
+    await this.ctx.blockConcurrencyWhile(() => this.left(ws));
   }
 
   /** [onPurpose]: the socket closed normally (1000), i.e. the app left the room. */
@@ -203,6 +297,12 @@ export class Room implements DurableObject {
       // Not a replaced socket: the host is really gone. Guests wait; the alarm ends the room.
       for (const guest of this.guests(ws)) sendQuietly(guest, frame(KIND_DISCONNECTED, HOST_PEER));
       // A host leaving on purpose (1000) ends the room now, through the same alarm.
+      // Normal closure must not be discoverable while waiting for the cleanup alarm.
+      if (onPurpose) {
+        const room = await this.ctx.storage.get<RoomListing>("listing");
+        if (room) await this.ctx.storage.put("listing", { ...room, public: false });
+      }
+      await this.publish();
       await this.ctx.storage.setAlarm(Date.now() + (onPurpose ? 0 : HOST_GRACE_MS));
     }
   }
@@ -211,6 +311,7 @@ export class Room implements DurableObject {
   async alarm(): Promise<void> {
     if (this.hosts().length > 0) return;
     for (const guest of this.guests()) closeQuietly(guest, CLOSE.hostGone, "host gone");
+    await this.publish();
     await this.ctx.storage.deleteAll();
   }
 

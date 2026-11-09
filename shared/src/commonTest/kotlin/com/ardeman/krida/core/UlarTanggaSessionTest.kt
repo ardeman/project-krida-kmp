@@ -50,6 +50,50 @@ class UlarTanggaSessionTest {
     }
 
     @Test
+    fun selectedRoomCapacityLimitsHumansAndComputers() {
+        for (total in 2..3) {
+            val network = LoopbackNetwork()
+            val limited = HostSession(UlarTanggaGame, network.host, maxSeats = total)
+            limited.addLocalPlayer("Host", Platform.ANDROID)
+            repeat(total - 1) { limited.addBot("Computer", Platform.ANDROID, UlarTanggaBot) }
+            assertNull(limited.addBot("Extra", Platform.ANDROID, UlarTanggaBot))
+            assertNull(limited.addLocalPlayer("Extra", Platform.ANDROID))
+            var reason: String? = null
+            GuestSession(UlarTanggaGame, network.guest("late"), "Late", Platform.IOS, null).also {
+                it.onRejected = { rejection -> reason = rejection }
+            }
+            network.connect("late")
+            assertEquals(RejectReason.FULL, reason)
+            limited.start()
+            assertEquals(total, limited.state!!.positions.size)
+        }
+    }
+
+    @Test
+    fun guestsLearnSelectedLobbyCapacity() {
+        for (total in 2..4) {
+            val network = LoopbackNetwork()
+            val limited = HostSession(UlarTanggaGame, network.host, maxSeats = total)
+            limited.addLocalPlayer("Host", Platform.ANDROID)
+            val guest = GuestSession(UlarTanggaGame, network.guest("guest"), "Guest", Platform.IOS, null)
+            network.connect("guest")
+            assertEquals(total, guest.lobbyCapacity)
+            limited.start()
+            assertEquals(2, guest.state!!.positions.size)
+        }
+    }
+
+    @Test
+    fun selectedRoomCapacityStaysWithinGameLimits() {
+        for ((requested, expected) in listOf(0 to 2, 8 to 4)) {
+            val network = LoopbackNetwork()
+            val limited = HostSession(UlarTanggaGame, network.host, maxSeats = requested)
+            repeat(expected) { assertEquals(it, limited.addLocalPlayer("Player", Platform.ANDROID)) }
+            assertNull(limited.addLocalPlayer("Extra", Platform.ANDROID))
+        }
+    }
+
+    @Test
     fun fourPlayersThrowTheDiceOffAndFinish() {
         val guests = fullRoom()
         assertEquals(listOf(1, 2, 3), guests.map { it.seat })

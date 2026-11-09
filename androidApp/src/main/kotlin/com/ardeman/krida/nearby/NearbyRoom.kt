@@ -45,6 +45,8 @@ class NearbyRoom private constructor(
     /** Through the relay rather than over Bluetooth. */
     val online: Boolean,
     private val transport: Transport,
+    val publicRoom: Boolean = false,
+    private val hostSeats: Int? = null,
 ) {
     /**
      * Where the room stands; a guest goes SEARCHING → CONNECTING → LOBBY, or stops at a
@@ -127,7 +129,10 @@ class NearbyRoom private constructor(
     }
 
     fun start() {
-        if (canStart) begin?.invoke()
+        if (canStart) {
+            (transport as? OnlineHostTransport)?.updateLobby(players.count { it.bot }, started = true)
+            begin?.invoke()
+        }
     }
 
     /** Asks for pawn colour [color]: the host takes it at once, a guest asks the host. */
@@ -162,16 +167,17 @@ class NearbyRoom private constructor(
     fun retry(context: Context, name: String): NearbyRoom {
         leave()
         val game = hostGame
-        return if (isHost && game != null) host(context, name, game, online) else join(context, code, name, online)
+        return if (isHost && game != null) host(context, name, game, online, publicRoom = publicRoom, seats = hostSeats) else join(context, code, name, online)
     }
 
     private fun <S, M> hostSession(rules: GameRules<S, M>, name: String, transport: Transport): HostSession<S, M> {
         game = rules.id
-        maxPlayers = rules.maxPlayers
-        val session = HostSession(rules, transport, roomCode = code)
+        maxPlayers = hostSeats ?: rules.maxPlayers
+        val session = HostSession(rules, transport, roomCode = code, maxSeats = maxPlayers)
         colorCount = session.colorCount
         session.onPlayersChanged = { list ->
             players = list
+            (transport as? OnlineHostTransport)?.updateLobby(list.count { it.bot })
             fillQuickMatchSeats()
             canStart = session.canStart() && (quickMatchTarget == 0 ||
                 players.size == quickMatchTarget && players.count { !it.bot } >= quickMatchExpectedHumans)
@@ -187,6 +193,7 @@ class NearbyRoom private constructor(
         colorCount = (rules as? SeatColorRules<*>)?.colorCount ?: 0
         val session = GuestSession(rules, join)
         session.onLobby = { list ->
+            maxPlayers = session.lobbyCapacity
             players = list
             mySeat = session.seat
             stage = Stage.LOBBY
@@ -234,10 +241,12 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null): NearbyRoom {
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
-            val transport: Transport = if (online) OnlineHostTransport(roomCode) else BleHostTransport(context, roomCode)
-            val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport)
+            val gameId = if (game == Game.ULAR_TANGGA) UlarTanggaGame.id else CongklakGame.id
+            val total = if (game == Game.CONGKLAK) 2 else seats?.coerceIn(2, 4) ?: 4
+            val transport: Transport = if (online) OnlineHostTransport(roomCode, game = gameId, seats = total, publicRoom = publicRoom) else BleHostTransport(context, roomCode)
+            val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport, publicRoom = online && publicRoom, hostSeats = if (online) total else null)
             room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
@@ -274,8 +283,8 @@ class NearbyRoom private constructor(
             return room
         }
 
-        fun join(context: Context, code: String, name: String, online: Boolean = false): NearbyRoom {
-            val transport: Transport = if (online) OnlineGuestTransport(code) else BleGuestTransport(context, code)
+        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null): NearbyRoom {
+            val transport: Transport = if (online) OnlineGuestTransport(code, reservation) else BleGuestTransport(context, code)
             val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
             // Joining a room this device has a seat in asks for that seat back.
             val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online))

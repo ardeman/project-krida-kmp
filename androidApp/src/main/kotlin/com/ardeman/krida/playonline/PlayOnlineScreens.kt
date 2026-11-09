@@ -35,33 +35,14 @@ fun PlayOnlineScreen(
     onCancel: () -> Unit,
     createHost: (code: String, humans: Int, bots: Int, onReady: () -> Unit) -> NearbyRoom,
     onHost: (NearbyRoom) -> Unit,
-    onJoin: (String) -> Unit,
+    onJoin: (String, String?) -> Unit,
     onComputer: (Int) -> Unit,
+    target: Int = if (game == UlarTanggaGame.id) 4 else 2,
 ) {
-    var playerCount by remember(game) { mutableIntStateOf(if (game == UlarTanggaGame.id) 4 else 2) }
-    var searching by remember(game) { mutableStateOf(false) }
     var attempt by remember(game) { mutableIntStateOf(0) }
     NearbyFrame(gameTitle(game), subtitle(true), true, stringResource(R.string.nearby_cancel), onCancel) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            if (searching) key(attempt) {
-                MatchSearch(game, playerCount, onCancel, { attempt++ }, createHost, onHost, onJoin, onComputer)
-            } else Column(
-                Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = 22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Title(stringResource(R.string.play_online_quick_match))
-                Detail(stringResource(R.string.play_online_description))
-                if (game == UlarTanggaGame.id) {
-                    Text(stringResource(R.string.play_players), Modifier.fillMaxWidth(), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
-                    Segmented((2..4).map { it to "$it" }, playerCount, stringResource(R.string.play_players), { playerCount = it }, fill = true)
-                } else Detail(stringResource(R.string.match_two_players))
-                Detail(stringResource(R.string.match_fallback_hint))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SecondaryButton(stringResource(R.string.nearby_cancel), onCancel, Modifier.weight(1f), tint = Theme.muted)
-                    PrimaryButton(stringResource(R.string.button_search), { searching = true }, Modifier.weight(1f))
-                }
-            }
+            key(attempt) { MatchSearch(game, target, onCancel, { attempt++ }, createHost, onHost, onJoin, onComputer) }
         }
     }
 }
@@ -74,7 +55,7 @@ private fun MatchSearch(
     onRetry: () -> Unit,
     createHost: (String, Int, Int, () -> Unit) -> NearbyRoom,
     onHost: (NearbyRoom) -> Unit,
-    onJoin: (String) -> Unit,
+    onJoin: (String, String?) -> Unit,
     onComputer: (Int) -> Unit,
 ) {
     val client = remember { QuickMatchClient(game, target) }
@@ -128,7 +109,7 @@ private fun MatchSearch(
                             transferred = true
                             onHost(room)
                         }
-                        "guest" -> onJoin(event["code"]!!.jsonPrimitive.content)
+                        "guest" -> onJoin(event["code"]!!.jsonPrimitive.content, event["reservation"]?.jsonPrimitive?.content)
                         else -> fail()
                     }
                 }

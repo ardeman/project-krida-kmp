@@ -51,6 +51,7 @@ jobs:
           for i in $(seq 1 60); do curl -sf localhost:8787/ && break; sleep 1; done
           npm run smoke || { cat dev.log; exit 1; }
           npm run smoke:group || { cat dev.log; exit 1; }
+          node scripts/smoke-public.mjs ws://localhost:8787 || { cat dev.log; exit 1; }
 
       - name: Deploy
         run: |

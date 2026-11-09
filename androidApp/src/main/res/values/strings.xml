@@ -244,4 +244,19 @@
     <string name="match_preparing_detail">Players found. Connecting to the host.</string>
     <string name="match_play_humans">Play with %1$d players</string>
     <string name="match_solo_detail">No opponent found. Choose the total players, including you, and play against computers.</string>
+    <string name="room_setup">Room setup</string>
+    <string name="room_create">Create room</string>
+    <string name="room_join">Join room</string>
+    <string name="room_who_can_join">Who can join?</string>
+    <string name="room_private">Private</string>
+    <string name="room_public">Public</string>
+    <string name="room_public_detail">Matchmaking can find your room.</string>
+    <string name="room_private_detail">Only players with your code or QR can join.</string>
+    <string name="room_code_also_works">Friends can still use its code or QR.</string>
+    <string name="room_find">Find a room</string>
+    <string name="room_find_detail">Join a public room or find other players.</string>
+    <string name="room_find_match">Find a match</string>
+    <string name="room_have_code">Have a room code?</string>
+    <string name="room_join_code_detail">Join a public or private room directly.</string>
+    <string name="room_scan_qr">Scan QR</string>
 </resources>

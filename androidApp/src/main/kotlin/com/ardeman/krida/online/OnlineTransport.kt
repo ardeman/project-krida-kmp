@@ -39,6 +39,7 @@ abstract class OnlineTransport(protected val code: String) : Transport {
     /** Bumped on every connect, so callbacks from an old socket are ignored. */
     private var generation = 0
 
+    protected open fun onSocketOpen() {}
     protected abstract fun query(): String
     protected abstract fun onFrame(kind: Int, peer: Int, payload: ByteArray)
     /** The socket dropped (it may come back). */
@@ -71,7 +72,7 @@ abstract class OnlineTransport(protected val code: String) : Transport {
         val request = Request.Builder().url("${Krida.RELAY_URL}/v1/rooms/$code?${query()}").build()
         socket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                main.post { if (gen == generation && !closed) { attempt = 0; downSince = 0; onReady?.invoke() } }
+                main.post { if (gen == generation && !closed) { attempt = 0; downSince = 0; onSocketOpen(); onReady?.invoke() } }
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
@@ -157,10 +158,32 @@ abstract class OnlineTransport(protected val code: String) : Transport {
  * decimal string. When this phone's own socket drops, every guest is reported gone, and the
  * relay reports them back once the socket is up again.
  */
-class OnlineHostTransport(code: String, private val key: String = newHostKey()) : OnlineTransport(code) {
+class OnlineHostTransport(
+    code: String,
+    private val key: String = newHostKey(),
+    private val game: String? = null,
+    private val seats: Int = 4,
+    private val publicRoom: Boolean = false,
+) : OnlineTransport(code) {
+    private var lobbyBots = 0
+    private var started = false
+
+    fun updateLobby(bots: Int, started: Boolean = this.started) {
+        if (lobbyBots == bots && this.started == started) return
+        lobbyBots = bots
+        this.started = started
+        sendLobbyStatus()
+    }
+
+    private fun sendLobbyStatus() {
+        if (game != null) sendFrame(5, 0, "{\"bots\":$lobbyBots,\"started\":$started}".encodeToByteArray())
+    }
+
+    override fun onSocketOpen() = sendLobbyStatus()
+
     private val guests = LinkedHashSet<Int>()
 
-    override fun query() = "role=host&key=$key"
+    override fun query() = "role=host&key=$key" + (game?.let { "&game=$it&seats=$seats&public=${if (publicRoom) 1 else 0}" } ?: "")
 
     override fun send(peer: String?, data: ByteArray) {
         val id = if (peer == null) 0 else peer.toIntOrNull()?.takeIf { it in guests } ?: return
@@ -188,10 +211,12 @@ class OnlineHostTransport(code: String, private val key: String = newHostKey()) 
 }
 
 /** Joining an online room by code. The host is peer [TransportListener.HOST_PEER]. */
-class OnlineGuestTransport(code: String) : OnlineTransport(code) {
+class OnlineGuestTransport(code: String, private var reservation: String? = null) : OnlineTransport(code) {
     private var hostHere = false
 
-    override fun query() = "role=guest"
+    override fun query() = "role=guest" + (reservation?.let { "&reservation=$it" } ?: "")
+
+    override fun onSocketOpen() { reservation = null }
 
     override fun send(peer: String?, data: ByteArray) = sendFrame(DATA, 0, data)
 

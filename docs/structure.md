@@ -38,6 +38,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Lobby, join, QR, connecting screens | `nearby/NearbyScreens.kt` | `Nearby/NearbyScreens.swift` |
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |
 | Dropped-player countdown | `online/Waiting.kt` | `Nearby/Waiting.swift` |
+| Online create/join setup | `playonline/OnlineRoomScreens.kt` | Pending; existing `Nearby/NearbyScreens.swift` |
 | Quick match | `playonline/PlayOnlineScreens.kt`, `QuickMatchClient.kt` | `PlayOnline/PlayOnlineScreens.swift`, `QuickMatchClient.swift` |
 | BLE | `ble/BleHostTransport.kt`, `BleGuestTransport.kt` | `Transport/BleHostTransport.swift`, `BleGuestTransport.swift` |
 | LAN | `lan/LanTransport.kt` | `Transport/LanTransport.swift` |

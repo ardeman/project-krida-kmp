@@ -64,7 +64,7 @@ sealed class Message {
     /** host -> each guest: player list before the game starts. [you] is the receiver's seat. */
     @Serializable
     @SerialName("lobby")
-    data class Lobby(val players: List<PlayerInfo>, val you: Int) : Message()
+    data class Lobby(val players: List<PlayerInfo>, val you: Int, val capacity: Int? = null) : Message()
 
     /**
      * guest -> host, before the game starts: "I want this pawn colour". The host takes it if

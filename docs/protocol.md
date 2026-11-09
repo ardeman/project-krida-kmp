@@ -30,7 +30,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?` |
 | `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
-| `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves) |
+| `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves), `capacity?` (selected lobby size; absent = game maximum) |
 | `color` | guest → host | `color` (pawn colour wanted, before the game starts) |
 | `intent` | guest → host | `seq`, `move` |
 | `state` | host → all | `seq`, `turn`, `finished`, `state`, `players`, `last?` |
@@ -231,6 +231,44 @@ computer-seat changes. Computers still run only on the authoritative host.
 Queue membership, deadlines and agreement live in socket attachments, and alarms implement
 the deadlines, so a Durable Object waking from hibernation preserves the search. A completed
 group never admits new queued players.
+
+## Public online rooms (optional discovery extension)
+
+A new host may add `game=<GAME>&seats=<TOTAL>&public=1` to its existing authenticated
+room WebSocket query. Valid combinations are congklak/2 and ular_tangga/2–4. Omitting
+`public=1` keeps the room private; omitting all metadata retains legacy room behavior.
+Metadata is fixed on the first authenticated host connection; another key cannot publish
+or change the room. Public/private controls discovery, not access by code or QR.
+
+Binary relay kind `5` is optional host → relay lobby status, with peer `0` and UTF-8 JSON
+payload `{ "bots": <count>, "started": <boolean> }`. It is never forwarded to guests.
+Guests cannot send status. Hosts resend their latest status after reconnecting; `started`
+is monotonic for the room lifetime. The relay also recognizes outgoing host `lobby`/`state`
+envelopes for seat count and start lifecycle; game-specific rules/state remain on the host.
+Existing kinds retain their meanings and the game-session protocol remains v1.
+
+New group-search clients add `&public=1` to `?flow=group`. Their tickets stay separate from
+older clients' groups. Before preparing a new group room, the matchmaker checks public
+lobbies for the same game and selected total seats. It also checks while waiting, so new
+public rooms can receive queued groups. A group is transferred together only when it fits.
+When none fits, existing full-group preparation, offers and local fallback remain unchanged.
+
+A public-room match sends `{ "type": "matched", "role": "guest", "code": <CODE>,
+"reservation": <TOKEN>, "target": <TOTAL>, "seats": <TOTAL> }`. `reservation` is a new
+optional field. That guest connects using `?role=guest&reservation=<TOKEN>`. Tokens hold
+one seat each for 15 seconds, are consumed once, and are omitted on socket reconnect.
+Reservations, live sockets and computer seats count toward lobby capacity; code joins
+cannot take held seats. Cancelled in-flight transfers release reservations. After a
+match is delivered, abandoned tokens expire automatically. If a host fills seats with
+computers or starts before admission, the relay can reject a reservation with `4009`;
+clients retain the existing failure/retry flow. Started games still admit ordinary rejoin
+connections for the host to validate using their session rejoin token.
+
+Room publication, reservation and release use internal DO fetches unreachable through the
+public Worker router. Rooms without a connected host, closed/started rooms, and full
+lobbies cannot provide new reservations. The authoritative room rechecks eligibility and
+serializes reservations with manual admissions. Public hosts keep their settings and
+manual Start; matching into an existing room does not elect another host.
 
 ## Compatibility rule
 

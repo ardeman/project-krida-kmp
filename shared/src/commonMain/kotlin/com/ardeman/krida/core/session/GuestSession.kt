@@ -27,6 +27,10 @@ class GuestSession<S, M>(
         private set
     var rejoinToken: String? = rejoinToken
         private set
+    /** Optional host-selected lobby size; older hosts use the game maximum. */
+    var lobbyCapacity: Int = rules.maxPlayers
+        private set
+
     var players: List<PlayerInfo> = emptyList()
         private set
     var state: S? = null
@@ -123,6 +127,7 @@ class GuestSession<S, M>(
                 rejoinToken = msg.rejoinToken
             }
             is Message.Lobby -> {
+                lobbyCapacity = (msg.capacity ?: rules.maxPlayers).coerceIn(rules.minPlayers, rules.maxPlayers)
                 seat = msg.you
                 players = msg.players
                 onLobby?.invoke(players)

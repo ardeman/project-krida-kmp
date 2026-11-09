@@ -236,4 +236,19 @@
     <string name="match_preparing_detail">Pemain ketemu. Menghubungkan ke host.</string>
     <string name="match_play_humans">Main %1$d pemain</string>
     <string name="match_solo_detail">Belum ada lawan. Pilih jumlah pemain termasuk kamu, lalu main melawan komputer.</string>
+    <string name="room_setup">Pengaturan room</string>
+    <string name="room_create">Buat room</string>
+    <string name="room_join">Gabung room</string>
+    <string name="room_who_can_join">Siapa yang bisa gabung?</string>
+    <string name="room_private">Privat</string>
+    <string name="room_public">Publik</string>
+    <string name="room_public_detail">Room kamu bisa ditemukan lewat pencarian pemain.</string>
+    <string name="room_private_detail">Hanya pemain dengan kode atau QR kamu yang bisa gabung.</string>
+    <string name="room_code_also_works">Teman tetap bisa pakai kode atau QR room.</string>
+    <string name="room_find">Cari room</string>
+    <string name="room_find_detail">Gabung room publik atau cari pemain lain.</string>
+    <string name="room_find_match">Cari pemain</string>
+    <string name="room_have_code">Punya kode room?</string>
+    <string name="room_join_code_detail">Langsung gabung room publik atau privat.</string>
+    <string name="room_scan_qr">Pindai QR</string>
 </resources>

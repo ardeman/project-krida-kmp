@@ -159,7 +159,10 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
-            if (room.isHost) HostCode(room.code, room.online) else JoinedNote(room, names)
+            if (room.isHost) {
+                if (room.online) Text(stringResource(if (room.publicRoom) R.string.room_public else R.string.room_private), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
+                HostCode(room.code, room.online)
+            } else JoinedNote(room, names)
         }
         Column(
             Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
@@ -514,7 +517,7 @@ fun JoinScreen(
 
 /** One text field drawn as [length] letter boxes; the next box to fill is outlined while typing. */
 @Composable
-private fun CodeBoxes(code: String, length: Int, valid: Boolean, onCode: (String) -> Unit, onDone: () -> Unit) {
+internal fun CodeBoxes(code: String, length: Int, valid: Boolean, onCode: (String) -> Unit, onDone: () -> Unit, compact: Boolean = false) {
     val hint = stringResource(R.string.nearby_code_hint)
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
@@ -533,7 +536,7 @@ private fun CodeBoxes(code: String, length: Int, valid: Boolean, onCode: (String
                     val active = focused && i == code.length.coerceAtMost(length - 1)
                     val shape = RoundedCornerShape(14.dp)
                     Box(
-                        Modifier.size(if (wide) 54.dp else 42.dp, 64.dp).clip(shape)
+                        Modifier.size(if (wide) 54.dp else 42.dp, if (compact) 48.dp else 64.dp).clip(shape)
                             .background(if (active) Theme.surface else Theme.chip)
                             .border(2.dp, if (active) Theme.accent else Theme.line, shape),
                         contentAlignment = Alignment.Center,

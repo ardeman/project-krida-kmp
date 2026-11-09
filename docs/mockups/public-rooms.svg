@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1796" height="948" viewBox="0 0 1796 948">
+<rect width="1796" height="948" fill="#191512"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Create room / Light</text>
+<defs><radialGradient id="bg00" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg00)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Create room</text>
+<text x="464" y="146" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Who can join?</text>
+<rect x="464" y="160" width="176" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="552" y="188" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Private</text>
+<rect x="650" y="160" width="180" height="44" rx="12" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="740" y="188" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Public</text>
+<text x="464" y="232" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Matchmaking can find your room.</text>
+<text x="464" y="255" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Friends can still use its code or QR.</text>
+<rect x="464" y="314" width="366" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="647" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Create room</text>
+<text x="44" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Room setup</text>
+<text x="44" y="150" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Players</text>
+<rect x="44" y="164" width="116" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="102" y="192" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">2</text>
+<rect x="169" y="164" width="116" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="227" y="192" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">3</text>
+<rect x="294" y="164" width="116" height="44" rx="12" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="352" y="192" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">4</text>
+<text x="44" y="239" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Your usual game options stay here.</text>
+<text x="44" y="264" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">You start the game from the lobby.</text>
+</g>
+<text x="906" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Create room / Dark</text>
+<defs><radialGradient id="bg01" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg01)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Create room</text>
+<text x="464" y="146" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Who can join?</text>
+<rect x="464" y="160" width="176" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="552" y="188" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Private</text>
+<rect x="650" y="160" width="180" height="44" rx="12" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="740" y="188" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Public</text>
+<text x="464" y="232" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Matchmaking can find your room.</text>
+<text x="464" y="255" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Friends can still use its code or QR.</text>
+<rect x="464" y="314" width="366" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="647" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Create room</text>
+<text x="44" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Room setup</text>
+<text x="44" y="150" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Players</text>
+<rect x="44" y="164" width="116" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="102" y="192" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">2</text>
+<rect x="169" y="164" width="116" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="227" y="192" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">3</text>
+<rect x="294" y="164" width="116" height="44" rx="12" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="352" y="192" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">4</text>
+<text x="44" y="239" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Your usual game options stay here.</text>
+<text x="44" y="264" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">You start the game from the lobby.</text>
+</g>
+<text x="16" y="498" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Join room / Light</text>
+<defs><radialGradient id="bg10" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,512)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg10)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="44" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Find a room</text>
+<text x="44" y="146" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Join a public room or find other players.</text>
+<text x="44" y="180" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Players</text>
+<rect x="44" y="194" width="116" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="102" y="222" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">2</text>
+<rect x="169" y="194" width="116" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="227" y="222" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">3</text>
+<rect x="294" y="194" width="116" height="44" rx="12" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="352" y="222" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">4</text>
+<text x="44" y="273" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">No match? Keep searching or play bots.</text>
+<rect x="44" y="314" width="366" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="227.0" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Find a match</text>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Have a room code?</text>
+<text x="464" y="146" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Join a public or private room directly.</text>
+<rect x="464" y="170" width="366" height="48" rx="8" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="647" y="201" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">A B C D E F</text>
+<rect x="464" y="244" width="366" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="647.0" y="272" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Scan QR</text>
+<rect x="464" y="314" width="366" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="647.0" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Join room</text>
+</g>
+<text x="906" y="498" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Join room / Dark</text>
+<defs><radialGradient id="bg11" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,512)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg11)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="44" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Find a room</text>
+<text x="44" y="146" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Join a public room or find other players.</text>
+<text x="44" y="180" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Players</text>
+<rect x="44" y="194" width="116" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="102" y="222" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">2</text>
+<rect x="169" y="194" width="116" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="227" y="222" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">3</text>
+<rect x="294" y="194" width="116" height="44" rx="12" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="352" y="222" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">4</text>
+<text x="44" y="273" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">No match? Keep searching or play bots.</text>
+<rect x="44" y="314" width="366" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="227.0" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Find a match</text>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Have a room code?</text>
+<text x="464" y="146" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="start">Join a public or private room directly.</text>
+<rect x="464" y="170" width="366" height="48" rx="8" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="647" y="201" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">A B C D E F</text>
+<rect x="464" y="244" width="366" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="647.0" y="272" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Scan QR</text>
+<rect x="464" y="314" width="366" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="647.0" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Join room</text>
+</g>
+</svg>

@@ -1,3 +1,4 @@
+import type { Env } from "./index";
 /** Opt-in group matchmaking. Socket attachments survive Durable Object hibernation. */
 type Ticket = {
   group: string;
@@ -10,31 +11,43 @@ type Ticket = {
   maxPlayers?: number;
   seats?: number;
   host?: boolean;
+  discover?: boolean;
 };
 
 export class GroupMatchmaker implements DurableObject {
-  constructor(private ctx: DurableObjectState) {}
+  constructor(private ctx: DurableObjectState, private env?: Env) {}
+
+  private matching = new Set<string>();
 
   async fetch(request: Request): Promise<Response> {
+    if (new URL(request.url).pathname === "/public-room") {
+      const { code, available } = await request.json() as { code: string; available: boolean };
+      if (available) await this.ctx.storage.put(`public:${code}`, true);
+      else await this.ctx.storage.delete(`public:${code}`);
+      // Do not call back into the publishing Room during this request.
+      await this.ctx.storage.setAlarm(Date.now() + 1);
+      return Response.json({ ok: true });
+    }
     if (request.headers.get("Upgrade") !== "websocket") return new Response("expected websocket", { status: 426 });
+    const discover = new URL(request.url).searchParams.get("public") === "1";
     const target = Number(new URL(request.url).pathname.split("/").pop());
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     await this.expire();
     const waiting = this.members().find(ws => {
       const t = this.ticket(ws);
-      return t.target === target && (t.phase === "searching" || t.phase === "offer") && this.group(t.group).length < target;
+      return t.discover === discover && t.target === target && (t.phase === "searching" || t.phase === "offer") && this.group(t.group).length < target;
     });
     const first = waiting && this.ticket(waiting);
     server.serializeAttachment({
-      group: first?.group ?? this.code(), target,
+      discover, group: first?.group ?? this.code(), target,
       deadline: first?.deadline ?? Date.now() + 20_000,
       phase: first?.phase ?? "searching", consent: false, revision: first?.revision ?? 0,
       maxPlayers: new URL(request.url).pathname.includes("/congklak/") ? 2 : 4,
     } satisfies Ticket);
     // Membership changes invalidate prior consent: everyone sees the new composition.
     this.resetConsent(this.ticket(server).group);
-    this.update(this.ticket(server).group);
+    await this.update(this.ticket(server).group);
     await this.schedule();
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -66,10 +79,10 @@ export class GroupMatchmaker implements DurableObject {
     } else if (current.phase === "offer") {
       if (action === "accept_bots" && revision === current.revision) {
         ws.serializeAttachment({ ...current, consent: true, humanConsent: false });
-        this.update(current.group);
+        await this.update(current.group);
       } else if (action === "accept_humans" && revision === current.revision && this.group(current.group).length >= 2) {
         ws.serializeAttachment({ ...current, consent: false, humanConsent: true });
-        this.update(current.group);
+        await this.update(current.group);
       } else if (action === "play_solo" && revision === current.revision && this.group(current.group).length === 1 &&
           Number.isInteger(seats) && seats >= 2 && seats <= (current.maxPlayers ?? current.target)) {
         this.send(ws, { type: "matched", role: "solo", target: current.target, seats });
@@ -79,7 +92,7 @@ export class GroupMatchmaker implements DurableObject {
         for (const member of this.group(current.group)) {
           member.serializeAttachment({ ...this.ticket(member), phase: "searching", consent: false, humanConsent: false, revision: current.revision + 1, deadline: Date.now() + 20_000 });
         }
-        this.update(current.group);
+        await this.update(current.group);
       }
     }
     await this.schedule();
@@ -90,11 +103,15 @@ export class GroupMatchmaker implements DurableObject {
     if (t.phase === "done") return;
     ws.serializeAttachment({ ...t, phase: "done" });
     if (t.phase === "preparing") this.fail(t.group);
-    else { this.resetConsent(t.group); this.update(t.group); }
+    else { this.resetConsent(t.group); await this.update(t.group); }
     await this.schedule();
   }
   async webSocketError(ws: WebSocket): Promise<void> { await this.webSocketClose(ws); }
-  async alarm(): Promise<void> { await this.expire(); await this.schedule(); }
+  async alarm(): Promise<void> {
+    await this.expire();
+    for (const id of new Set(this.members().filter(ws => this.ticket(ws).discover).map(ws => this.ticket(ws).group))) await this.update(id);
+    await this.schedule();
+  }
 
   private ticket(ws: WebSocket): Ticket { return ws.deserializeAttachment() as Ticket; }
   private members(): WebSocket[] { return this.ctx.getWebSockets().filter(ws => ws.deserializeAttachment() && this.ticket(ws).phase !== "done"); }
@@ -104,11 +121,41 @@ export class GroupMatchmaker implements DurableObject {
     const revision = Math.max(0, ...group.map(ws => this.ticket(ws).revision)) + 1;
     for (const ws of group) ws.serializeAttachment({ ...this.ticket(ws), consent: false, humanConsent: false, revision });
   }
-  private update(id: string): void {
+  private async update(id: string): Promise<void> {
     const group = this.group(id);
     if (!group.length) return;
     const t = this.ticket(group[0]);
-    if (t.phase === "preparing") return;
+    if (t.phase === "preparing" || this.matching.has(id)) return;
+    if (t.discover && this.env) {
+      this.matching.add(id);
+      try {
+        const listings = await this.ctx.storage.list<boolean>({ prefix: "public:" });
+        for (const key of listings.keys()) {
+          const code = key.slice(7);
+          const room = this.env.ROOMS.get(this.env.ROOMS.idFromName(code));
+          const game = t.maxPlayers === 2 ? "congklak" : "ular_tangga";
+          const response = await room.fetch(new Request("https://internal/reserve", { method: "POST",
+            body: JSON.stringify({ game, seats: t.target, count: group.length }) }));
+          const { tokens } = await response.json() as { tokens: string[] };
+          if (tokens.length !== group.length) continue;
+          const current = this.group(id);
+          if (current.length !== group.length || !group.every(ws => current.includes(ws)) || this.ticket(group[0]).revision !== t.revision) {
+            await room.fetch(new Request("https://internal/release", { method: "POST", body: JSON.stringify({ tokens }) }));
+            return;
+          }
+          group.forEach((ws, i) => {
+            this.send(ws, { type: "matched", role: "guest", code, reservation: tokens[i], target: t.target, seats: t.target });
+            ws.serializeAttachment({ ...this.ticket(ws), phase: "done" });
+            ws.close(1000, "matched");
+          });
+          return;
+        }
+      } catch {
+        // Directory/room outages must not strand a queue; a later alarm retries discovery.
+      } finally { this.matching.delete(id); }
+      // Membership may have changed while the Room checked availability. Its next alarm retries.
+      if (this.group(id).length !== group.length || this.ticket(group[0]).revision !== t.revision) return;
+    }
     const humansOnly = group.length >= 2 && group.every(ws => this.ticket(ws).humanConsent);
     if (group.length === t.target || (t.phase === "offer" && (humansOnly || group.every(ws => this.ticket(ws).consent)))) {
       if (group.length === 1) {
@@ -133,12 +180,14 @@ export class GroupMatchmaker implements DurableObject {
   private async expire(): Promise<void> {
     const groups = new Set(this.members().map(ws => this.ticket(ws).group));
     for (const id of groups) {
-      const group = this.group(id), t = this.ticket(group[0]);
+      const group = this.group(id);
+      if (!group.length) continue;
+      const t = this.ticket(group[0]);
       if (t.deadline > Date.now()) continue;
       if (t.phase === "preparing") this.fail(id);
       else if (t.phase === "searching") {
         group.forEach(ws => ws.serializeAttachment({ ...this.ticket(ws), phase: "offer" }));
-        this.update(id);
+        await this.update(id);
       }
     }
   }
@@ -151,6 +200,7 @@ export class GroupMatchmaker implements DurableObject {
   }
   private async schedule(): Promise<void> {
     const deadlines = this.members().map(ws => this.ticket(ws)).filter(t => t.phase !== "offer").map(t => t.deadline);
+    if (this.members().some(ws => this.ticket(ws).discover && this.ticket(ws).phase !== "preparing")) deadlines.push(Date.now() + 2_000);
     if (deadlines.length) await this.ctx.storage.setAlarm(Math.min(...deadlines));
     else await this.ctx.storage.deleteAlarm();
   }

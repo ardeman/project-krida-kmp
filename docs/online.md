@@ -90,3 +90,24 @@ and the Pixel on different networks (one on mobile data).
    stored), Play data safety, App Store privacy labels. Before any online release.
 9. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.
 10. [ ] **Accounts, friends, invites.**
+
+## Public rooms and combined joining (2026-11-10)
+
+Android now offers Create room (Room setup left; Private/Public right) and Join room
+(matchmaking left; code/QR right). Private is the default. New searches opt in to public
+lobby discovery before group matchmaking. Public rooms retain their host, options,
+computer controls and manual Start. Search matches the same game and selected total seats,
+and does not split a waiting group across rooms. Host disconnects, starts and room closure
+remove eligibility; an authenticated reconnect can restore a still-waiting public room.
+
+Room admission reserves seats for 15 seconds and accounts for computer seats, live guest
+sockets (including pending welcomes), and outstanding reservations. A host starting or
+filling seats with computers before admission can make a delivered reservation unusable;
+the guest receives the existing room-full failure. Running-game rejoin still uses the
+session token. Optional relay metadata and the reservation field are in [protocol.md](protocol.md).
+No new Durable Object migration or dependencies are required.
+
+Android build, shared JVM tests, relay type checks and targeted discovery/group tests pass,
+as does the actual local Workers runtime public-room smoke test. iOS implementation is
+next session per the approved platform order. Deployment and Android/iOS multi-phone checks
+remain pending. The approved design and handoff are in [mockups/public-rooms.md](mockups/public-rooms.md).

@@ -121,6 +121,8 @@ import com.ardeman.krida.nearby.LastRoom
 import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.nearby.RoomLobby
 import com.ardeman.krida.nearby.gameTitle
+import com.ardeman.krida.playonline.CreateOnlineRoomScreen
+import com.ardeman.krida.playonline.JoinOnlineRoomScreen
 import com.ardeman.krida.playonline.PlayOnlineScreen
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
@@ -146,8 +148,10 @@ class MainActivity : ComponentActivity() {
     private var joining by mutableStateOf(false)
     /** The join screen takes a 6-letter online code instead of a 4-letter nearby one. */
     private var joinOnline by mutableStateOf(false)
+    private var creatingOnlineRoom by mutableStateOf(false)
+    private var quickMatchTarget by mutableStateOf(4)
     private var playingQuickMatch by mutableStateOf(false)
-    private var quickMatchGame by mutableStateOf("")
+    private var quickMatchGame by mutableStateOf(CongklakGame.id)
     private var room by mutableStateOf<NearbyRoom?>(null)
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
@@ -226,9 +230,21 @@ class MainActivity : ComponentActivity() {
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null; joining = false })
                     r != null -> Lobby(r)
+                    creatingOnlineRoom -> CreateOnlineRoomScreen(
+                        game = quickMatchGame,
+                        onBack = { creatingOnlineRoom = false },
+                        onCreate = { public, seats ->
+                            room = NearbyRoom.host(this@MainActivity, myName,
+                                if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
+                                online = true, publicRoom = public, seats = seats)
+                            creatingOnlineRoom = false
+                        },
+                        options = { GameRoomOptions(quickMatchGame == UlarTanggaGame.id) },
+                    )
                     playingQuickMatch -> PlayOnlineScreen(
                         game = quickMatchGame,
-                        onCancel = { playingQuickMatch = false; quickMatchGame = "" },
+                        target = quickMatchTarget,
+                        onCancel = { playingQuickMatch = false },
                         createHost = { code, humans, bots, onReady ->
                             NearbyRoom.host(this@MainActivity, myName,
                                 if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
@@ -236,8 +252,8 @@ class MainActivity : ComponentActivity() {
                             ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
                         },
                         onHost = { matchedRoom -> room = matchedRoom; playingQuickMatch = false },
-                        onJoin = { code ->
-                            room = NearbyRoom.join(this@MainActivity, code, myName, online = true)
+                        onJoin = { code, reservation ->
+                            room = NearbyRoom.join(this@MainActivity, code, myName, online = true, reservation = reservation)
                             playingQuickMatch = false
                         },
                         onComputer = { count ->
@@ -250,6 +266,16 @@ class MainActivity : ComponentActivity() {
                             } else passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             playingQuickMatch = false
                         },
+                    )
+                    joining && joinOnline -> JoinOnlineRoomScreen(
+                        game = quickMatchGame,
+                        code = roomCode,
+                        onCode = { roomCode = it; joinError = null },
+                        onScan = ::scanRoomQr,
+                        onJoin = ::joinRoom,
+                        onSearch = { target -> quickMatchTarget = target; playingQuickMatch = true },
+                        onBack = { joining = false; joinError = null },
+                        error = joinError,
                     )
                     joining -> JoinScreen(
                         code = roomCode,
@@ -426,6 +452,7 @@ class MainActivity : ComponentActivity() {
                     // Backing out of a failed rejoin lands on the join screen, as after a typed code.
                     joining = true
                     joinOnline = saved.online
+                    quickMatchGame = saved.game
                     roomCode = saved.code
                     joinRoom()
                 },
@@ -498,23 +525,14 @@ class MainActivity : ComponentActivity() {
                             else -> Detail(stringResource(R.string.ular_detail_mixed))
                         }
                     }
-                    if (online) {
-                        PrimaryButton(
-                            stringResource(R.string.play_online_quick_match),
-                            onClick = {
-                                playingQuickMatch = true
-                                quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (nearby) {
                             SecondaryButton(
-                                stringResource(R.string.nearby_join_with_code),
+                                stringResource(if (online) R.string.room_join else R.string.nearby_join_with_code),
                                 onClick = {
                                     if (joinOnline != online) roomCode = ""
                                     joinOnline = online
+                                    quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
                                     joining = true
                                 },
                                 modifier = Modifier.weight(1f),
@@ -522,11 +540,14 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         PrimaryButton(
-                            stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
+                            stringResource(if (online) R.string.room_create else if (nearby) R.string.nearby_host else R.string.bot_start),
                             modifier = Modifier.weight(1f),
                             onClick = {
                                 when {
-                                    online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
+                                    online -> {
+                                        quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
+                                        creatingOnlineRoom = true
+                                    }
                                     nearby -> withBlePermissions {
                                         room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
                                     }
@@ -550,33 +571,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            if (ular) SettingRow(stringResource(R.string.play_rules)) {
-                UlarTanggaOptionChips()
-            } else SettingRow(stringResource(R.string.play_tembak)) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Segmented(
-                        options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
-                        current = CongklakSettings.tembakAfterStore,
-                        label = stringResource(R.string.tembak_title),
-                        onChange = CongklakSettings::chooseTembakAfterStore,
-                        fill = true,
-                    )
-                    Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.tembak_hint_after_store else R.string.tembak_hint_anytime))
-                }
-            }
-            if (!ular) SettingRow(stringResource(R.string.play_starter)) {
-                Segmented(
-                    options = listOf(
-                        CongklakStarter.ME to stringResource(R.string.starter_me),
-                        CongklakStarter.OPPONENT to stringResource(R.string.starter_opponent),
-                        CongklakStarter.RANDOM to stringResource(R.string.starter_random),
-                    ),
-                    current = CongklakSettings.starter,
-                    label = stringResource(R.string.starter_title),
-                    onChange = CongklakSettings::chooseStarter,
-                    fill = true,
-                )
-            }
+            if (!online) GameRoomOptions(ular)
             if (permissionDenied && !online) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
@@ -727,6 +722,37 @@ private fun SeatTiles(seats: List<LocalSeat>, colors: List<Color>, tappable: Set
 private enum class Game(val title: Int, val players: Int, val tagline: Int, val face: Color, val edge: Color) {
     CONGKLAK(R.string.congklak_title, R.string.congklak_card_players, R.string.congklak_card_tagline, Theme.wood, Theme.woodShadow),
     ULAR_TANGGA(R.string.ular_title, R.string.ular_card_players, R.string.ular_card_tagline, Color(0xFF4F8A3B), Color(0xFF3B6A2B)),
+}
+
+@Composable
+private fun GameRoomOptions(ular: Boolean) {
+    if (ular) SettingRow(stringResource(R.string.play_rules)) {
+        UlarTanggaOptionChips()
+    } else SettingRow(stringResource(R.string.play_tembak)) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Segmented(
+                options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
+                current = CongklakSettings.tembakAfterStore,
+                label = stringResource(R.string.tembak_title),
+                onChange = CongklakSettings::chooseTembakAfterStore,
+                fill = true,
+            )
+            Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.tembak_hint_after_store else R.string.tembak_hint_anytime))
+        }
+    }
+    if (!ular) SettingRow(stringResource(R.string.play_starter)) {
+        Segmented(
+            options = listOf(
+                CongklakStarter.ME to stringResource(R.string.starter_me),
+                CongklakStarter.OPPONENT to stringResource(R.string.starter_opponent),
+                CongklakStarter.RANDOM to stringResource(R.string.starter_random),
+            ),
+            current = CongklakSettings.starter,
+            label = stringResource(R.string.starter_title),
+            onChange = CongklakSettings::chooseStarter,
+            fill = true,
+        )
+    }
 }
 
 /** Ular tangga's rule options as toggle chips, saved as they change. */
