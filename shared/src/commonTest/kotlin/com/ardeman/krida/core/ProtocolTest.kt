@@ -20,6 +20,13 @@ import kotlinx.serialization.json.put
 class ProtocolTest {
 
     @Test
+    fun colourIsOptionalOnTheWire() {
+        val bytes = Codec.encode(Message.Lobby(listOf(PlayerInfo(0, "Redo", Platform.ANDROID)), you = 0))
+        assertTrue("color" !in bytes.decodeToString())
+        assertEquals("{\"type\":\"color\",\"color\":2}", Codec.encode(Message.PickColor(2)).decodeToString())
+    }
+
+    @Test
     fun codecRoundTripsEveryMessage() {
         val players = listOf(PlayerInfo(0, "Redo", Platform.ANDROID, local = true), PlayerInfo(1, "Ayu", Platform.IOS))
         val messages = listOf(
@@ -28,6 +35,8 @@ class ProtocolTest {
             Message.Welcome(1, "KRD4", "congklak", "tok"),
             Message.Reject("full"),
             Message.Lobby(players, you = 1),
+            Message.Lobby(players.map { it.copy(color = 3 - it.seat) }, you = 0),
+            Message.PickColor(2),
             Message.Intent(3, buildJsonObject { put("pit", 2) }),
             Message.State(7, 1, false, buildJsonObject { put("total", 5) }, players),
             Message.Invalid(3, "not_your_turn"),

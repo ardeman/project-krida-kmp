@@ -78,6 +78,18 @@ class GuestSession<S, M>(
         join = null
     }
 
+    /** This player's pawn colour from the latest player list, or null (none yet / no colours). */
+    val color: Int? get() = players.firstOrNull { it.seat == seat }?.color
+
+    /**
+     * Asks the host for pawn colour [color] while the room waits. The answer is the next
+     * lobby: [color] changes if the host agreed, and stays as it was if someone holds it.
+     */
+    fun pickColor(color: Int) {
+        if (seat == null) return
+        transport.send(null, Codec.encode(Message.PickColor(color)))
+    }
+
     val isMyTurn: Boolean get() = seat != null && seat == turn && !finished
 
     /** Returns the intent seq (matches a later Invalid), or null if not seated. */

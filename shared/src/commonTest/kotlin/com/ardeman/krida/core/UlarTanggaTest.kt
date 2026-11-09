@@ -120,8 +120,10 @@ class UlarTanggaTest {
     @Test
     fun chosenColorsReachTheStateAndSurviveARestart() {
         val net = LoopbackNetwork()
-        val host = HostSession(UlarTanggaRules(UlarTanggaOptions(), listOf(3, 0)), net.host, roomCode = "ULAR", random = Random(3))
+        val host = HostSession(UlarTanggaRules(UlarTanggaOptions()), net.host, roomCode = "ULAR", random = Random(3))
         repeat(2) { host.addBot("Komputer ${it + 1}", Platform.ANDROID, UlarTanggaBot) }
+        assertTrue(host.setColor(0, 3))
+        assertTrue(host.setColor(1, 0))
         host.start()
         assertEquals(listOf(3, 0), host.state!!.colors)
         assertEquals(3, host.state!!.color(0))

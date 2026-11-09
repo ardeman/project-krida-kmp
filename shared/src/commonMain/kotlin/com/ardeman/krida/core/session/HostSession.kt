@@ -44,9 +44,16 @@ class HostSession<S, M>(
         var bot: Bot<S, M>? = null,
         var connected: Boolean = true,
         var disconnectedAt: Long = 0,
+        var color: Int = -1,        // -1 = the game has no colours
     )
 
     private val seats = mutableListOf<Seat>()
+
+    @Suppress("UNCHECKED_CAST")
+    private val colorRules = rules as? SeatColorRules<S>
+
+    /** Number of pawn colours players pick from in the lobby; 0 when the game has none. */
+    val colorCount: Int get() = colorRules?.colorCount ?: 0
 
     var started: Boolean = false
         private set
@@ -72,13 +79,14 @@ class HostSession<S, M>(
     val players: List<PlayerInfo>
         get() = seats.mapIndexed { i, s ->
             PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected,
-                local = s.peer == null && s.bot == null, bot = s.bot != null)
+                local = s.peer == null && s.bot == null, bot = s.bot != null,
+                color = s.color.takeIf { it >= 0 })
         }
 
     /** Adds a player sitting at this device. Returns the seat, or null if full/started. */
     fun addLocalPlayer(name: String, platform: Platform): Int? {
         if (started || seats.size >= capacity()) return null
-        seats += Seat(name, platform, peer = null, token = newToken())
+        seat(Seat(name, platform, peer = null, token = newToken()))
         lobbyChanged()
         return seats.lastIndex
     }
@@ -86,9 +94,28 @@ class HostSession<S, M>(
     /** Adds a computer player run by this device. Returns the seat, or null if full/started. */
     fun addBot(name: String, platform: Platform, bot: Bot<S, M>): Int? {
         if (started || seats.size >= capacity()) return null
-        seats += Seat(name, platform, peer = null, token = newToken(), bot = bot)
+        seat(Seat(name, platform, peer = null, token = newToken(), bot = bot))
         lobbyChanged()
         return seats.lastIndex
+    }
+
+    /** Removes a computer player before the game starts; later seats move up one. */
+    fun removeBot(seat: Int): Boolean {
+        if (started || seats.getOrNull(seat)?.bot == null) return false
+        seats.removeAt(seat)
+        lobbyChanged()
+        return true
+    }
+
+    /**
+     * Gives a seat at this device (a local player or a bot) another pawn colour before the
+     * game starts. Returns false when the game has no colours, [color] is out of range or
+     * another seat holds it. Guests pick their own with `GuestSession.pickColor`.
+     */
+    fun setColor(seat: Int, color: Int): Boolean {
+        val s = seats.getOrNull(seat) ?: return false
+        if (s.peer != null) return false
+        return changeColor(s, color)
     }
 
     /** Seat of the bot whose turn it is, or null when a person is to move (or no game is on). */
@@ -147,7 +174,7 @@ class HostSession<S, M>(
     fun start() {
         check(canStart()) { "Need at least ${rules.minPlayers} players" }
         started = true
-        state = rules.initialState(seats.size, random)
+        state = newGame()
         lastSeat = null
         lastMove = null
         seq = 1
@@ -158,7 +185,7 @@ class HostSession<S, M>(
     fun restart() {
         val current = state
         check(started && current != null && rules.isFinished(current)) { "Game is not finished" }
-        state = rules.initialState(seats.size, random)
+        state = newGame()
         lastSeat = null
         lastMove = null
         seq++
@@ -195,6 +222,7 @@ class HostSession<S, M>(
         when (val msg = Codec.decode(data) ?: return) {
             is Message.Hello -> handleHello(peer, msg)
             is Message.Intent -> handleIntent(peer, msg)
+            is Message.PickColor -> handlePickColor(peer, msg)
             is Message.Ping -> send(peer, Message.Pong(msg.t))
             is Message.Bye -> onPeerDisconnected(peer)
             else -> Unit // host ignores host->guest messages
@@ -223,11 +251,39 @@ class HostSession<S, M>(
         if (started) return reject(peer, RejectReason.STARTED)
         if (seats.size >= capacity()) return reject(peer, RejectReason.FULL)
 
-        val seat = Seat(hello.name.take(24), hello.platform, peer, newToken())
-        seats += seat
+        val seat = seat(Seat(hello.name.take(24), hello.platform, peer, newToken()))
         send(peer, Message.Welcome(seats.lastIndex, roomCode, rules.id, seat.token))
         lobbyChanged()
     }
+
+    private fun handlePickColor(peer: String, pick: Message.PickColor) {
+        val s = seats.firstOrNull { it.peer == peer && it.connected } ?: return
+        if (!changeColor(s, pick.color)) {
+            // Refused: resend the lobby so the guest's picker shows the colour it still has.
+            if (!started) send(peer, Message.Lobby(players, you = seats.indexOf(s)))
+        }
+    }
+
+    private fun changeColor(s: Seat, color: Int): Boolean {
+        if (started || color !in 0 until colorCount) return false
+        if (seats.any { it !== s && it.color == color }) return false
+        if (s.color != color) {
+            s.color = color
+            lobbyChanged()
+        }
+        return true
+    }
+
+    /** Adds [s] to the seats with the first free colour (if the game has colours). */
+    private fun seat(s: Seat): Seat {
+        s.color = (0 until colorCount).firstOrNull { c -> seats.none { it.color == c } } ?: -1
+        seats += s
+        return s
+    }
+
+    private fun newGame(): S =
+        colorRules?.initialState(seats.size, seats.map { it.color }, random)
+            ?: rules.initialState(seats.size, random)
 
     private fun handleIntent(peer: String, intent: Message.Intent) {
         val seat = seats.indexOfFirst { it.peer == peer && it.connected }

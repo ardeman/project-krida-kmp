@@ -31,6 +31,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
 | `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves) |
+| `color` | guest → host | `color` (pawn colour wanted, before the game starts) |
 | `intent` | guest → host | `seq`, `move` |
 | `state` | host → all | `seq`, `turn`, `finished`, `state`, `players`, `last?` |
 | `invalid` | host → guest | `seq`, `reason` |
@@ -41,10 +42,19 @@ opaque JSON value owned by each game's `GameRules`.
 A guest that sees a gap simply waits for the next full `state` — every `state` is a full
 snapshot, so there is no diffing to get wrong.
 
-Each entry in `players` is `{seat, name, platform, connected?, local?, bot?}`. `bot: true`
+Each entry in `players` is `{seat, name, platform, connected?, local?, bot?, color?}`. `bot: true`
 marks a computer player; bots run only on the host, which moves for them like any other
 seat, so guests just show them (e.g. as "Komputer") and never act for them. Older guests
-ignore the field.
+ignore the field. The host may add bots to the lobby before the game starts and remove
+them again; the seats after a removed one move up, as when a guest leaves.
+
+`color` (optional) is the seat's pawn colour in games where players pick one (ular tangga:
+`0` red, `1` blue, `2` green, `3` yellow); it is absent in other games. Every new seat,
+guest or bot, gets the first free colour. A guest asks for another with `color`; the host
+grants it when no other seat holds it and the game has not started, and answers with a
+`lobby` either way, so a refused guest sees the colour it still has. The colours go into the
+game's state when it starts. Older guests ignore the field; older hosts drop the `color`
+message, so the guest keeps its colour.
 
 The host also sends a `state` with the same `seq` when only `players` changed during a
 game: a guest dropped out (`connected: false`), rejoined, or was handed to the computer.
@@ -78,7 +88,7 @@ before these fields, so they replace the earlier host-rolled dice-off without a 
 
 It also carries `colors` (optional, default empty): each seat's pawn colour, `0` red, `1`
 blue, `2` green, `3` yellow, all different. Empty means seat order (seat 0 red, seat 1 blue,
-...). Local games leave it empty for now.
+...). Hosts fill it from the lobby colours.
 
 ## BLE framing
 

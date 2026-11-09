@@ -30,3 +30,15 @@ interface GameRules<S, M> {
 
     fun isFinished(state: S): Boolean
 }
+
+/**
+ * Games where each player picks a pawn colour in the lobby. [HostSession] gives every new seat
+ * the first free colour, lets players change it while the room waits, and starts each game
+ * through [initialState] with the colours by seat.
+ */
+interface SeatColorRules<S> {
+    /** Colours are `0 until colorCount`; no two seats share one. */
+    val colorCount: Int
+
+    fun initialState(players: Int, colors: List<Int>, random: Random): S
+}

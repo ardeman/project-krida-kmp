@@ -118,4 +118,58 @@ class UlarTanggaSessionTest {
         while (!host.state!!.finished) { playOne(live); moves++; check(moves < 5000) }
         assertTrue(live.all { it.finished })
     }
+
+    @Test
+    fun playersPickPawnColoursInTheLobby() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        val ayu = guest("ayu", Platform.IOS)
+        val budi = guest("budi", Platform.ANDROID)
+        // New seats take the first free colour.
+        assertEquals(listOf(0, 1, 2), host.players.map { it.color })
+        assertEquals(1, ayu.color)
+
+        // A free colour is granted and every guest sees it.
+        ayu.pickColor(3)
+        assertEquals(3, ayu.color)
+        assertEquals(3, budi.players[1].color)
+
+        // A held colour is refused; the guest keeps its own.
+        var lobbies = 0
+        budi.onLobby = { lobbies++ }
+        budi.pickColor(3)
+        budi.pickColor(9)
+        assertEquals(2, budi.color)
+        assertEquals(2, lobbies)
+
+        // The host player changes colour too; colours stay distinct.
+        assertFalse(host.setColor(0, 2))
+        assertTrue(host.setColor(0, 1))
+        assertFalse(host.setColor(1, 0))   // a guest's seat is the guest's to pick
+
+        // A computer takes the first free colour, and leaves it when removed.
+        val bot = host.addBot("Komputer", Platform.ANDROID, UlarTanggaBot)!!
+        assertEquals(0, host.players[bot].color)
+        assertTrue(host.removeBot(bot))
+        assertFalse(host.removeBot(1))     // not a computer
+        assertEquals(3, host.players.size)
+
+        host.start()
+        assertEquals(listOf(1, 3, 2), ayu.state!!.colors)
+        ayu.pickColor(0)                    // too late
+        assertEquals(listOf(1, 3, 2), host.state!!.colors)
+    }
+
+    @Test
+    fun hostAndOneComputerCanStart() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        assertFalse(host.canStart())
+        host.addBot("Komputer", Platform.ANDROID, UlarTanggaBot)
+        assertTrue(host.canStart())
+        host.start()
+        var moves = 0
+        while (!host.state!!.finished) {
+            if (!host.stepBot()) assertNull(host.submitLocal(0, UlarTanggaMove()))
+            check(++moves < 5000)
+        }
+    }
 }

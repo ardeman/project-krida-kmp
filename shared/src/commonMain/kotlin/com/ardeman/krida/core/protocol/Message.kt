@@ -21,6 +21,11 @@ data class PlayerInfo(
     val local: Boolean = false,
     /** true for computer players; they run on the host. Optional: older guests ignore it. */
     val bot: Boolean = false,
+    /**
+     * Pawn colour, in games where players pick one (see `SeatColorRules`); null otherwise.
+     * Optional: older guests ignore it.
+     */
+    val color: Int? = null,
 )
 
 /** A move as applied by the host: who made it and the game-specific move JSON. */
@@ -60,6 +65,14 @@ sealed class Message {
     @Serializable
     @SerialName("lobby")
     data class Lobby(val players: List<PlayerInfo>, val you: Int) : Message()
+
+    /**
+     * guest -> host, before the game starts: "I want this pawn colour". The host takes it if
+     * no one else holds it and answers with a new [Lobby] either way. Older hosts ignore it.
+     */
+    @Serializable
+    @SerialName("color")
+    data class PickColor(val color: Int) : Message()
 
     /** guest -> host: "I want to make this move". [move] is game-specific JSON. */
     @Serializable
