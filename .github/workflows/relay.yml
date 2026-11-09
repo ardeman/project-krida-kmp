@@ -43,10 +43,13 @@ jobs:
           npm run smoke || { cat dev.log; exit 1; }
 
       - name: Deploy
-        run: npx wrangler deploy 2>&1 | tee deploy.log
+        run: |
+          set -o pipefail
+          npx wrangler deploy 2>&1 | tee deploy.log
 
       - name: Smoke test against the live relay
         run: |
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          [ -n "$url" ] || { echo "No workers.dev URL in the deploy output"; exit 1; }
           echo "Relay: $url"
           node scripts/smoke.mjs "${url/https:/wss:}"
