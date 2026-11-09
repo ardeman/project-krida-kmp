@@ -83,15 +83,20 @@ object UlarTanggaBoard {
     fun pieceColor(color: Int): FloatArray = PIECE_COLORS[color % PIECE_COLORS.size]
 
     /**
-     * Corners of a box around everything drawn (frame, start pad, a pawn's height): x, y, z
-     * each. Platforms fit the camera to them when the HUD leaves less room than the full height.
+     * Boxes around everything drawn, each as its eight corners (x, y, z): the board with its
+     * frame, and the start pad, both up to a pawn's height. Platforms fit the camera to them,
+     * each box on its own, so the pad may tuck under a HUD box beside the board's near corner.
      */
-    fun bounds(): List<FloatArray> {
+    fun bounds(): List<List<FloatArray>> {
         val e = HALF + RIM
-        val x0 = PAD_CENTER[0] - PAD_HALF - 0.2f
-        return listOf(0f, TOP + 1.3f * PIECE_SCALE).flatMap { y ->
-            listOf(floatArrayOf(x0, y, -e), floatArrayOf(e, y, -e), floatArrayOf(x0, y, e), floatArrayOf(e, y, e))
+        val p = PAD_HALF + 0.2f
+        fun box(x0: Float, z0: Float, x1: Float, z1: Float) = listOf(0f, TOP + 1.3f * PIECE_SCALE).flatMap { y ->
+            listOf(floatArrayOf(x0, y, z0), floatArrayOf(x1, y, z0), floatArrayOf(x0, y, z1), floatArrayOf(x1, y, z1))
         }
+        return listOf(
+            box(-e, -e, e, e),
+            box(PAD_CENTER[0] - p, PAD_CENTER[1] - p, PAD_CENTER[0] + p, PAD_CENTER[1] + p),
+        )
     }
 
     /** Center of [square]'s tile top (1..100), or of the start pad for 0: x, z. */

@@ -441,14 +441,16 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         camera.setProjection(base.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
         val cx = width / 2f
         val cy = height / 2f
-        val hull = convexHull(UlarTanggaBoard.bounds().map { (x, y, z) -> project(x, y, z) })
+        // One convex outline per part (board, start pad), so the pad may sit beside a HUD box.
+        val hulls = UlarTanggaBoard.bounds().map { part -> convexHull(part.map { (x, y, z) -> project(x, y, z) }) }
         val room = this.room ?: floatArrayOf(0f, 0f, width.toFloat(), height.toFloat())
         val tanBase = tan(base * PI.toFloat() / 360f)
         fun scaleFor(fov: Float) = tanBase / tan(fov * PI.toFloat() / 360f)
         fun place(k: Float): FloatArray? {
-            val shape = hull.map { floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k) }
-            val x0 = shape.minOf { it[0] }; val x1 = shape.maxOf { it[0] }
-            val y0 = shape.minOf { it[1] }; val y1 = shape.maxOf { it[1] }
+            val shapes = hulls.map { hull -> hull.map { floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k) } }
+            val all = shapes.flatten()
+            val x0 = all.minOf { it[0] }; val x1 = all.maxOf { it[0] }
+            val y0 = all.minOf { it[1] }; val y1 = all.maxOf { it[1] }
             val loX = room[0] - x0; val hiX = room[2] - x1
             val loY = room[1] - y0; val hiY = room[3] - y1
             if (loX > hiX || loY > hiY) return null
@@ -460,7 +462,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 val dy = loY + (hiY - loY) * j / FIT_STEPS
                 val distance = (dx - midX) * (dx - midX) + (dy - midY) * (dy - midY)
                 if (distance >= bestDistance) continue
-                if (obstacles.any { overlaps(shape, dx, dy, it) }) continue
+                if (obstacles.any { box -> shapes.any { overlaps(it, dx, dy, box) } }) continue
                 best = floatArrayOf(dx, dy)
                 bestDistance = distance
             }
