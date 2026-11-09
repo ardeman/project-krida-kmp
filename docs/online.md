@@ -22,7 +22,8 @@ no game rules. Same `Transport` interface, same protocol messages (`docs/protoco
 - **Room codes.** Online codes are 6 chars (same alphabet as `RoomCode`) so they can't be
   guessed; BLE keeps 4. Share link `https://krida.ardeman.com/r/CODE` (App Links / Universal
   Links via `web/`, falling back to the store page), QR encodes the same link.
-- **Player drops (C).** The game pauses and everyone sees "Waiting for Ayu… 15" (15 s).
+- **Player drops (C).** Everyone sees "Waiting for Ayu… 15" (15 s), and the game waits when
+  it is that seat's turn.
   After that the computer plays the seat (`HostSession.replaceWithBot`) and the game goes on.
   The player can still rejoin within the 60 s reconnect grace (`rejoinToken`) and take the
   seat back from the computer.
@@ -48,8 +49,11 @@ and the Pixel on different networks (one on mobile data).
    in `docs/protocol.md`; tiny test client script. Live at
    `wss://krida-relay.are-theman.workers.dev`; CI (`.github/workflows/relay.yml`) runs the
    smoke test locally, deploys, and runs it again against the live relay.
-2. [ ] **Shared.** 6-char online codes and link parsing in `RoomCode`; 15 s pause and
-   hand-to-computer in `HostSession`; tests in `shared/src/commonTest/`.
+2. [x] **Shared.** 6-char online codes and link parsing in `RoomCode`; 15 s pause and
+   hand-to-computer in `HostSession`; tests in `shared/src/commonTest/`. The session doesn't
+   block moves while a player is away (congklak's host screens don't hand seats to the
+   computer yet, so a hard pause could freeze a game); the game waits on that seat's turn and
+   the apps show the countdown (`HostSession.handOffInMs`).
 3. [ ] **Android.** `OnlineHostTransport.kt` / `OnlineGuestTransport.kt` (OkHttp); "Online"
    next to "Nearby", create/join by code, lobby, waiting countdown. Strings in ID + EN.
 4. [ ] **iOS.** Same with `URLSessionWebSocketTask`; strings in the catalog. Device test

@@ -58,10 +58,12 @@ message, so the guest keeps its colour.
 
 The host also sends a `state` with the same `seq` when only `players` changed during a
 game: a guest dropped out (`connected: false`), rejoined, or was handed to the computer.
-Guests take the new `players` from it and keep the game state as it is. A guest that is gone
-longer than the reconnect grace can no longer rejoin; the host may then play its seat with a
-bot (`HostSession.replaceWithBot`), so the seat turns `bot: true` and keeps its name. Older
-guests drop same-`seq` snapshots and catch up on the next move.
+Guests take the new `players` from it and keep the game state as it is. When a guest has been
+gone 15 s, the host may let a bot play its seat (`HostSession.replaceWithBot`), so the seat
+turns `bot: true` and keeps its name. If the guest rejoins within the reconnect grace (60 s
+from the drop), it takes the seat back and `bot` goes back to `false`; after the grace the bot
+keeps the seat. Guests show the 15 s countdown from the snapshot that first shows the seat
+`connected: false`. Older guests drop same-`seq` snapshots and catch up on the next move.
 
 `last` (optional, `{seat, move}`) is the move that produced this snapshot, so every device
 can animate it (e.g. congklak sowing). It is absent on the first snapshot. Animate it only
@@ -110,7 +112,9 @@ the online relay one message per WebSocket frame (see below); neither uses BLE f
 
 Online rooms go through a Cloudflare Worker (`relay/`) with one Durable Object per room. The
 relay only forwards bytes; the host phone stays authoritative and the messages above are
-unchanged. Online room codes are 6 chars from the same alphabet as `RoomCode`.
+unchanged. Online room codes are 6 chars from the same alphabet as `RoomCode`
+(`RoomCode.generateOnline`), shared as `https://krida.ardeman.com/r/<CODE>`; the QR shows the
+same link, and `RoomCode.parseOnline` also takes `krida://join?room=<CODE>` or a typed code.
 
 Connect with a WebSocket to `wss://<relay>/v1/rooms/<CODE>`:
 

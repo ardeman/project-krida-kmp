@@ -21,6 +21,14 @@ object Krida {
     const val BONJOUR_SERVICE_TYPE: String = "_krida._tcp"
     const val JOIN_URL_PREFIX: String = "krida://join?room="
 
+    /** Nearby rooms (BLE / LAN). */
     const val ROOM_CODE_LENGTH: Int = 4
+    /** Online rooms: longer, so strangers can't guess a code on the public relay. */
+    const val ONLINE_ROOM_CODE_LENGTH: Int = 6
+    /** Share link and QR for online rooms: "https://krida.ardeman.com/r/ABC234". */
+    const val SHARE_URL_PREFIX: String = "https://krida.ardeman.com/r/"
+
     const val RECONNECT_GRACE_MS: Long = 60_000L
+    /** How long a game waits for a dropped player before the computer plays the seat. */
+    const val HANDOFF_WAIT_MS: Long = 15_000L
 }

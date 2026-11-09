@@ -11,6 +11,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.JsonPrimitive
@@ -101,5 +102,25 @@ class ProtocolTest {
         assertEquals(code, RoomCode.parse(RoomCode.joinUrl(code)))
         assertEquals(code, RoomCode.parse(code.lowercase()))
         assertNull(RoomCode.parse("KRD0")) // 0 is not in the alphabet
+    }
+
+    @Test
+    fun onlineRoomCodesAndShareLinks() {
+        val code = RoomCode.generateOnline(Random(7))
+        assertEquals(6, code.length)
+        assertTrue(RoomCode.isValidOnline(code))
+        assertFalse(RoomCode.isValid(code))
+        assertEquals("https://krida.ardeman.com/r/$code", RoomCode.shareUrl(code))
+
+        assertEquals(code, RoomCode.parseOnline(RoomCode.shareUrl(code)))
+        assertEquals(code, RoomCode.parseOnline("krida.ardeman.com/r/${code.lowercase()}/"))
+        assertEquals(code, RoomCode.parseOnline("HTTPS://Krida.Ardeman.com/r/$code?utm=x#top"))
+        assertEquals(code, RoomCode.parseOnline("krida://join?room=$code"))
+        assertEquals(code, RoomCode.parseOnline(" ${code.lowercase()} "))
+
+        assertNull(RoomCode.parseOnline("KRD4"))                       // a nearby code
+        assertNull(RoomCode.parseOnline("https://krida.ardeman.com/r/AB0OI1"))  // 0, O, I, 1 not used
+        assertNull(RoomCode.parseOnline("https://example.com/x/$code"))
+        assertNull(RoomCode.parse(code))                               // nearby parsing stays 4 chars
     }
 }

@@ -10,17 +10,51 @@ object RoomCode {
     /** Swift-friendly overload. */
     fun generate(): String = generate(Random.Default)
 
-    fun generate(random: Random): String =
-        buildString { repeat(Krida.ROOM_CODE_LENGTH) { append(ALPHABET[random.nextInt(ALPHABET.length)]) } }
+    fun generate(random: Random): String = code(Krida.ROOM_CODE_LENGTH, random)
 
-    fun isValid(code: String): Boolean =
-        code.length == Krida.ROOM_CODE_LENGTH && code.all { it in ALPHABET }
+    /** A 6-char code for an online room. Swift-friendly overload. */
+    fun generateOnline(): String = generateOnline(Random.Default)
+
+    fun generateOnline(random: Random): String = code(Krida.ONLINE_ROOM_CODE_LENGTH, random)
+
+    /** A nearby (BLE / LAN) code. */
+    fun isValid(code: String): Boolean = valid(code, Krida.ROOM_CODE_LENGTH)
+
+    fun isValidOnline(code: String): Boolean = valid(code, Krida.ONLINE_ROOM_CODE_LENGTH)
+
+    /** Share link for an online room; the QR shows the same link. */
+    fun shareUrl(code: String): String = Krida.SHARE_URL_PREFIX + code
+
+    /**
+     * Parses an online room from a share link ("https://krida.ardeman.com/r/ABC234", with or
+     * without scheme, query or trailing slash), "krida://join?room=ABC234", or a typed code.
+     * Returns null for anything else, including nearby codes.
+     */
+    fun parseOnline(text: String): String? {
+        val t = text.trim()
+        val host = SHARE_HOST_PATH
+        val at = t.indexOf(host, ignoreCase = true)
+        val code = when {
+            at >= 0 -> t.substring(at + host.length).takeWhile { it != '/' && it != '?' && it != '#' }
+            t.startsWith(Krida.JOIN_URL_PREFIX) -> t.removePrefix(Krida.JOIN_URL_PREFIX)
+            else -> t
+        }.trim().uppercase()
+        return code.takeIf(::isValidOnline)
+    }
+
+    private val SHARE_HOST_PATH = Krida.SHARE_URL_PREFIX.removePrefix("https://")
+
+    private fun code(length: Int, random: Random): String =
+        buildString { repeat(length) { append(ALPHABET[random.nextInt(ALPHABET.length)]) } }
+
+    private fun valid(code: String, length: Int): Boolean =
+        code.length == length && code.all { it in ALPHABET }
 
     fun joinUrl(code: String): String = Krida.JOIN_URL_PREFIX + code
 
     fun advertisedName(code: String): String = Krida.BLE_NAME_PREFIX + code
 
-    /** Parses "Krida-ABCD" (BLE name) or "krida://join?room=ABCD" (QR). */
+    /** Parses a nearby room: "Krida-ABCD" (BLE name), "krida://join?room=ABCD" (QR) or a typed code. */
     fun parse(text: String): String? {
         val code = when {
             text.startsWith(Krida.BLE_NAME_PREFIX) -> text.removePrefix(Krida.BLE_NAME_PREFIX)

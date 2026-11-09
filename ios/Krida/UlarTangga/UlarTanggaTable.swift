@@ -47,7 +47,7 @@ class UlarTanggaTable: ObservableObject {
     fileprivate func playersChanged(_ list: [PlayerInfo]) {
         players = list
         notice = list.contains { !$0.connected }
-            ? String(localized: "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit.", bundle: .app)
+            ? String(localized: "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik.", bundle: .app)
             : nil
     }
 

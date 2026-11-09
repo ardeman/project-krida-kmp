@@ -19,9 +19,10 @@ import kotlin.time.TimeSource
  * - Local players (the host player, pass-and-play) act through [submitLocal].
  * - Bots ([addBot]) move when the host app calls [stepBot], so it can pace them to its
  *   animations; the session itself has no timers.
- * - Remote players connect through [transport] and send intents. One who drops out mid-game
- *   keeps the seat for the reconnect grace; after that the host app can hand the seat to a
- *   bot ([expiredSeats], [replaceWithBot]) so the others are not stuck on that turn.
+ * - Remote players connect through [transport] and send intents. When one drops out mid-game,
+ *   the others see the seat disconnected; after [Krida.HANDOFF_WAIT_MS] the host app hands it
+ *   to a bot ([expiredSeats], [replaceWithBot]) so nobody is stuck on that turn. The player
+ *   can still rejoin within the reconnect grace and takes the seat back from the bot.
  * - Every applied move bumps [seq] and broadcasts a full snapshot.
  */
 class HostSession<S, M>(
@@ -78,7 +79,7 @@ class HostSession<S, M>(
 
     val players: List<PlayerInfo>
         get() = seats.mapIndexed { i, s ->
-            PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected,
+            PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected || s.bot != null,
                 local = s.peer == null && s.bot == null, bot = s.bot != null,
                 color = s.color.takeIf { it >= 0 })
         }
@@ -140,34 +141,43 @@ class HostSession<S, M>(
     }
 
     /**
-     * Remote seats whose player dropped out of a started game more than the reconnect grace
-     * ago, so they can no longer rejoin. The host app checks this now and then (the session
-     * has no timers) and passes each seat to [replaceWithBot].
+     * Remote seats whose player dropped out of a started game more than [Krida.HANDOFF_WAIT_MS]
+     * ago and that no bot plays yet. The host app checks this now and then (the session has no
+     * timers) and passes each seat to [replaceWithBot].
      */
     fun expiredSeats(): List<Int> {
         if (!started) return emptyList()
-        val now = clock()
-        return seats.indices.filter { i ->
-            val s = seats[i]
-            s.peer != null && !s.connected && now - s.disconnectedAt > Krida.RECONNECT_GRACE_MS
-        }
+        return seats.indices.filter { waiting(seats[it]) && handOffInMs(it) == 0L }
     }
 
     /**
-     * Hands a disconnected remote seat to [bot] for the rest of the game (and any restart).
-     * The seat keeps its name and is shown with `bot` set; its player can no longer rejoin.
-     * Returns false when [seat] is not a disconnected remote seat. Call [stepBot] afterwards
-     * as usual, in case it is that seat's turn.
+     * Milliseconds until a dropped player's seat is due for a bot (0 when due), or -1 when
+     * [seat] is not waiting for its player. For the host's "Waiting for Ayu… 15" countdown;
+     * guests count down on their own from the `state` that shows the seat disconnected.
+     */
+    fun handOffInMs(seat: Int): Long {
+        val s = seats.getOrNull(seat) ?: return -1
+        if (!started || !waiting(s)) return -1
+        return (Krida.HANDOFF_WAIT_MS - (clock() - s.disconnectedAt)).coerceAtLeast(0)
+    }
+
+    /**
+     * Lets [bot] play a disconnected remote seat. The seat keeps its name and is shown with
+     * `bot` set. Its player can still rejoin within the reconnect grace (counted from the
+     * drop) and takes the seat back; after that the bot keeps it for the rest of the game and
+     * any restart. Returns false when [seat] is not a disconnected remote seat without a bot.
+     * Call [stepBot] afterwards as usual, in case it is that seat's turn.
      */
     fun replaceWithBot(seat: Int, bot: Bot<S, M>): Boolean {
         val s = seats.getOrNull(seat) ?: return false
-        if (!started || s.peer == null || s.connected) return false
-        s.peer = null
+        if (!started || !waiting(s)) return false
         s.bot = bot
-        s.connected = true
         broadcastState()
         return true
     }
+
+    /** A remote player dropped out and no bot stands in yet. */
+    private fun waiting(s: Seat): Boolean = s.peer != null && !s.connected && s.bot == null
 
     fun canStart(): Boolean = !started && seats.size >= rules.minPlayers
 
@@ -207,7 +217,7 @@ class HostSession<S, M>(
 
     override fun onPeerDisconnected(peer: String) {
         val index = seats.indexOfFirst { it.peer == peer }
-        if (index < 0) return
+        if (index < 0 || !seats[index].connected) return
         if (!started) {
             seats.removeAt(index)
             lobbyChanged()
@@ -242,6 +252,7 @@ class HostSession<S, M>(
             if (withinGrace) {
                 seat.peer = peer
                 seat.connected = true
+                seat.bot = null   // takes the seat back from a stand-in bot
                 send(peer, Message.Welcome(rejoin, roomCode, rules.id, seat.token))
                 if (started) broadcastState() else lobbyChanged()
                 return

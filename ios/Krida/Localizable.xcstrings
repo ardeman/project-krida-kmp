@@ -2133,18 +2133,18 @@
         }
       }
     },
-    "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit." : {
+    "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A player disconnected. The computer takes over after a minute."
+            "value" : "A player disconnected. The computer takes over after 15 seconds."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit."
+            "value" : "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik."
           }
         }
       }

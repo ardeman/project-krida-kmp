@@ -60,7 +60,7 @@
     <string name="nearby_player_lost">Pemain lain terputus. Menunggu dia kembali…</string>
     <string name="nearby_move_refused">Langkah ditolak</string>
     <string name="nearby_unknown_game">Ruangan ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi.</string>
-    <string name="ular_player_lost">Ada pemain yang terputus. Komputer menggantikannya setelah satu menit.</string>
+    <string name="ular_player_lost">Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik.</string>
     <string name="ular_detail_nearby">Sampai 4 HP lewat Bluetooth, tanpa internet</string>
     <string name="sound_on">Nyalakan suara</string>
     <string name="sound_off">Matikan suara</string>

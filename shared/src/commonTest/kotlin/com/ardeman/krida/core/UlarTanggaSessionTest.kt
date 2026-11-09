@@ -90,7 +90,7 @@ class UlarTanggaSessionTest {
     }
 
     @Test
-    fun droppedGuestIsPlayedByTheComputerAfterTheGrace() {
+    fun droppedGuestIsPlayedByTheComputerAfterTheWait() {
         val guests = fullRoom()
         host.start()
         net.drop("budi")
@@ -100,12 +100,19 @@ class UlarTanggaSessionTest {
         assertFalse(guests[0].players[2].connected)
         assertEquals(emptyList(), host.expiredSeats())
         assertFalse(host.replaceWithBot(1, UlarTanggaBot))   // still connected
+        assertEquals(Krida.HANDOFF_WAIT_MS, host.handOffInMs(2))
+        assertEquals(-1, host.handOffInMs(1))
 
-        now += Krida.RECONNECT_GRACE_MS + 1
+        now += Krida.HANDOFF_WAIT_MS - 1
+        assertEquals(1, host.handOffInMs(2))
+        assertEquals(emptyList(), host.expiredSeats())
+        now += 1
         assertEquals(listOf(2), host.expiredSeats())
         assertTrue(host.replaceWithBot(2, UlarTanggaBot))
         assertEquals(true, shown)
         assertEquals(emptyList(), host.expiredSeats())
+        assertFalse(host.replaceWithBot(2, UlarTanggaBot))   // already played by the bot
+        assertEquals(-1, host.handOffInMs(2))
         guests[0].players[2].let {
             assertTrue(it.bot)
             assertTrue(it.connected)
@@ -117,6 +124,57 @@ class UlarTanggaSessionTest {
         var moves = 0
         while (!host.state!!.finished) { playOne(live); moves++; check(moves < 5000) }
         assertTrue(live.all { it.finished })
+    }
+
+    @Test
+    fun returningGuestTakesTheSeatBackFromTheComputer() {
+        val guests = fullRoom()
+        host.start()
+        val token = checkNotNull(guests[1].rejoinToken)
+        net.drop("budi")
+        now += Krida.HANDOFF_WAIT_MS
+        assertTrue(host.replaceWithBot(2, UlarTanggaBot))
+        assertTrue(host.players[2].bot)
+
+        // The bot plays the seat while budi is away.
+        val live = guests.filter { it.seat != 2 }
+        var botMoved = false
+        while (!botMoved) {
+            botMoved = host.botToMove() == 2
+            playOne(live)
+        }
+
+        now += 20_000   // 35 s after the drop: still within the reconnect grace
+        val back = GuestSession(UlarTanggaGame, net.guest("budi-2"), "budi", Platform.ANDROID, token)
+            .also { net.connect("budi-2") }
+        assertEquals(2, back.seat)
+        host.players[2].let {
+            assertFalse(it.bot)
+            assertTrue(it.connected)
+        }
+        assertFalse(guests[0].players[2].bot)
+
+        // A late disconnect for the old connection changes nothing.
+        host.onPeerDisconnected("budi")
+        assertTrue(host.players[2].connected)
+    }
+
+    @Test
+    fun computerKeepsTheSeatAfterTheGrace() {
+        val guests = fullRoom()
+        host.start()
+        val token = checkNotNull(guests[1].rejoinToken)
+        net.drop("budi")
+        now += Krida.HANDOFF_WAIT_MS
+        assertTrue(host.replaceWithBot(2, UlarTanggaBot))
+
+        now += Krida.RECONNECT_GRACE_MS
+        var reason: String? = null
+        val late = GuestSession(UlarTanggaGame, net.guest("budi-2"), "budi", Platform.ANDROID, token)
+        late.onRejected = { reason = it }
+        net.connect("budi-2")
+        assertEquals(RejectReason.STARTED, reason)
+        assertTrue(host.players[2].bot)
     }
 
     @Test
