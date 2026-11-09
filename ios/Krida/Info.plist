@@ -39,6 +39,8 @@
 	<array>
 		<string>_krida._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Krida uses the camera to scan a friend's room QR code.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Krida looks for friends on the same Wi-Fi to play together.</string>
 	<key>SKAdNetworkItems</key>

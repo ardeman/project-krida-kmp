@@ -191,7 +191,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-/// Outlined button (Gabung pakai kode, Ke menu).
+/// Outlined button (Gabung, Ke menu).
 struct SecondaryButtonStyle: ButtonStyle {
     var height: CGFloat = 44
     var tint: Color = Theme.accent

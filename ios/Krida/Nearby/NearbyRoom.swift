@@ -8,6 +8,8 @@ import UIKit
 @MainActor
 final class NearbyRoom: ObservableObject {
     enum Game { case congklak, ularTangga }
+    /// Where the room stands; a guest goes searching → connecting → lobby, or stops at a failure.
+    enum Stage { case searching, connecting, lobby, full, started, version, notFound, lost, unknownGame, refused }
 
     let code: String
     let isHost: Bool
@@ -16,8 +18,13 @@ final class NearbyRoom: ObservableObject {
     @Published private(set) var players: [PlayerInfo] = []
     @Published private(set) var maxPlayers = 2
     @Published private(set) var canStart = false
-    /// Where the room stands, for the lobby.
-    @Published private(set) var status = String(localized: "Menunggu pemain lain…", bundle: .app)
+    @Published private(set) var stage: Stage
+    /// This device's seat: 0 for the host, the host's choice for a guest (nil until then).
+    @Published private(set) var mySeat: Int?
+    /// Pawn colours to pick from in the lobby (ular tangga); 0 when the game has none.
+    @Published private(set) var colorCount = 0
+    /// The host can fill empty seats with computers (ular tangga only).
+    @Published private(set) var canAddBots = false
     @Published private(set) var congklak: CongklakTable?
     @Published private(set) var ular: UlarTanggaTable?
 
@@ -26,16 +33,36 @@ final class NearbyRoom: ObservableObject {
     private var guest: AnyObject?
     private var guestLeave: (() -> Void)?
     private var join: GuestJoin?
+    private var pickColorAction: ((Int) -> Void)?
+    private var addBotAction: ((String) -> Void)?
+    private var removeBotAction: ((Int) -> Void)?
+    private var notFoundTask: Task<Void, Never>?
+
+    /// A guest that hasn't reached the host by then gives up with "Room tidak ketemu". Same as Android.
+    private static let notFoundSeconds = 20
+
+    var failed: Bool { ![.searching, .connecting, .lobby].contains(stage) }
 
     private init(code: String, isHost: Bool, transport: Transport) {
         self.code = code
         self.isHost = isHost
         self.transport = transport
+        stage = isHost ? .lobby : .searching
+        mySeat = isHost ? 0 : nil
     }
 
     func start() { begin?() }
 
+    /// Asks for pawn colour `color`: the host takes it at once, a guest asks the host.
+    func pickColor(_ color: Int) { pickColorAction?(color) }
+
+    /// Seats a computer called `name` in the next empty seat (host, ular tangga).
+    func addBot(name: String) { addBotAction?(name) }
+
+    func removeBot(seat: Int) { removeBotAction?(seat) }
+
     func leave() {
+        notFoundTask?.cancel()
         if let congklak { congklak.leave() }
         else if let ular { ular.leave() }
         else if let guestLeave { guestLeave() }
@@ -49,37 +76,49 @@ final class NearbyRoom: ObservableObject {
         game = rules.id
         maxPlayers = Int(rules.maxPlayers)
         let session = HostSession<S, M>(rules: rules, transport: ble, roomCode: code)
+        colorCount = Int(session.colorCount)
         session.onPlayersChanged = { [weak self, weak session] list in
             guard let self, let session else { return }
             self.players = list
             self.canStart = session.canStart()
         }
         _ = session.addLocalPlayer(name: Self.deviceName, platform: .ios)
+        pickColorAction = { [weak session] in _ = session?.setColor(seat: 0, color: Int32($0)) }
         return session
     }
 
     private func guestSession<S: AnyObject, M: AnyObject>(_ rules: any GameRules, join: GuestJoin) -> GuestSession<S, M> {
         game = rules.id
         maxPlayers = Int(rules.maxPlayers)
+        colorCount = Int((rules as? SeatColorRules)?.colorCount ?? 0)
         let session = GuestSession<S, M>(rules: rules, join: join)
-        session.onLobby = { [weak self] list in
-            self?.players = list
-            self?.status = String(localized: "Sudah masuk. Menunggu host memulai…", bundle: .app)
+        session.onLobby = { [weak self, weak session] list in
+            guard let self else { return }
+            self.players = list
+            self.mySeat = session?.seat.map { $0.intValue }
+            self.stage = .lobby
         }
         session.onRejected = { [weak self] in self?.rejected($0) }
-        session.onDisconnected = { [weak self] in self?.status = String(localized: "Terputus dari host", bundle: .app) }
+        session.onDisconnected = { [weak self] in self?.lost() }
+        pickColorAction = { [weak session] in session?.pickColor(color: Int32($0)) }
         guest = session
         guestLeave = { [weak session] in session?.leave() }
         return session
     }
 
     private func rejected(_ reason: String) {
-        status = switch reason {
-        case RejectReason.shared.VERSION: String(localized: "Versi aplikasi berbeda. Perbarui aplikasi.", bundle: .app)
-        case RejectReason.shared.FULL: String(localized: "Room sudah penuh", bundle: .app)
-        case RejectReason.shared.STARTED: String(localized: "Permainan sudah dimulai", bundle: .app)
-        default: String(localized: "Tidak bisa masuk room", bundle: .app)
+        notFoundTask?.cancel()
+        stage = switch reason {
+        case RejectReason.shared.VERSION: .version
+        case RejectReason.shared.FULL: .full
+        case RejectReason.shared.STARTED: .started
+        default: .refused
         }
+    }
+
+    private func lost() {
+        notFoundTask?.cancel()
+        if !failed { stage = .lost }
     }
 
     static func host(game: Game) -> NearbyRoom {
@@ -101,6 +140,9 @@ final class NearbyRoom: ObservableObject {
                 session.start()
                 room.ular = UlarTanggaHostTable(session: session, mySeat: 0, transport: ble)
             }
+            room.canAddBots = true
+            room.addBotAction = { [weak session] name in _ = session?.addBot(name: name, platform: .ios, bot: UlarTanggaBot.shared) }
+            room.removeBotAction = { [weak session] seat in _ = session?.removeBot(seat: Int32(seat)) }
         }
         ble.start()
         return room
@@ -111,9 +153,9 @@ final class NearbyRoom: ObservableObject {
         let room = NearbyRoom(code: code, isHost: false, transport: ble)
         let join = GuestJoin(transport: ble, name: deviceName, platform: .ios)
         room.join = join
-        room.status = String(localized: "Mencari room…", bundle: .app)
+        join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }
         join.onRejected = { [weak room] in room?.rejected($0) }
-        join.onDisconnected = { [weak room] in room?.status = String(localized: "Terputus dari host", bundle: .app) }
+        join.onDisconnected = { [weak room] in room?.lost() }
         join.onGame = { [weak room, weak join] game in
             guard let room, let join else { return }
             switch game {
@@ -132,8 +174,14 @@ final class NearbyRoom: ObservableObject {
                 }
                 s.replay()
             default:
-                room.status = String(localized: "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi.", bundle: .app)
+                room.stage = .unknownGame
             }
+        }
+        room.notFoundTask = Task { [weak room] in
+            try? await Task.sleep(for: .seconds(notFoundSeconds))
+            guard !Task.isCancelled, let room, room.stage == .searching else { return }
+            room.stage = .notFound
+            room.leave()
         }
         ble.start()
         return room

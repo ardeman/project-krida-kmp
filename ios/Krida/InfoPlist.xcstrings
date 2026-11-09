@@ -59,6 +59,23 @@
           }
         }
       }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida uses the camera to scan a friend's room QR code."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida memakai kamera untuk memindai QR room temanmu."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

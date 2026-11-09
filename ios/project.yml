@@ -71,6 +71,7 @@ targets:
         # English here; Indonesian in Krida/InfoPlist.xcstrings.
         NSBluetoothAlwaysUsageDescription: "Krida uses Bluetooth to play with friends nearby, without internet."
         NSLocalNetworkUsageDescription: "Krida looks for friends on the same Wi-Fi to play together."
+        NSCameraUsageDescription: "Krida uses the camera to scan a friend's room QR code."
         # AdMob app id (real, from the AdMob console); ad unit ids are in Ads/AdIds.swift.
         GADApplicationIdentifier: ca-app-pub-4887874546732768~9588102946
         # Google's SKAdNetwork ids (its own first, then third-party buyers), copied 2026-11-08 from

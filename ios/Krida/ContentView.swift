@@ -15,7 +15,11 @@ struct ContentView: View {
     @State private var congklakSeats: [LocalSeat] = [.person, .person]
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
+    /// The join screen (scan the host's QR or type the code) is up.
     @State private var joining = false
+    /// Under the join screen's code: the scanner can't open or read another QR.
+    @State private var joinError: LocalizedStringKey?
+    @State private var scanning = false
     @State private var place: Place = .phone
     /// The tembak rule for every mode started here (and rooms this device hosts).
     @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
@@ -41,8 +45,18 @@ struct ContentView: View {
                 UlarTanggaView(table: table) { ularTable = nil }
                     .id(ObjectIdentifier(table))
             } else if let room {
-                RoomView(room: room) { self.room = nil }
-                    .id(ObjectIdentifier(room))
+                RoomView(
+                    room: room,
+                    onExit: { self.room = nil; joining = false },
+                    onLeave: { leaveRoom(room) },
+                    onRetry: {
+                        room.leave()
+                        self.room = NearbyRoom.join(code: room.code)
+                    }
+                )
+                .id(ObjectIdentifier(room))
+            } else if joining {
+                JoinScreen(code: $roomCode, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
             } else {
                 menu
             }
@@ -53,6 +67,21 @@ struct ContentView: View {
         // A room link opens the app ready to join: the code field on "Teman dekat".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
+        .onChange(of: roomCode) { _, _ in joinError = nil }
+        .fullScreenCover(isPresented: $scanning) {
+            QrScannerView(
+                onCode: { text in
+                    scanning = false
+                    if let code = RoomCode.shared.parse(text: text) {
+                        roomCode = code
+                        joinRoom()
+                    } else {
+                        joinError = "QR itu bukan room Krida"
+                    }
+                },
+                onClose: { scanning = false }
+            )
+        }
         .overlay { if starting { LoadingScreen().transition(.opacity) } }
         // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
         // comes (a join link straight into a room, a slow GPU). Same as Android.
@@ -69,6 +98,30 @@ struct ContentView: View {
     private func openJoin() {
         place = .nearby
         joining = true
+    }
+
+    /// Joins the room `roomCode` names.
+    private func joinRoom() {
+        guard RoomCode.shared.isValid(code: roomCode) else { return }
+        joinError = nil
+        room = NearbyRoom.join(code: roomCode)
+    }
+
+    /// VisionKit's scanner, after asking for the camera if needed.
+    private func scanRoomQr() {
+        joinError = nil
+        Task {
+            if await QrScannerView.available() { scanning = true } else { joinError = "Pemindai QR tidak bisa dibuka" }
+        }
+    }
+
+    /// Leaving a room the guest got into, or the host's own, goes back to the menu; backing
+    /// out of a search or a failure goes back to the join screen. Same as Android.
+    private func leaveRoom(_ r: NearbyRoom) {
+        let inRoom = r.isHost || r.stage == .lobby
+        r.leave()
+        room = nil
+        if inRoom { joining = false }
     }
 
     private func endStartup() {
@@ -155,7 +208,7 @@ struct ContentView: View {
 
     /// One card for every way to play: on this phone (seat tiles for people and computers) or
     /// with friends nearby over Bluetooth; right below it what that means (or the computer's
-    /// level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the game's rules.
+    /// level) with Mulai, and Gabung for "Teman dekat"; then the game's rules.
     /// Same as Android.
     private var playCard: some View {
         let ular = game == .ularTangga
@@ -169,7 +222,6 @@ struct ContentView: View {
         return VStack(alignment: .leading, spacing: 10 * s) {
             SettingRow(label: "Main di") {
                 Segmented(options: places, selection: $place, label: "Main di")
-                    .onChange(of: place) { _, p in if p != .nearby { joining = false } }
             }
             // In a nearby room everyone who joins plays, up to 4.
             if !nearby {
@@ -188,37 +240,33 @@ struct ContentView: View {
                 }
             }
             // The action row: what this choice means (or the computer's level), then the
-            // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
-            // "Teman dekat") turns the row into the code field.
+            // buttons, right under the choice that changes them. "Gabung" (only for "Teman dekat")
+            // opens the join screen.
             SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
-                if joining {
-                    joinRow
-                } else {
-                    HStack(spacing: 8 * s) {
-                        let level = !ular && !nearby && computers > 0
-                        if nearby {
-                            detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
-                        } else if level {
-                            Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
-                        } else if !ular {
-                            detail("Berdua, gantian di satu HP")
-                        } else if computers == 0 {
-                            detail("HP digilir; semua melempar dadu saat gilirannya.")
-                        } else if people == 1 {
-                            detail("Kamu melawan komputer.")
-                        } else {
-                            detail("HP digilir; komputer melempar dadunya sendiri.")
-                        }
-                        if !level { Spacer(minLength: 0) }
-                        if nearby {
-                            Button("Gabung pakai kode") { joining = true }
-                                .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                        }
-                        Button(nearby ? "Buat room" : "Mulai", action: start)
-                            .buttonStyle(PrimaryButtonStyle())
+                HStack(spacing: 8 * s) {
+                    let level = !ular && !nearby && computers > 0
+                    if nearby {
+                        detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
+                    } else if level {
+                        Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
+                    } else if !ular {
+                        detail("Berdua, gantian di satu HP")
+                    } else if computers == 0 {
+                        detail("HP digilir; semua melempar dadu saat gilirannya.")
+                    } else if people == 1 {
+                        detail("Kamu melawan komputer.")
+                    } else {
+                        detail("HP digilir; komputer melempar dadunya sendiri.")
                     }
-                    .lineLimit(1)
+                    if !level { Spacer(minLength: 0) }
+                    if nearby {
+                        Button("Gabung") { joining = true }
+                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                    }
+                    Button(nearby ? "Buat room" : "Mulai", action: start)
+                        .buttonStyle(PrimaryButtonStyle())
                 }
+                .lineLimit(1)
             }
             if ular {
                 SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
@@ -242,37 +290,6 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
-    }
-
-    /// The room code field, cancel and Masuk, in place of the "Teman dekat" description.
-    private var joinRow: some View {
-        HStack(spacing: 8 * s) {
-            TextField("Kode room", text: $roomCode)
-                .font(Theme.font(17 * s))
-                .tracking(2 * s)
-                .textInputAutocapitalization(.characters)
-                .autocorrectionDisabled()
-                .padding(.horizontal, 12 * s)
-                .frame(height: 44 * s)
-                .background(Theme.surfaceSoft, in: RoundedRectangle(cornerRadius: 12 * s))
-                .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(Theme.border, lineWidth: 1.5))
-                .accessibilityLabel(Text("Kode room dari temanmu"))
-                .onChange(of: roomCode) { _, code in
-                    let clean = String(code.uppercased().prefix(4))
-                    if clean != code { roomCode = clean }
-                }
-            Button { joining = false } label: {
-                Image(systemName: "xmark").font(.system(size: 15 * s, weight: .bold))
-                    .foregroundStyle(Theme.muted)
-                    .frame(width: 44 * s, height: 44 * s)
-                    .background(Theme.track, in: RoundedRectangle(cornerRadius: 14 * s))
-            }
-            .accessibilityLabel(Text("Batal"))
-            Button("Masuk") { room = NearbyRoom.join(code: roomCode) }
-                .buttonStyle(PrimaryButtonStyle())
-                .disabled(!RoomCode.shared.isValid(code: roomCode))
-                .opacity(RoomCode.shared.isValid(code: roomCode) ? 1 : 0.5)
-        }
     }
 
     private func detail(_ text: LocalizedStringKey) -> some View {
@@ -698,11 +715,14 @@ private struct FlowRow: Layout {
     }
 }
 
-/// A nearby room: the lobby until the game starts, then the board.
+/// A nearby room: the lobby (or a guest's connecting card) until the game starts, then the board.
 private struct RoomView: View {
     @ObservedObject var room: NearbyRoom
+    /// The game ended or was left: back to the menu.
     let onExit: () -> Void
-    @Environment(\.uiScale) private var s
+    /// Back from the lobby or the connecting card.
+    let onLeave: () -> Void
+    let onRetry: () -> Void
 
     var body: some View {
         if let table = room.congklak {
@@ -711,48 +731,10 @@ private struct RoomView: View {
         } else if let table = room.ular {
             UlarTanggaView(table: table, onExit: onExit)
                 .id(ObjectIdentifier(table))
+        } else if room.isHost || room.stage == .lobby {
+            RoomLobby(room: room, onLeave: onLeave)
         } else {
-            lobby
+            ConnectingScreen(room: room, onCancel: onLeave, onRetry: onRetry)
         }
-    }
-
-    private var title: String {
-        switch room.game {
-        case UlarTanggaGame.shared.id: String(localized: "Ular tangga", bundle: .app)
-        case CongklakGame.shared.id: String(localized: "Congklak", bundle: .app)
-        default: ""
-        }
-    }
-
-    private var lobby: some View {
-        VStack(alignment: .leading, spacing: 12 * s) {
-            Text(title).font(Theme.font(24 * s, .black))
-            Text("Kode room").font(Theme.font(15 * s, .semibold))
-            Text(room.code).font(.system(size: 44 * s, weight: .bold, design: .monospaced))
-            Text(room.status).font(Theme.font(17 * s, .semibold))
-            if room.game != nil {
-                Text("\(room.players.count) dari \(room.maxPlayers) pemain").font(Theme.font(15 * s, .semibold)).foregroundStyle(Theme.muted)
-            }
-            ForEach(room.players, id: \.seat) { p in
-                Text("\(p.seat + 1). \(p.name)").font(Theme.font(17 * s, .semibold))
-            }
-            if room.isHost {
-                Button("Mulai", action: room.start)
-                    .buttonStyle(PrimaryButtonStyle())
-                    .opacity(room.canStart ? 1 : 0.5)
-                    .disabled(!room.canStart)
-            }
-            Button("Kembali") {
-                room.leave()
-                onExit()
-            }
-            .buttonStyle(SecondaryButtonStyle())
-            Spacer()
-            AdBanner()
-        }
-        .padding(24 * s)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(Theme.backdropGradient)
-        .foregroundStyle(Theme.ink)
     }
 }

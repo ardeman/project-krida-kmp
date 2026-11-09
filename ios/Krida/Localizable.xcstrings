@@ -746,23 +746,6 @@
         }
       }
     },
-    "Gabung pakai kode" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join with a code"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung pakai kode"
-          }
-        }
-      }
-    },
     "Giliran %@" : {
       "localizations" : {
         "en" : {
@@ -1490,23 +1473,6 @@
         }
       }
     },
-    "Menunggu pemain lain…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for other players…"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu pemain lain…"
-          }
-        }
-      }
-    },
     "Merah" : {
       "localizations" : {
         "en" : {
@@ -1971,23 +1937,6 @@
         }
       }
     },
-    "Sudah masuk. Menunggu host memulai…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're in. Waiting for the host to start…"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sudah masuk. Menunggu host memulai…"
-          }
-        }
-      }
-    },
     "Sulit" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2152,23 +2101,6 @@
         }
       }
     },
-    "Versi aplikasi berbeda. Perbarui aplikasi." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Different app version. Update the app."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versi aplikasi berbeda. Perbarui aplikasi."
-          }
-        }
-      }
-    },
     "Yang pertama sampai 100 menang dan permainan selesai." : {
       "localizations" : {
         "en" : {
@@ -2197,22 +2129,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain."
-          }
-        }
-      }
-    },
-    "%lld dari %lld pemain" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld of %2$lld players"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld dari %2$lld pemain"
           }
         }
       }
@@ -2261,6 +2177,806 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sampai 4 HP lewat Bluetooth, tanpa internet"
+          }
+        }
+      }
+    },
+    "%@ (kamu)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (you)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (kamu)"
+          }
+        }
+      }
+    },
+    "%@, dipakai pemain %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, taken by player %2$lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, dipakai pemain %lld"
+          }
+        }
+      }
+    },
+    "%@, dipilih" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, chosen"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, dipilih"
+          }
+        }
+      }
+    },
+    "Arahkan kamera ke QR di layar HP host. Langsung masuk, tanpa mengetik." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point the camera at the QR on the host's phone. You're in, no typing."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arahkan kamera ke QR di layar HP host. Langsung masuk, tanpa mengetik."
+          }
+        }
+      }
+    },
+    "Buka kamera" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open camera"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buka kamera"
+          }
+        }
+      }
+    },
+    "Cek kodenya, pastikan host masih di layar room, lalu coba lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the code, make sure the host is still on the room screen, then try again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cek kodenya, pastikan host masih di layar room, lalu coba lagi."
+          }
+        }
+      }
+    },
+    "Coba lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coba lagi"
+          }
+        }
+      }
+    },
+    "Coba lagi, atau minta host membuat room baru." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again, or ask the host to make a new room."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coba lagi, atau minta host membuat room baru."
+          }
+        }
+      }
+    },
+    "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold your phone near the host's. Bluetooth must be on on both phones."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP."
+          }
+        }
+      }
+    },
+    "Gabung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung"
+          }
+        }
+      }
+    },
+    "Gabung room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join a room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung room"
+          }
+        }
+      }
+    },
+    "Hanya host yang bisa memulai" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only the host can start"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya host yang bisa memulai"
+          }
+        }
+      }
+    },
+    "Hapus komputer dari kursi %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove the computer from seat %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus komputer dari kursi %lld"
+          }
+        }
+      }
+    },
+    "Host" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host"
+          }
+        }
+      }
+    },
+    "Host · HP ini" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host · this phone"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host · HP ini"
+          }
+        }
+      }
+    },
+    "Host · pion %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host · %@ pawn"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Host · pion %@"
+          }
+        }
+      }
+    },
+    "Kamu pemain %lld, pion %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're player %1$lld, %2$@ pawn."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu pemain %lld, pion %@."
+          }
+        }
+      }
+    },
+    "Kamu pemain %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're player %lld."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu pemain %lld."
+          }
+        }
+      }
+    },
+    "Keluar room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keluar room"
+          }
+        }
+      }
+    },
+    "Ketik kode" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type the code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketik kode"
+          }
+        }
+      }
+    },
+    "Kursi kosong tidak ikut main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty seats don't play"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kursi kosong tidak ikut main"
+          }
+        }
+      }
+    },
+    "Masuk aktif setelah 4 huruf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join turns on after 4 letters"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk aktif setelah 4 huruf"
+          }
+        }
+      }
+    },
+    "Menghubungkan…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menghubungkan…"
+          }
+        }
+      }
+    },
+    "Menunggu host memulai…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for the host to start…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu host memulai…"
+          }
+        }
+      }
+    },
+    "Menunggu teman masuk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for a friend to join"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu teman masuk"
+          }
+        }
+      }
+    },
+    "Menunggu teman…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for a friend…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu teman…"
+          }
+        }
+      }
+    },
+    "Pemain · %lld dari %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Players · %1$lld of %2$lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain · %lld dari %lld"
+          }
+        }
+      }
+    },
+    "Pemindai QR tidak bisa dibuka" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't open the QR scanner"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemindai QR tidak bisa dibuka"
+          }
+        }
+      }
+    },
+    "Perbarui Krida di kedua HP, lalu coba lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Krida on both phones, then try again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perbarui Krida di kedua HP, lalu coba lagi."
+          }
+        }
+      }
+    },
+    "Pindai QR" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan the QR"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pindai QR"
+          }
+        }
+      }
+    },
+    "Pion %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pawn"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pion %@"
+          }
+        }
+      }
+    },
+    "Pion %@ · di HP host" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ pawn · on the host's phone"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pion %@ · di HP host"
+          }
+        }
+      }
+    },
+    "QR itu bukan room Krida" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That QR isn't a Krida room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR itu bukan room Krida"
+          }
+        }
+      }
+    },
+    "QR kode room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room QR code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QR kode room"
+          }
+        }
+      }
+    },
+    "Room %@ · host %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room %1$@ · host %2$@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room %@ · host %@"
+          }
+        }
+      }
+    },
+    "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This room is already playing. Wait for the next round or make your own room."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri."
+          }
+        }
+      }
+    },
+    "Room ketemu. Sebentar lagi masuk." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Found the room. Almost in."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room ketemu. Sebentar lagi masuk."
+          }
+        }
+      }
+    },
+    "Room penuh, siap main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room full, ready to play"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room penuh, siap main"
+          }
+        }
+      }
+    },
+    "Room tidak ketemu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room not found"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room tidak ketemu"
+          }
+        }
+      }
+    },
+    "Sambung lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reconnect"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sambung lagi"
+          }
+        }
+      }
+    },
+    "Sambungan Bluetooth ke host hilang." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Bluetooth connection to the host was lost."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sambungan Bluetooth ke host hilang."
+          }
+        }
+      }
+    },
+    "Semua kursi sudah terisi. Minta host membuat room baru." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every seat is taken. Ask the host to make a new room."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua kursi sudah terisi. Minta host membuat room baru."
+          }
+        }
+      }
+    },
+    "Sudah masuk" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're in"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah masuk"
+          }
+        }
+      }
+    },
+    "Tambah komputer di kursi %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a computer in seat %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah komputer di kursi %lld"
+          }
+        }
+      }
+    },
+    "Teman dekat · Bluetooth, tanpa internet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby · Bluetooth, no internet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teman dekat · Bluetooth, tanpa internet"
+          }
+        }
+      }
+    },
+    "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your friend opens Nearby › Join,\nthen scans this QR or types the code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya"
+          }
+        }
+      }
+    },
+    "Tunggu teman, atau isi kursi dengan komputer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wait for friends, or fill a seat with the computer"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tunggu teman, atau isi kursi dengan komputer"
+          }
+        }
+      }
+    },
+    "Versi aplikasi berbeda" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Different app versions"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versi aplikasi berbeda"
+          }
+        }
+      }
+    },
+    "Warna pionmu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your pawn color"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warna pionmu"
+          }
+        }
+      }
+    },
+    "atau" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "or"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "atau"
           }
         }
       }
