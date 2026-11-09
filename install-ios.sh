@@ -1,48 +1,46 @@
 #!/bin/bash
-# Install Krida app to connected iPhone using devicectl
+# Build the debug app and install + launch it on a connected iPhone.
+# Usage: ./install-ios.sh [--no-build]
+set -euo pipefail
 
-set -e
+cd "$(dirname "$0")"
+BUNDLE_ID="com.ardeman.krida"
+DERIVED="ios/build/device"
+APP="$DERIVED/Build/Products/Debug-iphoneos/Krida.app"
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-APP_PATH="$SCRIPT_DIR/ios/build/device/Build/Products/Debug-iphoneos/Krida.app"
+command -v jq >/dev/null || { echo "jq not found (brew install jq)"; exit 1; }
 
-echo "🍎 Installing Krida to iPhone via devicectl..."
-echo ""
-
-# Check if app exists
-if [ ! -d "$APP_PATH" ]; then
-    echo "❌ App bundle not found at: $APP_PATH"
-    echo ""
-    echo "Please build first:"
-    echo "  cd ios && export JAVA_HOME=/opt/homebrew/opt/openjdk@21 && xcodebuild -scheme Krida -destination 'generic/platform=iOS' -configuration Debug build"
+# First paired physical iOS device (devicectl also lists simulators).
+xcrun devicectl list devices --json-output "$TMP/devices.json" >/dev/null
+DEVICE=$(jq -r '[.result.devices[]
+    | select(.hardwareProperties.reality == "physical"
+             and .hardwareProperties.platform == "iOS"
+             and .connectionProperties.pairingState == "paired")][0]
+    | .hardwareProperties.udid // empty' "$TMP/devices.json")
+if [ -z "$DEVICE" ]; then
+    echo "No paired iPhone found. Plug it in (or put it on the same Wi-Fi) and trust this Mac."
     exit 1
 fi
+NAME=$(jq -r --arg u "$DEVICE" '.result.devices[] | select(.hardwareProperties.udid == $u) | .deviceProperties.name' "$TMP/devices.json")
+echo "Device: $NAME ($DEVICE)"
 
-# List connected devices
-echo "📱 Connected devices:"
-devicectl list devices --json-output compact 2>/dev/null | jq -r '.[] | "\(.properties.name) (\(.properties.osVersion))"' || devicectl list devices
-
-echo ""
-echo "Installing $APP_PATH..."
-echo ""
-
-# Install to first connected device
-DEVICE_ID=$(devicectl list devices --json-output compact 2>/dev/null | jq -r '.[0].properties.udid' 2>/dev/null)
-
-if [ -z "$DEVICE_ID" ]; then
-    echo "❌ No connected device found"
-    echo "Please connect your iPhone via USB"
-    exit 1
+if [ "${1:-}" != "--no-build" ]; then
+    # The shared framework build step runs Gradle, which needs JDK 17–21.
+    if [ -d /opt/homebrew/opt/openjdk@21 ]; then
+        export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+    fi
+    (cd ios && xcodegen)
+    xcodebuild -project ios/Krida.xcodeproj -scheme Krida -configuration Debug \
+        -destination "id=$DEVICE" -derivedDataPath "$DERIVED" \
+        -allowProvisioningUpdates -quiet build
 fi
 
-echo "Installing to device: $DEVICE_ID"
-devicectl device install app "$APP_PATH" --device "$DEVICE_ID"
+[ -d "$APP" ] || { echo "App not found: $APP"; exit 1; }
 
-echo ""
-echo "✅ Installation complete!"
-echo ""
-echo "Next steps:"
-echo "1. Trust the app: Settings > General > VPN & Device Management"
-echo "2. Open Krida from your home screen"
-echo "3. Go to a game and toggle Online"
-echo "4. Tap 'Pencarian Cepat' for Quick Match"
+xcrun devicectl device install app --device "$DEVICE" "$APP"
+xcrun devicectl device process launch --device "$DEVICE" --terminate-existing "$BUNDLE_ID" \
+    || echo "Installed, but launch failed (is the phone locked?). Open Krida by hand."
+
+echo "Done."
