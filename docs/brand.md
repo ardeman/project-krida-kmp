@@ -22,6 +22,9 @@ outline the "Krida" letters into paths, so no font ships in the apps or on the w
   identical everywhere: icon, favicon and header.
 - Use the die alone where space is square or tiny (icons, favicon, avatars). Use the wordmark
   in headers. Don't recolour the die, and don't set "Krida" in plain text where the wordmark fits.
+- The spinning loading-screen die extends the three visible logo faces: the K represents five,
+  with two wood pips opposite it, and six wood pips sit opposite the single pip. The colored
+  four remains on top throughout the spin.
 
 ## Palette
 
