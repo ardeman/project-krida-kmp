@@ -51,9 +51,9 @@ and the Pixel on different networks (one on mobile data).
 1. [x] **Relay.** `relay/` Worker + room Durable Object, deployed to `workers.dev`; framing
    in `docs/protocol.md`; tiny test client script. Live at
    `wss://krida-relay.are-theman.workers.dev`; CI (`.github/workflows/relay.yml`) runs the
-   smoke test locally, deploys, and runs it again against the live relay. A custom domain,
-   `wss://krida-relay.ardeman.com`, is prepared in Wrangler and the apps; deployment and
-   mobile-data verification are pending. On the iPhone's mobile-data connection, the
+   smoke test locally, deploys, and runs it again against the live relay.
+   `wss://krida-relay.ardeman.com` is deployed and passes the live smoke test. Mobile-data
+   verification is pending. On the iPhone's mobile-data connection, the
    `workers.dev` address failed HTTPS and WebSocket TLS (`NSURLErrorDomain/-1200`), while
    Wi-Fi joined successfully. This does not establish a rejoin-token failure. An online
    connection timeout now reports the relay as unreachable; only the relay's `4004`
