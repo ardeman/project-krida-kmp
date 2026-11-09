@@ -111,10 +111,10 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
    selected 2–4 seats (default four for ular tangga). After 20 s, all humans can agree to
    start with the humans found or fill empty seats with computers; a lone player can choose
    2–4 total seats against computers (congklak: two). They can also keep searching or cancel.
-   Android now combines matchmaking and code/QR joining in Join room, and Create room
+   Android and iOS combine matchmaking and code/QR joining in Join room, and Create room
    offers Private (default) or Public. The relay prefers public lobbies with open seats
-   for the same game and total player count, then uses the group queue. The iOS equivalent,
-   relay deployment and multi-phone checks remain pending; see
+   for the same game and total player count, then uses the group queue. Relay deployment
+   and multi-phone checks remain pending; see
    `docs/mockups/public-rooms.md` and `docs/mockups/matchmaking.md`.
 6. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
 7. Wi‑Fi Aware — later, once device support is broad
@@ -123,8 +123,8 @@ All of them plug into the same `Transport` interface; game code never changes.
 
 ## Status
 
-Online public-room discovery and the combined Create/Join flow are implemented on Android
-and the relay; iOS parity, relay deployment and cross-phone verification remain pending.
+Online public-room discovery and the combined Create/Join flow are implemented on Android,
+iOS and the relay; relay deployment and cross-phone verification remain pending.
 
 Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rule variant
 documented in the file). Pass-and-play congklak on a voxel board on **Android** (Filament,

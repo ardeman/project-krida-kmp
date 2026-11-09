@@ -16,6 +16,10 @@ final class NearbyRoom: ObservableObject {
     let isHost: Bool
     /// Through the relay rather than over Bluetooth.
     let online: Bool
+    /// Online and discoverable by matchmaking (host only).
+    let publicRoom: Bool
+    /// Lobby size the online host chose; nil uses the game's maximum.
+    private let hostSeats: Int?
     /// The room's game id (`GameRules.id`); nil for a guest until the host welcomes it.
     @Published private(set) var game: String?
     @Published private(set) var players: [PlayerInfo] = []
@@ -48,11 +52,13 @@ final class NearbyRoom: ObservableObject {
 
     var failed: Bool { ![.searching, .connecting, .lobby].contains(stage) }
 
-    private init(code: String, isHost: Bool, online: Bool, transport: Transport) {
+    private init(code: String, isHost: Bool, online: Bool, transport: Transport, publicRoom: Bool = false, hostSeats: Int? = nil) {
         self.code = code
         self.isHost = isHost
         self.online = online
         self.transport = transport
+        self.publicRoom = publicRoom
+        self.hostSeats = hostSeats
         stage = isHost ? .lobby : .searching
         mySeat = isHost ? 0 : nil
     }
@@ -82,7 +88,11 @@ final class NearbyRoom: ObservableObject {
         for _ in 0..<max(0, missing) { addBotAction?(quickMatchBotName) }
     }
 
-    func start() { if canStart { begin?() } }
+    func start() {
+        guard canStart else { return }
+        (transport as? OnlineHostTransport)?.updateLobby(bots: players.filter { $0.bot }.count, started: true)
+        begin?()
+    }
 
     /// Asks for pawn colour `color`: the host takes it at once, a guest asks the host.
     func pickColor(_ color: Int) { pickColorAction?(color) }
@@ -107,7 +117,7 @@ final class NearbyRoom: ObservableObject {
     /// Leaves and opens the same kind of room again: a new one for a host, the same code for a guest.
     func retry() -> NearbyRoom {
         leave()
-        if isHost, let hostGame { return Self.host(game: hostGame, online: online) }
+        if isHost, let hostGame { return Self.host(game: hostGame, online: online, publicRoom: publicRoom, seats: hostSeats) }
         return Self.join(code: code, online: online)
     }
 
@@ -115,12 +125,13 @@ final class NearbyRoom: ObservableObject {
 
     private func hostSession<S: AnyObject, M: AnyObject>(_ rules: any GameRules, transport: Transport) -> HostSession<S, M> {
         game = rules.id
-        maxPlayers = Int(rules.maxPlayers)
-        let session = HostSession<S, M>(rules: rules, transport: transport, roomCode: code)
+        maxPlayers = hostSeats ?? Int(rules.maxPlayers)
+        let session = HostSession<S, M>(rules: rules, transport: transport, roomCode: code, maxSeats: Int32(maxPlayers))
         colorCount = Int(session.colorCount)
         session.onPlayersChanged = { [weak self, weak session] list in
             guard let self, let session else { return }
             self.players = list
+            (transport as? OnlineHostTransport)?.updateLobby(bots: list.filter { $0.bot }.count)
             self.fillQuickMatchSeats()
             self.canStart = session.canStart() && (self.quickMatchTarget == 0 ||
                 self.players.count == self.quickMatchTarget &&
@@ -138,6 +149,7 @@ final class NearbyRoom: ObservableObject {
         let session = GuestSession<S, M>(rules: rules, join: join)
         session.onLobby = { [weak self, weak session] list in
             guard let self else { return }
+            if let session { self.maxPlayers = Int(session.lobbyCapacity) }
             self.players = list
             self.mySeat = session?.seat.map { $0.intValue }
             self.stage = .lobby
@@ -180,12 +192,16 @@ final class NearbyRoom: ObservableObject {
         if !failed { stage = .lost }
     }
 
-    static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil) -> NearbyRoom {
+    static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil,
+                     publicRoom: Bool = false, seats: Int? = nil) -> NearbyRoom {
         let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
-        let relay = online ? OnlineHostTransport(code: roomCode) : nil
+        let gameId = game == .ularTangga ? UlarTanggaGame.shared.id : CongklakGame.shared.id
+        let total = game == .congklak ? 2 : min(max(seats ?? 4, 2), 4)
+        let relay = online ? OnlineHostTransport(code: roomCode, game: gameId, seats: total, publicRoom: publicRoom) : nil
         let ble = online ? nil : BleHostTransport(roomCode: roomCode)
         let transport: Transport = (relay as Transport?) ?? ble!
-        let room = NearbyRoom(code: roomCode, isHost: true, online: online, transport: transport)
+        let room = NearbyRoom(code: roomCode, isHost: true, online: online, transport: transport,
+                              publicRoom: online && publicRoom, hostSeats: online ? total : nil)
         room.hostGame = game
         switch game {
         case .congklak:
@@ -219,8 +235,8 @@ final class NearbyRoom: ObservableObject {
         return room
     }
 
-    static func join(code: String, online: Bool = false) -> NearbyRoom {
-        let relay = online ? OnlineGuestTransport(code: code) : nil
+    static func join(code: String, online: Bool = false, reservation: String? = nil) -> NearbyRoom {
+        let relay = online ? OnlineGuestTransport(code: code, reservation: reservation) : nil
         let ble = online ? nil : BleGuestTransport(roomCode: code)
         let transport: Transport = (relay as Transport?) ?? ble!
         let room = NearbyRoom(code: code, isHost: false, online: online, transport: transport)

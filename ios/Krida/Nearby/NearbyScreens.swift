@@ -9,7 +9,7 @@ import VisionKit
 
 private let okGreen = Color(light: 0x3F7D2E, dark: 0x8BC77A)
 
-private extension View {
+extension View {
     func nearbyCard(_ s: CGFloat) -> some View {
         background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
             .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
@@ -106,7 +106,13 @@ struct RoomLobby: View {
                 HStack(spacing: 14 * s) {
                     // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
                     VStack(spacing: 10 * s) {
-                        if room.isHost { hostCode } else { joinedNote }
+                        if room.isHost {
+                            if room.online {
+                                Text(room.publicRoom ? "Publik" : "Privat")
+                                    .font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
+                            }
+                            hostCode
+                        } else { joinedNote }
                     }
                     .padding(.horizontal, 16 * s)
                     .padding(.vertical, 14 * s)
@@ -413,7 +419,6 @@ struct JoinScreen: View {
     let onJoin: () -> Void
     let onBack: () -> Void
     @Environment(\.uiScale) private var s
-    @FocusState private var typing: Bool
 
     var body: some View {
         NearbyFrame(title: Text("Gabung room"), subtitle: placeLine(online), online: online, backLabel: "Kembali", onBack: onBack) {
@@ -447,7 +452,7 @@ struct JoinScreen: View {
             VStack(spacing: 12 * s) {
                 Text("Ketik kode").font(Theme.font(22 * s, .black))
                 Text("Kode room dari temanmu").font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
-                codeBoxes
+                CodeBoxes(code: $code, length: length, valid: valid, onSubmit: onJoin)
                 Button(action: onJoin) { Text("Masuk").frame(minWidth: 164 * s) }
                     .buttonStyle(PrimaryButtonStyle(height: 48))
                     .opacity(valid ? 1 : 0.5)
@@ -477,8 +482,19 @@ struct JoinScreen: View {
         online ? RoomCode.shared.isValidOnline(code: code) : RoomCode.shared.isValid(code: code)
     }
 
-    /// One text field drawn as `length` letter boxes; the next box to fill is outlined while typing.
-    private var codeBoxes: some View {
+}
+
+/// One text field drawn as `length` letter boxes; the next box to fill is outlined while typing.
+struct CodeBoxes: View {
+    @Binding var code: String
+    let length: Int
+    let valid: Bool
+    let onSubmit: () -> Void
+    var compact = false
+    @Environment(\.uiScale) private var s
+    @FocusState private var typing: Bool
+
+    var body: some View {
         let chars = Array(code)
         let wide = length <= Int(Krida.shared.ROOM_CODE_LENGTH)
         return ZStack {
@@ -488,7 +504,7 @@ struct JoinScreen: View {
                 .autocorrectionDisabled()
                 .keyboardType(.asciiCapable)
                 .submitLabel(.go)
-                .onSubmit { if valid { onJoin() } }
+                .onSubmit { if valid { onSubmit() } }
                 .foregroundStyle(.clear)
                 .tint(.clear)
                 .accessibilityLabel(Text("Kode room dari temanmu"))
@@ -501,7 +517,7 @@ struct JoinScreen: View {
                     let active = typing && i == min(chars.count, length - 1)
                     Text(i < chars.count ? String(chars[i]) : "")
                         .font(.system(size: 32 * s, weight: .black, design: .monospaced))
-                        .frame(width: (wide ? 54 : 42) * s, height: 64 * s)
+                        .frame(width: (wide ? 54 : 42) * s, height: (compact ? 48 : 64) * s)
                         .background(active ? Theme.surface : Theme.chip, in: RoundedRectangle(cornerRadius: 14 * s))
                         .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(active ? Theme.accent : Theme.line, lineWidth: 2))
                 }

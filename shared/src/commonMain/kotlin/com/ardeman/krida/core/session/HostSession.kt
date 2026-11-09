@@ -39,6 +39,10 @@ class HostSession<S, M>(
     constructor(rules: GameRules<S, M>, transport: Transport, roomCode: String) :
         this(rules, transport, roomCode, Random.Default, defaultClock())
 
+    /** Swift-friendly constructor with a host-chosen lobby size. */
+    constructor(rules: GameRules<S, M>, transport: Transport, roomCode: String, maxSeats: Int) :
+        this(rules, transport, roomCode, Random.Default, defaultClock(), maxSeats)
+
     private inner class Seat(
         var name: String,
         val platform: Platform,

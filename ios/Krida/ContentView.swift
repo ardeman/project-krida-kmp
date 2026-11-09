@@ -19,16 +19,15 @@ struct ContentView: View {
     @State private var joining = false
     /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
     @State private var joinOnline = false
+    @State private var creatingOnlineRoom = false
     @State private var playingQuickMatch = false
-    @State private var quickMatchGame: String = ""
+    @State private var quickMatchGame: String = CongklakGame.shared.id
+    /// Total seats the join screen searches for.
+    @State private var quickMatchTarget = 4
     /// Under the join screen's code: the scanner can't open or read another QR.
     @State private var joinError: LocalizedStringKey?
     @State private var scanning = false
     @State private var place: Place = .phone
-    /// The tembak rule for every mode started here (and rooms this device hosts).
-    @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
-    /// Who moves first in every mode started here: "me", "opponent" or "random".
-    @AppStorage(CongklakSettings.starterKey) private var starter = "random"
     /// The loading screen at app start, over the menu while its board snapshot renders.
     @State private var starting = true
     @State private var menuReady = false
@@ -57,10 +56,23 @@ struct ContentView: View {
                     onRetry: { self.room = room.retry() }
                 )
                 .id(ObjectIdentifier(room))
+            } else if creatingOnlineRoom {
+                CreateOnlineRoomView(
+                    game: quickMatchGame,
+                    onBack: { creatingOnlineRoom = false },
+                    onCreate: { publicRoom, seats in
+                        room = NearbyRoom.host(game: quickMatchGame == UlarTanggaGame.shared.id ? .ularTangga : .congklak,
+                                               online: true, publicRoom: publicRoom, seats: seats)
+                        creatingOnlineRoom = false
+                    }
+                ) {
+                    GameRoomOptions(ular: quickMatchGame == UlarTanggaGame.shared.id)
+                }
             } else if playingQuickMatch {
                 PlayOnlineView(
                     game: quickMatchGame,
-                    onCancel: { playingQuickMatch = false; quickMatchGame = "" },
+                    target: quickMatchTarget,
+                    onCancel: { playingQuickMatch = false },
                     createHost: { code, humans, bots, onReady in
                         let host = NearbyRoom.host(
                             game: quickMatchGame == UlarTanggaGame.shared.id ? .ularTangga : .congklak,
@@ -73,8 +85,8 @@ struct ContentView: View {
                         room = matchedRoom
                         playingQuickMatch = false
                     },
-                    onJoin: { code in
-                        room = NearbyRoom.join(code: code, online: true)
+                    onJoin: { code, reservation in
+                        room = NearbyRoom.join(code: code, online: true, reservation: reservation)
                         playingQuickMatch = false
                     },
                     onComputer: { count in
@@ -89,6 +101,13 @@ struct ContentView: View {
                         }
                         playingQuickMatch = false
                     }
+                )
+            } else if joining && joinOnline {
+                JoinOnlineRoomView(
+                    game: quickMatchGame, code: $roomCode, error: joinError,
+                    onScan: scanRoomQr, onJoin: joinRoom,
+                    onSearch: { target in quickMatchTarget = target; playingQuickMatch = true },
+                    onBack: { joining = false; joinError = nil }
                 )
             } else if joining {
                 JoinScreen(code: $roomCode, online: joinOnline, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
@@ -107,6 +126,7 @@ struct ContentView: View {
                 let selected = args[index + 1]
                 if [CongklakGame.shared.id, UlarTanggaGame.shared.id].contains(selected) {
                     quickMatchGame = selected
+                    quickMatchTarget = selected == UlarTanggaGame.shared.id ? 4 : 2
                     playingQuickMatch = true
                 }
             }
@@ -279,6 +299,7 @@ struct ContentView: View {
                 // Backing out of a failed rejoin lands on the join screen, as after a typed code.
                 joining = true
                 joinOnline = saved.online
+                quickMatchGame = saved.game
                 roomCode = saved.code
                 joinRoom()
             }
@@ -325,8 +346,8 @@ struct ContentView: View {
                     }
                 }
             }
-            // Keep the description above the actions, with Quick Match as the full-width
-            // online action and equally sized Join/Create buttons underneath, as on Android.
+            // The description above equally sized Join/Create buttons, as on Android. Online
+            // rules move to the Create room screen.
             SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
@@ -344,23 +365,15 @@ struct ContentView: View {
                     } else {
                         detail("HP digilir; komputer melempar dadunya sendiri.")
                     }
-                    if online {
-                        Button {
-                            playingQuickMatch = true
-                            quickMatchGame = ular ? UlarTanggaGame.shared.id : CongklakGame.shared.id
-                        } label: {
-                            Text("play_online_quick_match").frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                    }
                     HStack(spacing: 10 * s) {
                         if nearby {
                             Button {
                                 if joinOnline != online { roomCode = "" }
                                 joinOnline = online
+                                quickMatchGame = ular ? UlarTanggaGame.shared.id : CongklakGame.shared.id
                                 joining = true
                             } label: {
-                                Text("Gabung").frame(maxWidth: .infinity)
+                                Text(online ? "Gabung room" : "Gabung").frame(maxWidth: .infinity)
                             }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                         }
@@ -371,21 +384,7 @@ struct ContentView: View {
                     }
                 }
             }
-            if ular {
-                SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
-            } else {
-                SettingRow(label: "Tembak") {
-                    VStack(alignment: .leading, spacing: 6 * s) {
-                        Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
-                        RuleHint(text: tembakAfterStore
-                            ? "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
-                            : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya.")
-                    }
-                }
-                SettingRow(label: "Jalan duluan") {
-                    Segmented(options: [("me", "Saya", nil), ("opponent", "Lawan", nil), ("random", "Acak", nil)], selection: $starter, label: "Siapa jalan duluan")
-                }
-            }
+            if !online { GameRoomOptions(ular: ular) }
         }
         .padding(.leading, 18 * s)
         .padding(.trailing, 14 * s)
@@ -409,8 +408,13 @@ struct ContentView: View {
     }
 
     private func start() {
-        if place != .phone {
-            room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak, online: place == .online)
+        if place == .online {
+            quickMatchGame = game == .ularTangga ? UlarTanggaGame.shared.id : CongklakGame.shared.id
+            creatingOnlineRoom = true
+            return
+        }
+        if place == .nearby {
+            room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak)
             return
         }
         if game == .ularTangga { return startUlarTangga() }
@@ -567,6 +571,33 @@ private struct SeatTiles: View {
 }
 
 /// A small label above its control; no label keeps the rows' spacing. Same as Android.
+/// The game's rule options (ular tangga chips; congklak tembak and starter), saved as they
+/// change: on the play card for this phone and nearby, on Create room online.
+struct GameRoomOptions: View {
+    let ular: Bool
+    @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
+    @AppStorage(CongklakSettings.starterKey) private var starter = "random"
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        if ular {
+            SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
+        } else {
+            SettingRow(label: "Tembak") {
+                VStack(alignment: .leading, spacing: 6 * s) {
+                    Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                    RuleHint(text: tembakAfterStore
+                        ? "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
+                        : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya.")
+                }
+            }
+            SettingRow(label: "Jalan duluan") {
+                Segmented(options: [("me", "Saya", nil), ("opponent", "Lawan", nil), ("random", "Acak", nil)], selection: $starter, label: "Siapa jalan duluan")
+            }
+        }
+    }
+}
+
 private struct SettingRow<Content: View>: View {
     let label: LocalizedStringKey?
     @ViewBuilder let content: Content

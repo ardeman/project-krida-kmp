@@ -8,104 +8,27 @@ private func matchString(_ key: String) -> String {
 
 struct PlayOnlineView: View {
     let game: String
+    /// Total seats to search for, chosen on the join screen.
+    let target: Int
     let onCancel: () -> Void
     let createHost: (String, Int, Int, @escaping () -> Void) -> NearbyRoom
     let onHost: (NearbyRoom) -> Void
-    let onJoin: (String) -> Void
+    let onJoin: (_ code: String, _ reservation: String?) -> Void
     let onComputer: (Int) -> Void
 
-    @State private var playerCount: Int
-    @State private var searching = false
     @State private var attempt = 0
     @Environment(\.uiScale) private var s
-
-    init(game: String, onCancel: @escaping () -> Void,
-         createHost: @escaping (String, Int, Int, @escaping () -> Void) -> NearbyRoom,
-         onHost: @escaping (NearbyRoom) -> Void, onJoin: @escaping (String) -> Void,
-         onComputer: @escaping (Int) -> Void) {
-        self.game = game
-        self.onCancel = onCancel
-        self.createHost = createHost
-        self.onHost = onHost
-        self.onJoin = onJoin
-        self.onComputer = onComputer
-        _playerCount = State(initialValue: game == UlarTanggaGame.shared.id ? 4 : 2)
-    }
 
     var body: some View {
         NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true,
                     backLabel: "Batal", onBack: onCancel) {
-            Group {
-                if searching {
-                    MatchSearch(game: game, target: playerCount, onCancel: onCancel,
-                                onRetry: { attempt += 1 }, createHost: createHost,
-                                onHost: onHost, onJoin: onJoin, onComputer: onComputer)
-                        .id(attempt)
-                } else {
-                    SelectPlayersCard(game: game, playerCount: $playerCount,
-                                      onStart: { searching = true }, onCancel: onCancel)
-                }
-            }
-            .frame(width: 480 * s)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            MatchSearch(game: game, target: target, onCancel: onCancel,
+                        onRetry: { attempt += 1 }, createHost: createHost,
+                        onHost: onHost, onJoin: onJoin, onComputer: onComputer)
+                .id(attempt)
+                .frame(width: 480 * s)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        #if DEBUG
-        .onAppear {
-            if ProcessInfo.processInfo.arguments.contains("-searchQuickMatch") { searching = true }
-        }
-        #endif
-    }
-}
-
-private struct SelectPlayersCard: View {
-    let game: String
-    @Binding var playerCount: Int
-    let onStart: () -> Void
-    let onCancel: () -> Void
-    @Environment(\.uiScale) private var s
-    
-    var body: some View {
-        VStack(spacing: 12 * s) {
-            VStack(spacing: 8 * s) {
-                Text(matchString("play_online_quick_match"))
-                    .font(Theme.font(22 * s, .black))
-                
-                Text(matchString("play_online_description"))
-                    .font(Theme.font(14 * s))
-                    .foregroundStyle(Theme.muted)
-            }
-            .multilineTextAlignment(.center)
-            
-            if game == UlarTanggaGame.shared.id {
-                VStack(spacing: 12 * s) {
-                    Text(matchString("play_players"))
-                        .font(Theme.font(13 * s, .semibold))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
-                              selection: $playerCount, label: "Pemain")
-                }
-            } else {
-                Text(matchString("match_two_players"))
-                    .font(Theme.font(14 * s))
-                    .foregroundStyle(Theme.muted)
-            }
-            
-            Text(matchString("match_fallback_hint"))
-                .font(Theme.font(14 * s))
-                .foregroundStyle(Theme.muted)
-            
-            HStack(spacing: 10 * s) {
-                Button(matchString("nearby_cancel"), action: onCancel)
-                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                Button(matchString("button_search"), action: onStart)
-                    .buttonStyle(PrimaryButtonStyle())
-            }
-        }
-        .padding(.horizontal, 24 * s)
-        .padding(.vertical, 22 * s)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
-        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
     }
 }
 
@@ -116,7 +39,7 @@ private struct MatchSearch: View {
     let onRetry: () -> Void
     let createHost: (String, Int, Int, @escaping () -> Void) -> NearbyRoom
     let onHost: (NearbyRoom) -> Void
-    let onJoin: (_ code: String) -> Void
+    let onJoin: (_ code: String, _ reservation: String?) -> Void
     let onComputer: (_ seats: Int) -> Void
     
     @State private var client: QuickMatchClient?
@@ -187,7 +110,6 @@ private struct MatchSearch: View {
                             client?.acceptHumans(revision: revision)
                         }) {
                             Text(acceptedHumans ? String(format: matchString("match_agreed"), agreedHumans, humans) : String(format: matchString("match_play_humans"), humans))
-                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -197,7 +119,6 @@ private struct MatchSearch: View {
                             client?.acceptBots(revision: revision)
                         }) {
                             Text(accepted ? String(format: matchString("match_agreed"), agreed, humans) : matchString("match_play_bots"))
-                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -210,7 +131,6 @@ private struct MatchSearch: View {
                             onComputer(soloSeats)
                         }) {
                             Text(matchString("match_play_bots"))
-                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -218,12 +138,14 @@ private struct MatchSearch: View {
                 }
                 
                 HStack(spacing: 10 * s) {
-                    Button(matchString("nearby_cancel"), action: onCancel)
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    Button(matchString("match_keep_searching"), action: {
-                        client?.keepSearching()
-                    })
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                    Button(action: onCancel) {
+                        Text(matchString("nearby_cancel")).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                    Button(action: { client?.keepSearching() }) {
+                        Text(matchString("match_keep_searching")).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 }
             } else if !offer || preparing || failed {
                 HStack(spacing: 10 * s) {
@@ -291,7 +213,7 @@ private struct MatchSearch: View {
                         onHost(room)
                     case "guest":
                         guard let code = event["code"] as? String else { fail(); return }
-                        onJoin(code)
+                        onJoin(code, event["reservation"] as? String)
                     default:
                         fail()
                     }

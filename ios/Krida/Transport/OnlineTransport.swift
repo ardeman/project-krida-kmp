@@ -10,6 +10,8 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     static let connected: UInt8 = 2
     static let disconnected: UInt8 = 3
     static let kick: UInt8 = 4
+    /// Host → relay lobby status for public rooms; never forwarded to guests.
+    static let lobbyStatus: UInt8 = 5
 
     static let roomTaken = 4001
     static let noRoom = 4004
@@ -51,6 +53,8 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     // Overridden by the host and guest.
     func query() -> String { "" }
     func onFrame(kind: UInt8, peer: Int, payload: Data) {}
+    /// The socket opened, before `onReady`.
+    func onSocketOpen() {}
     /// The socket dropped (it may come back).
     func onSocketLost() {}
 
@@ -128,6 +132,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         guard webSocketTask === task else { return }
         trace("opened task=\(webSocketTask.taskIdentifier)")
+        onSocketOpen()
         onReady?()
         attempt = 0
         downSince = nil
@@ -198,8 +203,41 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
 final class OnlineHostTransport: OnlineTransport {
     private let key = OnlineTransport.newHostKey()
     private var guests: [Int] = []
+    /// Room metadata for the relay's public-room discovery; nil keeps legacy behaviour.
+    private let game: String?
+    private let seats: Int
+    private let publicRoom: Bool
+    private var lobbyBots = 0
+    private var started = false
 
-    override func query() -> String { "role=host&key=\(key)" }
+    init(code: String, game: String? = nil, seats: Int = 4, publicRoom: Bool = false) {
+        self.game = game
+        self.seats = seats
+        self.publicRoom = publicRoom
+        super.init(code: code)
+    }
+
+    override func query() -> String {
+        var q = "role=host&key=\(key)"
+        if let game { q += "&game=\(game)&seats=\(seats)&public=\(publicRoom ? 1 : 0)" }
+        return q
+    }
+
+    /// Tells the relay how many seats computers hold and whether the game began.
+    func updateLobby(bots: Int, started: Bool? = nil) {
+        let started = started ?? self.started
+        guard lobbyBots != bots || self.started != started else { return }
+        lobbyBots = bots
+        self.started = started
+        sendLobbyStatus()
+    }
+
+    private func sendLobbyStatus() {
+        guard game != nil else { return }
+        sendFrame(kind: Self.lobbyStatus, peer: 0, payload: Data("{\"bots\":\(lobbyBots),\"started\":\(started)}".utf8))
+    }
+
+    override func onSocketOpen() { sendLobbyStatus() }
 
     override func send(peer: String?, data: KotlinByteArray) {
         let id: Int
@@ -245,8 +283,17 @@ final class OnlineHostTransport: OnlineTransport {
 /// Joining an online room by code. The host is peer `KridaBle.hostPeer`, as over BLE.
 final class OnlineGuestTransport: OnlineTransport {
     private var hostHere = false
+    /// A matchmaker seat hold, used on the first connect only.
+    private var reservation: String?
 
-    override func query() -> String { "role=guest" }
+    init(code: String, reservation: String? = nil) {
+        self.reservation = reservation
+        super.init(code: code)
+    }
+
+    override func query() -> String { "role=guest" + (reservation.map { "&reservation=\($0)" } ?? "") }
+
+    override func onSocketOpen() { reservation = nil }
 
     override func send(peer: String?, data: KotlinByteArray) {
         sendFrame(kind: Self.data, peer: 0, payload: data.toData())

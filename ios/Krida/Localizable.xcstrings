@@ -3604,6 +3604,198 @@
           }
         }
       }
+    },
+    "Pengaturan room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room setup"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pengaturan room"
+          }
+        }
+      }
+    },
+    "Siapa yang bisa gabung?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who can join?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siapa yang bisa gabung?"
+          }
+        }
+      }
+    },
+    "Privat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privat"
+          }
+        }
+      }
+    },
+    "Publik" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Public"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publik"
+          }
+        }
+      }
+    },
+    "Room kamu bisa ditemukan lewat pencarian pemain." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matchmaking can find your room."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room kamu bisa ditemukan lewat pencarian pemain."
+          }
+        }
+      }
+    },
+    "Hanya pemain dengan kode atau QR kamu yang bisa gabung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only players with your code or QR can join."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya pemain dengan kode atau QR kamu yang bisa gabung."
+          }
+        }
+      }
+    },
+    "Teman tetap bisa pakai kode atau QR room." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Friends can still use its code or QR."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teman tetap bisa pakai kode atau QR room."
+          }
+        }
+      }
+    },
+    "Cari room" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find a room"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari room"
+          }
+        }
+      }
+    },
+    "Gabung room publik atau cari pemain lain." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join a public room or find other players."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung room publik atau cari pemain lain."
+          }
+        }
+      }
+    },
+    "Cari pemain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find a match"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari pemain"
+          }
+        }
+      }
+    },
+    "Punya kode room?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Have a room code?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punya kode room?"
+          }
+        }
+      }
+    },
+    "Langsung gabung room publik atau privat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join a public or private room directly."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langsung gabung room publik atau privat."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

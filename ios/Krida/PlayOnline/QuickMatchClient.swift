@@ -18,7 +18,7 @@ final class QuickMatchClient {
 
     func start(onEvent: @escaping ([String: Any]) -> Void, onError: @escaping () -> Void) {
         guard !closed, webSocket == nil else { return }
-        guard let url = URL(string: "\(Krida.shared.RELAY_URL)/v1/match/\(game)/\(playerCount)?flow=group") else {
+        guard let url = URL(string: "\(Krida.shared.RELAY_URL)/v1/match/\(game)/\(playerCount)?flow=group&public=1") else {
             close()
             onError()
             return

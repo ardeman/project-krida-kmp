@@ -99,7 +99,7 @@ in the same commit as the code.
   selected total seats, then retains group matchmaking and its existing fallback offers.
   Waiting groups stay together. Existing public-room hosts keep their rule choices and
   manual Start; full, started and disconnected rooms cannot receive matches. Approved
-  [mockup](mockups/public-rooms.md). Android and relay first; iOS next session.
+  [mockup](mockups/public-rooms.md). Android and relay first, then iOS (done 2026-11-10).
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 

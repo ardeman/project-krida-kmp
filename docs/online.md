@@ -93,7 +93,7 @@ and the Pixel on different networks (one on mobile data).
 
 ## Public rooms and combined joining (2026-11-10)
 
-Android now offers Create room (Room setup left; Private/Public right) and Join room
+Android and iOS offer Create room (Room setup left; Private/Public right) and Join room
 (matchmaking left; code/QR right). Private is the default. New searches opt in to public
 lobby discovery before group matchmaking. Public rooms retain their host, options,
 computer controls and manual Start. Search matches the same game and selected total seats,
@@ -108,6 +108,6 @@ session token. Optional relay metadata and the reservation field are in [protoco
 No new Durable Object migration or dependencies are required.
 
 Android build, shared JVM tests, relay type checks and targeted discovery/group tests pass,
-as does the actual local Workers runtime public-room smoke test. iOS implementation is
-next session per the approved platform order. Deployment and Android/iOS multi-phone checks
+as does the actual local Workers runtime public-room smoke test. iOS (2026-11-10) builds;
+it uses the same relay query, lobby status frames and reservations. Deployment and Android/iOS multi-phone checks
 remain pending. The approved design and handoff are in [mockups/public-rooms.md](mockups/public-rooms.md).
