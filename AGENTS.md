@@ -23,6 +23,7 @@ Gradle needs JDK 17–21; Android Studio's bundled JDK 25 is too new (see `READM
 - Rendering and radios stay native: Filament (Android) and RealityKit (iOS), BLE and LAN per platform. No cross-platform engine or WebView.
 - Install size budget is under 15 MB per store download. Ask before adding a dependency; prefer generating voxel meshes in code over shipping assets, and use `.glb` with vertex colors (no textures) when an asset is needed.
 - User-facing text is Indonesian and English, English being the fallback for every other locale. On Android English goes in `res/values/strings.xml` and Indonesian in `res/values-in/strings.xml` (Android's resource folder for Indonesian; language tags elsewhere use `id`); on iOS both go in the string catalog. Add every string in both languages; don't add hardcoded strings. Code comments are in English.
+- Deploy workflows (`.github/workflows/`) run on push to `main` only when files that end up in the deployed thing change: list its source and build files in `paths`, never a whole folder, and keep `workflow_dispatch` for deploying by hand. Docs, test scripts and other repo changes must not trigger a deploy. Checks that don't deploy (tests, commit messages) may run on every push.
 - When a step in the README's multiplayer roadmap or the "Status" line changes, update `README.md` in the same commit.
 
 ## Commit messages

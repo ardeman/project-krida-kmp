@@ -7,7 +7,15 @@ name: Deploy relay
 on:
   push:
     branches: [main]
-    paths: ["relay/**", ".github/workflows/relay.yml"]
+    # Only what ends up in the deployed Worker. Docs, the smoke test script and other
+    # files in relay/ don't deploy; run the workflow by hand if one of them needs it.
+    paths:
+      - "relay/src/**"
+      - "relay/wrangler.toml"
+      - "relay/package.json"
+      - "relay/package-lock.json"
+      - "relay/tsconfig.json"
+      - ".github/workflows/relay.yml"
   workflow_dispatch:
 
 permissions:

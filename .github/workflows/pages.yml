@@ -5,7 +5,15 @@ name: Deploy landing page
 on:
   push:
     branches: [main]
-    paths: ["web/**", ".github/workflows/pages.yml"]
+    # Only what ends up in the built site; run the workflow by hand for anything else.
+    paths:
+      - "web/src/**"
+      - "web/public/**"
+      - "web/astro.config.mjs"
+      - "web/package.json"
+      - "web/package-lock.json"
+      - "web/tsconfig.json"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
