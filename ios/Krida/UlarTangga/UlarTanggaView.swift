@@ -22,6 +22,7 @@ final class UlarTanggaGameModel: ObservableObject {
 
     let table: UlarTanggaTable
     let scene = UlarTanggaScene()
+    var playerOrigins: [Int: CGPoint] = [:]
     private let sounds = Sounds.shared
     private let game = UlarTanggaGame.shared
     private let board = UlarTanggaBoard.shared
@@ -102,9 +103,8 @@ final class UlarTanggaGameModel: ObservableObject {
 
     /// A finger went down on the die: press it, and after a moment start spinning it.
     func pressDie() {
-        guard !pressing else { return }
+        guard !pressing, canRoll, pendingToss == nil else { return }
         pressing = true
-        guard canRoll, pendingToss == nil else { return }
         scene.holdDie(true)
         holdTimer = Task {
             try? await Task.sleep(for: .seconds(0.5))
@@ -115,17 +115,22 @@ final class UlarTanggaGameModel: ObservableObject {
         }
     }
 
-    /// The finger lifted: a quick tap tosses the die, a hold throws it long. `inside` is false
-    /// when the finger slid off a die that wasn't spinning yet, which cancels.
-    func releaseDie(inside: Bool) {
+    func moveDie(_ offset: CGSize) {
+        guard pressing, canRoll, pendingToss == nil else { return }
+        scene.moveHeldDie(offset)
+    }
+
+    /// The finger lifted: a quick release tosses, a hold throws long; cancellation lets go.
+    func releaseDie(completed: Bool) {
         guard pressing else { return }
         pressing = false
         holdTimer?.cancel()
         holdTimer = nil
         let long = spinning
         spinning = false
-        guard canRoll, pendingToss == nil else { return }
-        if long { roll(.long) } else if inside { roll(.short) } else { scene.holdDie(false) }
+        guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
+        guard completed else { scene.holdDie(false); return }
+        roll(long ? .long : .short)
     }
 
     func restart() { table.restart() }
@@ -145,6 +150,11 @@ final class UlarTanggaGameModel: ObservableObject {
         return table.isLocal(seat) ? pendingToss ?? .short : .short
     }
 
+    private func recallDie(for next: UlarTanggaState) {
+        let seat = Int(next.turn)
+        scene.recallDie(origin: table.isLocal(seat) ? nil : playerOrigins[seat])
+    }
+
     private func drain() {
         guard !animating else { return }
         guard !queue.isEmpty else { return idle() }
@@ -156,11 +166,12 @@ final class UlarTanggaGameModel: ObservableObject {
             let offThrow = update.fresh ? game.diceOffThrowBetween(before: state, after: next) : nil
             if let offThrow, let thrower = offThrow.first?.intValue, let value = offThrow.second?.intValue {
                 // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
-                let seconds = scene.throwDie(value, toss: toss(for: thrower))
+                let origin = table.isLocal(thrower) ? nil : playerOrigins[thrower]
+                let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin)
                 try? await Task.sleep(for: .seconds(Double(seconds) + 0.15))
                 state = next
                 try? await Task.sleep(for: .seconds(0.45))
-                scene.recallDie()
+                recallDie(for: next)
                 if !next.opening {
                     // The order is set: show every throw a moment, then the tiles line up in order.
                     offHold = true
@@ -169,7 +180,8 @@ final class UlarTanggaGameModel: ObservableObject {
                     announceTurn(Int(next.turn))
                 }
             } else if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
-                let seconds = scene.throwDie(roll, toss: toss(for: seat))
+                let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
+                let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin)
                 try? await Task.sleep(for: .seconds(Double(seconds) + 0.2))
                 let play = game.play(state: state, seat: Int32(seat), roll: Int32(roll))
                 for square in play.steps {
@@ -190,7 +202,7 @@ final class UlarTanggaGameModel: ObservableObject {
                 }
                 for s in 0..<next.positions.count { scene.move(s, [spot(next, s)], seconds: Float(Self.settle)) }
                 try? await Task.sleep(for: .seconds(Self.settle))
-                scene.recallDie()
+                recallDie(for: next)
                 state = next
                 let last = game.LAST
                 announce(play.state, reached: landed == last || play.jumpTo?.int32Value == last)
@@ -199,7 +211,7 @@ final class UlarTanggaGameModel: ObservableObject {
                 // waits for the players' throws.
                 state = next
                 placeAll(next)
-                scene.recallDie()
+                recallDie(for: next)
             }
             animating = false
             drain()
@@ -323,7 +335,7 @@ private struct UlarTanggaBoardView: View {
         .onChange(of: dieDown) { _, down in
             // A cancelled gesture never reaches onEnded: let go of the die without a throw.
             // After onEnded has had its turn, where it's a no-op.
-            if !down { DispatchQueue.main.async { model.releaseDie(inside: false) } }
+            if !down { DispatchQueue.main.async { model.releaseDie(completed: false) } }
         }
         .onChange(of: loading) { _, now in
             model.loading = now
@@ -346,6 +358,11 @@ private struct UlarTanggaBoardView: View {
         let keys = Self.hudKeys + ((table.waiting ?? table.notice) != nil ? ["notice"] : [])
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
         model.layout(size: size, room: room, obstacles: obstacles, dieSpot: die)
+        for seat in 0..<model.players {
+            if let tile = boxes["seat-\(seat)"] {
+                model.playerOrigins[seat] = CGPoint(x: tile.midX, y: tile.midY)
+            }
+        }
     }
 
     private func exit() {
@@ -427,6 +444,7 @@ private struct UlarTanggaBoardView: View {
                         HStack(spacing: 8 * s) {
                             ForEach(pair, id: \.self) { seat in
                                 tile(seat, on: seat == highlighted, roll: offRoll(seat), out: model.state.opening && !throwing.contains(seat))
+                                    .modifier(hudBox("seat-\(seat)"))
                             }
                             if pair.count == 1 { Color.clear.aspectRatio(1, contentMode: .fit) }
                         }
@@ -493,11 +511,11 @@ private struct UlarTanggaBoardView: View {
     private var dieGesture: some Gesture {
         DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .updating($dieDown) { _, down, _ in down = true }
-            .onChanged { _ in model.pressDie() }
-            .onEnded { value in
-                let inside = CGRect(x: 0, y: 0, width: 104 * s, height: 104 * s).contains(value.location)
-                model.releaseDie(inside: inside)
+            .onChanged { value in
+                model.pressDie()
+                model.moveDie(value.translation)
             }
+            .onEnded { _ in model.releaseDie(completed: true) }
     }
 
     /// A seat as a square tile: its square (or finishing place, or dice-off throw) inside a

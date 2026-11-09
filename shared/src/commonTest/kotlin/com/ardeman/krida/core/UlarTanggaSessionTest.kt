@@ -9,8 +9,10 @@ import com.ardeman.krida.core.games.UlarTanggaState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.RejectReason
+import com.ardeman.krida.core.session.GameRules
 import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
+import com.ardeman.krida.core.session.SeatColorRules
 import com.ardeman.krida.core.transport.LoopbackNetwork
 import kotlin.random.Random
 import kotlin.test.Test
@@ -174,6 +176,15 @@ class UlarTanggaSessionTest {
         assertEquals(2, late.seat)
         assertFalse(host.players[2].bot)
         assertTrue(host.players[2].connected)
+    }
+
+    @Test
+    fun guestRulesExposePawnColourChoices() {
+        // Both native guest lobbies discover the picker through this interface.
+        val rules: GameRules<UlarTanggaState, UlarTanggaMove> = UlarTanggaGame
+        val colors = rules as SeatColorRules<*>
+        assertEquals(4, colors.colorCount)
+        assertEquals(listOf(3, 1), (colors.initialState(2, listOf(3, 1), Random(7)) as UlarTanggaState).colors)
     }
 
     @Test

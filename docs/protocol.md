@@ -117,7 +117,7 @@ unchanged. Online room codes are 6 chars from the same alphabet as `RoomCode`
 (`RoomCode.generateOnline`), shared as `https://krida.ardeman.com/r/<CODE>`; the QR shows the
 same link, and `RoomCode.parseOnline` also takes `krida://join?room=<CODE>` or a typed code.
 
-Connect with a WebSocket to `wss://<relay>/v1/rooms/<CODE>`:
+Connect with a WebSocket to `wss://krida-relay.ardeman.com/v1/rooms/<CODE>`:
 
 - Host: `?role=host&key=<KEY>`. `KEY` is 16–64 chars `[A-Za-z0-9_-]`, random, made by the
   host phone and kept for the room's life. The first host to connect claims the code with its

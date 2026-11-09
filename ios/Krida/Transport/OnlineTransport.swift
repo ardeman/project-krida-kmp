@@ -39,6 +39,12 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
         super.init()
     }
 
+    private func trace(_ event: String) {
+        #if DEBUG
+        print("[KridaOnline] \(type(of: self)) \(code): \(event)")
+        #endif
+    }
+
     // Overridden by the host and guest.
     func query() -> String { "" }
     func onFrame(kind: UInt8, peer: Int, payload: Data) {}
@@ -46,6 +52,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     func onSocketLost() {}
 
     func start() {
+        trace("start")
         // The session keeps its delegate until invalidated, which `close` does.
         session = URLSession(configuration: .default, delegate: self, delegateQueue: .main)
         connect()
@@ -61,6 +68,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
 
     func close() {
         guard !closed else { return }
+        trace("close requested")
         closed = true
         pinger?.invalidate()
         task?.cancel(with: .normalClosure, reason: nil)
@@ -74,7 +82,12 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
         guard let task else { return }
         var frame = Data([kind, UInt8(truncatingIfNeeded: peer)])
         frame.append(payload)
-        task.send(.data(frame)) { _ in }
+        trace("send kind=\(kind) peer=\(peer) bytes=\(frame.count)")
+        task.send(.data(frame)) { [weak self] error in
+            if let error = error as NSError? {
+                DispatchQueue.main.async { self?.trace("send failed \(error.domain)/\(error.code)") }
+            }
+        }
     }
 
     // MARK: Socket
@@ -84,6 +97,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
               let url = URL(string: "\(Krida.shared.RELAY_URL)/v1/rooms/\(code)?\(query())") else { return }
         let task = session.webSocketTask(with: url)
         self.task = task
+        trace("connect task=\(task.taskIdentifier)")
         task.resume()
         receive(task)
     }
@@ -92,8 +106,15 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
         task.receive { [weak self] result in
             DispatchQueue.main.async {
                 guard let self, task === self.task, !self.closed else { return }
-                guard case .success(let message) = result else { return }  // the delegate reports the drop
+                guard case .success(let message) = result else {
+                    if case .failure(let error) = result {
+                        let error = error as NSError
+                        self.trace("receive failed \(error.domain)/\(error.code), close=\(task.closeCode.rawValue)")
+                    }
+                    return  // the delegate reports the drop
+                }
                 if case .data(let data) = message, data.count >= 2 {
+                    self.trace("receive kind=\(data[data.startIndex]) peer=\(data[data.startIndex + 1]) bytes=\(data.count)")
                     self.onFrame(kind: data[data.startIndex], peer: Int(data[data.startIndex + 1]), payload: data.dropFirst(2))
                 }
                 self.receive(task)
@@ -103,6 +124,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
 
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         guard webSocketTask === task else { return }
+        trace("opened task=\(webSocketTask.taskIdentifier)")
         attempt = 0
         downSince = nil
         // Keeps NATs and mobile networks from dropping an idle game.
@@ -115,11 +137,13 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask,
                     didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         guard webSocketTask === task else { return }
+        trace("closed code=\(closeCode.rawValue)")
         dropped(closeCode: closeCode.rawValue)
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         guard task === self.task else { return }
+        if let error = error as NSError? { trace("completed \(error.domain)/\(error.code)") }
         // A close the server started may only show up here, with the code on the task.
         let code = (task as? URLSessionWebSocketTask)?.closeCode.rawValue ?? 0
         dropped(closeCode: code > 1000 ? code : nil)
@@ -128,6 +152,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     /// `closeCode` is nil for a network failure.
     private func dropped(closeCode: Int?) {
         guard !closed else { return }
+        trace("dropped code=\(closeCode.map(String.init) ?? "network")")
         task?.cancel()
         task = nil
         pinger?.invalidate()

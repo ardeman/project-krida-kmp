@@ -305,6 +305,8 @@ final class UlarTanggaScene {
     private var flight: Flight?
     private var pressed = false
     private var shaking = false
+    private var heldOffset = CGSize.zero
+    private var idleOrigin: CGPoint?
     private var shakeTime: Float = 0
     /// Radians the held die has spun; it settles back to a whole turn when the hold ends.
     private var spinAngle: Float = 0
@@ -326,17 +328,33 @@ final class UlarTanggaScene {
         if shake && !shaking { shakeTime = 0; spinAngle = 0 }
         pressed = held
         shaking = held && shake
+        if !held { heldOffset = .zero }
+    }
+
+    /// Follows the finger in screen points, keeping the die inside the viewport.
+    func moveHeldDie(_ offset: CGSize) {
+        guard pressed, dieMode == .home, let spot = dieSpot else { return }
+        let left = -spot.center.x + spot.size
+        let top = -spot.center.y + spot.size
+        heldOffset = CGSize(
+            width: min(max(offset.width, left), max(left, screen.width - spot.center.x - spot.size)),
+            height: min(max(offset.height, top), max(top, screen.height - spot.center.y - spot.size))
+        )
+        applyDie()
     }
 
     /// Throws the die from the screen onto the board so it lands showing `value`; returns how
     /// long until it rests, in seconds. A long throw flies farther, tumbles and bounces more.
     /// It stays on the board until `recallDie`.
-    func throwDie(_ value: Int, toss: Toss) -> Float {
+    func throwDie(_ value: Int, toss: Toss, origin: CGPoint? = nil) -> Float {
         pressed = false
         shaking = false
         // Leave from the pose on screen, mid-spin or not.
         shown = drawnPos
+        heldOffset = .zero
         dieRot = drawnRot
+        // Opponents throw from their player tile, at the same depth as the held die.
+        if let origin { shown = diePosition(origin) }
         pressAmt = 0; shakeAmt = 0; rockAmt = 0; spinAngle = 0
         dieValue = value
         let area = Self.floats(board.dieLanding)
@@ -369,10 +387,19 @@ final class UlarTanggaScene {
         return seconds
     }
 
-    /// Lifts the die off the board back to its place on screen, still showing its value.
-    func recallDie() {
+    private func diePosition(_ origin: CGPoint?) -> SIMD3<Float> {
+        guard let origin, let spot = dieSpot else { return home }
+        let (_, right, up) = Self.basis()
+        let units = board.DIE / Float(spot.size)
+        return home + (right * Float(origin.x - spot.center.x) - up * Float(origin.y - spot.center.y)) * units
+    }
+
+    /// Returns to the next player's box, or the local control when `origin` is nil.
+    func recallDie(origin: CGPoint? = nil) {
+        idleOrigin = origin
+        if dieMode == .home { shown = diePosition(idleOrigin); applyDie() }
         guard dieMode == .landed else { return }
-        flight = Flight(from: shown, to: home, q0: dieRot, q1: Self.homeRotation(dieValue),
+        flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: Self.homeRotation(dieValue),
                         axis: [1, 0, 0], turns: 0, seconds: 0.45, heights: [0], shares: [1])
         dieMode = .returning
     }
@@ -425,7 +452,7 @@ final class UlarTanggaScene {
             return
         }
         guard dieMode == .home else { return }
-        shown = home
+        shown = diePosition(idleOrigin)
         // Ease toward the targets: quick to press, a little slower to build up a shake.
         pressAmt = Self.approach(pressAmt, pressed ? 1 : 0, dt, 0.06)
         shakeAmt = Self.approach(shakeAmt, shaking ? 1 : 0, dt, shaking ? 0.18 : 0.08)
@@ -457,6 +484,11 @@ final class UlarTanggaScene {
         var pos = shown
         var scale: Float = 1
         if dieMode == .home {
+            if let spot = dieSpot {
+                let (_, right, up) = Self.basis()
+                let units = board.DIE / Float(spot.size)
+                pos += (right * Float(heldOffset.width) - up * Float(heldOffset.height)) * units
+            }
             if spinAngle != 0 {
                 // Spinning in the air before the throw: whole turns about a tilted axis that
                 // slowly sweeps round, so every face flashes past.
@@ -498,7 +530,7 @@ final class UlarTanggaScene {
         let depth = board.DIE * (h / 2) / (tanV * Float(spot.size))
         home = eye + (fwd + right * nx * tanH + up * ny * tanV) * depth
         if dieMode == .home {
-            shown = home
+            shown = diePosition(idleOrigin)
             applyDie()
         }
         die.isEnabled = true

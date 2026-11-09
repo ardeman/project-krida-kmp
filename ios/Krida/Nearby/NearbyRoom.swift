@@ -43,7 +43,7 @@ final class NearbyRoom: ObservableObject {
     /// What the host chose, for `retry`.
     private var hostGame: Game?
 
-    /// A guest that hasn't reached the host by then gives up with "Room tidak ketemu". Same as Android.
+    /// A guest that hasn't reached the host by then gives up; online may be unreachable.
     private static let notFoundSeconds = 20
 
     var failed: Bool { ![.searching, .connecting, .lobby].contains(stage) }
@@ -229,7 +229,8 @@ final class NearbyRoom: ObservableObject {
         room.notFoundTask = Task { [weak room] in
             try? await Task.sleep(for: .seconds(notFoundSeconds))
             guard !Task.isCancelled, let room, room.stage == .searching else { return }
-            room.stage = .notFound
+            // Only the relay's noRoom response proves an online room is missing.
+            room.stage = room.online ? .offline : .notFound
             room.leave()
         }
         if let relay {

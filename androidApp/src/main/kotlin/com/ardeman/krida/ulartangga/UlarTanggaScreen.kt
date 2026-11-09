@@ -13,7 +13,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -132,6 +131,7 @@ fun UlarTanggaScreen(table: UlarTanggaTable, onExit: () -> Unit) {
 
 @Composable
 private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -> Unit, loading: () -> Boolean) {
+    val playerOrigins = remember { mutableMapOf<Int, FloatArray>() }
     var state by remember { mutableStateOf(table.latest) }
     var die by remember { mutableStateOf<Int?>(null) }
     /** How the local player threw the die, for the roll the table hasn't sent back yet. */
@@ -146,6 +146,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     val queue = remember { ArrayDeque<UlarTanggaUpdate>() }
     val scope = rememberCoroutineScope()
     val players = state.positions.size
+
+    fun recallDie(next: UlarTanggaState) {
+        renderer?.recallDie(if (table.isLocal(next.turn)) null else playerOrigins[next.turn])
+    }
 
     fun spot(s: UlarTanggaState, seat: Int): FloatArray {
         val square = s.positions[seat]
@@ -180,12 +184,13 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 val (thrower, value) = offThrow
                 val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
                 pendingToss[0] = null
-                val seconds = renderer?.throwDie(value, toss) ?: 0f
+                val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
+                val seconds = renderer?.throwDie(value, toss, origin) ?: 0f
                 delay((seconds * 1000).toLong() + 150)
                 die = value
                 state = next
                 delay(450)
-                renderer?.recallDie()
+                recallDie(next)
                 if (!next.opening) {
                     // The order is set: show every throw a moment, then the tiles line up in order.
                     offHold = true
@@ -197,7 +202,8 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 // Bots and remote players toss; the local player's tap or throw is replayed.
                 val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
                 pendingToss[0] = null
-                val seconds = renderer?.throwDie(roll, toss) ?: 0f
+                val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
+                val seconds = renderer?.throwDie(roll, toss, origin) ?: 0f
                 delay((seconds * 1000).toLong() + 200)
                 die = roll
                 val play = UlarTanggaGame.play(state, seat, roll)
@@ -219,7 +225,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 }
                 repeat(next.positions.size) { renderer?.move(it, listOf(spot(next, it)), SETTLE_MS / 1000f) }
                 delay(SETTLE_MS)
-                renderer?.recallDie()
+                recallDie(next)
                 state = next
                 announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
             } else {
@@ -228,7 +234,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 die = null
                 state = next
                 placeAll(next)
-                renderer?.recallDie()
+                recallDie(next)
             }
             animating = false
             drain()
@@ -363,7 +369,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                             pair.forEach { seat -> PlayerTile(
                                 table, state, seat, on = seat == highlighted,
                                 roll = offRoll(seat), out = state.opening && seat !in throwing,
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).onGloballyPositioned {
+                                    val p = it.positionInRoot()
+                                    playerOrigins[seat] = floatArrayOf(p.x - rootX + it.size.width / 2f, p.y - rootY + it.size.height / 2f)
+                                },
                             ) }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
                         }
@@ -397,21 +406,31 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                             val r = renderer ?: return@pointerInput
                             awaitEachGesture {
                                 val down = awaitFirstDown()
-                                if (!canRoll()) return@awaitEachGesture
+                                if (!canRoll() || pendingToss[0] != null) return@awaitEachGesture
                                 down.consume()
                                 r.holdDie(true)
-                                var held = true
-                                val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
-                                    waitForUpOrCancellation().also { held = false }
+                                var long = false
+                                var released = false
+                                val hold = scope.launch {
+                                    delay(viewConfiguration.longPressTimeoutMillis)
+                                    long = true
+                                    r.holdDie(true, shake = true)
+                                    Sounds.play(Sounds.Effect.Tap)
                                 }
-                                if (!held) {
-                                    if (up != null) { up.consume(); roll(UlarTanggaRenderer.Toss.Short) } else r.holdDie(false)
-                                    return@awaitEachGesture
+                                try {
+                                    while (true) {
+                                        val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                                        if (change.isConsumed || !canRoll()) break
+                                        val offset = change.position - down.position
+                                        r.moveHeldDie(offset.x, offset.y)
+                                        change.consume()
+                                        if (!change.pressed) { released = true; break }
+                                    }
+                                } finally {
+                                    hold.cancel()
+                                    if (!released) r.holdDie(false)
                                 }
-                                r.holdDie(true, shake = true)
-                                Sounds.play(Sounds.Effect.Tap)
-                                waitForUpOrCancellation()?.consume()
-                                roll(UlarTanggaRenderer.Toss.Long)
+                                if (released) roll(if (long) UlarTanggaRenderer.Toss.Long else UlarTanggaRenderer.Toss.Short)
                             }
                         },
                 )

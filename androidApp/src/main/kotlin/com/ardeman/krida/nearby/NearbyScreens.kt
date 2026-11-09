@@ -179,12 +179,13 @@ private fun ColumnScope.HostCode(code: String, online: Boolean) {
         style = Theme.font(13, FontWeight.ExtraBold, Theme.muted),
     )
     Row(
-        Modifier.semantics(mergeDescendants = true) { contentDescription = code.toList().joinToString(" ") },
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Modifier.widthIn(max = if (online) 246.dp else 208.dp).fillMaxWidth()
+            .semantics(mergeDescendants = true) { contentDescription = code.toList().joinToString(" ") },
+        horizontalArrangement = Arrangement.spacedBy(if (online) 6.dp else 8.dp),
     ) {
-        // Six online letters get narrower boxes, so they fit the same card.
+        // Share the available width so all letters fit even on a narrow phone.
         code.forEach { ch ->
-            Box(Modifier.size(if (online) 36.dp else 46.dp, 52.dp).clip(RoundedCornerShape(12.dp)).background(Theme.chip), contentAlignment = Alignment.Center) {
+            Box(Modifier.weight(1f).height(52.dp).clip(RoundedCornerShape(12.dp)).background(Theme.chip), contentAlignment = Alignment.Center) {
                 Text(ch.toString(), style = Theme.font(if (online) 26 else 30, FontWeight.Black, Theme.ink).copy(fontFamily = FontFamily.Monospace))
             }
         }

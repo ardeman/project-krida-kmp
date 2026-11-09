@@ -2,6 +2,7 @@ name = "krida-relay"
 main = "src/index.ts"
 compatibility_date = "2026-11-01"
 workers_dev = true
+routes = [{ pattern = "krida-relay.ardeman.com", custom_domain = true }]
 
 [[durable_objects.bindings]]
 name = "ROOMS"

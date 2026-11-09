@@ -145,10 +145,13 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     /** Where the die waits on screen, in world space; set from [dieSpot]. */
     private val home = floatArrayOf(0f, 20f, 8f)
     private val shown = home.copyOf()
+    private var idleOrigin: FloatArray? = null
     private var dieRot = homeRotation(dieValue)
     private var flight: Flight? = null
     private var pressed = false
     private var shaking = false
+    private var heldX = 0f
+    private var heldY = 0f
     private var shakeTime = 0f
     /** Radians the held die has spun; it settles back to a whole turn when the hold ends. */
     private var spinAngle = 0f
@@ -200,6 +203,17 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         if (shake && !shaking) { shakeTime = 0f; spinAngle = 0f }
         pressed = held
         shaking = held && shake
+        if (!held) { heldX = 0f; heldY = 0f }
+        invalidate()
+    }
+
+    /** Follows the finger in screen pixels, keeping the die inside the viewport. */
+    fun moveHeldDie(x: Float, y: Float) {
+        val spot = dieSpot ?: return
+        if (!pressed || dieMode != DieMode.Home) return
+        heldX = x.coerceIn(-spot[0] + spot[2], maxOf(-spot[0] + spot[2], width - spot[0] - spot[2]))
+        heldY = y.coerceIn(-spot[1] + spot[2], maxOf(-spot[1] + spot[2], height - spot[1] - spot[2]))
+        applyDie()
         invalidate()
     }
 
@@ -208,12 +222,15 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
      * long until it rests, in seconds. A [Toss.Long] flies farther, tumbles and bounces more.
      * It stays on the board until [recallDie].
      */
-    fun throwDie(value: Int, toss: Toss): Float {
+    fun throwDie(value: Int, toss: Toss, origin: FloatArray? = null): Float {
         pressed = false
         shaking = false
         // Leave from the pose on screen, mid-shake or not.
         drawnPos.copyInto(shown)
+        heldX = 0f; heldY = 0f
         dieRot = drawnRot
+        // Opponents throw from their player tile, at the same depth as the held die.
+        if (origin != null) diePosition(origin).copyInto(shown)
         pressAmt = 0f; shakeAmt = 0f; rockAmt = 0f; spinAngle = 0f
         dieValue = value
         val area = UlarTanggaBoard.dieLanding
@@ -248,11 +265,29 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         return seconds
     }
 
-    /** Lifts the die off the board back to its place on screen, still showing its value. */
-    fun recallDie() {
+    private fun diePosition(origin: FloatArray?): FloatArray {
+        val spot = dieSpot
+        if (origin == null || spot == null) return home.copyOf()
+        val eye = UlarTanggaBoard.cameraEye
+        val at = UlarTanggaBoard.cameraTarget
+        val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+        val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+        val up = cross(right, fwd)
+        val units = UlarTanggaBoard.DIE / spot[2]
+        return FloatArray(3) { home[it] + (right[it] * (origin[0] - spot[0]) - up[it] * (origin[1] - spot[1])) * units }
+    }
+
+    /** Returns to the next player's box, or the local control when [origin] is null. */
+    fun recallDie(origin: FloatArray? = null) {
+        idleOrigin = origin
+        if (dieMode == DieMode.Home) {
+            diePosition(idleOrigin).copyInto(shown)
+            applyDie()
+            invalidate()
+        }
         if (dieMode != DieMode.Landed) return
         flight = Flight(
-            from = shown.copyOf(), to = home.copyOf(), q0 = dieRot, q1 = homeRotation(dieValue),
+            from = shown.copyOf(), to = diePosition(idleOrigin), q0 = dieRot, q1 = homeRotation(dieValue),
             axis = floatArrayOf(1f, 0f, 0f), turns = 0, seconds = 0.45f,
             heights = floatArrayOf(0f), shares = floatArrayOf(1f),
         )
@@ -308,7 +343,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             return true
         }
         if (dieMode != DieMode.Home) return false
-        home.copyInto(shown)
+        diePosition(idleOrigin).copyInto(shown)
         // Ease toward the targets: quick to press, a little slower to build up a shake.
         pressAmt = approach(pressAmt, if (pressed) 1f else 0f, dt, 0.06f)
         shakeAmt = approach(shakeAmt, if (shaking) 1f else 0f, dt, if (shaking) 0.18f else 0.08f)
@@ -342,6 +377,15 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         var scale = 1f
         val pos = shown.copyOf()
         if (dieMode == DieMode.Home) {
+            dieSpot?.let { spot ->
+                val eye = UlarTanggaBoard.cameraEye
+                val at = UlarTanggaBoard.cameraTarget
+                val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+                val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+                val up = cross(right, fwd)
+                val units = UlarTanggaBoard.DIE / spot[2]
+                for (i in 0..2) pos[i] += (right[i] * heldX - up[i] * heldY) * units
+            }
             if (spinAngle != 0f) {
                 // Spinning in the air before the throw: whole turns about a tilted axis that
                 // slowly sweeps round, so every face flashes past.
@@ -389,7 +433,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         val depth = UlarTanggaBoard.DIE * (height / 2f) / (tanV * spot[2])
         for (i in 0..2) home[i] = eye[i] + (fwd[i] + right[i] * nx * tanH + up[i] * ny * tanV) * depth
         if (dieMode == DieMode.Home) {
-            home.copyInto(shown)
+            diePosition(idleOrigin).copyInto(shown)
             applyDie()
         }
         show(die, true)

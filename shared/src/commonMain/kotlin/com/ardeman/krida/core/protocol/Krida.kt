@@ -29,7 +29,7 @@ object Krida {
     const val SHARE_URL_PREFIX: String = "https://krida.ardeman.com/r/"
 
     /** The online relay (`relay/`); rooms are at `$RELAY_URL/v1/rooms/<CODE>`. */
-    const val RELAY_URL: String = "wss://krida-relay.are-theman.workers.dev"
+    const val RELAY_URL: String = "wss://krida-relay.ardeman.com"
 
     /** How long a transport keeps reopening a dropped link (online socket) before giving up. */
     const val RECONNECT_GRACE_MS: Long = 60_000L

@@ -98,7 +98,7 @@ data class UlarTanggaPlay(
  * - Players who reach 100 leave the board in finishing order; the game ends when one
  *   player is left, who takes last place.
  */
-object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
+object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove>, SeatColorRules<UlarTanggaState> {
     const val SIZE = 10
     const val LAST = SIZE * SIZE
 
@@ -121,8 +121,13 @@ object UlarTanggaGame : GameRules<UlarTanggaState, UlarTanggaMove> {
     /** Pawn colors: red, blue, green, yellow. */
     const val COLORS = 4
 
+    override val colorCount = COLORS
+
     override fun initialState(players: Int, random: Random) =
         initialState(players, UlarTanggaOptions(), emptyList(), random)
+
+    override fun initialState(players: Int, colors: List<Int>, random: Random) =
+        initialState(players, UlarTanggaOptions(), colors, random)
 
     fun initialState(players: Int, options: UlarTanggaOptions, random: Random) =
         initialState(players, options, emptyList(), random)

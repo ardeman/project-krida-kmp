@@ -95,7 +95,8 @@ class NearbyRoom private constructor(
     private val main = Handler(Looper.getMainLooper())
     private val notFound = Runnable {
         if (stage == Stage.SEARCHING) {
-            stage = Stage.NOT_FOUND
+            // Only the relay's NO_ROOM response proves an online room is missing.
+            stage = if (online) Stage.OFFLINE else Stage.NOT_FOUND
             leave()
         }
     }
@@ -203,7 +204,7 @@ class NearbyRoom private constructor(
     enum class Game { CONGKLAK, ULAR_TANGGA }
 
     companion object {
-        /** A guest that hasn't reached the host by then gives up with "Room tidak ketemu". */
+        /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
         fun host(context: Context, name: String, game: Game, online: Boolean = false): NearbyRoom {
