@@ -224,7 +224,12 @@ struct ContentView: View {
                 SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
             } else {
                 SettingRow(label: "Tembak") {
-                    Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                    VStack(alignment: .leading, spacing: 6 * s) {
+                        Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                        RuleHint(text: tembakAfterStore
+                            ? "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
+                            : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya.")
+                    }
                 }
                 SettingRow(label: "Jalan duluan") {
                     Segmented(options: [("me", "Saya", nil), ("opponent", "Lawan", nil), ("random", "Acak", nil)], selection: $starter, label: "Siapa jalan duluan")
@@ -603,19 +608,35 @@ private struct UlarTanggaOptionChips: View {
     @AppStorage(UlarTanggaSettings.sixToEnterKey) private var sixToEnter = false
     @AppStorage(UlarTanggaSettings.bounceBackKey) private var bounceBack = false
     @AppStorage(UlarTanggaSettings.firstFinishEndsKey) private var firstFinishEnds = false
+    /// The chip tapped last; its meaning shows under the chips. Same as Android.
+    @State private var last: Int?
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        FlowRow(spacing: 6 * s) {
-            chip("6 lempar lagi", $sixRollsAgain)
-            chip("6 untuk mulai", $sixToEnter)
-            chip("Pantul di 100", $bounceBack)
-            chip("Juara 1 selesai", $firstFinishEnds)
+        VStack(alignment: .leading, spacing: 6 * s) {
+            FlowRow(spacing: 6 * s) {
+                chip(0, "6 lempar lagi", $sixRollsAgain)
+                chip(1, "6 untuk mulai", $sixToEnter)
+                chip(2, "Pantul di 100", $bounceBack)
+                chip(3, "Juara 1 selesai", $firstFinishEnds)
+            }
+            RuleHint(text: hint)
         }
     }
 
-    private func chip(_ label: LocalizedStringKey, _ on: Binding<Bool>) -> some View {
-        Button { on.wrappedValue.toggle() } label: {
+    /// What the last tapped chip means now that it is on or off.
+    private var hint: LocalizedStringKey {
+        switch last {
+        case 0: sixRollsAgain ? "6 lempar lagi: dapat 6, lempar dadu sekali lagi." : "6 lempar lagi mati: dapat 6, giliran tetap pindah."
+        case 1: sixToEnter ? "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6." : "6 untuk mulai mati: pion langsung jalan dari start."
+        case 2: bounceBack ? "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya." : "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat."
+        case 3: firstFinishEnds ? "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100." : "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
+        default: "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini."
+        }
+    }
+
+    private func chip(_ index: Int, _ label: LocalizedStringKey, _ on: Binding<Bool>) -> some View {
+        Button { last = index; on.wrappedValue.toggle() } label: {
             Text(label).font(Theme.font(13 * s)).foregroundStyle(on.wrappedValue ? Theme.accent : Theme.muted)
                 .lineLimit(1)
                 .padding(.horizontal, 12 * s)
@@ -625,6 +646,17 @@ private struct UlarTanggaOptionChips: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(on.wrappedValue ? .isSelected : [])
+    }
+}
+
+/// A short explanation under a rule control. Same as Android.
+private struct RuleHint: View {
+    let text: LocalizedStringKey
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        Text(text).font(Theme.font(12 * s, .semibold)).foregroundStyle(Theme.muted)
+            .lineLimit(2).fixedSize(horizontal: false, vertical: true)
     }
 }
 

@@ -1,6 +1,182 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A capture (tembak) only counts once your seeds have passed your own store this turn."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
+          }
+        }
+      }
+    },
+    "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya."
+          }
+        }
+      }
+    },
+    "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a rule to turn it on or off; it is explained here."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini."
+          }
+        }
+      }
+    },
+    "6 lempar lagi: dapat 6, lempar dadu sekali lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 rolls again: roll a 6 and you roll once more."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 lempar lagi: dapat 6, lempar dadu sekali lagi."
+          }
+        }
+      }
+    },
+    "6 lempar lagi mati: dapat 6, giliran tetap pindah." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 rolls again off: a 6 ends your turn like any roll."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 lempar lagi mati: dapat 6, giliran tetap pindah."
+          }
+        }
+      }
+    },
+    "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 to start: a pawn enters the board on square 1 only with a 6."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6."
+          }
+        }
+      }
+    },
+    "6 untuk mulai mati: pion langsung jalan dari start." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 to start off: pawns move off the start with any roll."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 untuk mulai mati: pion langsung jalan dari start."
+          }
+        }
+      }
+    },
+    "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bounce off 100: a roll past 100 walks back the extra squares."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya."
+          }
+        }
+      }
+    },
+    "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bounce off 100 off: a roll past 100 leaves the pawn where it is."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat."
+          }
+        }
+      }
+    },
+    "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First to 100 ends: the game ends when the first player reaches 100."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100."
+          }
+        }
+      }
+    },
+    "Juara 1 selesai mati: main terus sampai tinggal satu pemain." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First to 100 ends off: play goes on until one player is left."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
+          }
+        }
+      }
+    },
     "Main di" : {
       "localizations" : {
         "en" : {

@@ -108,6 +108,17 @@
     <string name="ular_option_six_to_enter">6 untuk mulai</string>
     <string name="ular_option_bounce">Pantul di 100</string>
     <string name="ular_option_first_ends">Juara 1 selesai</string>
+    <string name="tembak_hint_after_store">Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu.</string>
+    <string name="tembak_hint_anytime">Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya.</string>
+    <string name="ular_hint_tap">Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini.</string>
+    <string name="ular_hint_six_again_on">6 lempar lagi: dapat 6, lempar dadu sekali lagi.</string>
+    <string name="ular_hint_six_again_off">6 lempar lagi mati: dapat 6, giliran tetap pindah.</string>
+    <string name="ular_hint_six_to_enter_on">6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6.</string>
+    <string name="ular_hint_six_to_enter_off">6 untuk mulai mati: pion langsung jalan dari start.</string>
+    <string name="ular_hint_bounce_on">Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya.</string>
+    <string name="ular_hint_bounce_off">Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat.</string>
+    <string name="ular_hint_first_ends_on">Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100.</string>
+    <string name="ular_hint_first_ends_off">Juara 1 selesai mati: main terus sampai tinggal satu pemain.</string>
     <string name="ular_rule_dice_off">Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu.</string>
     <string name="ular_dice_off_you">Lempar dadu untuk urutan main</string>
     <string name="ular_dice_off_of">%1$s, lempar dadu untuk urutan main</string>

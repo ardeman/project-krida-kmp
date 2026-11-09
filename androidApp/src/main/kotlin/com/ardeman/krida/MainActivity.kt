@@ -455,13 +455,16 @@ class MainActivity : ComponentActivity() {
             if (ular) SettingRow(stringResource(R.string.play_rules)) {
                 UlarTanggaOptionChips()
             } else SettingRow(stringResource(R.string.play_tembak)) {
-                Segmented(
-                    options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
-                    current = CongklakSettings.tembakAfterStore,
-                    label = stringResource(R.string.tembak_title),
-                    onChange = CongklakSettings::chooseTembakAfterStore,
-                    fill = true,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Segmented(
+                        options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
+                        current = CongklakSettings.tembakAfterStore,
+                        label = stringResource(R.string.tembak_title),
+                        onChange = CongklakSettings::chooseTembakAfterStore,
+                        fill = true,
+                    )
+                    Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.tembak_hint_after_store else R.string.tembak_hint_anytime))
+                }
             }
             if (!ular) SettingRow(stringResource(R.string.play_starter)) {
                 Segmented(
@@ -633,20 +636,32 @@ private fun UlarTanggaOptionChips() {
         Triple(R.string.ular_option_bounce, o.bounceBack) { v: Boolean -> o.copy(bounceBack = v) },
         Triple(R.string.ular_option_first_ends, o.firstFinishEnds) { v: Boolean -> o.copy(firstFinishEnds = v) },
     )
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        chips.forEach { (label, on, change) ->
-            val shape = RoundedCornerShape(10.dp)
-            Box(
-                Modifier.height(34.dp).clip(shape)
-                    .background(if (on) Theme.chip else Theme.surface)
-                    .border(1.5.dp, if (on) Theme.accent else Theme.line, shape)
-                    .toggleable(value = on, role = Role.Checkbox) { UlarTanggaSettings.chooseOptions(change(it)) }
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(stringResource(label), style = Theme.font(13, color = if (on) Theme.accent else Theme.muted), maxLines = 1)
+    // What each chip means when on and off, in chip order.
+    val hints = listOf(
+        R.string.ular_hint_six_again_on to R.string.ular_hint_six_again_off,
+        R.string.ular_hint_six_to_enter_on to R.string.ular_hint_six_to_enter_off,
+        R.string.ular_hint_bounce_on to R.string.ular_hint_bounce_off,
+        R.string.ular_hint_first_ends_on to R.string.ular_hint_first_ends_off,
+    )
+    // The chip tapped last; its meaning shows under the chips.
+    var last by rememberSaveable { mutableStateOf(-1) }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            chips.forEach { (label, on, change) ->
+                val shape = RoundedCornerShape(10.dp)
+                Box(
+                    Modifier.height(34.dp).clip(shape)
+                        .background(if (on) Theme.chip else Theme.surface)
+                        .border(1.5.dp, if (on) Theme.accent else Theme.line, shape)
+                        .toggleable(value = on, role = Role.Checkbox) { last = chips.indexOfFirst { c -> c.first == label }; UlarTanggaSettings.chooseOptions(change(it)) }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(stringResource(label), style = Theme.font(13, color = if (on) Theme.accent else Theme.muted), maxLines = 1)
+                }
             }
         }
+        Hint(stringResource(hints.getOrNull(last)?.let { if (chips[last].second) it.first else it.second } ?: R.string.ular_hint_tap))
     }
 }
 
@@ -658,6 +673,11 @@ private fun SettingRow(label: String, content: @Composable () -> Unit) {
         Box(Modifier.fillMaxWidth().heightIn(min = 44.dp), contentAlignment = Alignment.CenterStart) { content() }
     }
 }
+
+/** A short explanation under a rule control. */
+@Composable
+private fun Hint(text: String) =
+    Text(text, style = Theme.font(12, FontWeight.SemiBold, Theme.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
 
 @Composable
 private fun Detail(text: String) =

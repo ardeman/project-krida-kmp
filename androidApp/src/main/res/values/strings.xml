@@ -116,6 +116,17 @@
     <string name="ular_option_six_to_enter">6 to start</string>
     <string name="ular_option_bounce">Bounce off 100</string>
     <string name="ular_option_first_ends">First to 100 ends</string>
+    <string name="tembak_hint_after_store">A capture (tembak) only counts once your seeds have passed your own store this turn.</string>
+    <string name="tembak_hint_anytime">Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite.</string>
+    <string name="ular_hint_tap">Tap a rule to turn it on or off; it is explained here.</string>
+    <string name="ular_hint_six_again_on">6 rolls again: roll a 6 and you roll once more.</string>
+    <string name="ular_hint_six_again_off">6 rolls again off: a 6 ends your turn like any roll.</string>
+    <string name="ular_hint_six_to_enter_on">6 to start: a pawn enters the board on square 1 only with a 6.</string>
+    <string name="ular_hint_six_to_enter_off">6 to start off: pawns move off the start with any roll.</string>
+    <string name="ular_hint_bounce_on">Bounce off 100: a roll past 100 walks back the extra squares.</string>
+    <string name="ular_hint_bounce_off">Bounce off 100 off: a roll past 100 leaves the pawn where it is.</string>
+    <string name="ular_hint_first_ends_on">First to 100 ends: the game ends when the first player reaches 100.</string>
+    <string name="ular_hint_first_ends_off">First to 100 ends off: play goes on until one player is left.</string>
     <string name="ular_rule_dice_off">Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order.</string>
     <string name="ular_dice_off_you">Throw the die to set the playing order</string>
     <string name="ular_dice_off_of">%1$s, throw the die to set the playing order</string>
