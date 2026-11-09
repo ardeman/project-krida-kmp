@@ -2,17 +2,20 @@ import Foundation
 import Shared
 import UIKit
 
-/// A room over BLE ("Teman dekat" on the play card), from hosting or joining until the game
-/// starts. Then `congklak` or `ular` takes over the session and that game's screen shows it.
+/// A room over BLE ("Teman dekat" on the play card) or through the online relay ("Online"),
+/// from hosting or joining until the game starts. Then `congklak` or `ular` takes over the session and that game's screen shows it.
 /// A guest joins by code and learns the game from the host's Welcome. Same as Android.
 @MainActor
 final class NearbyRoom: ObservableObject {
     enum Game { case congklak, ularTangga }
-    /// Where the room stands; a guest goes searching → connecting → lobby, or stops at a failure.
-    enum Stage { case searching, connecting, lobby, full, started, version, notFound, lost, unknownGame, refused }
+    /// Where the room stands; a guest goes searching → connecting → lobby, or stops at a
+    /// failure. offline: the relay couldn't be reached (online only, host or guest).
+    enum Stage { case searching, connecting, lobby, full, started, version, notFound, lost, unknownGame, refused, offline }
 
     let code: String
     let isHost: Bool
+    /// Through the relay rather than over Bluetooth.
+    let online: Bool
     /// The room's game id (`GameRules.id`); nil for a guest until the host welcomes it.
     @Published private(set) var game: String?
     @Published private(set) var players: [PlayerInfo] = []
@@ -37,15 +40,18 @@ final class NearbyRoom: ObservableObject {
     private var addBotAction: ((String) -> Void)?
     private var removeBotAction: ((Int) -> Void)?
     private var notFoundTask: Task<Void, Never>?
+    /// What the host chose, for `retry`.
+    private var hostGame: Game?
 
     /// A guest that hasn't reached the host by then gives up with "Room tidak ketemu". Same as Android.
     private static let notFoundSeconds = 20
 
     var failed: Bool { ![.searching, .connecting, .lobby].contains(stage) }
 
-    private init(code: String, isHost: Bool, transport: Transport) {
+    private init(code: String, isHost: Bool, online: Bool, transport: Transport) {
         self.code = code
         self.isHost = isHost
+        self.online = online
         self.transport = transport
         stage = isHost ? .lobby : .searching
         mySeat = isHost ? 0 : nil
@@ -70,12 +76,19 @@ final class NearbyRoom: ObservableObject {
         else { transport.close() }
     }
 
+    /// Leaves and opens the same kind of room again: a new one for a host, the same code for a guest.
+    func retry() -> NearbyRoom {
+        leave()
+        if isHost, let hostGame { return Self.host(game: hostGame, online: online) }
+        return Self.join(code: code, online: online)
+    }
+
     private static var deviceName: String { UIDevice.current.name }
 
-    private func hostSession<S: AnyObject, M: AnyObject>(_ rules: any GameRules, ble: BleHostTransport) -> HostSession<S, M> {
+    private func hostSession<S: AnyObject, M: AnyObject>(_ rules: any GameRules, transport: Transport) -> HostSession<S, M> {
         game = rules.id
         maxPlayers = Int(rules.maxPlayers)
-        let session = HostSession<S, M>(rules: rules, transport: ble, roomCode: code)
+        let session = HostSession<S, M>(rules: rules, transport: transport, roomCode: code)
         colorCount = Int(session.colorCount)
         session.onPlayersChanged = { [weak self, weak session] list in
             guard let self, let session else { return }
@@ -116,42 +129,68 @@ final class NearbyRoom: ObservableObject {
         }
     }
 
+    /// The relay closed a guest's socket for good; the game's table shows drops once it runs.
+    private func relayClosed(_ closeCode: Int) {
+        notFoundTask?.cancel()
+        if failed || congklak != nil || ular != nil { return }
+        stage = switch closeCode {
+        case OnlineTransport.noRoom: .notFound
+        case OnlineTransport.full: .full
+        case OnlineTransport.kicked: .refused
+        case OnlineTransport.gaveUp: stage == .searching ? .offline : .lost
+        default: .lost
+        }
+    }
+
     private func lost() {
         notFoundTask?.cancel()
         if !failed { stage = .lost }
     }
 
-    static func host(game: Game) -> NearbyRoom {
-        let code = RoomCode.shared.generate()
-        let ble = BleHostTransport(roomCode: code)
-        let room = NearbyRoom(code: code, isHost: true, transport: ble)
+    static func host(game: Game, online: Bool = false) -> NearbyRoom {
+        let code = online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate()
+        let relay = online ? OnlineHostTransport(code: code) : nil
+        let ble = online ? nil : BleHostTransport(roomCode: code)
+        let transport: Transport = (relay as Transport?) ?? ble!
+        let room = NearbyRoom(code: code, isHost: true, online: online, transport: transport)
+        room.hostGame = game
         switch game {
         case .congklak:
-            let session: HostSession<CongklakState, CongklakMove> = room.hostSession(CongklakSettings.rules, ble: ble)
+            let session: HostSession<CongklakState, CongklakMove> = room.hostSession(CongklakSettings.rules, transport: transport)
             room.begin = { [weak room] in
                 guard let room, session.canStart() else { return }
                 session.start()
-                room.congklak = HostTable(session: session, mySeat: 0, transport: ble)
+                room.congklak = HostTable(session: session, mySeat: 0, transport: transport)
             }
         case .ularTangga:
-            let session: HostSession<UlarTanggaState, UlarTanggaMove> = room.hostSession(UlarTanggaSettings.rules, ble: ble)
+            let session: HostSession<UlarTanggaState, UlarTanggaMove> = room.hostSession(UlarTanggaSettings.rules, transport: transport)
             room.begin = { [weak room] in
                 guard let room, session.canStart() else { return }
                 session.start()
-                room.ular = UlarTanggaHostTable(session: session, mySeat: 0, transport: ble)
+                room.ular = UlarTanggaHostTable(session: session, mySeat: 0, transport: transport)
             }
             room.canAddBots = true
             room.addBotAction = { [weak session] name in _ = session?.addBot(name: name, platform: .ios, bot: UlarTanggaBot.shared) }
             room.removeBotAction = { [weak session] seat in _ = session?.removeBot(seat: Int32(seat)) }
         }
-        ble.start()
+        if let relay {
+            // Only before the game: once it runs, the table shows the drop.
+            relay.onClosed = { [weak room] _ in
+                guard let room, room.congklak == nil, room.ular == nil else { return }
+                room.stage = .offline
+            }
+            relay.start()
+        }
+        ble?.start()
         return room
     }
 
-    static func join(code: String) -> NearbyRoom {
-        let ble = BleGuestTransport(roomCode: code)
-        let room = NearbyRoom(code: code, isHost: false, transport: ble)
-        let join = GuestJoin(transport: ble, name: deviceName, platform: .ios)
+    static func join(code: String, online: Bool = false) -> NearbyRoom {
+        let relay = online ? OnlineGuestTransport(code: code) : nil
+        let ble = online ? nil : BleGuestTransport(roomCode: code)
+        let transport: Transport = (relay as Transport?) ?? ble!
+        let room = NearbyRoom(code: code, isHost: false, online: online, transport: transport)
+        let join = GuestJoin(transport: transport, name: deviceName, platform: .ios)
         room.join = join
         join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }
         join.onRejected = { [weak room] in room?.rejected($0) }
@@ -183,7 +222,11 @@ final class NearbyRoom: ObservableObject {
             room.stage = .notFound
             room.leave()
         }
-        ble.start()
+        if let relay {
+            relay.onClosed = { [weak room] in room?.relayClosed($0) }
+            relay.start()
+        }
+        ble?.start()
         return room
     }
 }

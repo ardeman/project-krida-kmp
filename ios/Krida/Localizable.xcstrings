@@ -2980,6 +2980,214 @@
           }
         }
       }
+    },
+    "Online" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online"
+          }
+        }
+      }
+    },
+    "Lewat internet, teman di mana saja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over the internet, friends anywhere"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewat internet, teman di mana saja"
+          }
+        }
+      }
+    },
+    "Sampai 4 HP lewat internet, teman di mana saja" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 4 phones over the internet, friends anywhere"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sampai 4 HP lewat internet, teman di mana saja"
+          }
+        }
+      }
+    },
+    "Online · lewat internet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online · over the internet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online · lewat internet"
+          }
+        }
+      }
+    },
+    "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your friend opens Online › Join,\nthen scans this QR or types the code"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya"
+          }
+        }
+      }
+    },
+    "Masuk aktif setelah 6 huruf" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join turns on after 6 letters"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk aktif setelah 6 huruf"
+          }
+        }
+      }
+    },
+    "Menyambung ke room…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting to the room…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyambung ke room…"
+          }
+        }
+      }
+    },
+    "Lewat internet. Kedua HP perlu koneksi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Over the internet. Both phones need a connection."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewat internet. Kedua HP perlu koneksi."
+          }
+        }
+      }
+    },
+    "Cek kodenya, pastikan host masih membuka room, lalu coba lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the code, make sure the host still has the room open, then try again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cek kodenya, pastikan host masih membuka room, lalu coba lagi."
+          }
+        }
+      }
+    },
+    "Sambungan internet ke host hilang." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The internet connection to the host was lost."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sambungan internet ke host hilang."
+          }
+        }
+      }
+    },
+    "Krida online tidak terjangkau" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't reach Krida online"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida online tidak terjangkau"
+          }
+        }
+      }
+    },
+    "Cek koneksi internet HP ini, lalu coba lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check this phone's internet connection, then try again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cek koneksi internet HP ini, lalu coba lagi."
+          }
+        }
+      }
+    },
+    "Menunggu %@… %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for %1$@… %2$lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menunggu %1$@… %2$lld"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

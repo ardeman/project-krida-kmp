@@ -15,6 +15,8 @@ class UlarTanggaTable: ObservableObject {
     @Published fileprivate(set) var players: [PlayerInfo] = []
     /// Shown under the status (disconnects, refusals), or nil.
     @Published fileprivate(set) var notice: String?
+    /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
+    @Published fileprivate(set) var waiting: String?
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: UlarTanggaState
     /// Receives every snapshot after `latest`, in order.
@@ -73,8 +75,7 @@ final class UlarTanggaHostTable: UlarTanggaTable {
     private let session: HostSession<UlarTanggaState, UlarTanggaMove>
     private let transport: Transport
     private let seat: Int?
-    /// Hands guests gone past the reconnect grace to the computer, so nobody waits on them.
-    private var watch: Timer?
+    private var ticker: SecondTicker?
 
     init(session: HostSession<UlarTanggaState, UlarTanggaMove>, mySeat: Int?, transport: Transport) {
         self.session = session
@@ -89,14 +90,15 @@ final class UlarTanggaHostTable: UlarTanggaTable {
             self.deliver(state, seq: session.seq)
         }
         if !(transport is LocalTransport) {
-            watch = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak session] _ in
-                MainActor.assumeIsolated {
-                    guard let session else { return }
-                    for s in session.expiredSeats() {
-                        _ = session.replaceWithBot(seat: s.int32Value, bot: UlarTanggaBot.shared)
-                    }
+            // Counts down a dropped guest's wait, then lets the computer play that seat.
+            ticker = SecondTicker { [weak self, weak session] in
+                guard let self, let session else { return }
+                for s in session.expiredSeats() {
+                    _ = session.replaceWithBot(seat: s.int32Value, bot: UlarTanggaBot.shared)
                 }
+                self.waiting = hostWaiting(players: session.players) { session.handOffInMs(seat: $0) }?.text
             }
+            ticker?.start()
         }
     }
 
@@ -114,7 +116,7 @@ final class UlarTanggaHostTable: UlarTanggaTable {
     }
 
     override func leave() {
-        watch?.invalidate()
+        ticker?.stop()
         transport.close()
     }
 
@@ -144,19 +146,36 @@ final class UlarTanggaHostTable: UlarTanggaTable {
 /// A guest in a nearby room: rolls go to the host, snapshots come back.
 final class UlarTanggaGuestTable: UlarTanggaTable {
     private let session: GuestSession<UlarTanggaState, UlarTanggaMove>
+    private var away = GuestWaiting()
+    private var ticker: SecondTicker?
 
     init(session: GuestSession<UlarTanggaState, UlarTanggaMove>) {
         self.session = session
         super.init(first: session.state!, seq: session.stateSeq)
         players = session.players
+        away.players(players)
         session.onState = { [weak self, weak session] state in
             guard let self, let session, let state else { return }
             self.playersChanged(session.players)
+            self.away.players(session.players)
             self.deliver(state, seq: session.stateSeq)
         }
-        session.onPlayers = { [weak self] list in self?.playersChanged(list) }
+        session.onPlayers = { [weak self] list in
+            self?.playersChanged(list)
+            self?.away.players(list)
+        }
         session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
-        session.onDisconnected = { [weak self] in self?.notice = String(localized: "Terputus dari host", bundle: .app) }
+        session.onDisconnected = { [weak self] in self?.away.hostLost() }
+        // The host's and other guests' waits; past the host's wait the game is over ("host left").
+        ticker = SecondTicker { [weak self] in
+            guard let self else { return }
+            let w = self.away.current(self.players)
+            self.waiting = w.flatMap { $0.seconds > 0 ? $0.text : nil }
+            if let w, w.host, w.seconds == 0 {
+                self.notice = String(localized: "Terputus dari host", bundle: .app)
+            }
+        }
+        ticker?.start()
     }
 
     override var mySeat: Int? { session.seat.map { Int($0.int32Value) } }
@@ -165,7 +184,10 @@ final class UlarTanggaGuestTable: UlarTanggaTable {
         seat == mySeat && session.sendMove(move: UlarTanggaMove()) != nil
     }
 
-    override func leave() { session.leave() }
+    override func leave() {
+        ticker?.stop()
+        session.leave()
+    }
 }
 
 /// One seat of a game on this phone, for `UlarTanggaHostTable.local`.

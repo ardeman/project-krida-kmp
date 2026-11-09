@@ -61,15 +61,16 @@ and the Pixel on different networks (one on mobile data).
    computer, and a guest whose host stays away sees "Disconnected from the host". When the
    host's own socket drops, its guests count as away too and get their seats back on rejoin.
    Not yet tried on a device.
-4. [ ] **iOS.** Same with `URLSessionWebSocketTask`; strings in the catalog. Device test
-   iOS ↔ Android.
-5. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
+4. [ ] **iOS.** Same with `URLSessionWebSocketTask` (`Transport/OnlineTransport.swift`,
+   `Nearby/Waiting.swift`); strings in the catalog. Code done and builds; device test
+   iOS ↔ Android open.
+5. [ ] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
+   the computer. Moved up from step 9 (2026-11-09): playing strangers comes before share links.
+6. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
    `apple-app-site-association`, intent filter and associated domain; share sheet button.
-6. [ ] **Rejoin.** Drop and return on a device (airplane mode, app to background) for guest
+7. [ ] **Rejoin.** Drop and return on a device (airplane mode, app to background) for guest
    and host.
-7. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not
+8. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not
    stored), Play data safety, App Store privacy labels. Before any online release.
-8. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.
-9. [ ] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
-   the computer.
+9. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.
 10. [ ] **Accounts, friends, invites.**

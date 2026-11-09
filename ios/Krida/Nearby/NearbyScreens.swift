@@ -16,10 +16,11 @@ private extension View {
     }
 }
 
-/// Back button, title and the "Teman dekat" line, over the screen's cards.
+/// Back button, title and the "Teman dekat" or "Online" line, over the screen's cards.
 private struct NearbyFrame<Content: View>: View {
     let title: Text
     let subtitle: Text
+    var online = false
     let backLabel: LocalizedStringKey
     let onBack: () -> Void
     @ViewBuilder let content: Content
@@ -33,7 +34,7 @@ private struct NearbyFrame<Content: View>: View {
                 VStack(alignment: .leading, spacing: 2 * s) {
                     title.font(Theme.font(20 * s, .black)).lineLimit(1)
                     HStack(spacing: 4 * s) {
-                        Image(systemName: "antenna.radiowaves.left.and.right").font(.system(size: 12 * s, weight: .bold))
+                        Image(systemName: online ? "globe" : "antenna.radiowaves.left.and.right").font(.system(size: 12 * s, weight: .bold))
                         subtitle.font(Theme.font(13 * s, .bold)).lineLimit(1)
                     }
                     .foregroundStyle(Theme.muted)
@@ -50,6 +51,11 @@ private struct NearbyFrame<Content: View>: View {
         .background(Theme.backdropGradient)
         .foregroundStyle(Theme.ink)
     }
+}
+
+/// The line under a room screen's title: Bluetooth nearby, or the internet.
+private func placeLine(_ online: Bool) -> Text {
+    online ? Text("Online · lewat internet") : Text("Teman dekat · Bluetooth, tanpa internet")
 }
 
 private func gameTitle(_ game: String?) -> Text {
@@ -91,7 +97,8 @@ struct RoomLobby: View {
         let hostName = room.players.first { $0.seat == 0 }?.name ?? ""
         NearbyFrame(
             title: gameTitle(room.game),
-            subtitle: room.isHost ? Text("Teman dekat · Bluetooth, tanpa internet") : Text("Room \(room.code) · host \(hostName)"),
+            subtitle: room.isHost ? placeLine(room.online) : Text("Room \(room.code) · host \(hostName)"),
+            online: room.online,
             backLabel: room.isHost ? "Kembali" : "Keluar room",
             onBack: onLeave
         ) {
@@ -125,18 +132,19 @@ struct RoomLobby: View {
     private var hostCode: some View {
         Group {
             Text("Kode room").textCase(.uppercase).font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
-            HStack(spacing: 8 * s) {
+            // Six online letters get narrower boxes, so they fit the same card.
+            HStack(spacing: (room.online ? 6 : 8) * s) {
                 ForEach(Array(room.code.enumerated()), id: \.offset) { _, ch in
                     Text(String(ch))
-                        .font(.system(size: 30 * s, weight: .black, design: .monospaced))
-                        .frame(width: 46 * s, height: 52 * s)
+                        .font(.system(size: (room.online ? 26 : 30) * s, weight: .black, design: .monospaced))
+                        .frame(width: (room.online ? 36 : 46) * s, height: 52 * s)
                         .background(Theme.chip, in: RoundedRectangle(cornerRadius: 12 * s))
                 }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text(room.code.map(String.init).joined(separator: " ")))
-            RoomQr(code: room.code)
-            Text("Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya")
+            RoomQr(link: room.online ? RoomCode.shared.shareUrl(code: room.code) : RoomCode.shared.joinUrl(code: room.code))
+            Text(room.online ? "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya" : "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya")
                 .font(Theme.font(12 * s, .bold))
                 .foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
@@ -367,11 +375,11 @@ struct RoomLobby: View {
 
 /// The room link as a QR code: dark modules on white in both themes, so any camera reads it.
 private struct RoomQr: View {
-    let code: String
+    let link: String
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        let qr = QrCode.companion.encode(text: RoomCode.shared.joinUrl(code: code))
+        let qr = QrCode.companion.encode(text: link)
         let n = Int(qr.size)
         Canvas { ctx, size in
             let cell = min(size.width, size.height) / CGFloat(n)
@@ -395,10 +403,11 @@ private struct RoomQr: View {
 
 // MARK: - Join
 
-/// Join a room: scan the host's QR (left) or type its 4-letter code (right). `error` shows
-/// under the code (scanner trouble), or nil.
+/// Join a room: scan the host's QR (left) or type its code (right), 4 letters nearby or 6
+/// `online`. `error` shows under the code (scanner trouble), or nil.
 struct JoinScreen: View {
     @Binding var code: String
+    let online: Bool
     let error: LocalizedStringKey?
     let onScan: () -> Void
     let onJoin: () -> Void
@@ -407,8 +416,7 @@ struct JoinScreen: View {
     @FocusState private var typing: Bool
 
     var body: some View {
-        let valid = RoomCode.shared.isValid(code: code)
-        NearbyFrame(title: Text("Gabung room"), subtitle: Text("Teman dekat · Bluetooth, tanpa internet"), backLabel: "Kembali", onBack: onBack) {
+        NearbyFrame(title: Text("Gabung room"), subtitle: placeLine(online), online: online, backLabel: "Kembali", onBack: onBack) {
             VStack(spacing: 12 * s) {
                 Image(systemName: "qrcode.viewfinder")
                     .font(.system(size: 44 * s, weight: .semibold))
@@ -449,7 +457,7 @@ struct JoinScreen: View {
                     if let error {
                         Text(error).foregroundStyle(Theme.error)
                     } else {
-                        Text(valid ? " " : "Masuk aktif setelah 4 huruf").foregroundStyle(Theme.muted)
+                        Text(valid ? " " : online ? "Masuk aktif setelah 6 huruf" : "Masuk aktif setelah 4 huruf").foregroundStyle(Theme.muted)
                     }
                 }
                 .font(Theme.font(12 * s, .bold))
@@ -461,9 +469,18 @@ struct JoinScreen: View {
         }
     }
 
-    /// One text field drawn as 4 letter boxes; the next box to fill is outlined while typing.
+    private var length: Int {
+        Int(online ? Krida.shared.ONLINE_ROOM_CODE_LENGTH : Krida.shared.ROOM_CODE_LENGTH)
+    }
+
+    private var valid: Bool {
+        online ? RoomCode.shared.isValidOnline(code: code) : RoomCode.shared.isValid(code: code)
+    }
+
+    /// One text field drawn as `length` letter boxes; the next box to fill is outlined while typing.
     private var codeBoxes: some View {
         let chars = Array(code)
+        let wide = length <= Int(Krida.shared.ROOM_CODE_LENGTH)
         return ZStack {
             TextField("", text: $code)
                 .focused($typing)
@@ -471,20 +488,20 @@ struct JoinScreen: View {
                 .autocorrectionDisabled()
                 .keyboardType(.asciiCapable)
                 .submitLabel(.go)
-                .onSubmit { if RoomCode.shared.isValid(code: code) { onJoin() } }
+                .onSubmit { if valid { onJoin() } }
                 .foregroundStyle(.clear)
                 .tint(.clear)
                 .accessibilityLabel(Text("Kode room dari temanmu"))
                 .onChange(of: code) { _, new in
-                    let clean = String(new.uppercased().filter { $0.isASCII && ($0.isLetter || $0.isNumber) }.prefix(4))
+                    let clean = String(new.uppercased().filter { $0.isASCII && ($0.isLetter || $0.isNumber) }.prefix(length))
                     if clean != new { code = clean }
                 }
-            HStack(spacing: 10 * s) {
-                ForEach(0..<4, id: \.self) { i in
-                    let active = typing && i == min(chars.count, 3)
+            HStack(spacing: (wide ? 10 : 6) * s) {
+                ForEach(0..<length, id: \.self) { i in
+                    let active = typing && i == min(chars.count, length - 1)
                     Text(i < chars.count ? String(chars[i]) : "")
                         .font(.system(size: 32 * s, weight: .black, design: .monospaced))
-                        .frame(width: 54 * s, height: 64 * s)
+                        .frame(width: (wide ? 54 : 42) * s, height: 64 * s)
                         .background(active ? Theme.surface : Theme.chip, in: RoundedRectangle(cornerRadius: 14 * s))
                         .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(active ? Theme.accent : Theme.line, lineWidth: 2))
                 }
@@ -570,21 +587,28 @@ struct ConnectingScreen: View {
 
     private var texts: (LocalizedStringKey, LocalizedStringKey) {
         switch room.stage {
-        case .searching: ("Mencari room…", "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP.")
+        case .searching: room.online
+            ? ("Menyambung ke room…", "Lewat internet. Kedua HP perlu koneksi.")
+            : ("Mencari room…", "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP.")
         case .connecting, .lobby: ("Menghubungkan…", "Room ketemu. Sebentar lagi masuk.")
         case .full: ("Room sudah penuh", "Semua kursi sudah terisi. Minta host membuat room baru.")
         case .started: ("Permainan sudah dimulai", "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri.")
         case .version: ("Versi aplikasi berbeda", "Perbarui Krida di kedua HP, lalu coba lagi.")
-        case .notFound: ("Room tidak ketemu", "Cek kodenya, pastikan host masih di layar room, lalu coba lagi.")
-        case .lost: ("Terputus dari host", "Sambungan Bluetooth ke host hilang.")
+        case .notFound: room.online
+            ? ("Room tidak ketemu", "Cek kodenya, pastikan host masih membuka room, lalu coba lagi.")
+            : ("Room tidak ketemu", "Cek kodenya, pastikan host masih di layar room, lalu coba lagi.")
+        case .lost: room.online
+            ? ("Terputus dari host", "Sambungan internet ke host hilang.")
+            : ("Terputus dari host", "Sambungan Bluetooth ke host hilang.")
         case .unknownGame: ("Tidak bisa masuk room", "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi.")
         case .refused: ("Tidak bisa masuk room", "Coba lagi, atau minta host membuat room baru.")
+        case .offline: ("Krida online tidak terjangkau", "Cek koneksi internet HP ini, lalu coba lagi.")
         }
     }
 
     private var retry: LocalizedStringKey? {
         switch room.stage {
-        case .notFound, .refused: "Coba lagi"
+        case .notFound, .refused, .offline: "Coba lagi"
         case .lost: "Sambung lagi"
         default: nil
         }
@@ -594,7 +618,7 @@ struct ConnectingScreen: View {
         let failed = room.failed
         let cancel: LocalizedStringKey = failed ? "Kembali" : "Batal"
         let (title, detail) = texts
-        NearbyFrame(title: gameTitle(room.game), subtitle: Text("Teman dekat · Bluetooth, tanpa internet"), backLabel: cancel, onBack: onCancel) {
+        NearbyFrame(title: gameTitle(room.game), subtitle: placeLine(room.online), online: room.online, backLabel: cancel, onBack: onCancel) {
             VStack(spacing: 12 * s) {
                 Group {
                     if failed {

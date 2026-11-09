@@ -15,6 +15,8 @@ class CongklakTable: ObservableObject {
     @Published fileprivate(set) var players: [PlayerInfo] = []
     /// Shown under the score (disconnects, refusals), or nil.
     @Published fileprivate(set) var notice: String?
+    /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
+    @Published fileprivate(set) var waiting: String?
 
     /// The computer's difficulty, shown next to its name; nil without a computer player.
     fileprivate(set) var botLevel: String?
@@ -49,6 +51,7 @@ final class HostTable: CongklakTable {
     private let transport: Transport
     private let seat: Int32?
     private var seq: Int32
+    private var ticker: SecondTicker?
 
     init(session: HostSession<CongklakState, CongklakMove>, mySeat: Int32?, transport: Transport) {
         self.session = session
@@ -70,6 +73,17 @@ final class HostTable: CongklakTable {
             self.deliver(state, seat: fresh ? session.lastSeat?.int32Value : nil, move: fresh ? session.lastMove : nil)
         }
         if let state = session.state { deliver(state, seat: nil, move: nil) }
+        if !(transport is LocalTransport) {
+            // Counts down a dropped guest's wait, then lets the computer play that seat.
+            ticker = SecondTicker { [weak self, weak session] in
+                guard let self, let session else { return }
+                for s in session.expiredSeats() {
+                    _ = session.replaceWithBot(seat: s.int32Value, bot: CongklakBot(level: .normal))
+                }
+                self.waiting = hostWaiting(players: session.players) { session.handOffInMs(seat: $0) }?.text
+            }
+            ticker?.start()
+        }
     }
 
     override var mySeat: Int32? { seat }
@@ -86,7 +100,10 @@ final class HostTable: CongklakTable {
 
     override func stepBot() { _ = session.stepBot() }
 
-    override func leave() { transport.close() }
+    override func leave() {
+        ticker?.stop()
+        transport.close()
+    }
 
     static func passAndPlay(names: [String]) -> HostTable {
         let transport = LocalTransport()
@@ -112,20 +129,40 @@ final class HostTable: CongklakTable {
 /// A remote player's table: moves go to the host, snapshots come back.
 final class GuestTable: CongklakTable {
     private let session: GuestSession<CongklakState, CongklakMove>
+    private var away = GuestWaiting()
+    private var ticker: SecondTicker?
 
     init(session: GuestSession<CongklakState, CongklakMove>) {
         self.session = session
         super.init()
         players = session.players
+        away.players(players)
         session.onState = { [weak self, weak session] state in
             guard let self, let session, let state else { return }
             self.players = session.players
+            self.away.players(self.players)
             self.notice = nil
             self.deliver(state, seat: session.lastSeat?.int32Value, move: session.lastMove)
         }
         session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
-        session.onDisconnected = { [weak self] in self?.notice = String(localized: "Terputus dari host", bundle: .app) }
+        session.onPlayers = { [weak self] list in
+            guard let self else { return }
+            self.players = list
+            self.away.players(list)
+            self.notice = nil
+        }
+        session.onDisconnected = { [weak self] in self?.away.hostLost() }
         if let state = session.state { deliver(state, seat: nil, move: nil) }
+        // The host's and other guests' waits; past the host's wait the game is over ("host left").
+        ticker = SecondTicker { [weak self] in
+            guard let self else { return }
+            let w = self.away.current(self.players)
+            self.waiting = w.flatMap { $0.seconds > 0 ? $0.text : nil }
+            if let w, w.host, w.seconds == 0, self.notice == nil {
+                self.notice = String(localized: "Terputus dari host", bundle: .app)
+            }
+        }
+        ticker?.start()
     }
 
     override var mySeat: Int32? { session.seat?.int32Value }
@@ -135,7 +172,10 @@ final class GuestTable: CongklakTable {
         session.sendMove(move: CongklakMove(hole: hole)) != nil
     }
 
-    override func leave() { session.leave() }
+    override func leave() {
+        ticker?.stop()
+        session.leave()
+    }
 }
 
 /// Congklak options chosen on the menu before a game, kept on this device. Only a host

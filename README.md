@@ -104,7 +104,7 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
 2. Single player vs computer — bot seats in `HostSession`, bots per game in `shared/`
 3. **Offline BLE** — main offline mode, iOS ↔ Android, up to 4 players
 4. Online rooms — Cloudflare Workers relay over WebSocket, plan in `docs/online.md`; relay
-   live, Android rooms by code (iOS next)
+   live, Android and iOS rooms by code (iPhone ↔ Pixel check next, then quick match)
 5. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
 6. Wi‑Fi Aware — later, once device support is broad
 

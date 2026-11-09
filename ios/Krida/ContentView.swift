@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var level: CongklakBot.Level = .normal
     /// The join screen (scan the host's QR or type the code) is up.
     @State private var joining = false
+    /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
+    @State private var joinOnline = false
     /// Under the join screen's code: the scanner can't open or read another QR.
     @State private var joinError: LocalizedStringKey?
     @State private var scanning = false
@@ -49,14 +51,11 @@ struct ContentView: View {
                     room: room,
                     onExit: { self.room = nil; joining = false },
                     onLeave: { leaveRoom(room) },
-                    onRetry: {
-                        room.leave()
-                        self.room = NearbyRoom.join(code: room.code)
-                    }
+                    onRetry: { self.room = room.retry() }
                 )
                 .id(ObjectIdentifier(room))
             } else if joining {
-                JoinScreen(code: $roomCode, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
+                JoinScreen(code: $roomCode, online: joinOnline, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
             } else {
                 menu
             }
@@ -64,7 +63,7 @@ struct ContentView: View {
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
-        // A room link opens the app ready to join: the code field on "Teman dekat".
+        // A room link opens the app ready to join: the code field on "Teman dekat" or "Online".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
         .onChange(of: roomCode) { _, _ in joinError = nil }
@@ -72,7 +71,10 @@ struct ContentView: View {
             QrScannerView(
                 onCode: { text in
                     scanning = false
-                    if let code = RoomCode.shared.parse(text: text) {
+                    // Either kind of room, whichever join screen is open.
+                    let nearbyCode = RoomCode.shared.parse(text: text)
+                    if let code = nearbyCode ?? RoomCode.shared.parseOnline(text: text) {
+                        joinOnline = nearbyCode == nil
                         roomCode = code
                         joinRoom()
                     } else {
@@ -96,15 +98,17 @@ struct ContentView: View {
     }
 
     private func openJoin() {
-        place = .nearby
+        joinOnline = RoomCode.shared.isValidOnline(code: roomCode)
+        place = joinOnline ? .online : .nearby
         joining = true
     }
 
-    /// Joins the room `roomCode` names.
+    /// Joins the room `roomCode` names, online or nearby.
     private func joinRoom() {
-        guard RoomCode.shared.isValid(code: roomCode) else { return }
+        let valid = joinOnline ? RoomCode.shared.isValidOnline(code: roomCode) : RoomCode.shared.isValid(code: roomCode)
+        guard valid else { return }
         joinError = nil
-        room = NearbyRoom.join(code: roomCode)
+        room = NearbyRoom.join(code: roomCode, online: joinOnline)
     }
 
     /// VisionKit's scanner, after asking for the camera if needed.
@@ -207,17 +211,20 @@ struct ContentView: View {
     }
 
     /// One card for every way to play: on this phone (seat tiles for people and computers) or
-    /// with friends nearby over Bluetooth; right below it what that means (or the computer's
+    /// with friends nearby over Bluetooth or online; right below it what that means (or the computer's
     /// level) with Mulai, and Gabung for "Teman dekat"; then the game's rules.
     /// Same as Android.
     private var playCard: some View {
         let ular = game == .ularTangga
-        let nearby = place == .nearby
+        // A room with other phones, over Bluetooth or the internet.
+        let nearby = place != .phone
+        let online = place == .online
         let seats = ular ? ularSeats : congklakSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
         let places: [(Place, LocalizedStringKey, String?)] = [
             (.phone, "HP ini", "person.2"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right"),
+            (.online, "Online", "globe"),
         ]
         return VStack(alignment: .leading, spacing: 10 * s) {
             SettingRow(label: "Main di") {
@@ -245,7 +252,9 @@ struct ContentView: View {
             SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
                 HStack(spacing: 8 * s) {
                     let level = !ular && !nearby && computers > 0
-                    if nearby {
+                    if online {
+                        detail(ular ? "Sampai 4 HP lewat internet, teman di mana saja" : "Lewat internet, teman di mana saja")
+                    } else if nearby {
                         detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
                     } else if level {
                         Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
@@ -260,7 +269,11 @@ struct ContentView: View {
                     }
                     if !level { Spacer(minLength: 0) }
                     if nearby {
-                        Button("Gabung") { joining = true }
+                        Button("Gabung") {
+                            if joinOnline != online { roomCode = "" }
+                            joinOnline = online
+                            joining = true
+                        }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                     }
                     Button(nearby ? "Buat room" : "Mulai", action: start)
@@ -306,7 +319,10 @@ struct ContentView: View {
     }
 
     private func start() {
-        if place == .nearby { room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak); return }
+        if place != .phone {
+            room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak, online: place == .online)
+            return
+        }
         if game == .ularTangga { return startUlarTangga() }
         if congklakSeats.contains(.computer) { startVsComputer(level) } else { startPassAndPlay() }
     }
@@ -394,7 +410,7 @@ private struct RemoveAdsButton: View {
 }
 
 /// Where the game is played; the play card's first choice.
-private enum Place { case phone, nearby }
+private enum Place { case phone, nearby, online }
 
 /// One tile per seat of a game on this phone: a person, a computer, or empty (dashed). A tap on
 /// a seat in `tappable` moves it on (see `LocalSeats.next`). Same as Android.
@@ -731,7 +747,7 @@ private struct RoomView: View {
         } else if let table = room.ular {
             UlarTanggaView(table: table, onExit: onExit)
                 .id(ObjectIdentifier(table))
-        } else if room.isHost || room.stage == .lobby {
+        } else if (room.isHost && !room.failed) || room.stage == .lobby {
             RoomLobby(room: room, onLeave: onLeave)
         } else {
             ConnectingScreen(room: room, onCancel: onLeave, onRetry: onRetry)

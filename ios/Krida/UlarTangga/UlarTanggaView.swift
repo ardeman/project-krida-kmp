@@ -343,7 +343,7 @@ private struct UlarTanggaBoardView: View {
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
         // The notice (a dropped player, the host lost) only while it shows.
-        let keys = Self.hudKeys + (table.notice != nil ? ["notice"] : [])
+        let keys = Self.hudKeys + ((table.waiting ?? table.notice) != nil ? ["notice"] : [])
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
         model.layout(size: size, room: room, obstacles: obstacles, dieSpot: die)
     }
@@ -467,7 +467,7 @@ private struct UlarTanggaBoardView: View {
                     .frame(maxWidth: .infinity)
                     .modifier(hudBox("status"))
                     .padding(.top, 10 * s)
-                if let notice = table.notice {
+                if let notice = table.waiting ?? table.notice {
                     Text(notice)
                         .font(Theme.font(13 * s, .bold))
                         .foregroundStyle(Theme.error)
