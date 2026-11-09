@@ -44,9 +44,10 @@ no game rules. Same `Transport` interface, same protocol messages (`docs/protoco
 Each step ends with the checks from `AGENTS.md` and, where it says so, a test on the iPhone
 and the Pixel on different networks (one on mobile data).
 
-1. [ ] **Relay.** `relay/` Worker + room Durable Object, deployed to `workers.dev`; framing
-   in `docs/protocol.md`; tiny test client script. Code, framing and `npm run smoke` done
-   (passes against `npm run dev`); deploy runs in CI (`.github/workflows/relay.yml`).
+1. [x] **Relay.** `relay/` Worker + room Durable Object, deployed to `workers.dev`; framing
+   in `docs/protocol.md`; tiny test client script. Live at
+   `wss://krida-relay.are-theman.workers.dev`; CI (`.github/workflows/relay.yml`) runs the
+   smoke test locally, deploys, and runs it again against the live relay.
 2. [ ] **Shared.** 6-char online codes and link parsing in `RoomCode`; 15 s pause and
    hand-to-computer in `HostSession`; tests in `shared/src/commonTest/`.
 3. [ ] **Android.** `OnlineHostTransport.kt` / `OnlineGuestTransport.kt` (OkHttp); "Online"
