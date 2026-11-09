@@ -3908,6 +3908,38 @@
           }
         }
       }
+    },
+    "Ayo main Krida bareng aku!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join my Krida game!"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ayo main Krida bareng aku!"
+          }
+        }
+      }
+    },
+    "Bagikan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bagikan"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

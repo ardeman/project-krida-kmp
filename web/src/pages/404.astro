@@ -5,7 +5,7 @@ const home = import.meta.env.BASE_URL;
 ---
 
 <Base title="Halaman tidak ditemukan — Krida" description="Halaman ini tidak ada.">
-  <main class="notfound">
+  <main class="notfound" id="missing">
     <Voxel color="#c9783a" size={72} />
     <h1>Waduh, bidaknya nyasar.</h1>
     <p class="lead">Halaman ini tidak ada.</p>
@@ -13,4 +13,37 @@ const home = import.meta.env.BASE_URL;
     <a class="store" href={home}>Kembali ke Krida</a>
     <a class="store" href={`${home.replace(/\/$/, "")}/en/`} lang="en">Back to Krida</a>
   </main>
+  <!-- Online room share links (/r/ABC234). With Krida installed the app opens the link
+       itself; this page is what a phone without it, or a desktop, sees. -->
+  <main class="notfound" id="room" hidden>
+    <Voxel color="#c9783a" size={72} />
+    <h1>Ayo main Krida!</h1>
+    <p class="lead" lang="en">Join my Krida game!</p>
+    <p class="room-code" id="room-code"></p>
+    <p class="lead">Buka Krida › Online › Gabung, lalu ketik kode ini.</p>
+    <p class="lead" lang="en">Open Krida › Online › Join and type this code.</p>
+    <a class="store" id="room-open" href="#">Buka di Krida · Open in Krida</a>
+    <a class="store" href={home}>Belum punya Krida? · Get Krida</a>
+  </main>
+  <script is:inline>
+    // Same rule as RoomCode.parseOnline in shared/: six letters from the room alphabet.
+    const match = location.pathname.match(/\/r\/([A-Za-z0-9]{6})\/?$/);
+    if (match) {
+      const code = match[1].toUpperCase();
+      document.getElementById("missing").hidden = true;
+      document.getElementById("room").hidden = false;
+      document.getElementById("room-code").textContent = code;
+      document.getElementById("room-open").href = `krida://join?room=${code}`;
+      document.title = `Room ${code} — Krida`;
+    }
+  </script>
 </Base>
+
+<style>
+  .notfound[hidden] { display: none; }
+  .room-code {
+    font: 900 clamp(36px, 9vw, 56px) / 1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: 0.18em;
+    margin: 12px 0;
+  }
+</style>

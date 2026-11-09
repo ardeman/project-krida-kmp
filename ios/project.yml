@@ -27,6 +27,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ardeman.krida
         DEVELOPMENT_TEAM: B36A8H9S8E
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Krida/Krida.entitlements
         PRODUCT_NAME: Krida
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

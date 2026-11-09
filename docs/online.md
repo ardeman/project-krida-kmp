@@ -84,8 +84,16 @@ and the Pixel on different networks (one on mobile data).
    the computer. Moved up from step 9 (2026-11-09): playing strangers comes before share links.
    Code done on Android and iOS: PlayOnlineScreens with player count selection, QuickMatchClient
    connecting to /v1/match/{game}/{playerCount}, timeout fallback to computer. Device tests pending.
-7. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
-   `apple-app-site-association`, intent filter and associated domain; share sheet button.
+7. [ ] **Share links.** Code done 2026-11-10: `web/public/.well-known/` has
+   `assetlinks.json` (upload and debug keys) and `apple-app-site-association` (`/r/*`); GitHub
+   Pages serves `/r/CODE` through `404.astro`, which shows the code, a `krida://join` button
+   and a link to the site. Android has an `autoVerify` filter for `https://krida.ardeman.com/r/`,
+   `singleTask` and `onNewIntent` (a link only applies from the menus, never over a game or
+   lobby); iOS has `applinks:krida.ardeman.com` in `Krida.entitlements` and the existing
+   `onOpenURL`. A "Share" pill beside the room code in the online host lobby opens the share
+   sheet. Open: add the Play app signing key's SHA-256 to `assetlinks.json` once Play signs
+   the app (Play Console › App integrity); check that `/.well-known/` is live after the
+   Pages deploy; tap a link on both phones.
 8. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not
    stored), Play data safety, App Store privacy labels. Before any online release.
 9. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.

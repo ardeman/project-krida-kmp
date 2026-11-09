@@ -3,6 +3,7 @@ package com.ardeman.krida
 import android.Manifest
 import android.os.Build
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -206,10 +207,7 @@ class MainActivity : ComponentActivity() {
         // Language and theme changes recreate this activity with its original launch intent.
         // Apply a room link only on the initial launch so leaving it is not undone later.
         if (savedInstanceState == null) {
-            intent?.data?.toString()?.let { link ->
-                RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true }
-                    ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true }
-            }
+            intent?.data?.toString()?.let(::openRoomLink)
         }
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
@@ -291,6 +289,22 @@ class MainActivity : ComponentActivity() {
                 StartupCover()
             }
         }
+    }
+
+    /** A room link (QR or share link) opened while Krida is already running (singleTask). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // A running game or lobby stays; the link only applies from the menus.
+        if (room == null && passAndPlay == null && ularTable == null) {
+            intent.data?.toString()?.let(::openRoomLink)
+        }
+    }
+
+    /** Opens the join screen for "krida://join?room=ABCD" or "https://krida.ardeman.com/r/ABC234". */
+    private fun openRoomLink(link: String) {
+        RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true; creatingOnlineRoom = false }
+            ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true; creatingOnlineRoom = false }
     }
 
     override fun onStart() {

@@ -196,6 +196,8 @@
     <string name="ular_detail_online">Sampai 4 HP lewat internet, teman di mana saja</string>
     <string name="online_subtitle">Online · lewat internet</string>
     <string name="online_host_hint">Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya</string>
+    <string name="online_share">Bagikan</string>
+    <string name="online_share_text">Ayo main Krida bareng aku: %1$s</string>
     <string name="online_join_needs_code">Masuk aktif setelah 6 huruf</string>
     <string name="online_searching_title">Menyambung ke room…</string>
     <string name="online_searching_detail">Lewat internet. Kedua HP perlu koneksi.</string>

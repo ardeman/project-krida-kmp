@@ -138,7 +138,23 @@ struct RoomLobby: View {
 
     private var hostCode: some View {
         Group {
-            Text("Kode room").textCase(.uppercase).font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
+            HStack(spacing: 10 * s) {
+                Text("Kode room").textCase(.uppercase).font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
+                if room.online, let url = URL(string: RoomCode.shared.shareUrl(code: room.code)) {
+                    // The share link through the system share sheet; Krida opens it as a universal link.
+                    ShareLink(item: url, message: Text("Ayo main Krida bareng aku!")) {
+                        HStack(spacing: 6 * s) {
+                            Image(systemName: "square.and.arrow.up").font(.system(size: 13 * s, weight: .bold))
+                            Text("Bagikan").font(Theme.font(13 * s, .heavy))
+                        }
+                        .foregroundStyle(Theme.accent)
+                        .padding(.horizontal, 12 * s)
+                        .frame(height: 30 * s)
+                        .background(Theme.chip, in: Capsule())
+                    }
+                    .simultaneousGesture(TapGesture().onEnded { Sounds.shared.play(.tap) })
+                }
+            }
             // Six online letters get narrower boxes, so they fit the same card.
             HStack(spacing: (room.online ? 6 : 8) * s) {
                 ForEach(Array(room.code.enumerated()), id: \.offset) { _, ch in

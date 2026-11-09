@@ -5,6 +5,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -182,10 +184,13 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
 
 @Composable
 private fun ColumnScope.HostCode(code: String, online: Boolean) {
-    Text(
-        stringResource(R.string.nearby_code).uppercase(),
-        style = Theme.font(13, FontWeight.ExtraBold, Theme.muted),
-    )
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            stringResource(R.string.nearby_code).uppercase(),
+            style = Theme.font(13, FontWeight.ExtraBold, Theme.muted),
+        )
+        if (online) ShareChip(code)
+    }
     Row(
         Modifier.widthIn(max = if (online) 246.dp else 208.dp).fillMaxWidth()
             .semantics(mergeDescendants = true) { contentDescription = code.toList().joinToString(" ") },
@@ -204,6 +209,28 @@ private fun ColumnScope.HostCode(code: String, online: Boolean) {
         style = Theme.font(12, FontWeight.Bold, Theme.muted),
         textAlign = TextAlign.Center,
     )
+}
+
+/** Small "Share" pill that sends the room's share link through the system share sheet. */
+@Composable
+private fun ShareChip(code: String) {
+    val context = LocalContext.current
+    val text = stringResource(R.string.online_share_text, RoomCode.shareUrl(code))
+    val title = stringResource(R.string.online_share)
+    Row(
+        Modifier.height(30.dp).clip(RoundedCornerShape(15.dp)).background(Theme.chip)
+            .clickable(role = Role.Button) {
+                Sounds.play(Sounds.Effect.Tap)
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                context.startActivity(Intent.createChooser(send, title))
+            }
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_share), contentDescription = null, tint = Theme.accent, modifier = Modifier.size(16.dp))
+        Text(title, style = Theme.font(13, FontWeight.ExtraBold, Theme.accent))
+    }
 }
 
 @Composable
