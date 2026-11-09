@@ -76,7 +76,7 @@ struct ContentView: View {
                     createHost: { code, humans, bots, onReady in
                         let host = NearbyRoom.host(
                             game: quickMatchGame == UlarTanggaGame.shared.id ? .ularTangga : .congklak,
-                            online: true, code: code, onOnlineReady: onReady
+                            online: true, code: code, onOnlineReady: onReady, standardRules: true
                         )
                         host.configureQuickMatch(humans: humans, bots: bots, botName: String(localized: "Komputer", bundle: .app))
                         return host

@@ -255,7 +255,7 @@
     <string name="room_private_detail">Hanya pemain dengan kode atau QR kamu yang bisa gabung.</string>
     <string name="room_code_also_works">Teman tetap bisa pakai kode atau QR room.</string>
     <string name="room_find">Cari room</string>
-    <string name="room_find_detail">Gabung room publik atau cari pemain lain.</string>
+    <string name="room_find_detail">Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar).</string>
     <string name="room_find_match">Cari pemain</string>
     <string name="room_have_code">Punya kode room?</string>
     <string name="room_join_code_detail">Langsung gabung room publik atau privat.</string>

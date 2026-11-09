@@ -193,7 +193,7 @@ final class NearbyRoom: ObservableObject {
     }
 
     static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil,
-                     publicRoom: Bool = false, seats: Int? = nil) -> NearbyRoom {
+                     publicRoom: Bool = false, seats: Int? = nil, standardRules: Bool = false) -> NearbyRoom {
         let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
         let gameId = game == .ularTangga ? UlarTanggaGame.shared.id : CongklakGame.shared.id
         let total = game == .congklak ? 2 : min(max(seats ?? 4, 2), 4)
@@ -205,14 +205,14 @@ final class NearbyRoom: ObservableObject {
         room.hostGame = game
         switch game {
         case .congklak:
-            let session: HostSession<CongklakState, CongklakMove> = room.hostSession(CongklakSettings.rules, transport: transport)
+            let session: HostSession<CongklakState, CongklakMove> = room.hostSession(standardRules ? StandardRules.shared.congklak : CongklakSettings.rules, transport: transport)
             room.begin = { [weak room] in
                 guard let room, session.canStart() else { return }
                 session.start()
                 room.congklak = HostTable(session: session, mySeat: 0, transport: transport)
             }
         case .ularTangga:
-            let session: HostSession<UlarTanggaState, UlarTanggaMove> = room.hostSession(UlarTanggaSettings.rules, transport: transport)
+            let session: HostSession<UlarTanggaState, UlarTanggaMove> = room.hostSession(standardRules ? StandardRules.shared.ularTangga : UlarTanggaSettings.rules, transport: transport)
             room.begin = { [weak room] in
                 guard let room, session.canStart() else { return }
                 session.start()

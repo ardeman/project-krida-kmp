@@ -90,6 +90,10 @@ in the same commit as the code.
   early once everyone has voted and one choice leads; at the deadline the choice with more
   votes wins, and a tie or no votes searches again for 20 s with a note saying why.
   Membership changes clear the votes and restart the timer.
+- **Quick match uses standard rules (2026-11-10):** a matched group always plays the default
+  rules (`StandardRules` in shared: ular tangga defaults; congklak tembak after the store and a
+  random first player), whatever the matched host saved. Custom rules stay in rooms someone
+  creates; a public room plays its host's rules. The Join room search card says so.
 - **Countdowns look the same everywhere (2026-11-10):** a draining ring with the seconds in
   the middle, red for the last 5 s: quick-match search, the vote, and a dropped player's wait.
   A lone player can choose 2–4 total seats (including themselves) against 1–3 computers

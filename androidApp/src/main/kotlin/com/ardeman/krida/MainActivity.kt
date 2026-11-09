@@ -248,7 +248,7 @@ class MainActivity : ComponentActivity() {
                         createHost = { code, humans, bots, onReady ->
                             NearbyRoom.host(this@MainActivity, myName,
                                 if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
-                                online = true, code = code, onOnlineReady = onReady,
+                                online = true, code = code, onOnlineReady = onReady, standardRules = true,
                             ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
                         },
                         onHost = { matchedRoom -> room = matchedRoom; playingQuickMatch = false },

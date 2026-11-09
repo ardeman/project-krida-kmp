@@ -265,7 +265,7 @@
     <string name="room_private_detail">Only players with your code or QR can join.</string>
     <string name="room_code_also_works">Friends can still use its code or QR.</string>
     <string name="room_find">Find a room</string>
-    <string name="room_find_detail">Join a public room or find other players.</string>
+    <string name="room_find_detail">Join a public room (its host\'s rules) or find other players (standard rules).</string>
     <string name="room_find_match">Find a match</string>
     <string name="room_have_code">Have a room code?</string>
     <string name="room_join_code_detail">Join a public or private room directly.</string>

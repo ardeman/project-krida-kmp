@@ -91,7 +91,7 @@ struct JoinOnlineRoomView: View {
         NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true, backLabel: "Kembali", onBack: onBack) {
             VStack(alignment: .leading, spacing: 12 * s) {
                 RoomHeading(text: "Cari room")
-                RoomDetail(text: "Gabung room publik atau cari pemain lain.")
+                RoomDetail(text: "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar).")
                 RoomPlayerCount(game: game, seats: $seats)
                 RoomDetail(text: "match_fallback_hint")
                 Spacer(minLength: 0)

@@ -13,6 +13,7 @@ import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.GuestTable
 import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.StandardRules
 import com.ardeman.krida.core.games.UlarTanggaBot
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.protocol.Platform
@@ -241,7 +242,7 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null): NearbyRoom {
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
             val gameId = if (game == Game.ULAR_TANGGA) UlarTanggaGame.id else CongklakGame.id
             val total = if (game == Game.CONGKLAK) 2 else seats?.coerceIn(2, 4) ?: 4
@@ -250,7 +251,7 @@ class NearbyRoom private constructor(
             room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
-                    val session = room.hostSession(CongklakSettings.rules, name, transport)
+                    val session = room.hostSession(if (standardRules) StandardRules.congklak else CongklakSettings.rules, name, transport)
                     room.begin = {
                         if (session.canStart()) {
                             session.start()
@@ -259,7 +260,7 @@ class NearbyRoom private constructor(
                     }
                 }
                 Game.ULAR_TANGGA -> {
-                    val session = room.hostSession(UlarTanggaSettings.rules, name, transport)
+                    val session = room.hostSession(if (standardRules) StandardRules.ularTangga else UlarTanggaSettings.rules, name, transport)
                     room.canAddBots = true
                     room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, UlarTanggaBot) }
                     room.removeBot = { seat -> session.removeBot(seat) }

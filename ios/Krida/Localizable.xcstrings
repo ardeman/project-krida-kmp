@@ -3845,18 +3845,18 @@
         }
       }
     },
-    "Gabung room publik atau cari pemain lain." : {
+    "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar)." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Join a public room or find other players."
+            "value" : "Join a public room (its host's rules) or find other players (standard rules)."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gabung room publik atau cari pemain lain."
+            "value" : "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar)."
           }
         }
       }
