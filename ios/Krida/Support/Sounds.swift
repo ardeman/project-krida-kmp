@@ -12,6 +12,7 @@ final class Sounds: ObservableObject {
     enum Effect: String, CaseIterable {
         case sow = "sfx_sow", store = "sfx_store", capture = "sfx_capture", turn = "sfx_turn"
         case win = "sfx_win", lose = "sfx_lose", tap = "sfx_tap"
+        case die = "sfx_die", step = "sfx_step"
     }
 
     enum Line: String, CaseIterable {
@@ -38,7 +39,7 @@ final class Sounds: ObservableObject {
     private init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient)
         for effect in Effect.allCases {
-            effects[effect] = (0..<(effect == .sow ? 4 : 2)).compactMap { _ in Self.player(effect.rawValue) }
+            effects[effect] = (0..<(effect == .sow || effect == .step || effect == .die ? 4 : 2)).compactMap { _ in Self.player(effect.rawValue) }
         }
         for line in Line.allCases {
             lines[line] = Self.player(line.rawValue)
@@ -57,7 +58,7 @@ final class Sounds: ObservableObject {
     }
 
     /// Seed clicks repeat many times a move, so they sit under the voice and the music.
-    private static let volume: [Effect: Float] = [.sow: 0.45, .store: 0.6, .tap: 0.4]
+    private static let volume: [Effect: Float] = [.sow: 0.45, .store: 0.6, .tap: 0.4, .die: 0.6, .step: 0.45]
 
     func play(_ effect: Effect) {
         guard soundOn, let pool = effects[effect], let player = pool.first(where: { !$0.isPlaying }) ?? pool.first else { return }

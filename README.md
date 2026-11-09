@@ -128,8 +128,8 @@ Ular tangga rules for 2–4 players are in the shared core (`UlarTanggaGame.kt`:
 each player throws for the play order, exact 100 or stay put, a 6 rolls again, play on until one player is
 left; bounce-back, six-to-enter, first-finish-ends and no-reroll are host options in
 `UlarTanggaOptions`; `UlarTanggaBot` just rolls). Its voxel board geometry is shared
-(`UlarTanggaBoard.kt`); Android plays it on this phone or against computers, picked from the
-menu's left card. The iOS board is next, then offline BLE for up to 4 players.
+(`UlarTanggaBoard.kt`); Android and iOS (RealityKit) play it on this phone or against computers,
+picked from the menu's left card. Next: offline BLE for up to 4 players.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's

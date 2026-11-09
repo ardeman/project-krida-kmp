@@ -138,8 +138,9 @@ final class BoardScene {
 }
 
 /// Collects the distinct vertex colors of several meshes into a 1-pixel-high texture.
+/// Shared by every voxel scene (congklak, ular tangga).
 @MainActor
-private final class Palette {
+final class Palette {
     private var index: [UInt32: Int] = [:]
     private var colors: [UInt32] = []
     private var pending: [(descriptor: MeshDescriptor, texel: [Int])] = []

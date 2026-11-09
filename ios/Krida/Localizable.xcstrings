@@ -21,7 +21,26 @@
         }
       }
     },
+    "%@, lempar dadu untuk urutan main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, throw the die to set the playing order"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, lempar dadu untuk urutan main"
+          }
+        }
+      }
+    },
     "%@. %@" : {
+      "shouldTranslate" : false
+    },
+    "2" : {
       "shouldTranslate" : false
     },
     "2 pemain" : {
@@ -40,6 +59,60 @@
         }
       }
     },
+    "2–4 pemain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2–4 players"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2–4 pemain"
+          }
+        }
+      }
+    },
+    "3" : {
+      "shouldTranslate" : false
+    },
+    "4" : {
+      "shouldTranslate" : false
+    },
+    "6 lempar lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 rolls again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 lempar lagi"
+          }
+        }
+      }
+    },
+    "6 untuk mulai" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 to start"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 untuk mulai"
+          }
+        }
+      }
+    },
     "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -53,6 +126,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam."
+          }
+        }
+      }
+    },
+    "Aturan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rules"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aturan"
           }
         }
       }
@@ -155,6 +244,38 @@
         }
       }
     },
+    "Berhenti di kaki tangga: naik ke ujung atasnya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Land on the foot of a ladder: climb to its top."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berhenti di kaki tangga: naik ke ujung atasnya."
+          }
+        }
+      }
+    },
+    "Berhenti di kepala ular: turun ke ekornya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Land on a snake's head: slide down to its tail."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berhenti di kepala ular: turun ke ekornya."
+          }
+        }
+      }
+    },
     "berpikir…" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -185,6 +306,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Biji terakhir jatuh di lumbungmu: kamu main lagi."
+          }
+        }
+      }
+    },
+    "Biru" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blue"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biru"
           }
         }
       }
@@ -241,6 +378,38 @@
     "Congklak" : {
       "shouldTranslate" : false
     },
+    "Dadu 6 boleh melempar lagi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A 6 rolls again."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dadu 6 boleh melempar lagi."
+          }
+        }
+      }
+    },
+    "Dapat 6 · lempar lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A six · roll again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dapat 6 · lempar lagi"
+          }
+        }
+      }
+    },
     "Gabung pakai kode" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -254,6 +423,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gabung pakai kode"
+          }
+        }
+      }
+    },
+    "Giliran %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@'s turn"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giliran %@"
+          }
+        }
+      }
+    },
+    "Giliranmu · lempar dadu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your turn · roll the die"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giliranmu · lempar dadu"
           }
         }
       }
@@ -304,6 +505,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hapus iklan"
+          }
+        }
+      }
+    },
+    "Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must land on 100 exactly; a roll that goes past it leaves you where you are."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat."
+          }
+        }
+      }
+    },
+    "Harus pas di 100; sisa langkah yang lewat berjalan mundur." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must land on 100 exactly; a roll that goes past it walks back down the extra squares."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harus pas di 100; sisa langkah yang lewat berjalan mundur."
+          }
+        }
+      }
+    },
+    "Hijau" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Green"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hijau"
+          }
+        }
+      }
+    },
+    "HP digilir; semua melempar dadu saat gilirannya." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pass the phone round; everyone rolls on their turn."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HP digilir; semua melempar dadu saat gilirannya."
           }
         }
       }
@@ -392,6 +657,22 @@
         }
       }
     },
+    "Juara 1 selesai" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First to 100 ends"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juara 1 selesai"
+          }
+        }
+      }
+    },
     "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -422,6 +703,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kamu"
+          }
+        }
+      }
+    },
+    "Kamu melawan komputer." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You against the computer."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu melawan komputer."
           }
         }
       }
@@ -559,6 +856,22 @@
         }
       }
     },
+    "Komputer %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Computer %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komputer %lld"
+          }
+        }
+      }
+    },
     "Kumpulkan biji terbanyak di lumbungmu." : {
       "localizations" : {
         "en" : {
@@ -571,6 +884,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kumpulkan biji terbanyak di lumbungmu."
+          }
+        }
+      }
+    },
+    "Kuning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yellow"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kuning"
           }
         }
       }
@@ -604,6 +933,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lawan"
+          }
+        }
+      }
+    },
+    "Lempar" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Roll"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lempar"
+          }
+        }
+      }
+    },
+    "Lempar dadu untuk urutan main" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Throw the die to set the playing order"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lempar dadu untuk urutan main"
           }
         }
       }
@@ -810,6 +1171,22 @@
         }
       }
     },
+    "Merah" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Red"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merah"
+          }
+        }
+      }
+    },
     "Mudah" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -844,6 +1221,22 @@
         }
       }
     },
+    "Naiki tangga, hindari ular." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Climb the ladders, dodge the snakes."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naiki tangga, hindari ular."
+          }
+        }
+      }
+    },
     "Nyalakan musik" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -874,6 +1267,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nyalakan suara"
+          }
+        }
+      }
+    },
+    "Pantul di 100" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bounce off 100"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantul di 100"
+          }
+        }
+      }
+    },
+    "Pemain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Players"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain"
           }
         }
       }
@@ -925,6 +1350,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pemain lain terputus. Menunggu dia kembali…"
+          }
+        }
+      }
+    },
+    "Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You need a 6 to get on the board; it puts you on square 1."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1."
+          }
+        }
+      }
+    },
+    "Permainan berikutnya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next game"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permainan berikutnya"
+          }
+        }
+      }
+    },
+    "Permainan sebelumnya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous game"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permainan sebelumnya"
           }
         }
       }
@@ -1081,6 +1554,54 @@
         }
       }
     },
+    "Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu."
+          }
+        }
+      }
+    },
+    "Semua mulai di luar papan; dadu 4 membawamu ke kotak 4." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everyone starts off the board; a roll of 4 puts you on square 4."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua mulai di luar papan; dadu 4 membawamu ke kotak 4."
+          }
+        }
+      }
+    },
+    "Seri · %@ lempar lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A tie · %@ throws again"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri · %@ lempar lagi"
+          }
+        }
+      }
+    },
     "Seri!" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1094,6 +1615,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seri!"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
           }
         }
       }
@@ -1247,6 +1784,38 @@
         }
       }
     },
+    "Ular tangga" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snakes & ladders"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ular tangga"
+          }
+        }
+      }
+    },
+    "Urutan siap · %@ duluan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Order set · %@ goes first"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urutan siap · %@ duluan"
+          }
+        }
+      }
+    },
     "Versi aplikasi berbeda. Perbarui aplikasi." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1260,6 +1829,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Versi aplikasi berbeda. Perbarui aplikasi."
+          }
+        }
+      }
+    },
+    "Yang pertama sampai 100 menang dan permainan selesai." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The first player to reach 100 wins and the game ends."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yang pertama sampai 100 menang dan permainan selesai."
+          }
+        }
+      }
+    },
+    "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Players who reach 100 leave the board in order; play goes on until one player is left."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain."
           }
         }
       }

@@ -6,6 +6,10 @@ import Shared
 struct ContentView: View {
     @Binding var roomCode: String
     @State private var passAndPlay: CongklakTable?
+    @State private var ularTable: UlarTanggaTable?
+    /// The game on the left card; the play card follows it.
+    @State private var game: MenuGame = .congklak
+    @AppStorage(UlarTanggaSettings.playersKey) private var ularPlayers = 2
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     @State private var joining = false
@@ -28,6 +32,9 @@ struct ContentView: View {
             if let table = passAndPlay {
                 CongklakView(table: table) { passAndPlay = nil }
                     .id(ObjectIdentifier(table))
+            } else if let table = ularTable {
+                UlarTanggaView(table: table) { ularTable = nil }
+                    .id(ObjectIdentifier(table))
             } else if let room {
                 RoomView(room: room) { self.room = nil }
                     .id(ObjectIdentifier(room))
@@ -37,6 +44,7 @@ struct ContentView: View {
         }
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; opponent = .computer; startUlarTangga() } }
         // A room link opens the app ready to join: the code field on "Teman dekat".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
@@ -54,6 +62,7 @@ struct ContentView: View {
     }
 
     private func openJoin() {
+        game = .congklak
         opponent = .nearby
         joining = true
     }
@@ -71,7 +80,8 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 14 * s) {
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
                     .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
-                CongklakCard { menuReady = true }
+                GameCard(game: $game) { menuReady = true }
+                    .onChange(of: game) { _, g in if g == .ularTangga { joining = false; if opponent == .nearby { opponent = .phone } } }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
@@ -145,24 +155,30 @@ struct ContentView: View {
     /// computer's level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the tembak rule.
     /// Same as Android.
     private var playCard: some View {
-        VStack(alignment: .leading, spacing: 10 * s) {
+        let ular = game == .ularTangga
+        let opponents: [(Opponent, LocalizedStringKey, String?)] = [(.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer")]
+            + (ular ? [] : [(.nearby, "Teman dekat", "antenna.radiowaves.left.and.right")])
+        return VStack(alignment: .leading, spacing: 10 * s) {
             SettingRow(label: "Lawan") {
-                Segmented(
-                    options: [(.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right")],
-                    selection: $opponent,
-                    label: "Lawan"
-                )
-                .onChange(of: opponent) { _, o in if o != .nearby { joining = false } }
+                Segmented(options: opponents, selection: $opponent, label: "Lawan")
+                    .onChange(of: opponent) { _, o in if o != .nearby { joining = false } }
+            }
+            if ular {
+                SettingRow(label: "Pemain") {
+                    Segmented(options: [(2, "2", nil), (3, "3", nil), (4, "4", nil)], selection: $ularPlayers, label: "Pemain")
+                }
             }
             // The action row: what this opponent means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(label: opponent == .computer ? "Tingkat" : nil) {
+            SettingRow(label: opponent == .computer && !ular ? "Tingkat" : nil) {
                 if joining {
                     joinRow
                 } else {
                     HStack(spacing: 8 * s) {
                         switch opponent {
+                        case _ where ular:
+                            detail(opponent == .computer ? "Kamu melawan komputer." : "HP digilir; semua melempar dadu saat gilirannya.")
                         case .computer:
                             Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
                         case .phone:
@@ -170,7 +186,7 @@ struct ContentView: View {
                         case .nearby:
                             detail("Bluetooth, tanpa internet")
                         }
-                        if opponent != .computer { Spacer(minLength: 0) }
+                        if opponent != .computer || ular { Spacer(minLength: 0) }
                         if opponent == .nearby {
                             Button("Gabung pakai kode") { joining = true }
                                 .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
@@ -181,8 +197,12 @@ struct ContentView: View {
                     .lineLimit(1)
                 }
             }
-            SettingRow(label: "Tembak") {
-                Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+            if ular {
+                SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
+            } else {
+                SettingRow(label: "Tembak") {
+                    Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                }
             }
         }
         .padding(.leading, 18 * s)
@@ -230,6 +250,7 @@ struct ContentView: View {
     }
 
     private func start() {
+        if game == .ularTangga { return startUlarTangga() }
         switch opponent {
         case .phone: startPassAndPlay()
         case .computer: startVsComputer(level)
@@ -244,6 +265,17 @@ struct ContentView: View {
         default: String(localized: "Sedang", bundle: .app)
         }
         passAndPlay = HostTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computer: String(localized: "Komputer", bundle: .app), level: level, levelName: name)
+    }
+
+    private func startUlarTangga() {
+        let n = min(max(ularPlayers, 2), 4)
+        if opponent == .computer {
+            let computers = n == 2 ? [String(localized: "Komputer", bundle: .app)] : (1..<n).map { String(localized: "Komputer \($0)", bundle: .app) }
+            ularTable = UlarTanggaTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computers: computers)
+        } else {
+            let colors = [String(localized: "Merah", bundle: .app), String(localized: "Biru", bundle: .app), String(localized: "Hijau", bundle: .app), String(localized: "Kuning", bundle: .app)]
+            ularTable = UlarTanggaTable.passAndPlay(names: Array(colors.prefix(n)))
+        }
     }
 
     private func startPassAndPlay() {
@@ -357,43 +389,174 @@ private struct Segmented<T: Hashable>: View {
     }
 }
 
-/// The congklak tile on the home screen, with a picture of the real board.
-private struct CongklakCard: View {
-    /// Called once the board snapshot is on screen.
+/// The games the left card switches between, until the game list exists. Same as Android.
+enum MenuGame: CaseIterable {
+    case congklak, ularTangga
+
+    var title: LocalizedStringKey { self == .congklak ? "Congklak" : "Ular tangga" }
+    var players: LocalizedStringKey { self == .congklak ? "2 pemain" : "2–4 pemain" }
+    var tagline: LocalizedStringKey { self == .congklak ? "Kumpulkan biji terbanyak di lumbungmu." : "Naiki tangga, hindari ular." }
+    var face: Color { self == .congklak ? Theme.wood : Color(hex: 0x4F8A3B) }
+    var edge: Color { self == .congklak ? Theme.woodShadow : Color(hex: 0x3B6A2B) }
+}
+
+/// The game tile on the home screen, with a picture of the real board; the arrows (or a
+/// swipe) switch to the other game, and the play card on the right follows.
+private struct GameCard: View {
+    @Binding var game: MenuGame
+    /// Called once the first board snapshot is on screen.
+    let onReady: () -> Void
+    @State private var forward = true
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            GameCardFace(game: game, onReady: onReady)
+                .id(game)
+                .transition(.asymmetric(insertion: .move(edge: forward ? .trailing : .leading), removal: .move(edge: forward ? .leading : .trailing)))
+            // The arrows stay put above the sliding cards.
+            HStack(spacing: 6 * s) {
+                arrow("chevron.left", label: "Permainan sebelumnya") { step(-1) }
+                arrow("chevron.right", label: "Permainan berikutnya") { step(1) }
+            }
+            .padding(.top, 12 * s)
+            .padding(.trailing, 10 * s)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 22 * s))
+        .frame(maxHeight: .infinity)
+        .gesture(DragGesture(minimumDistance: 20).onEnded { v in
+            if abs(v.translation.width) > 40 && abs(v.translation.width) > abs(v.translation.height) { step(v.translation.width < 0 ? 1 : -1) }
+        })
+    }
+
+    private func step(_ d: Int) {
+        let all = MenuGame.allCases
+        let i = all.firstIndex(of: game)!
+        forward = d > 0
+        withAnimation(.easeInOut(duration: 0.38)) { game = all[(i + d + all.count) % all.count] }
+    }
+
+    private func arrow(_ icon: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        Button {
+            Sounds.shared.play(.tap)
+            action()
+        } label: {
+            Image(systemName: icon).font(.system(size: 15 * s, weight: .bold))
+                .foregroundStyle(Color(hex: 0xFFF6E8))
+                .frame(width: 34 * s, height: 34 * s)
+                .background(Color.white.opacity(0.18), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(label))
+    }
+}
+
+private struct GameCardFace: View {
+    let game: MenuGame
     let onReady: () -> Void
     @Environment(\.uiScale) private var s
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10 * s) {
-            // A narrow card (a foldable's cover screen) drops "2 pemain" before shrinking the title.
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline) {
-                    title
-                    Spacer(minLength: 8 * s)
-                    Text("2 pemain").font(Theme.font(13 * s, .bold)).foregroundStyle(Color(hex: 0xF3DDBE))
-                }
-                title
+            // Room on the right for the arrows, which GameCard draws above the faces.
+            VStack(alignment: .leading, spacing: 0) {
+                Text(game.title).font(Theme.font(20 * s, .black)).foregroundStyle(Color(hex: 0xFFF6E8)).lineLimit(2)
+                Text(game.players).font(Theme.font(13 * s, .bold)).foregroundStyle(Color(hex: 0xF3DDBE)).lineLimit(1)
             }
-            .lineLimit(1)
-            // The real board, cropped to its left end; it takes whatever height the card has.
-            BoardPreview(onReady: onReady)
-                .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 14 * s))
-            Text("Kumpulkan biji terbanyak di lumbungmu.")
+            .padding(.trailing, 80 * s)
+            .frame(minHeight: 34 * s)
+            Group {
+                switch game {
+                // The real board, cropped to its left end; it takes whatever height the card has.
+                case .congklak: BoardPreview(onReady: onReady)
+                case .ularTangga: UlarTanggaPreview(onReady: onReady)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 14 * s))
+            Text(game.tagline)
                 .font(Theme.font(13 * s, .semibold))
                 .foregroundStyle(Color(hex: 0xF3DDBE))
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(16 * s)
+        .padding(.leading, 16 * s)
+        .padding(.trailing, 16 * s)
+        .padding(.top, 12 * s)
+        .padding(.bottom, 14 * s)
         .frame(maxHeight: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 22 * s).fill(Theme.woodShadow)
-                .overlay(RoundedRectangle(cornerRadius: 22 * s).fill(Theme.wood).padding(.bottom, 6 * s))
+            RoundedRectangle(cornerRadius: 22 * s).fill(game.edge)
+                .overlay(RoundedRectangle(cornerRadius: 22 * s).fill(game.face).padding(.bottom, 6 * s))
         )
     }
+}
 
-    private var title: some View {
-        Text("Congklak").font(Theme.font(22 * s, .black)).foregroundStyle(Color(hex: 0xFFF6E8))
+/// Ular tangga's rule options as toggle chips, saved as they change. Same as Android.
+private struct UlarTanggaOptionChips: View {
+    @AppStorage(UlarTanggaSettings.sixRollsAgainKey) private var sixRollsAgain = true
+    @AppStorage(UlarTanggaSettings.sixToEnterKey) private var sixToEnter = false
+    @AppStorage(UlarTanggaSettings.bounceBackKey) private var bounceBack = false
+    @AppStorage(UlarTanggaSettings.firstFinishEndsKey) private var firstFinishEnds = false
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        FlowRow(spacing: 6 * s) {
+            chip("6 lempar lagi", $sixRollsAgain)
+            chip("6 untuk mulai", $sixToEnter)
+            chip("Pantul di 100", $bounceBack)
+            chip("Juara 1 selesai", $firstFinishEnds)
+        }
+    }
+
+    private func chip(_ label: LocalizedStringKey, _ on: Binding<Bool>) -> some View {
+        Button { on.wrappedValue.toggle() } label: {
+            Text(label).font(Theme.font(13 * s)).foregroundStyle(on.wrappedValue ? Theme.accent : Theme.muted)
+                .lineLimit(1)
+                .padding(.horizontal, 12 * s)
+                .frame(height: 34 * s)
+                .background(on.wrappedValue ? Theme.chip : Theme.surface, in: RoundedRectangle(cornerRadius: 10 * s))
+                .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(on.wrappedValue ? Theme.accent : Theme.line, lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(on.wrappedValue ? .isSelected : [])
+    }
+}
+
+/// Lays its children out in rows, wrapping to a new row when one is full.
+private struct FlowRow: Layout {
+    var spacing: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = arrange(width: proposal.width ?? .infinity, subviews: subviews)
+        let width = rows.map { $0.width }.max() ?? 0
+        let height = rows.map(\.height).reduce(0, +) + spacing * CGFloat(max(rows.count - 1, 0))
+        return CGSize(width: proposal.width ?? width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in arrange(width: bounds.width, subviews: subviews) {
+            var x = bounds.minX
+            for i in row.items {
+                let size = subviews[i].sizeThatFits(.unspecified)
+                subviews[i].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+
+    private func arrange(width: CGFloat, subviews: Subviews) -> [(items: [Int], width: CGFloat, height: CGFloat)] {
+        var rows: [(items: [Int], width: CGFloat, height: CGFloat)] = []
+        for i in subviews.indices {
+            let size = subviews[i].sizeThatFits(.unspecified)
+            if let last = rows.last, last.width + spacing + size.width <= width {
+                rows[rows.count - 1] = (last.items + [i], last.width + spacing + size.width, max(last.height, size.height))
+            } else {
+                rows.append(([i], size.width, size.height))
+            }
+        }
+        return rows
     }
 }
 
