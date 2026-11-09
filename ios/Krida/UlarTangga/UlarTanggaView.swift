@@ -283,7 +283,19 @@ private struct UlarTanggaBoardView: View {
 
     private static let space = "ularTangga"
 
+    /// Horizontal safe-area insets (the Dynamic Island's strip), read before the board view
+    /// ignores the safe area so the HUD can still keep clear of the island.
+    @State private var sideInsets = EdgeInsets()
+
     var body: some View {
+        GeometryReader { outer in
+            board
+                .onAppear { sideInsets = outer.safeAreaInsets }
+                .onChange(of: outer.safeAreaInsets) { _, new in sideInsets = new }
+        }
+    }
+
+    private var board: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
                 hud
@@ -459,8 +471,9 @@ private struct UlarTanggaBoardView: View {
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
-        .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
-        .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
+        // Clear a corner punch hole or the Dynamic Island's strip.
+        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
+        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
     }
