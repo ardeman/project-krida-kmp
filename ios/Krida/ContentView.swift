@@ -64,7 +64,6 @@ struct ContentView: View {
     }
 
     private func openJoin() {
-        game = .congklak
         opponent = .nearby
         joining = true
     }
@@ -83,7 +82,6 @@ struct ContentView: View {
                 Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
                     .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
                 GameCard(game: $game) { menuReady = true }
-                    .onChange(of: game) { _, g in if g == .ularTangga { joining = false; if opponent == .nearby { opponent = .phone } } }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
@@ -158,14 +156,16 @@ struct ContentView: View {
     /// Same as Android.
     private var playCard: some View {
         let ular = game == .ularTangga
-        let opponents: [(Opponent, LocalizedStringKey, String?)] = [(.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer")]
-            + (ular ? [] : [(.nearby, "Teman dekat", "antenna.radiowaves.left.and.right")])
+        let opponents: [(Opponent, LocalizedStringKey, String?)] = [
+            (.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right"),
+        ]
         return VStack(alignment: .leading, spacing: 10 * s) {
             SettingRow(label: "Lawan") {
                 Segmented(options: opponents, selection: $opponent, label: "Lawan")
                     .onChange(of: opponent) { _, o in if o != .nearby { joining = false } }
             }
-            if ular {
+            // In a nearby room everyone who joins plays, up to 4.
+            if ular && opponent != .nearby {
                 SettingRow(label: "Pemain") {
                     Segmented(options: [(2, "2", nil), (3, "3", nil), (4, "4", nil)], selection: $ularPlayers, label: "Pemain")
                 }
@@ -180,7 +180,11 @@ struct ContentView: View {
                     HStack(spacing: 8 * s) {
                         switch opponent {
                         case _ where ular:
-                            detail(opponent == .computer ? "Kamu melawan komputer." : "HP digilir; semua melempar dadu saat gilirannya.")
+                            switch opponent {
+                            case .computer: detail("Kamu melawan komputer.")
+                            case .phone: detail("HP digilir; semua melempar dadu saat gilirannya.")
+                            case .nearby: detail("Sampai 4 HP lewat Bluetooth, tanpa internet")
+                            }
                         case .computer:
                             Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
                         case .phone:
@@ -255,11 +259,12 @@ struct ContentView: View {
     }
 
     private func start() {
+        if opponent == .nearby { room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak); return }
         if game == .ularTangga { return startUlarTangga() }
         switch opponent {
         case .phone: startPassAndPlay()
         case .computer: startVsComputer(level)
-        case .nearby: room = NearbyRoom.host()
+        case .nearby: break
         }
     }
 
@@ -276,10 +281,10 @@ struct ContentView: View {
         let n = min(max(ularPlayers, 2), 4)
         if opponent == .computer {
             let computers = n == 2 ? [String(localized: "Komputer", bundle: .app)] : (1..<n).map { String(localized: "Komputer \($0)", bundle: .app) }
-            ularTable = UlarTanggaTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computers: computers)
+            ularTable = UlarTanggaHostTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computers: computers)
         } else {
             let colors = [String(localized: "Merah", bundle: .app), String(localized: "Biru", bundle: .app), String(localized: "Hijau", bundle: .app), String(localized: "Kuning", bundle: .app)]
-            ularTable = UlarTanggaTable.passAndPlay(names: Array(colors.prefix(n)))
+            ularTable = UlarTanggaHostTable.passAndPlay(names: Array(colors.prefix(n)))
         }
     }
 
@@ -572,20 +577,34 @@ private struct RoomView: View {
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if let table = room.table {
+        if let table = room.congklak {
             CongklakView(table: table, onExit: onExit)
+                .id(ObjectIdentifier(table))
+        } else if let table = room.ular {
+            UlarTanggaView(table: table, onExit: onExit)
                 .id(ObjectIdentifier(table))
         } else {
             lobby
         }
     }
 
+    private var title: String {
+        switch room.game {
+        case UlarTanggaGame.shared.id: String(localized: "Ular tangga", bundle: .app)
+        case CongklakGame.shared.id: String(localized: "Congklak", bundle: .app)
+        default: ""
+        }
+    }
+
     private var lobby: some View {
         VStack(alignment: .leading, spacing: 12 * s) {
-            Text("Congklak").font(Theme.font(24 * s, .black))
+            Text(title).font(Theme.font(24 * s, .black))
             Text("Kode room").font(Theme.font(15 * s, .semibold))
             Text(room.code).font(.system(size: 44 * s, weight: .bold, design: .monospaced))
             Text(room.status).font(Theme.font(17 * s, .semibold))
+            if room.game != nil {
+                Text("\(room.players.count) dari \(room.maxPlayers) pemain").font(Theme.font(15 * s, .semibold)).foregroundStyle(Theme.muted)
+            }
             ForEach(room.players, id: \.seat) { p in
                 Text("\(p.seat + 1). \(p.name)").font(Theme.font(17 * s, .semibold))
             }

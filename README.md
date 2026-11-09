@@ -129,10 +129,10 @@ each player throws for the play order, exact 100 or stay put, a 6 rolls again, p
 left; bounce-back, six-to-enter, first-finish-ends and no-reroll are host options in
 `UlarTanggaOptions`; `UlarTanggaBot` just rolls). Its voxel board geometry is shared
 (`UlarTanggaBoard.kt`); Android and iOS (RealityKit) play it on this phone or against computers,
-picked from the menu's left card. Android hosts ular tangga rooms over BLE for up to 4 phones
-(a guest gone past the reconnect grace is handed to the computer); a guest joins any room by
-its code and learns the game from the host's `welcome` (`GuestJoin`). Next: ular tangga over BLE
-on iOS.
+picked from the menu's left card. Android and iOS host ular tangga rooms over BLE for up to 4
+phones (a guest gone past the reconnect grace is handed to the computer); a guest joins any room
+by its code and learns the game from the host's `welcome` (`GuestJoin`). Next: an iPhone↔Android
+check of a ular tangga room.
 
 Gradle 8.14 needs JDK 17–21 (Android Studio's bundled JDK 25 is too new), e.g.
 `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`. Xcode's

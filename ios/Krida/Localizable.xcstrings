@@ -1928,6 +1928,70 @@
           }
         }
       }
+    },
+    "%lld dari %lld pemain" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld players"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld dari %2$lld pemain"
+          }
+        }
+      }
+    },
+    "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A player disconnected. The computer takes over after a minute."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit."
+          }
+        }
+      }
+    },
+    "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This room plays a game this app doesn't have. Update the app."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi."
+          }
+        }
+      }
+    },
+    "Sampai 4 HP lewat Bluetooth, tanpa internet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 4 phones over Bluetooth, no internet"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sampai 4 HP lewat Bluetooth, tanpa internet"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

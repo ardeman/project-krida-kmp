@@ -342,7 +342,9 @@ private struct UlarTanggaBoardView: View {
         guard size.width > 0, let room = boxes["room"], let die = boxes["die"], die.width > 0,
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
-        let obstacles = Self.hudKeys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
+        // The notice (a dropped player, the host lost) only while it shows.
+        let keys = Self.hudKeys + (table.notice != nil ? ["notice"] : [])
+        let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
         model.layout(size: size, room: room, obstacles: obstacles, dieSpot: die)
     }
 
@@ -465,6 +467,15 @@ private struct UlarTanggaBoardView: View {
                     .frame(maxWidth: .infinity)
                     .modifier(hudBox("status"))
                     .padding(.top, 10 * s)
+                if let notice = table.notice {
+                    Text(notice)
+                        .font(Theme.font(13 * s, .bold))
+                        .foregroundStyle(Theme.error)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity)
+                        .modifier(hudBox("notice"))
+                }
             }
             .frame(width: 148 * s)
             .frame(maxHeight: .infinity)
@@ -570,8 +581,14 @@ private struct UlarTanggaBoardView: View {
                 HStack(spacing: 10 * s) {
                     Button { ads.afterGame(then: exit) } label: { Text("Ke menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
-                    Button { ads.afterGame(then: model.restart) } label: { Text("Main lagi").frame(maxWidth: .infinity) }
-                        .buttonStyle(PrimaryButtonStyle(height: 48))
+                    if table.canRestart {
+                        Button { ads.afterGame(then: model.restart) } label: { Text("Main lagi").frame(maxWidth: .infinity) }
+                            .buttonStyle(PrimaryButtonStyle(height: 48))
+                    } else {
+                        Text("Menunggu host memulai lagi…")
+                            .font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
+                            .frame(maxWidth: .infinity)
+                    }
                 }
                 .padding(.top, 4 * s)
             }

@@ -7,45 +7,48 @@ struct UlarTanggaUpdate {
     let fresh: Bool
 }
 
-/// What the ular tangga screen plays on: pass-and-play or against computers on this device.
-/// (Nearby rooms come with the 4-player lobby.) Session callbacks arrive on the main thread.
+/// What the ular tangga screen plays on: pass-and-play or against computers on this device,
+/// hosting a nearby room, or a guest in one. Session callbacks arrive on the main thread.
 /// Same as Android's `UlarTanggaTable`.
 @MainActor
-final class UlarTanggaTable: ObservableObject {
-    @Published private(set) var players: [PlayerInfo]
+class UlarTanggaTable: ObservableObject {
+    @Published fileprivate(set) var players: [PlayerInfo] = []
+    /// Shown under the status (disconnects, refusals), or nil.
+    @Published fileprivate(set) var notice: String?
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: UlarTanggaState
     /// Receives every snapshot after `latest`, in order.
     var onUpdate: ((UlarTanggaUpdate) -> Void)?
 
-    /// This device's seat against computers; nil for pass-and-play (whoever's turn it is).
-    let mySeat: Int?
-    /// Seats the computer plays.
-    let botSeats: Set<Int>
-
-    private let session: HostSession<UlarTanggaState, UlarTanggaMove>
-    private let transport: Transport
     private var seq: Int32
 
-    private init(session: HostSession<UlarTanggaState, UlarTanggaMove>, mySeat: Int?, botSeats: Set<Int>, transport: Transport) {
-        self.session = session
-        self.mySeat = mySeat
-        self.botSeats = botSeats
-        self.transport = transport
-        seq = session.seq
-        players = session.players
-        latest = session.state!
-        session.onPlayersChanged = { [weak self] list in self?.players = list }
-        session.onStateChanged = { [weak self, weak session] state in
-            guard let self, let session, let state else { return }
-            // A restart's first state has no throw yet; only a throw or roll right after the
-            // shown state animates.
-            let thrown = state.lastRoll != nil || state.openingRolls.contains { $0.contains { $0.intValue != 0 } }
-            let fresh = session.seq == self.seq + 1 && thrown
-            self.seq = session.seq
-            self.latest = state
-            self.onUpdate?(UlarTanggaUpdate(state: state, fresh: fresh))
-        }
+    /// This device's seat; nil for pass-and-play (whoever's turn it is).
+    var mySeat: Int? { nil }
+    var canRestart: Bool { false }
+
+    /// Seats the computer plays (including dropped guests handed to it).
+    var botSeats: Set<Int> { Set(players.filter(\.bot).map { Int($0.seat) }) }
+
+    fileprivate init(first: UlarTanggaState, seq: Int32) {
+        latest = first
+        self.seq = seq
+    }
+
+    fileprivate func deliver(_ state: UlarTanggaState, seq: Int32) {
+        // Rebroadcasts keep seq, and a restart's first state has no throw yet; only a throw
+        // or roll right after the shown state animates.
+        let thrown = state.lastRoll != nil || state.openingRolls.contains { $0.contains { $0.intValue != 0 } }
+        let fresh = seq == self.seq + 1 && thrown
+        self.seq = seq
+        latest = state
+        onUpdate?(UlarTanggaUpdate(state: state, fresh: fresh))
+    }
+
+    fileprivate func playersChanged(_ list: [PlayerInfo]) {
+        players = list
+        notice = list.contains { !$0.connected }
+            ? String(localized: "Ada pemain yang terputus. Komputer menggantikannya setelah satu menit.", bundle: .app)
+            : nil
     }
 
     func name(_ seat: Int) -> String {
@@ -57,26 +60,70 @@ final class UlarTanggaTable: ObservableObject {
         !botSeats.contains(seat) && (mySeat == nil || mySeat == seat)
     }
 
-    /// Rolls for `seat`. Returns false when nothing happened.
-    func roll(seat: Int) -> Bool {
+    /// Rolls for `seat`. Returns false when nothing was sent.
+    func roll(seat: Int) -> Bool { false }
+    /// Lets a computer roll if it is its turn. Called once the board is idle.
+    func stepBot() {}
+    func restart() {}
+    func leave() {}
+}
+
+/// The authoritative table: on this device only, or hosting a nearby room.
+final class UlarTanggaHostTable: UlarTanggaTable {
+    private let session: HostSession<UlarTanggaState, UlarTanggaMove>
+    private let transport: Transport
+    private let seat: Int?
+    /// Hands guests gone past the reconnect grace to the computer, so nobody waits on them.
+    private var watch: Timer?
+
+    init(session: HostSession<UlarTanggaState, UlarTanggaMove>, mySeat: Int?, transport: Transport) {
+        self.session = session
+        self.transport = transport
+        seat = mySeat
+        super.init(first: session.state!, seq: session.seq)
+        players = session.players
+        session.onPlayersChanged = { [weak self] list in self?.playersChanged(list) }
+        session.onStateChanged = { [weak self, weak session] state in
+            guard let self, let session, let state else { return }
+            self.playersChanged(session.players)
+            self.deliver(state, seq: session.seq)
+        }
+        if !(transport is LocalTransport) {
+            watch = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak session] _ in
+                MainActor.assumeIsolated {
+                    guard let session else { return }
+                    for s in session.expiredSeats() {
+                        _ = session.replaceWithBot(seat: s.int32Value, bot: UlarTanggaBot.shared)
+                    }
+                }
+            }
+        }
+    }
+
+    override var mySeat: Int? { seat }
+    override var canRestart: Bool { true }
+
+    override func roll(seat: Int) -> Bool {
         session.submitLocal(seat: Int32(seat), move: UlarTanggaMove()) == nil
     }
 
-    /// Lets a computer roll if it is its turn. Called once the board is idle.
-    func stepBot() { _ = session.stepBot() }
+    override func stepBot() { _ = session.stepBot() }
 
-    func restart() {
+    override func restart() {
         if latest.finished { session.restart() }
     }
 
-    func leave() { transport.close() }
+    override func leave() {
+        watch?.invalidate()
+        transport.close()
+    }
 
     static func passAndPlay(names: [String]) -> UlarTanggaTable {
         let transport = LocalTransport()
         let session = HostSession<UlarTanggaState, UlarTanggaMove>(rules: UlarTanggaSettings.rules, transport: transport, roomCode: "LOCAL")
         for name in names { _ = session.addLocalPlayer(name: name, platform: .ios) }
         session.start()
-        return UlarTanggaTable(session: session, mySeat: nil, botSeats: [], transport: transport)
+        return UlarTanggaHostTable(session: session, mySeat: nil, transport: transport)
     }
 
     /// You at seat 0 against `computers` (one name per computer seat).
@@ -86,8 +133,35 @@ final class UlarTanggaTable: ObservableObject {
         _ = session.addLocalPlayer(name: you, platform: .ios)
         for name in computers { _ = session.addBot(name: name, platform: .ios, bot: UlarTanggaBot.shared) }
         session.start()
-        return UlarTanggaTable(session: session, mySeat: 0, botSeats: Set(1...computers.count), transport: transport)
+        return UlarTanggaHostTable(session: session, mySeat: 0, transport: transport)
     }
+}
+
+/// A guest in a nearby room: rolls go to the host, snapshots come back.
+final class UlarTanggaGuestTable: UlarTanggaTable {
+    private let session: GuestSession<UlarTanggaState, UlarTanggaMove>
+
+    init(session: GuestSession<UlarTanggaState, UlarTanggaMove>) {
+        self.session = session
+        super.init(first: session.state!, seq: session.stateSeq)
+        players = session.players
+        session.onState = { [weak self, weak session] state in
+            guard let self, let session, let state else { return }
+            self.playersChanged(session.players)
+            self.deliver(state, seq: session.stateSeq)
+        }
+        session.onPlayers = { [weak self] list in self?.playersChanged(list) }
+        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
+        session.onDisconnected = { [weak self] in self?.notice = String(localized: "Terputus dari host", bundle: .app) }
+    }
+
+    override var mySeat: Int? { session.seat.map { Int($0.int32Value) } }
+
+    override func roll(seat: Int) -> Bool {
+        seat == mySeat && session.sendMove(move: UlarTanggaMove()) != nil
+    }
+
+    override func leave() { session.leave() }
 }
 
 /// Ular tangga choices stored on this device: player count and the rule options. Same keys
