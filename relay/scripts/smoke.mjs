@@ -37,7 +37,7 @@ function open(query) {
 }
 
 function timeout(p, what) {
-  return Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`timed out: ${what}`)), 3000))]);
+  return Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error(`timed out: ${what}`)), 10000))]);
 }
 
 function expect(got, want, label) {

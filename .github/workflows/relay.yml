@@ -52,4 +52,6 @@ jobs:
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
           [ -n "$url" ] || { echo "No workers.dev URL in the deploy output"; exit 1; }
           echo "Relay: $url"
+          # A fresh deploy can take a few seconds to answer.
+          for i in $(seq 1 30); do curl -sf "$url/" && break; sleep 2; done
           node scripts/smoke.mjs "${url/https:/wss:}"
