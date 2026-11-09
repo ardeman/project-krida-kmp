@@ -8,6 +8,14 @@ routes = [{ pattern = "krida-relay.ardeman.com", custom_domain = true }]
 name = "ROOMS"
 class_name = "Room"
 
+[[durable_objects.bindings]]
+name = "MATCHMAKERS"
+class_name = "Matchmaker"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Matchmaker"]

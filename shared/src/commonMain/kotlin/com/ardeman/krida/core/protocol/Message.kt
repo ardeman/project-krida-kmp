@@ -97,6 +97,16 @@ sealed class Message {
     @SerialName("invalid")
     data class Invalid(val seq: Int, val reason: String) : Message()
 
+    /** Relay (matchmaker) -> player: "A match has been found". Role is "host" or "guest";
+     *  only host includes [code]. Optional: new in quick match feature.
+     */
+    @Serializable
+    @SerialName("matched")
+    data class Matched(
+        val role: String,
+        val code: String? = null,
+    ) : Message()
+
     @Serializable
     @SerialName("ping")
     data class Ping(val t: Long) : Message()

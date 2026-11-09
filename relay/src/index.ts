@@ -2,10 +2,14 @@
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
  * and up to four guest sockets. It knows no game rules; the host stays authoritative.
  * Framing is documented under "Online relay" in docs/protocol.md.
+ * 
+ * Also includes a matchmaker Durable Object per game and player count, which queues players
+ * for quick match and assigns a room code to the first player (host).
  */
 
 export interface Env {
   ROOMS: DurableObjectNamespace;
+  MATCHMAKERS: DurableObjectNamespace;
 }
 
 /** Same alphabet as RoomCode in shared/; online codes are 6 chars. */
@@ -45,6 +49,16 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/") return new Response("krida relay\n");
+
+    const matchRoomsMatch = url.pathname.match(/^\/v1\/match\/([^/]+)\/(\d+)$/);
+    if (matchRoomsMatch) {
+      const game = matchRoomsMatch[1];
+      const playerCount = parseInt(matchRoomsMatch[2], 10);
+      if (!/^[a-z][a-z0-9]*$/.test(game) || playerCount < 1 || playerCount > 4) {
+        return new Response("invalid game or player count\n", { status: 400 });
+      }
+      return env.MATCHMAKERS.get(env.MATCHMAKERS.idFromName(`${game}/${playerCount}`)).fetch(request);
+    }
 
     const match = url.pathname.match(/^\/v1\/rooms\/([^/]+)$/);
     if (!match) return new Response("not found\n", { status: 404 });
@@ -217,6 +231,81 @@ export class Room implements DurableObject {
   private guests(except?: WebSocket): WebSocket[] {
     return this.open("guest", except);
   }
+}
+
+/** Matchmaker: queues players for quick match and assigns them to rooms. */
+export class Matchmaker implements DurableObject {
+  /** Queue of awaiting players: { socket, roomCode, expiresAt }. */
+  private queue: { socket: WebSocket; roomCode: string; expiresAt: number }[] = [];
+  /** Rooms with at least one human: game/playerCount that started with a human won't accept
+   *  later joins (to avoid adding humans to a computer-vs-human game). */
+  private roomsWithHumans = new Set<string>();
+
+  constructor(
+    private ctx: DurableObjectState,
+    private env: Env,
+  ) {}
+
+  async fetch(request: Request): Promise<Response> {
+    if (request.headers.get("Upgrade") !== "websocket") {
+      return new Response("expected websocket\n", { status: 426 });
+    }
+    const code = generateOnlineCode();
+    const [client, server] = pair();
+    this.ctx.acceptWebSocket(server, ["player"]);
+    server.serializeAttachment({ roomCode: code } as { roomCode: string });
+    
+    // Clean up expired entries and add this player to the queue.
+    const now = Date.now();
+    this.queue = this.queue.filter((e) => e.expiresAt > now);
+    
+    if (this.queue.length === 0) {
+      // First in queue: becomes the host.
+      this.queue.push({ socket: server, roomCode: code, expiresAt: now + 20_000 });
+      sendQuietly(server, encodeMatch({ type: "matched", role: "host", code }));
+    } else {
+      // Match with the first queued player.
+      const first = this.queue.shift()!;
+      const hostCode = first.roomCode;
+      this.roomsWithHumans.add(hostCode);
+      
+      sendQuietly(first.socket, encodeMatch({ type: "matched", role: "host", code: hostCode }));
+      sendQuietly(server, encodeMatch({ type: "matched", role: "guest", code: hostCode }));
+      
+      first.socket.close(1000, "matched");
+      server.close(1000, "matched");
+    }
+    
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  async webSocketMessage(ws: WebSocket): Promise<void> {
+    // Matchmaker doesn't process player messages; players join once and then move to the room.
+  }
+
+  async webSocketClose(ws: WebSocket): Promise<void> {
+    const att = ws.deserializeAttachment() as { roomCode: string } | null;
+    if (!att) return;
+    
+    // Remove from queue if still there (player cancelled before matching).
+    this.queue = this.queue.filter((e) => e.socket !== ws);
+  }
+
+  async webSocketError(ws: WebSocket): Promise<void> {
+    await this.webSocketClose(ws);
+  }
+}
+
+/** Generate a 6-char online room code. */
+function generateOnlineCode(): string {
+  const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  return Array.from({ length: 6 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join("");
+}
+
+/** Encode a match result message. */
+function encodeMatch(msg: { type: string; role?: string; code?: string }): Uint8Array {
+  const json = JSON.stringify(msg);
+  return new TextEncoder().encode(json);
 }
 
 function guestId(ws: WebSocket): number {

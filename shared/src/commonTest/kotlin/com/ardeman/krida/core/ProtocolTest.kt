@@ -41,6 +41,8 @@ class ProtocolTest {
             Message.Intent(3, buildJsonObject { put("pit", 2) }),
             Message.State(7, 1, false, buildJsonObject { put("total", 5) }, players),
             Message.Invalid(3, "not_your_turn"),
+            Message.Matched("host", "ABC234"),
+            Message.Matched("guest", null),
             Message.Ping(123L),
             Message.Pong(123L),
             Message.Bye,

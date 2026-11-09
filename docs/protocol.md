@@ -35,6 +35,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `intent` | guest → host | `seq`, `move` |
 | `state` | host → all | `seq`, `turn`, `finished`, `state`, `players`, `last?` |
 | `invalid` | host → guest | `seq`, `reason` |
+| `matched` | relay (matchmaker) → player | `role` (`host` or `guest`), `code?` (6-char room code, only on host; optional, new in quick match) |
 | `ping` / `pong` | both | `t` |
 | `bye` | both | — |
 
@@ -158,6 +159,24 @@ on purpose) ends the room at once the same way; a dropped connection gets the gr
 | `4011` | Replaced by a newer host socket |
 | `4013` | Message over 64 KB |
 | `4029` | Rate limited (bursts of 50, 20 messages/s sustained) |
+
+## Quick match (matchmaker)
+
+Quick match pairs two or more players online without exchanging codes. The relay includes
+a matchmaker Durable Object per game and player count.
+
+Connect to `wss://krida-relay.ardeman.com/v1/match/<GAME>/<PLAYER_COUNT>` with a WebSocket:
+
+- The first player to connect gets a 6-char room code and role `host` in a `matched` message.
+  They then connect as host to the room endpoint.
+- Each subsequent player for up to 20 seconds receives role `guest` in a `matched` message
+  with the same 6-char code. They then connect as guest to the room.
+- If no guest joins within 20 seconds, the host's connection expires from the queue.
+  The host falls back to playing against the computer on their phone, and a game running
+  against the computer never pulls in a human later (no rejoin from quick match into a
+  computer-only game).
+
+Players that cancel during the wait (close the WebSocket) are removed from the queue.
 
 ## Compatibility rule
 
