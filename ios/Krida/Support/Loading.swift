@@ -9,18 +9,15 @@ struct LoadingScreen: View {
     @Environment(\.uiScale) private var s
     @State private var start = Date()
 
-    /// One full turn of the die.
-    private static let turn: TimeInterval = 2.4
     /// One fill of the letters, then a short pause with them full.
     private static let fill: TimeInterval = 1.8
 
     var body: some View {
         TimelineView(.animation) { context in
             let t = context.date.timeIntervalSince(start)
-            let angle = t.truncatingRemainder(dividingBy: Self.turn) / Self.turn * 2 * .pi
             let progress = min(1, t.truncatingRemainder(dividingBy: Self.fill) / (Self.fill * 0.85))
             VStack(spacing: 24 * s) {
-                SpinningDie(angle: angle).frame(width: 130 * s, height: 130 * s)
+                LoadingIndicator(size: 130)
                 ProgressWord(progress: progress, height: 52 * s)
             }
         }
@@ -29,6 +26,26 @@ struct LoadingScreen: View {
         .contentShape(Rectangle())
         .onTapGesture {}
         .ignoresSafeArea()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Memuat", bundle: .app))
+    }
+}
+
+/// The startup cube/K animation, reused by every compact waiting indicator.
+struct LoadingIndicator: View {
+    var size: CGFloat = 64
+    @Environment(\.uiScale) private var s
+    @State private var start = Date()
+
+    private static let turn: TimeInterval = 2.4
+
+    var body: some View {
+        TimelineView(.animation) { context in
+            let t = context.date.timeIntervalSince(start)
+            let angle = t.truncatingRemainder(dividingBy: Self.turn) / Self.turn * 2 * .pi
+            SpinningDie(angle: angle)
+        }
+        .frame(width: size * s, height: size * s)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Memuat", bundle: .app))
     }

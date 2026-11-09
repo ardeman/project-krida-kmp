@@ -222,4 +222,16 @@
     <string name="button_search">Cari</string>
     <string name="button_retry">Coba lagi</string>
     <string name="button_play_computer">Main Komputer</string>
+    <string name="match_two_players">2 pemain · kamu dan lawan</string>
+    <string name="match_fallback_hint">Setelah 20 detik, kamu bisa memilih mengisi kursi kosong dengan komputer.</string>
+    <string name="match_search_detail">%1$d dari %2$d pemain ketemu · tersisa %3$d dtk</string>
+    <string name="match_offer_title">Masih menunggu pemain</string>
+    <string name="match_offer_detail">%1$d dari %2$d pemain ketemu · %3$d kursi komputer.\nKomputer ikut kalau semua pemain setuju.</string>
+    <string name="match_play_bots">Main dengan komputer</string>
+    <string name="match_agreed">Setuju · %1$d/%2$d</string>
+    <string name="match_keep_searching">Lanjut mencari</string>
+    <string name="match_error_title">Tidak bisa terhubung</string>
+    <string name="match_error_detail">Cek koneksi internet kamu, lalu coba lagi.</string>
+    <string name="match_preparing">Menyiapkan room…</string>
+    <string name="match_preparing_detail">Pemain ketemu. Menghubungkan ke host.</string>
 </resources>

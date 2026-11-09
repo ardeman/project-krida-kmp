@@ -19,3 +19,11 @@ new_sqlite_classes = ["Room"]
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["Matchmaker"]
+
+[[durable_objects.bindings]]
+name = "GROUP_MATCHMAKERS"
+class_name = "GroupMatchmaker"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["GroupMatchmaker"]

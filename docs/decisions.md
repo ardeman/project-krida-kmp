@@ -27,7 +27,8 @@ in the same commit as the code.
   them. Rejected: plain cream/sand, sage green, an outline on the die.
 - **Voxel 3D**, generated in code; no textures.
 - **Loading screen** (wordmark + spinning die) at start until the menu's board preview is ready
-  (0.7–3 s) and before each game until the board's first frame.
+  (0.7–3 s) and before each game until the board's first frame. Every other loading indicator
+  reuses that same animated cube/K logo at a compact size, on both platforms.
 - **Menu:** left card switches games (arrows and swipe); right is one **play card** with a
   "Play on: This phone | Nearby friends" picker, seat tiles, rule options and one Start button.
   "Join with code" only shows for nearby play.
@@ -81,7 +82,13 @@ in the same commit as the code.
   [online.md](online.md)). A dropped player gets a 15 s countdown, then a computer plays the
   seat; they can rejoin and take it back any time during the game ("Rejoin / Forget" on the
   menu).
-- **Quick match:** with nobody to match after 20 s, offer a game against the computer.
+- **Quick match:** search for the selected total (2 for congklak; 2–4 for ular tangga).
+  After 20 s with empty seats, offer computers, keep searching together, or cancel.
+  Every matched human must agree before computers fill the remaining seats. Membership
+  changes clear agreement. A lone player who agrees starts a local game against computers;
+  a partial human group stays online. Never silently reduce the selected player count.
+- **Matchmaking UI alignment approved:** reuse the room header and compact status cards;
+  see [mockup](mockups/matchmaking.svg). Implement Android first, then iOS next session.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 

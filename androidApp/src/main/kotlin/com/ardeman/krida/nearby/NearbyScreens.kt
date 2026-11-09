@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,6 +69,7 @@ import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.core.qr.QrCode
 import com.ardeman.krida.core.session.RoomCode
+import com.ardeman.krida.ui.LoadingIndicator
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
@@ -86,11 +86,11 @@ import com.ardeman.krida.ulartangga.pawnColor
 private val cardShape = RoundedCornerShape(20.dp)
 private val okGreen = Color(0xFF3F7D2E)
 
-private fun Modifier.card() = clip(cardShape).background(Theme.surface).border(1.5.dp, Theme.line, cardShape)
+internal fun Modifier.card() = clip(cardShape).background(Theme.surface).border(1.5.dp, Theme.line, cardShape)
 
 /** Back button, title and the "Teman dekat" or "Online" line, over the screen's cards. */
 @Composable
-private fun NearbyFrame(
+internal fun NearbyFrame(
     title: String,
     subtitle: String,
     online: Boolean,
@@ -199,7 +199,7 @@ private fun ColumnScope.HostCode(code: String, online: Boolean) {
 }
 
 @Composable
-private fun subtitle(online: Boolean) = stringResource(if (online) R.string.online_subtitle else R.string.nearby_subtitle)
+internal fun subtitle(online: Boolean) = stringResource(if (online) R.string.online_subtitle else R.string.nearby_subtitle)
 
 /** The room link as a QR code: dark modules on white in both themes, so any camera reads it. */
 @Composable
@@ -373,7 +373,7 @@ private fun FilledSeat(room: NearbyRoom, p: PlayerInfo, ular: Boolean, names: Li
     Row(
         modifier.clip(shape).background(if (me) Theme.highlight else Theme.surfaceSoft)
             .border(if (me) 2.dp else 1.dp, if (me) Theme.accent else Theme.line, shape)
-            .padding(start = 12.dp, end = if (p.bot && room.isHost) 4.dp else 12.dp),
+            .padding(start = 12.dp, end = if (p.bot && room.isHost && room.canAddBots) 4.dp else 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -394,7 +394,7 @@ private fun FilledSeat(room: NearbyRoom, p: PlayerInfo, ular: Boolean, names: Li
             )
             Text(sub, style = Theme.font(12, FontWeight.Bold, Theme.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        if (p.bot && room.isHost) {
+        if (p.bot && room.isHost && room.canAddBots) {
             val label = stringResource(R.string.nearby_remove_computer, p.seat + 1)
             Box(
                 Modifier.size(44.dp).clip(CircleShape)
@@ -602,13 +602,13 @@ fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Box(
-                    Modifier.size(64.dp).clip(CircleShape).background(if (failed) Theme.error.copy(alpha = 0.14f) else Theme.chip),
+                    Modifier.size(64.dp).background(if (failed) Theme.error.copy(alpha = 0.14f) else Color.Transparent, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (failed) {
                         Icon(painterResource(R.drawable.ic_error), contentDescription = null, tint = Theme.error, modifier = Modifier.size(34.dp))
                     } else {
-                        CircularProgressIndicator(color = Theme.accent, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                        LoadingIndicator()
                     }
                 }
                 Text(stringResource(title), style = Theme.font(22, FontWeight.Black, Theme.ink), textAlign = TextAlign.Center)

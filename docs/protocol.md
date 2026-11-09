@@ -178,6 +178,41 @@ Connect to `wss://krida-relay.ardeman.com/v1/match/<GAME>/<PLAYER_COUNT>` with a
 
 Players that cancel during the wait (close the WebSocket) are removed from the queue.
 
+### Opt-in group search
+
+The redesigned Android client adds `?flow=group` to the same match URL. It uses a separate
+`GroupMatchmaker` Durable Object namespace so legacy clients keep their existing flow.
+Valid selections are `congklak/2` and `ular_tangga/2`, `/3`, `/4`, using the shared game IDs. All group events are JSON text WebSocket frames, independent of game-session
+messages and binary room framing. Clients close the socket to cancel.
+
+Relay events:
+
+| type | Fields / meaning |
+|---|---|
+| `queue` | `humans` (including you), `target`, `bots` (empty seats), `remaining` (seconds), `offer` (20 s elapsed), `accepted` (your agreement), `agreed` (number who agreed), `revision` (composition/offer version) |
+| `prepare_host` | `code`, `humans`, `bots`, `target`; this player opens the host room first |
+| `preparing` | Same counts/code; other players wait for host readiness |
+| `matched` | `role` (`host`, `guest`, or group-only `solo`), `code` for online roles; `humans`, `bots`, `target` for online roles, `target` for solo |
+| `match_error` | Room preparation failed or a participant left during preparation; retry with a fresh search |
+
+Client actions are `{ "type": "accept_bots", "revision": <queue revision> }`, `{ "type": "keep_searching" }`, and
+`{ "type": "host_ready" }`. The first two only apply after the offer. Computer seats
+require every human's explicit agreement. A new arrival or departure clears all prior
+agreement and changes `revision`; stale agreement actions are ignored. Keep searching resets
+the group's 20 s window and clears agreement while keeping its players together. A full human group proceeds immediately. A lone player who accepts
+gets `matched` with `role: "solo"` and starts a local game with `target - 1` computers.
+
+For online groups the selected host opens the room socket, then sends `host_ready` only
+after that socket opens. The relay then sends `matched` with the same code to every player
+and closes the match sockets normally. It fails the whole group if preparation takes over
+15 s. The host waits for the expected humans before adding the agreed computers; Start
+stays disabled until the selected seats are filled. Quick-match lobbies do not offer manual
+computer-seat changes. Computers still run only on the authoritative host.
+
+Queue membership, deadlines and agreement live in socket attachments, and alarms implement
+the deadlines, so a Durable Object waking from hibernation preserves the search. A completed
+group never admits new queued players.
+
 ## Compatibility rule
 
 Never change the meaning of an existing field. Add optional fields only. Bump

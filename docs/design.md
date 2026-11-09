@@ -91,11 +91,16 @@ in: RoundedRectangle(cornerRadius: 20 * s))` + `.overlay(... .stroke(Theme.line,
 | Game name | `gameTitle(game)` | `gameTitle` in `NearbyScreens.swift` |
 | "Online · lewat internet" / "Teman dekat · Bluetooth" | `subtitle(online)` | `placeLine(online)` |
 | Seat tiles, colour swatches, dashed empty seat | `NearbyScreens.kt` | `NearbyScreens.swift` |
-| Loading | `ui/Loading.kt` | `Support/Loading.swift` |
+| Loading | `LoadingIndicator` / `LoadingScreen` (`ui/Loading.kt`) | `LoadingIndicator` / `LoadingScreen` (`Support/Loading.swift`) |
 | Tap sound | built into the buttons | `.tapSound(...)` (built into the button styles) |
 
-`NearbyFrame` is private today. A new room-related screen (quick match, friends, rejoin) should
-make it `internal` and use it rather than build its own header.
+`NearbyFrame` is internal on Android; iOS should expose its existing frame when adapting
+quick match. Room-related screens reuse it rather than build their own header.
+
+Every loading indicator uses the startup cube/K renderer and its 2.4-second turn, including
+room connection and matchmaking. Use the compact `LoadingIndicator` in cards and the full
+`LoadingScreen` with the wordmark for startup and board loading. Do not introduce system
+spinners.
 
 ## Screen patterns
 
@@ -112,8 +117,8 @@ make it `internal` and use it rather than build its own header.
 **Status screen** (searching, connecting, not found, timed out, error): one centred card,
 width 480, inside `NearbyFrame`, in this order:
 
-1. 64 circle: `chip` with a `CircularProgressIndicator`/`ProgressView` (accent, 32) while
-   waiting, or `error` at 14 % with the error icon after a failure.
+1. The shared 64 cube/K `LoadingIndicator` while waiting, using the startup animation.
+   After a failure, a 64 circle with `error` at 14 % and the error icon.
 2. Title, 22 Black.
 3. Detail, 14 Bold muted, from a string resource, never a raw error or exception text.
 4. Optional info row (room code pill, seconds left).
@@ -149,11 +154,9 @@ button.
 
 ## Known gaps
 
-- **Quick match (`playonline/PlayOnlineScreens.kt`, `PlayOnline/PlayOnlineScreens.swift`)**
-  doesn't follow this guide yet: no `NearbyFrame` header or back button, its own card and
-  player-count buttons, cards that stretch to 90 % width instead of the 480 status card, a
-  plain spinner instead of the icon circle, a raw `errorMessage` shown as text, a Retry button
-  that does nothing, "Play the computer" that only cancels, iOS strings with English keys
-  missing from the catalog, Android `mutableStateOf` without `remember`, and an iOS countdown
-  `Timer` that is never invalidated. Rebuild it on `NearbyFrame` + the status card pattern.
+- **Quick match iOS (`PlayOnline/PlayOnlineScreens.swift`)** still needs the approved room
+  header/status-card redesign and group-search flow. Android now reuses `NearbyFrame`, card,
+  buttons and the menu's shared segmented picker, with translated messages, retry, cleanup,
+  real player counts and unanimous computer-seat agreement. See
+  [the implementation handoff](mockups/matchmaking.md).
 - Android's game card is a carousel (`HorizontalPager`); iOS switches games without one.

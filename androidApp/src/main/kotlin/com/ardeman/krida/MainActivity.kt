@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import com.ardeman.krida.ui.Segmented
 import com.ardeman.krida.ui.LandscapeStage
 import com.ardeman.krida.ui.gameInsets
 import androidx.compose.foundation.layout.size
@@ -224,16 +225,27 @@ class MainActivity : ComponentActivity() {
                     playingQuickMatch -> PlayOnlineScreen(
                         game = quickMatchGame,
                         onCancel = { playingQuickMatch = false; quickMatchGame = "" },
-                        onHost = { code, game ->
-                            room = NearbyRoom.host(this@MainActivity, myName, if (game == "ular-tangga") NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true, code = code)
+                        createHost = { code, humans, bots, onReady ->
+                            NearbyRoom.host(this@MainActivity, myName,
+                                if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
+                                online = true, code = code, onOnlineReady = onReady,
+                            ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
+                        },
+                        onHost = { matchedRoom -> room = matchedRoom; playingQuickMatch = false },
+                        onJoin = { code ->
+                            room = NearbyRoom.join(this@MainActivity, code, myName, online = true)
                             playingQuickMatch = false
                         },
-                        onJoin = { code, game ->
-                            roomCode = code
-                            joinOnline = true
-                            joining = true
+                        onComputer = { count ->
+                            val you = getString(R.string.bot_you)
+                            val computer = getString(R.string.bot_name)
+                            if (quickMatchGame == UlarTanggaGame.id) {
+                                ularTable = UlarTanggaHostTable.local(List(count) { seat ->
+                                    LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
+                                })
+                            } else passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             playingQuickMatch = false
-                        }
+                        },
                     )
                     joining -> JoinScreen(
                         code = roomCode,
@@ -470,7 +482,7 @@ class MainActivity : ComponentActivity() {
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
             SettingRow(if (!ular && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
                             online -> Detail(stringResource(if (ular) R.string.ular_detail_online else R.string.online_detail))
@@ -482,52 +494,56 @@ class MainActivity : ComponentActivity() {
                             else -> Detail(stringResource(R.string.ular_detail_mixed))
                         }
                     }
-                    if (nearby) {
-                        SecondaryButton(
-                            stringResource(R.string.nearby_join_with_code),
-                            onClick = {
-                                if (joinOnline != online) roomCode = ""
-                                joinOnline = online
-                                joining = true
-                            },
-                            tint = Theme.muted,
-                        )
-                    }
                     if (online) {
-                        SecondaryButton(
+                        PrimaryButton(
                             stringResource(R.string.play_online_quick_match),
                             onClick = {
                                 playingQuickMatch = true
-                                quickMatchGame = if (ular) "ular-tangga" else "congklak"
+                                quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
                             },
-                            tint = Theme.muted,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
-                    PrimaryButton(
-                        stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
-                        onClick = {
-                            when {
-                                online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
-                                nearby -> withBlePermissions {
-                                    room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
-                                }
-                                ular -> {
-                                    var nextComputer = 0
-                                    val players = seats.mapIndexedNotNull { i, kind ->
-                                        when (kind) {
-                                            LocalSeat.EMPTY -> null
-                                            LocalSeat.COMPUTER -> LocalPlayer(if (computers == 1) computer else computerN[nextComputer++], computer = true, color = i)
-                                            // A lone person is "Kamu"; people passing the phone go by their pawn colour.
-                                            LocalSeat.PERSON -> LocalPlayer(if (people == 1) you else colorNames[i], computer = false, color = i)
-                                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (nearby) {
+                            SecondaryButton(
+                                stringResource(R.string.nearby_join_with_code),
+                                onClick = {
+                                    if (joinOnline != online) roomCode = ""
+                                    joinOnline = online
+                                    joining = true
+                                },
+                                modifier = Modifier.weight(1f),
+                                tint = Theme.muted,
+                            )
+                        }
+                        PrimaryButton(
+                            stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                when {
+                                    online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
+                                    nearby -> withBlePermissions {
+                                        room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
                                     }
-                                    ularTable = UlarTanggaHostTable.local(players)
+                                    ular -> {
+                                        var nextComputer = 0
+                                        val players = seats.mapIndexedNotNull { i, kind ->
+                                            when (kind) {
+                                                LocalSeat.EMPTY -> null
+                                                LocalSeat.COMPUTER -> LocalPlayer(if (computers == 1) computer else computerN[nextComputer++], computer = true, color = i)
+                                                // A lone person is "Kamu"; people passing the phone go by their pawn colour.
+                                                LocalSeat.PERSON -> LocalPlayer(if (people == 1) you else colorNames[i], computer = false, color = i)
+                                            }
+                                        }
+                                        ularTable = UlarTanggaHostTable.local(players)
+                                    }
+                                    computers > 0 -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
+                                    else -> passAndPlay = HostTable.passAndPlay(names)
                                 }
-                                computers > 0 -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
-                                else -> passAndPlay = HostTable.passAndPlay(names)
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
             if (ular) SettingRow(stringResource(R.string.play_rules)) {
@@ -776,44 +792,6 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
     label = stringResource(R.string.bot_level),
     onChange = onChange,
 )
-
-/** Segmented picker on a track: the chosen option is a raised white chip. */
-@Composable
-private fun <T> Segmented(
-    options: List<Pair<T, String>>,
-    current: T,
-    label: String,
-    onChange: (T) -> Unit,
-    icons: List<Int>? = null,
-    fill: Boolean = false,
-) {
-    Row(
-        Modifier.then(if (fill) Modifier.fillMaxWidth() else Modifier).background(Theme.track, RoundedCornerShape(12.dp)).padding(3.dp).semantics { contentDescription = label },
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        options.forEachIndexed { i, (value, text) ->
-            val on = value == current
-            val shape = RoundedCornerShape(10.dp)
-            Box(
-                Modifier.then(if (fill) Modifier.weight(1f) else Modifier).height(38.dp)
-                    .then(if (on) Modifier.shadow(1.5.dp, shape) else Modifier)
-                    .clip(shape)
-                    .background(if (on) Theme.raised else Color.Transparent)
-                    .clickable(role = Role.Tab) { onChange(value) }
-                    .semantics { selected = on }
-                    .padding(horizontal = if (fill) 6.dp else 14.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    icons?.getOrNull(i)?.let {
-                        Icon(painterResource(it), contentDescription = null, tint = if (on) Theme.accent else Theme.muted, modifier = Modifier.size(16.dp))
-                    }
-                    Text(text, style = Theme.font(14, color = if (on) Theme.ink else Theme.muted), maxLines = 1)
-                }
-            }
-        }
-    }
-}
 
 /**
  * The game tile on the home screen, with a snapshot of the real board; the arrows switch to

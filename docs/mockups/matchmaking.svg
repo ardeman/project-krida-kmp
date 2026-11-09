@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1796" height="1872" viewBox="0 0 1796 1872">
+<rect width="1796" height="1872" fill="#191512"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Setup · Ular tangga / Light</text>
+<defs><radialGradient id="b00" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,52)"><rect width="874" height="402" rx="12" fill="url(#b00)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ular tangga</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#5A4537"/><path d="M81 49h10 M86 44v10" stroke="#5A4537"/>
+<text x="98" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="437" y="126" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Quick match</text>
+<text x="437" y="151" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Find players and play over the internet.</text>
+<text x="221" y="185" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Players</text>
+<rect x="221" y="198" width="138" height="44" rx="12" fill="#A65A26"/>
+<text x="290" y="226" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">2</text>
+<rect x="368" y="198" width="138" height="44" rx="12" fill="#F6E6D3"/>
+<text x="437" y="226" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">3</text>
+<rect x="515" y="198" width="138" height="44" rx="12" fill="#F6E6D3"/>
+<text x="584" y="226" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">4</text>
+<text x="437" y="270" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">No match in 20 seconds? Play the computer.</text>
+<rect x="221" y="306" width="211" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="326.5" y="334" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Cancel</text>
+<rect x="442" y="306" width="211" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="547.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Search</text>
+</g>
+<text x="906" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Setup · Ular tangga / Dark</text>
+<defs><radialGradient id="b01" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(906,52)"><rect width="874" height="402" rx="12" fill="url(#b01)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ular tangga</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#B7A593"/><path d="M81 49h10 M86 44v10" stroke="#B7A593"/>
+<text x="98" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="437" y="126" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Quick match</text>
+<text x="437" y="151" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Find players and play over the internet.</text>
+<text x="221" y="185" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Players</text>
+<rect x="221" y="198" width="138" height="44" rx="12" fill="#C9783A"/>
+<text x="290" y="226" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">2</text>
+<rect x="368" y="198" width="138" height="44" rx="12" fill="#3A2C20"/>
+<text x="437" y="226" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">3</text>
+<rect x="515" y="198" width="138" height="44" rx="12" fill="#3A2C20"/>
+<text x="584" y="226" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">4</text>
+<text x="437" y="270" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">No match in 20 seconds? Play the computer.</text>
+<rect x="221" y="306" width="211" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="326.5" y="334" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Cancel</text>
+<rect x="442" y="306" width="211" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="547.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Search</text>
+</g>
+<text x="16" y="498" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Searching · Congklak / Light</text>
+<defs><radialGradient id="b10" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,512)"><rect width="874" height="402" rx="12" fill="url(#b10)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#5A4537"/><path d="M81 49h10 M86 44v10" stroke="#5A4537"/>
+<text x="98" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#F6E6D3" fill-opacity="1"/>
+<circle cx="437" cy="139" r="15" fill="none" stroke="#A65A26" stroke-width="3" stroke-dasharray="65 30"/>
+<text x="437" y="198" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Finding a player…</text>
+<text x="437" y="225" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Waiting for another player.</text>
+<text x="437" y="263" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">18 s remaining</text>
+<rect x="362" y="306" width="150" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="437.0" y="334" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Cancel</text>
+</g>
+<text x="906" y="498" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Searching · Congklak / Dark</text>
+<defs><radialGradient id="b11" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(906,512)"><rect width="874" height="402" rx="12" fill="url(#b11)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#B7A593"/><path d="M81 49h10 M86 44v10" stroke="#B7A593"/>
+<text x="98" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#3A2C20" fill-opacity="1"/>
+<circle cx="437" cy="139" r="15" fill="none" stroke="#C9783A" stroke-width="3" stroke-dasharray="65 30"/>
+<text x="437" y="198" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Finding a player…</text>
+<text x="437" y="225" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Waiting for another player.</text>
+<text x="437" y="263" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">18 s remaining</text>
+<rect x="362" y="306" width="150" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="437.0" y="334" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Cancel</text>
+</g>
+<text x="16" y="958" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">No match after 20 seconds · Congklak / Light</text>
+<defs><radialGradient id="b20" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,972)"><rect width="874" height="402" rx="12" fill="url(#b20)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#5A4537"/><path d="M81 49h10 M86 44v10" stroke="#5A4537"/>
+<text x="98" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#B3261E" fill-opacity="0.14"/>
+<text x="437" y="149" fill="#B3261E" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">!</text>
+<text x="437" y="198" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">No one around</text>
+<text x="437" y="225" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">We couldn’t find another player.</text>
+<text x="437" y="248" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Play against the computer instead?</text>
+<rect x="221" y="306" width="135" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="288.5" y="334" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Back</text>
+<rect x="366" y="306" width="287" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="509.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play the computer</text>
+</g>
+<text x="906" y="958" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">No match after 20 seconds · Congklak / Dark</text>
+<defs><radialGradient id="b21" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(906,972)"><rect width="874" height="402" rx="12" fill="url(#b21)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#B7A593"/><path d="M81 49h10 M86 44v10" stroke="#B7A593"/>
+<text x="98" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#F2B8B5" fill-opacity="0.14"/>
+<text x="437" y="149" fill="#F2B8B5" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">!</text>
+<text x="437" y="198" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">No one around</text>
+<text x="437" y="225" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">We couldn’t find another player.</text>
+<text x="437" y="248" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Play against the computer instead?</text>
+<rect x="221" y="306" width="135" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="288.5" y="334" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Back</text>
+<rect x="366" y="306" width="287" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="509.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play the computer</text>
+</g>
+<text x="16" y="1418" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Connection error · Congklak / Light</text>
+<defs><radialGradient id="b30" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,1432)"><rect width="874" height="402" rx="12" fill="url(#b30)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#5A4537"/><path d="M81 49h10 M86 44v10" stroke="#5A4537"/>
+<text x="98" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#B3261E" fill-opacity="0.14"/>
+<text x="437" y="149" fill="#B3261E" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">!</text>
+<text x="437" y="198" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Unable to connect</text>
+<text x="437" y="225" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Check your internet connection,</text>
+<text x="437" y="248" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">then try again.</text>
+<rect x="221" y="306" width="135" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="288.5" y="334" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Back</text>
+<rect x="366" y="306" width="287" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="509.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Try again</text>
+</g>
+<text x="906" y="1418" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Connection error · Congklak / Dark</text>
+<defs><radialGradient id="b31" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(906,1432)"><rect width="874" height="402" rx="12" fill="url(#b31)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Congklak</text>
+<circle cx="86" cy="49" r="5" fill="none" stroke="#B7A593"/><path d="M81 49h10 M86 44v10" stroke="#B7A593"/>
+<text x="98" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="197" y="88" width="480" height="288" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="437" cy="139" r="32" fill="#F2B8B5" fill-opacity="0.14"/>
+<text x="437" y="149" fill="#F2B8B5" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">!</text>
+<text x="437" y="198" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Unable to connect</text>
+<text x="437" y="225" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Check your internet connection,</text>
+<text x="437" y="248" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">then try again.</text>
+<rect x="221" y="306" width="135" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="288.5" y="334" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Back</text>
+<rect x="366" y="306" width="287" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="509.5" y="334" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Try again</text>
+</g>
+</svg>

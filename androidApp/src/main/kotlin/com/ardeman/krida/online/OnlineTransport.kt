@@ -29,6 +29,9 @@ abstract class OnlineTransport(protected val code: String) : Transport {
     /** The relay closed this room for good with one of its close codes (4001, 4004, …). */
     var onClosed: ((Int) -> Unit)? = null
 
+    /** The host may release quick-match guests only after its room socket is open. */
+    var onReady: (() -> Unit)? = null
+
     private var socket: WebSocket? = null
     private var closed = false
     private var downSince = 0L
@@ -68,7 +71,7 @@ abstract class OnlineTransport(protected val code: String) : Transport {
         val request = Request.Builder().url("${Krida.RELAY_URL}/v1/rooms/$code?${query()}").build()
         socket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                main.post { if (gen == generation) { attempt = 0; downSince = 0 } }
+                main.post { if (gen == generation && !closed) { attempt = 0; downSince = 0; onReady?.invoke() } }
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {

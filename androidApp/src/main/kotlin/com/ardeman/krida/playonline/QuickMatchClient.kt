@@ -3,84 +3,52 @@ package com.ardeman.krida.playonline
 import android.os.Handler
 import android.os.Looper
 import com.ardeman.krida.core.protocol.Krida
-import com.ardeman.krida.core.protocol.Message
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
-import okio.ByteString.Companion.toByteString
 import java.util.concurrent.TimeUnit
 
-/**
- * Connects to the matchmaker WebSocket and waits for a match assignment.
- * The matchmaker will respond with a Message.Matched containing:
- * - role: "host" or "guest"
- * - code: (only for host) the 6-char room code to connect to
- */
-class QuickMatchClient(
-    private val game: String,
-    private val playerCount: Int,
-) {
+/** Group-search events are separate from the game-session protocol. Callbacks run on main. */
+class QuickMatchClient(private val game: String, private val playerCount: Int) {
     private val main = Handler(Looper.getMainLooper())
     private var socket: WebSocket? = null
-    private var generation = 0
     private var closed = false
-    
-    fun start(
-        onMatched: (role: String, code: String) -> Unit,
-        onError: (String) -> Unit,
-    ) {
-        if (closed) return
-        val gen = ++generation
-        
-        // Connect to /v1/match/<GAME>/<PLAYER_COUNT>
-        val url = "${Krida.RELAY_URL}/v1/match/$game/$playerCount"
-        val request = Request.Builder().url(url).build()
-        
-        socket = httpClient.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                main.post {
-                    if (gen == generation && !closed) {
-                        // Connected, waiting for matched message
-                    }
-                }
-            }
-            
-            override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                main.post {
-                    if (gen == generation && !closed) {
-                        try {
-                            val text = bytes.utf8()
-                            val message = Json.decodeFromString<Message>(text)
-                            if (message is Message.Matched) {
-                                closed = true
-                                val code = message.code ?: ""
-                                onMatched(message.role, code)
-                            }
-                        } catch (e: Exception) {
-                            onError("Failed to parse match: ${e.message}")
+
+    fun start(onEvent: (JsonObject) -> Unit, onError: () -> Unit) {
+        if (closed || socket != null) return
+        socket = httpClient.newWebSocket(
+            Request.Builder().url("${Krida.RELAY_URL}/v1/match/$game/$playerCount?flow=group").build(),
+            object : WebSocketListener() {
+                private fun receive(text: String) {
+                    main.post {
+                        if (!closed) {
+                            try { onEvent(Json.parseToJsonElement(text) as JsonObject) }
+                            catch (_: Exception) { close(); onError() }
                         }
                     }
                 }
-            }
-            
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                main.post {
-                    if (gen == generation && !closed) {
-                        onError("Connection failed: ${t.message}")
-                    }
+                override fun onMessage(webSocket: WebSocket, text: String) = receive(text)
+                override fun onMessage(webSocket: WebSocket, bytes: ByteString) = receive(bytes.utf8())
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    main.post { if (!closed) { close(); onError() } }
+                }
+                override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                    webSocket.close(code, null)
+                    main.post { if (!closed) { close(); onError() } }
                 }
             }
-            
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                webSocket.close(code, null)
-            }
-        })
+        )
     }
-    
+
+    fun acceptBots(revision: Int) { socket?.send("{\"type\":\"accept_bots\",\"revision\":$revision}") }
+    fun keepSearching() { socket?.send("{\"type\":\"keep_searching\"}") }
+    fun hostReady() { socket?.send("{\"type\":\"host_ready\"}") }
+
     fun close() {
         if (closed) return
         closed = true
@@ -88,12 +56,8 @@ class QuickMatchClient(
         socket = null
         main.removeCallbacksAndMessages(null)
     }
-    
+
     companion object {
-        private val httpClient: OkHttpClient by lazy {
-            OkHttpClient.Builder()
-                .pingInterval(20, TimeUnit.SECONDS)
-                .build()
-        }
+        private val httpClient by lazy { OkHttpClient.Builder().pingInterval(20, TimeUnit.SECONDS).build() }
     }
 }

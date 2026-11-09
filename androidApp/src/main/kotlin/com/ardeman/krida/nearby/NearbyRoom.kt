@@ -92,6 +92,31 @@ class NearbyRoom private constructor(
     private var pickColor: ((Int) -> Unit)? = null
     private var addBot: ((String) -> Unit)? = null
     private var removeBot: ((Int) -> Unit)? = null
+    private var quickMatchTarget = 0
+    private var quickMatchExpectedHumans = 0
+    private var quickMatchHumans = 0
+    private var quickMatchBots = 0
+    private var quickMatchBotName = ""
+
+    fun configureQuickMatch(humans: Int, bots: Int, botName: String) {
+        quickMatchTarget = humans + bots
+        quickMatchExpectedHumans = humans
+        canAddBots = false
+        canStart = false
+        quickMatchHumans = humans
+        quickMatchBots = bots
+        quickMatchBotName = botName
+        fillQuickMatchSeats()
+    }
+
+    private fun fillQuickMatchSeats() {
+        if (quickMatchHumans == 0 || players.count { !it.bot } < quickMatchHumans) return
+        val missing = quickMatchBots - players.count { it.bot }
+        // Clear before adding: addBot synchronously calls onPlayersChanged again.
+        quickMatchHumans = 0
+        repeat(missing.coerceAtLeast(0)) { addBot?.invoke(quickMatchBotName) }
+    }
+
     private val main = Handler(Looper.getMainLooper())
     private val notFound = Runnable {
         if (stage == Stage.SEARCHING) {
@@ -102,7 +127,7 @@ class NearbyRoom private constructor(
     }
 
     fun start() {
-        begin?.invoke()
+        if (canStart) begin?.invoke()
     }
 
     /** Asks for pawn colour [color]: the host takes it at once, a guest asks the host. */
@@ -112,11 +137,11 @@ class NearbyRoom private constructor(
 
     /** Seats a computer called [name] in the next empty seat (host, ular tangga). */
     fun addBot(name: String) {
-        addBot?.invoke(name)
+        if (quickMatchTarget == 0) addBot?.invoke(name)
     }
 
     fun removeBot(seat: Int) {
-        removeBot?.invoke(seat)
+        if (quickMatchTarget == 0) removeBot?.invoke(seat)
     }
 
     fun leave() {
@@ -147,7 +172,9 @@ class NearbyRoom private constructor(
         colorCount = session.colorCount
         session.onPlayersChanged = { list ->
             players = list
-            canStart = session.canStart()
+            fillQuickMatchSeats()
+            canStart = session.canStart() && (quickMatchTarget == 0 ||
+                players.size == quickMatchTarget && players.count { !it.bot } >= quickMatchExpectedHumans)
         }
         session.addLocalPlayer(name, Platform.ANDROID)
         pickColor = { session.setColor(0, it) }
@@ -207,7 +234,7 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null): NearbyRoom {
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
             val transport: Transport = if (online) OnlineHostTransport(roomCode) else BleHostTransport(context, roomCode)
             val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport)
@@ -239,6 +266,7 @@ class NearbyRoom private constructor(
                 is BleHostTransport -> transport.start()
                 is OnlineHostTransport -> {
                     // Only before the game: once it runs, the table shows the drop.
+                    transport.onReady = onOnlineReady
                     transport.onClosed = { if (room.congklak == null && room.ular == null) room.stage = Stage.OFFLINE }
                     transport.start()
                 }

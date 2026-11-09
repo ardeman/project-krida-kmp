@@ -7,6 +7,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +33,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -43,7 +51,6 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -247,6 +254,44 @@ fun LandscapeStage(content: @Composable () -> Unit) {
                         LocalDensity provides Density(density.density * scale, density.fontScale),
                         LocalStageTurned provides turned,
                     ) { content() }
+                }
+            }
+        }
+    }
+}
+
+/** Segmented picker on a track: the chosen option is a raised white chip. */
+@Composable
+internal fun <T> Segmented(
+    options: List<Pair<T, String>>,
+    current: T,
+    label: String,
+    onChange: (T) -> Unit,
+    icons: List<Int>? = null,
+    fill: Boolean = false,
+) {
+    Row(
+        Modifier.then(if (fill) Modifier.fillMaxWidth() else Modifier).background(Theme.track, RoundedCornerShape(12.dp)).padding(3.dp).semantics { contentDescription = label },
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        options.forEachIndexed { i, (value, text) ->
+            val on = value == current
+            val shape = RoundedCornerShape(10.dp)
+            Box(
+                Modifier.then(if (fill) Modifier.weight(1f) else Modifier).height(38.dp)
+                    .then(if (on) Modifier.shadow(1.5.dp, shape) else Modifier)
+                    .clip(shape)
+                    .background(if (on) Theme.raised else Color.Transparent)
+                    .clickable(role = Role.Tab) { onChange(value) }
+                    .semantics { selected = on }
+                    .padding(horizontal = if (fill) 6.dp else 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    icons?.getOrNull(i)?.let {
+                        Icon(painterResource(it), contentDescription = null, tint = if (on) Theme.accent else Theme.muted, modifier = Modifier.size(16.dp))
+                    }
+                    Text(text, style = Theme.font(14, color = if (on) Theme.ink else Theme.muted), maxLines = 1)
                 }
             }
         }

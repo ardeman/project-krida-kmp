@@ -8,7 +8,9 @@
     "deploy": "wrangler deploy",
     "check": "tsc --noEmit",
     "smoke": "node scripts/smoke.mjs",
-    "smoke:match": "node scripts/smoke-match.mjs"
+    "smoke:match": "node scripts/smoke-match.mjs",
+    "test:match": "node --test scripts/test-group-match.mjs",
+    "smoke:group": "node scripts/smoke-group.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261109.1",

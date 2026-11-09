@@ -626,11 +626,11 @@ struct ConnectingScreen: View {
                             .font(.system(size: 30 * s, weight: .bold))
                             .foregroundStyle(Theme.error)
                     } else {
-                        ProgressView().controlSize(.large).tint(Theme.accent)
+                        LoadingIndicator()
                     }
                 }
                 .frame(width: 64 * s, height: 64 * s)
-                .background(failed ? Theme.error.opacity(0.14) : Theme.chip, in: Circle())
+                .background(failed ? Theme.error.opacity(0.14) : .clear, in: Circle())
                 Text(title).font(Theme.font(22 * s, .black)).multilineTextAlignment(.center)
                 Text(detail).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)

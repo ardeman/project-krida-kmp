@@ -48,12 +48,6 @@ import kotlin.math.sin
 fun LoadingScreen(modifier: Modifier = Modifier) {
     val label = stringResource(R.string.loading)
     val transition = rememberInfiniteTransition(label = "loading")
-    val angle by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2 * Math.PI).toFloat(),
-        animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart),
-        label = "turn",
-    )
     val progress by transition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -69,10 +63,27 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(24.dp)) {
-            SpinningDie(angle = angle.toDouble(), modifier = Modifier.size(130.dp))
+            LoadingIndicator(Modifier.size(130.dp))
             ProgressWord(progress = (progress / 0.85f).coerceAtMost(1f))
         }
     }
+}
+
+/** The startup cube/K animation, reused by every compact waiting indicator. */
+@Composable
+fun LoadingIndicator(modifier: Modifier = Modifier.size(64.dp)) {
+    val label = stringResource(R.string.loading)
+    val transition = rememberInfiniteTransition(label = "loading cube")
+    val angle by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing), RepeatMode.Restart),
+        label = "turn",
+    )
+    SpinningDie(
+        angle = angle.toDouble(),
+        modifier = modifier.clearAndSetSemantics { contentDescription = label },
+    )
 }
 
 /**

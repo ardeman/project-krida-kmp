@@ -107,8 +107,10 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
 4. Online rooms — Cloudflare Workers relay over WebSocket, plan in `docs/online.md`; relay
    live, Android and iOS rooms by code, rejoin a running game from the menu (iPhone ↔ Pixel
    check; now adding quick match for strangers)
-5. Quick match — matchmaker Durable Object pairs players online with 20s search; falls back
-   to computer play if no match (Android and iOS UI done; device tests pending)
+5. Quick match — Android uses the shared room UI and an opt-in group matchmaker for the
+   selected 2–4 seats. After 20 s, all humans can agree to fill empty seats with computers,
+   keep searching together, or cancel. Relay deployment, Android multi-phone checks and
+   iOS parity remain pending; see `docs/mockups/matchmaking.md`.
 6. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
 7. Wi‑Fi Aware — later, once device support is broad
 

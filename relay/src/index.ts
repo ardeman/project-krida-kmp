@@ -1,3 +1,4 @@
+export { GroupMatchmaker } from "./group-matchmaker";
 /**
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
  * and up to four guest sockets. It knows no game rules; the host stays authoritative.
@@ -10,6 +11,7 @@
 export interface Env {
   ROOMS: DurableObjectNamespace;
   MATCHMAKERS: DurableObjectNamespace;
+  GROUP_MATCHMAKERS: DurableObjectNamespace;
 }
 
 /** Same alphabet as RoomCode in shared/; online codes are 6 chars. */
@@ -54,6 +56,12 @@ export default {
     if (matchRoomsMatch) {
       const game = matchRoomsMatch[1];
       const playerCount = parseInt(matchRoomsMatch[2], 10);
+      if (url.searchParams.get("flow") === "group") {
+        if (!(game === "congklak" && playerCount === 2 || game === "ular_tangga" && playerCount >= 2 && playerCount <= 4)) {
+          return new Response("invalid game or player count\n", { status: 400 });
+        }
+        return env.GROUP_MATCHMAKERS.get(env.GROUP_MATCHMAKERS.idFromName(`${game}/${playerCount}`)).fetch(request);
+      }
       if (!/^[a-z][a-z0-9]*$/.test(game) || playerCount < 1 || playerCount > 4) {
         return new Response("invalid game or player count\n", { status: 400 });
       }

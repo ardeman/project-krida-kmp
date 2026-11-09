@@ -172,8 +172,7 @@ private struct WaitingForMatchCard: View {
     
     private var searchingCard: some View {
         VStack(spacing: 20 * s) {
-            ProgressView()
-                .scaleEffect(2)
+            LoadingIndicator()
             
             VStack(spacing: 8 * s) {
                 Text("Finding a player…")

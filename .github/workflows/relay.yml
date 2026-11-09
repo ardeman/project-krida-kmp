@@ -43,12 +43,14 @@ jobs:
           cache-dependency-path: relay/package-lock.json
       - run: npm ci
       - run: npm run check
+      - run: npm run test:match
 
       - name: Smoke test against a local relay
         run: |
           npx wrangler dev --port 8787 > dev.log 2>&1 &
           for i in $(seq 1 60); do curl -sf localhost:8787/ && break; sleep 1; done
           npm run smoke || { cat dev.log; exit 1; }
+          npm run smoke:group || { cat dev.log; exit 1; }
 
       - name: Deploy
         run: |
