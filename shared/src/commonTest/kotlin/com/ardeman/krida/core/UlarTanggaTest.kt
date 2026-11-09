@@ -262,8 +262,6 @@ class UlarTanggaTest {
         assertTrue(s.finishOrder.all { s.positions[it] == 100 })
         assertTrue(moves > 0)
     }
-}
-
     @Test
     fun diceAnimationIsDeterministic() {
         // Same seat and roll should always produce the same animation parameters
@@ -285,3 +283,4 @@ class UlarTanggaTest {
         val anim5 = UlarTanggaDiceAnimation.compute(seat = 0, value = 3, isLongToss = true)
         assertFalse(anim1.landX == anim5.landX && anim1.landZ == anim5.landZ && anim1.spinYaw == anim5.spinYaw)
     }
+}

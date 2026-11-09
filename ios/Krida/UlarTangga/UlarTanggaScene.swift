@@ -363,7 +363,7 @@ final class UlarTanggaScene {
 
         // Compute deterministic landing position and rotation from seat and roll value.
         // This ensures all clients show the same animation without protocol changes.
-        let animation = UlarTanggaDiceAnimation.compute(seat: Int32(seat), value: Int32(value), isLongToss: long)
+        let animation = UlarTanggaDiceAnimation.companion.compute(seat: Int32(seat), value: Int32(value), isLongToss: long)
         let tx = animation.landX
         let tz = animation.landZ
         let yaw = animation.spinYaw
