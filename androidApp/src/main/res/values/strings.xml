@@ -231,10 +231,10 @@
     <string name="button_retry">Retry</string>
     <string name="button_play_computer">Play Computer</string>
     <string name="match_two_players">2 players · you and an opponent</string>
-    <string name="match_fallback_hint">After 20 seconds, you can choose to fill empty seats with computers.</string>
+    <string name="match_fallback_hint">After 20 seconds, agree to play with the players found or add computers.</string>
     <string name="match_search_detail">%1$d of %2$d players found · %3$d s remaining</string>
     <string name="match_offer_title">Still waiting for players</string>
-    <string name="match_offer_detail">%1$d of %2$d players found · %3$d computer seats.\nComputers join only when everyone agrees.</string>
+    <string name="match_offer_detail">%1$d of %2$d players found · %3$d empty seats.\nEveryone must agree on how to start.</string>
     <string name="match_play_bots">Play with computers</string>
     <string name="match_agreed">Agreed · %1$d/%2$d</string>
     <string name="match_keep_searching">Keep searching</string>
@@ -242,4 +242,6 @@
     <string name="match_error_detail">Check your internet connection, then try again.</string>
     <string name="match_preparing">Preparing your room…</string>
     <string name="match_preparing_detail">Players found. Connecting to the host.</string>
+    <string name="match_play_humans">Play with %1$d players</string>
+    <string name="match_solo_detail">No opponent found. Choose the total players, including you, and play against computers.</string>
 </resources>

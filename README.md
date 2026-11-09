@@ -108,8 +108,10 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
    live, Android and iOS rooms by code, rejoin a running game from the menu (iPhone ↔ Pixel
    check; now adding quick match for strangers)
 5. Quick match — Android uses the shared room UI and an opt-in group matchmaker for the
-   selected 2–4 seats. After 20 s, all humans can agree to fill empty seats with computers,
-   keep searching together, or cancel. Relay deployment, Android multi-phone checks and
+   selected 2–4 seats (default four for ular tangga). After 20 s, all humans can agree to
+   start with the humans found or fill empty seats with computers; a lone player can choose
+   2–4 total seats against computers (congklak: two). They can also keep searching or cancel.
+   Relay deployment, Android multi-phone checks and
    iOS parity remain pending; see `docs/mockups/matchmaking.md`.
 6. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
 7. Wi‑Fi Aware — later, once device support is broad

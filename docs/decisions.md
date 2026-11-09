@@ -83,10 +83,12 @@ in the same commit as the code.
   seat; they can rejoin and take it back any time during the game ("Rejoin / Forget" on the
   menu).
 - **Quick match:** search for the selected total (2 for congklak; 2–4 for ular tangga).
-  After 20 s with empty seats, offer computers, keep searching together, or cancel.
-  Every matched human must agree before computers fill the remaining seats. Membership
-  changes clear agreement. A lone player who agrees starts a local game against computers;
-  a partial human group stays online. Never silently reduce the selected player count.
+  Ular tangga defaults to four seats. Full human groups proceed immediately. After 20 s,
+  two or three humans can unanimously choose to start with just those humans or fill the
+  remaining seats with computers; they can also keep searching together or cancel.
+  Votes for different choices do not combine. Membership changes clear agreement.
+  A lone player can choose 2–4 total seats (including themselves) against 1–3 computers
+  locally; congklak stays at two total seats. A partial human group stays online.
 - **Matchmaking UI alignment approved:** reuse the room header and compact status cards;
   see [mockup](mockups/matchmaking.svg). Implement Android first, then iOS next session.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play

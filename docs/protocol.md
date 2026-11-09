@@ -195,6 +195,11 @@ Relay events:
 | `matched` | `role` (`host`, `guest`, or group-only `solo`), `code` for online roles; `humans`, `bots`, `target` for online roles, `target` for solo |
 | `match_error` | Room preparation failed or a participant left during preparation; retry with a fresh search |
 
+Optional group-flow fields: `queue` adds `acceptedHumans` (your humans-only vote) and
+`agreedHumans` (number voting for that choice), both defaulting to false/zero. Preparation
+and match events may include `seats`, the agreed total; absent means `target`. `target`
+remains the original search selection. `humans` and `bots` always describe the actual room.
+
 Client actions are `{ "type": "accept_bots", "revision": <queue revision> }`, `{ "type": "keep_searching" }`, and
 `{ "type": "host_ready" }`. The first two only apply after the offer. Computer seats
 require every human's explicit agreement. A new arrival or departure clears all prior
@@ -202,11 +207,25 @@ agreement and changes `revision`; stale agreement actions are ignored. Keep sear
 the group's 20 s window and clears agreement while keeping its players together. A full human group proceeds immediately. A lone player who accepts
 gets `matched` with `role: "solo"` and starts a local game with `target - 1` computers.
 
+After the offer, `{ "type": "accept_humans", "revision": <queue revision> }` votes to
+start with only the humans found (at least two). Every human must choose the same option;
+changing a vote replaces that player's previous choice. Membership changes and continuing
+the search clear both kinds of votes. Unanimous humans-only agreement produces zero bots
+and `seats` equal to the human count. A lone player may instead send
+`{ "type": "play_solo", "revision": <queue revision>, "seats": <total> }` to choose
+2–4 total seats for ular tangga or two for congklak, including themselves. The relay checks
+the revision, game limit and lone membership before returning `matched` with `role: "solo"`
+and the chosen `seats`; the client starts locally with `seats - 1` computers. Earlier group
+clients retain their existing computer-fill choice and cannot cast humans-only votes.
+Android's solo button instead closes the match socket and starts the selected local game
+directly, so this path also works before the updated relay is deployed. Leaving removes
+the player from the queue as with cancellation; any concurrent arrival stays in the queue.
+
 For online groups the selected host opens the room socket, then sends `host_ready` only
 after that socket opens. The relay then sends `matched` with the same code to every player
 and closes the match sockets normally. It fails the whole group if preparation takes over
 15 s. The host waits for the expected humans before adding the agreed computers; Start
-stays disabled until the selected seats are filled. Quick-match lobbies do not offer manual
+stays disabled until the agreed seats are filled. Quick-match lobbies do not offer manual
 computer-seat changes. Computers still run only on the authoritative host.
 
 Queue membership, deadlines and agreement live in socket attachments, and alarms implement

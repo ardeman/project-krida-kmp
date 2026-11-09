@@ -16,7 +16,7 @@ class Socket {
   close(code) { this.closeCode = code; }
   get last() { return this.messages.at(-1); }
 }
-function setup(t, target = 4) {
+function setup(t, target = 4, game = 'ular_tangga') {
   let now = 1_000;
   t.mock.method(Date, 'now', () => now);
   const originalPair = globalThis.WebSocketPair, originalResponse = globalThis.Response;
@@ -36,11 +36,11 @@ function setup(t, target = 4) {
   return {
     get worker() { return worker; }, ctx,
     async add() {
-      await worker.fetch(new Request(`https://relay/v1/match/ular_tangga/${target}?flow=group`, { headers: { Upgrade: 'websocket' } }));
+      await worker.fetch(new Request(`https://relay/v1/match/${game}/${target}?flow=group`, { headers: { Upgrade: 'websocket' } }));
       return sockets.at(-1);
     },
     async advance(ms) { now += ms; await worker.alarm(); },
-    async action(ws, type) { await worker.webSocketMessage(ws, JSON.stringify({ type, revision: ws.last.revision })); },
+    async action(ws, type, fields = {}) { await worker.webSocketMessage(ws, JSON.stringify({ type, revision: ws.last.revision, ...fields })); },
     wake() { worker = new GroupMatchmaker(ctx); },
   };
 }
@@ -144,4 +144,88 @@ test('agreement for an earlier composition cannot accept new computer seats', as
   await f.add();
   await f.worker.webSocketMessage(a, JSON.stringify({ type: 'accept_bots', revision }));
   assert.equal(a.deserializeAttachment().consent, false);
+});
+
+for (const humans of [2, 3]) test(`${humans} humans can unanimously start without computers`, async t => {
+  const f = setup(t), players = [];
+  for (let i = 0; i < humans; i++) players.push(await f.add());
+  await f.advance(20_000);
+  for (const player of players.slice(0, -1)) {
+    await f.action(player, 'accept_humans');
+    assert.equal(player.last.type, 'queue');
+    assert.equal(player.last.acceptedHumans, true);
+  }
+  f.wake();
+  await f.action(players.at(-1), 'accept_humans');
+  assert.equal(players[0].last.type, 'prepare_host');
+  assert.equal(players[0].last.bots, 0);
+  assert.equal(players[0].last.seats, humans);
+  assert.equal(players[0].last.target, 4);
+  await f.action(players[0], 'host_ready');
+  assert.ok(players.every(p => p.last.type === 'matched' && p.last.bots === 0 && p.last.humans === humans));
+});
+test('different start choices require agreement; players can change their choice', async t => {
+  const f = setup(t), a = await f.add(), b = await f.add();
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  await f.action(b, 'accept_bots');
+  assert.equal(a.last.type, 'queue');
+  assert.equal(a.last.agreed, 1);
+  assert.equal(a.last.agreedHumans, 1);
+  await f.action(a, 'accept_bots');
+  assert.equal(a.last.type, 'prepare_host');
+  assert.equal(a.last.bots, 2);
+});
+test('human-only votes clear on membership changes and keep searching; stale votes are ignored', async t => {
+  const f = setup(t), a = await f.add(), b = await f.add();
+  await f.action(a, 'accept_humans');
+  assert.equal(a.last.acceptedHumans, false);
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  const revision = a.last.revision;
+  const c = await f.add();
+  assert.equal(a.last.agreedHumans, 0);
+  await f.action(a, 'accept_humans', { revision });
+  assert.equal(a.last.agreedHumans, 0);
+  await f.action(a, 'accept_humans');
+  await f.worker.webSocketClose(c);
+  assert.equal(a.last.acceptedHumans, false);
+  await f.action(a, 'accept_humans');
+  await f.action(b, 'keep_searching');
+  assert.equal(a.last.agreedHumans, 0);
+  assert.equal(a.last.offer, false);
+});
+for (const seats of [2, 3, 4]) test(`a lone player can select ${seats} total seats after timeout`, async t => {
+  const f = setup(t, 2), a = await f.add();
+  await f.action(a, 'play_solo', { seats });
+  assert.equal(a.last.type, 'queue');
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  assert.equal(a.last.type, 'queue');
+  await f.action(a, 'play_solo', { seats });
+  assert.equal(a.last.role, 'solo');
+  assert.equal(a.last.seats, seats);
+  assert.equal(a.closeCode, 1000);
+});
+test('solo choices enforce game limits and queue revision', async t => {
+  const f = setup(t, 2, 'congklak'), a = await f.add();
+  await f.advance(20_000);
+  for (const seats of [0, 1, 3, 4, 5, 2.5, '2', null]) {
+    await f.action(a, 'play_solo', { seats });
+    assert.equal(a.last.type, 'queue');
+  }
+  await f.action(a, 'play_solo', { seats: 2, revision: a.last.revision - 1 });
+  assert.equal(a.last.type, 'queue');
+  await f.action(a, 'play_solo', { seats: 2 });
+  assert.equal(a.last.role, 'solo');
+});
+test('solo choice is ignored when another human joins', async t => {
+  const f = setup(t), a = await f.add();
+  await f.advance(20_000);
+  const revision = a.last.revision;
+  await f.add();
+  await f.action(a, 'play_solo', { seats: 4, revision });
+  await f.action(a, 'play_solo', { seats: 4 });
+  assert.equal(a.last.type, 'queue');
+  assert.equal(a.last.humans, 2);
 });

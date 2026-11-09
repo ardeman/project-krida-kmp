@@ -46,6 +46,7 @@ class QuickMatchClient(private val game: String, private val playerCount: Int) {
     }
 
     fun acceptBots(revision: Int) { socket?.send("{\"type\":\"accept_bots\",\"revision\":$revision}") }
+    fun acceptHumans(revision: Int) { socket?.send("{\"type\":\"accept_humans\",\"revision\":$revision}") }
     fun keepSearching() { socket?.send("{\"type\":\"keep_searching\"}") }
     fun hostReady() { socket?.send("{\"type\":\"host_ready\"}") }
 

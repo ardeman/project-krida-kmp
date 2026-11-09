@@ -16,8 +16,10 @@ English is shown for review; implementation must include matching Indonesian cop
   players, so show that as information rather than offering unsupported counts.
 - Searching uses the existing 64-circle status treatment, a 22 Black title, muted detail,
   a small countdown and Cancel. The spinner animates in the native implementation.
-- After 20 seconds, offer Back and Play the computer. Connection failure offers Back and
-  Try again with a translated, friendly message.
+- After 20 seconds, partial groups can unanimously choose Play with 2/3 players or Play
+  with computers. Lone players can pick 2–4 total seats for ular tangga (congklak stays two)
+  and play locally against computers. Both offers retain Cancel and Keep searching.
+  Connection failure offers Back and Try again with a translated, friendly message.
 - All actions fit without scrolling. Back in the header and the system back action agree
   with Cancel/Back in the card.
 
@@ -35,7 +37,11 @@ Build each changed platform and inspect light/dark on a physical device when ava
 - iOS: expose and reuse its existing `NearbyFrame`/card styling, adopt the group JSON events
   in `QuickMatchClient.swift`, use a cancellable countdown, and add EN/ID catalog entries.
 - Wire native host readiness before releasing guests, direct guest joining, unanimous
-  computer-seat agreement and local solo fallback, matching Android.
+  agreement for computers or humans only, and local solo fallback with the chosen total,
+  matching Android. Include the optional `acceptedHumans`, `agreedHumans` and `seats` fields
+  and the new `accept_humans` action in the protocol documentation. A lone player's local
+  computer-game button closes the search socket and starts directly, without waiting for
+  relay approval; this also works against a relay predating `play_solo`.
 - On iOS, match Android's quick-match lobby restrictions: wait for all expected humans,
   add only agreed bots and disable Start until the selected total is present.
 - The Android offer card adds a second button row for Keep searching, with compact spacing
@@ -50,7 +56,15 @@ Build each changed platform and inspect light/dark on a physical device when ava
 
 ## Validation
 
-Android `assembleDebug`, relay TypeScript checks, and 11 targeted group-search tests pass.
+Android `assembleDebug`, relay TypeScript checks, and 20 targeted group-search tests pass.
+The added tests cover unanimous starts with two/three humans, conflicting votes, choice
+changes, membership/revision resets, solo 2/3/4-seat choices and congklak's two-seat limit.
+The updated setup was inspected on the Pixel XL in light mode: four seats selected by
+default, translated fallback guidance and both actions fit without scrolling. The solo
+timeout flow was verified on the Pixel: after the 20-second offer, selecting three seats
+and pressing Play with computers opens a local game with You and two Computer seats.
+Physical-device checks of partial-group choices still require relay deployment;
+dark-mode inspection remains pending.
 The actual local Workers runtime smoke test covers full 2/3/4-player groups, host readiness,
 the 20-second alarm, partial-group agreement and keeping the group together while searching.
 The online menu entry now keeps its description above the action buttons so Quick Match
