@@ -471,7 +471,7 @@ class MainActivity : ComponentActivity() {
             // "Teman dekat") turns the row into the code field.
             SettingRow(if (!ular && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(Modifier.weight(1f)) {
+                    Box(Modifier.fillMaxWidth()) {
                         when {
                             online -> Detail(stringResource(if (ular) R.string.ular_detail_online else R.string.online_detail))
                             nearby -> Detail(stringResource(if (ular) R.string.ular_detail_nearby else R.string.nearby_detail))
