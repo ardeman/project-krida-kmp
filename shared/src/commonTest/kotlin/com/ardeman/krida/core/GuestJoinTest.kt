@@ -29,6 +29,8 @@ class GuestJoinTest {
         val join = GuestJoin(net.guest("ayu"), "Ayu", Platform.IOS)
         var session: GuestSession<UlarTanggaState, UlarTanggaMove>? = null
         var lobby = 0
+        var connected = false
+        join.onConnected = { connected = true }
         join.onGame = { game ->
             assertEquals(UlarTanggaGame.id, game)
             session = GuestSession(UlarTanggaGame, join).also { s ->
@@ -38,6 +40,7 @@ class GuestJoinTest {
         }
         net.connect("ayu")
 
+        assertEquals(true, connected)
         val s = assertNotNull(session)
         // The Lobby that followed Welcome was replayed into the session.
         assertEquals(1, s.seat)

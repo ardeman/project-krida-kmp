@@ -25,6 +25,8 @@ class GuestJoin(
     var game: String? = null
         private set
 
+    /** The host answered (a BLE link is up); Welcome or Reject follows. */
+    var onConnected: (() -> Unit)? = null
     var onGame: ((String) -> Unit)? = null
     var onRejected: ((String) -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
@@ -49,6 +51,7 @@ class GuestJoin(
 
     override fun onPeerConnected(peer: String) {
         transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, null)))
+        onConnected?.invoke()
     }
 
     override fun onPeerDisconnected(peer: String) {
