@@ -57,8 +57,25 @@ class GuestSession<S, M>(
     var onInvalid: ((String) -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
 
+    private var join: GuestJoin? = null
+
+    /**
+     * Takes over a [GuestJoin] once its game is known: the Hello is already sent, and the
+     * Welcome and anything after it are replayed here. Set the callbacks, then call [replay].
+     */
+    constructor(rules: GameRules<S, M>, join: GuestJoin) :
+        this(rules, join.transport, join.name, join.platform, null) {
+        this.join = join
+    }
+
     init {
         transport.setListener(this)
+    }
+
+    /** After the [GuestJoin] constructor: delivers the messages the join received so far. */
+    fun replay() {
+        join?.handOver(this)
+        join = null
     }
 
     val isMyTurn: Boolean get() = seat != null && seat == turn && !finished
