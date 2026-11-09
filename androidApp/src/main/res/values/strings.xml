@@ -34,7 +34,6 @@
         <item>If all your holes are empty on your turn, the game ends. Most seeds in the store wins.</item>
     </string-array>
     <!-- The merged play card on the menu. -->
-    <string name="play_opponent">Opponent</string>
     <string name="play_level">Level</string>
     <string name="play_tembak">Shooting</string>
     <string name="opponent_phone">This phone</string>
@@ -107,6 +106,12 @@
     <string name="play_rules">Rules</string>
     <string name="ular_detail_phone">Pass the phone round; everyone rolls on their turn.</string>
     <string name="ular_detail_computer">You against the computer.</string>
+    <string name="play_where">Play on</string>
+    <string name="seat_person">Person</string>
+    <string name="seat_empty">Empty</string>
+    <string name="seat_n">Seat %1$d</string>
+    <string name="seat_change">Change</string>
+    <string name="ular_detail_mixed">Pass the phone round; computers roll on their own.</string>
     <string name="ular_option_six_again">6 rolls again</string>
     <string name="ular_option_six_to_enter">6 to start</string>
     <string name="ular_option_bounce">Bounce off 100</string>

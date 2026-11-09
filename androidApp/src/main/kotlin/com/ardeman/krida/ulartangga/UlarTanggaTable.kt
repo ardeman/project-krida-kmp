@@ -128,22 +128,25 @@ class UlarTanggaHostTable(
     companion object {
         private const val WATCH_MS = 5_000L
 
-        fun passAndPlay(names: List<String>): UlarTanggaTable {
+        /**
+         * A game on this phone: one seat per [players] entry (a name, and whether a computer
+         * plays it) with that entry's pawn colour; the colours must rise with the seat. With a
+         * single person their seat is "you";
+         * with more the phone goes round.
+         */
+        fun local(players: List<LocalPlayer>): UlarTanggaTable {
             val transport = LocalTransport()
             val session = HostSession(UlarTanggaSettings.rules, transport, roomCode = "LOCAL")
-            names.forEach { session.addLocalPlayer(it, Platform.ANDROID) }
+            players.forEach {
+                if (it.computer) session.addBot(it.name, Platform.ANDROID, UlarTanggaBot) else session.addLocalPlayer(it.name, Platform.ANDROID)
+            }
+            // Seat i joined with colour i. The chosen colours rise with the seat (each tile has
+            // its own colour, empty tiles are skipped), so setting them from the last seat down
+            // never asks for a colour another seat still holds.
+            players.indices.reversed().forEach { session.setColor(it, players[it].color) }
             session.start()
-            return UlarTanggaHostTable(session, mySeat = null, transport = transport)
-        }
-
-        /** You at seat 0 against [computers] (one name per computer seat). */
-        fun vsComputer(you: String, computers: List<String>): UlarTanggaTable {
-            val transport = LocalTransport()
-            val session = HostSession(UlarTanggaSettings.rules, transport, roomCode = "LOCAL")
-            session.addLocalPlayer(you, Platform.ANDROID)
-            computers.forEach { session.addBot(it, Platform.ANDROID, UlarTanggaBot) }
-            session.start()
-            return UlarTanggaHostTable(session, mySeat = 0, transport = transport)
+            val people = players.indices.filter { !players[it].computer }
+            return UlarTanggaHostTable(session, mySeat = people.singleOrNull(), transport = transport)
         }
     }
 }
@@ -177,3 +180,6 @@ class UlarTanggaGuestTable(
 
     override fun leave() = session.leave()
 }
+
+/** One seat of a game on this phone, for [UlarTanggaHostTable.local]. */
+data class LocalPlayer(val name: String, val computer: Boolean, val color: Int)

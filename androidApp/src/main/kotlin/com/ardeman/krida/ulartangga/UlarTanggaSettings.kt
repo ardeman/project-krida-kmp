@@ -2,16 +2,19 @@ package com.ardeman.krida.ulartangga
 
 import android.content.Context
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.ardeman.krida.core.games.UlarTanggaOptions
 import com.ardeman.krida.core.games.UlarTanggaRules
+import com.ardeman.krida.core.session.LocalSeat
+import com.ardeman.krida.core.session.LocalSeats
 
-/** Ular tangga choices stored on this device: player count and the rule options. */
+/** Ular tangga choices stored on this device: the seats for a game on this phone and the rule options. */
 object UlarTanggaSettings {
     private const val PREFS = "ular_tangga"
     private const val KEY_PLAYERS = "ularTangga.players"
+    private const val KEY_SEATS = "ularTangga.seats"
+    const val SEATS = 4
     private const val KEY_BOUNCE = "ularTangga.bounceBack"
     private const val KEY_SIX_ENTER = "ularTangga.sixToEnter"
     private const val KEY_FIRST_ENDS = "ularTangga.firstFinishEnds"
@@ -19,8 +22,8 @@ object UlarTanggaSettings {
 
     private lateinit var app: Context
 
-    /** Seats at the table, 2..4 (you plus computers when playing the computer). */
-    var players by mutableIntStateOf(2)
+    /** The four seat tiles of a game on this phone: person, computer or empty. */
+    var seats by mutableStateOf(defaultSeats(2))
         private set
 
     var options by mutableStateOf(UlarTanggaOptions())
@@ -31,7 +34,8 @@ object UlarTanggaSettings {
     fun init(context: Context) {
         app = context.applicationContext
         val p = prefs
-        players = p.getInt(KEY_PLAYERS, 2).coerceIn(2, 4)
+        // Before the seat tiles the card stored a player count; it becomes that many people.
+        seats = LocalSeats.decode(p.getString(KEY_SEATS, null), SEATS, defaultSeats(p.getInt(KEY_PLAYERS, 2).coerceIn(2, SEATS)))
         options = UlarTanggaOptions(
             bounceBack = p.getBoolean(KEY_BOUNCE, false),
             sixToEnter = p.getBoolean(KEY_SIX_ENTER, false),
@@ -40,10 +44,13 @@ object UlarTanggaSettings {
         )
     }
 
-    fun choosePlayers(count: Int) {
-        players = count.coerceIn(2, 4)
-        prefs.edit().putInt(KEY_PLAYERS, players).apply()
+    /** A tap on seat tile [index]: person → computer → empty → person. */
+    fun tapSeat(index: Int) {
+        seats = LocalSeats.next(seats, index, allowEmpty = true)
+        prefs.edit().putString(KEY_SEATS, LocalSeats.encode(seats)).apply()
     }
+
+    private fun defaultSeats(people: Int) = List(SEATS) { if (it < people) LocalSeat.PERSON else LocalSeat.EMPTY }
 
     fun chooseOptions(value: UlarTanggaOptions) {
         options = value

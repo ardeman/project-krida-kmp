@@ -9,11 +9,14 @@ struct ContentView: View {
     @State private var ularTable: UlarTanggaTable?
     /// The game on the left card; the play card follows it.
     @State private var game: MenuGame = .congklak
-    @AppStorage(UlarTanggaSettings.playersKey) private var ularPlayers = 2
+    /// Ular tangga's seat tiles for a game on this phone, as `LocalSeats.encode` text.
+    @AppStorage(UlarTanggaSettings.seatsKey) private var ularSeatsText = ""
+    /// Congklak's seats: the first is always a person, the second a person or the computer.
+    @State private var congklakSeats: [LocalSeat] = [.person, .person]
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     @State private var joining = false
-    @State private var opponent: Opponent = .phone
+    @State private var place: Place = .phone
     /// The tembak rule for every mode started here (and rooms this device hosts).
     @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
     /// Who moves first in every mode started here: "me", "opponent" or "random".
@@ -46,7 +49,7 @@ struct ContentView: View {
         }
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
-        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; opponent = .computer; startUlarTangga() } }
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
         // A room link opens the app ready to join: the code field on "Teman dekat".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
@@ -64,7 +67,7 @@ struct ContentView: View {
     }
 
     private func openJoin() {
-        opponent = .nearby
+        place = .nearby
         joining = true
     }
 
@@ -150,54 +153,68 @@ struct ContentView: View {
         .animation(.easeOut(duration: 0.2), value: moreBelow)
     }
 
-    /// One card for every way to play congklak: pick the opponent (a friend on this phone, the
-    /// computer, or a friend nearby over Bluetooth); right below it what that means (or the
-    /// computer's level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the tembak rule.
+    /// One card for every way to play: on this phone (seat tiles for people and computers) or
+    /// with friends nearby over Bluetooth; right below it what that means (or the computer's
+    /// level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the game's rules.
     /// Same as Android.
     private var playCard: some View {
         let ular = game == .ularTangga
-        let opponents: [(Opponent, LocalizedStringKey, String?)] = [
-            (.phone, "HP ini", "person.2"), (.computer, "Komputer", "desktopcomputer"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right"),
+        let nearby = place == .nearby
+        let seats = ular ? ularSeats : congklakSeats
+        let computers = seats.filter { $0 == .computer }.count
+        let people = seats.filter { $0 == .person }.count
+        let places: [(Place, LocalizedStringKey, String?)] = [
+            (.phone, "HP ini", "person.2"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right"),
         ]
         return VStack(alignment: .leading, spacing: 10 * s) {
-            SettingRow(label: "Lawan") {
-                Segmented(options: opponents, selection: $opponent, label: "Lawan")
-                    .onChange(of: opponent) { _, o in if o != .nearby { joining = false } }
+            SettingRow(label: "Main di") {
+                Segmented(options: places, selection: $place, label: "Main di")
+                    .onChange(of: place) { _, p in if p != .nearby { joining = false } }
             }
             // In a nearby room everyone who joins plays, up to 4.
-            if ular && opponent != .nearby {
+            if !nearby {
                 SettingRow(label: "Pemain") {
-                    Segmented(options: [(2, "2", nil), (3, "3", nil), (4, "4", nil)], selection: $ularPlayers, label: "Pemain")
+                    SeatTiles(
+                        seats: seats,
+                        colors: ular ? seats.indices.map { pawnColor($0) } : [Theme.wood, Theme.seed],
+                        tappable: ular ? Set(seats.indices) : [1]
+                    ) { i in
+                        if ular {
+                            ularSeatsText = LocalSeats.shared.encode(seats: LocalSeats.shared.next(seats: seats, index: Int32(i), allowEmpty: true))
+                        } else {
+                            congklakSeats = LocalSeats.shared.next(seats: congklakSeats, index: Int32(i), allowEmpty: false)
+                        }
+                    }
                 }
             }
-            // The action row: what this opponent means (or the computer's level), then the
+            // The action row: what this choice means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(label: opponent == .computer && !ular ? "Tingkat" : nil) {
+            SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
                 if joining {
                     joinRow
                 } else {
                     HStack(spacing: 8 * s) {
-                        switch opponent {
-                        case _ where ular:
-                            switch opponent {
-                            case .computer: detail("Kamu melawan komputer.")
-                            case .phone: detail("HP digilir; semua melempar dadu saat gilirannya.")
-                            case .nearby: detail("Sampai 4 HP lewat Bluetooth, tanpa internet")
-                            }
-                        case .computer:
+                        let level = !ular && !nearby && computers > 0
+                        if nearby {
+                            detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
+                        } else if level {
                             Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
-                        case .phone:
+                        } else if !ular {
                             detail("Berdua, gantian di satu HP")
-                        case .nearby:
-                            detail("Bluetooth, tanpa internet")
+                        } else if computers == 0 {
+                            detail("HP digilir; semua melempar dadu saat gilirannya.")
+                        } else if people == 1 {
+                            detail("Kamu melawan komputer.")
+                        } else {
+                            detail("HP digilir; komputer melempar dadunya sendiri.")
                         }
-                        if opponent != .computer || ular { Spacer(minLength: 0) }
-                        if opponent == .nearby {
+                        if !level { Spacer(minLength: 0) }
+                        if nearby {
                             Button("Gabung pakai kode") { joining = true }
                                 .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                         }
-                        Button(opponent == .nearby ? "Buat room" : "Mulai", action: start)
+                        Button(nearby ? "Buat room" : "Mulai", action: start)
                             .buttonStyle(PrimaryButtonStyle())
                     }
                     .lineLimit(1)
@@ -258,14 +275,18 @@ struct ContentView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
+    /// Ular tangga's seat tiles; before the tiles the card stored a player count, which becomes
+    /// that many people.
+    private var ularSeats: [LocalSeat] {
+        let people = UlarTanggaSettings.players
+        let fallback = (0..<4).map { $0 < people ? LocalSeat.person : LocalSeat.empty }
+        return LocalSeats.shared.decode(text: ularSeatsText.isEmpty ? nil : ularSeatsText, size: 4, fallback: fallback)
+    }
+
     private func start() {
-        if opponent == .nearby { room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak); return }
+        if place == .nearby { room = NearbyRoom.host(game: game == .ularTangga ? .ularTangga : .congklak); return }
         if game == .ularTangga { return startUlarTangga() }
-        switch opponent {
-        case .phone: startPassAndPlay()
-        case .computer: startVsComputer(level)
-        case .nearby: break
-        }
+        if congklakSeats.contains(.computer) { startVsComputer(level) } else { startPassAndPlay() }
     }
 
     private func startVsComputer(_ level: CongklakBot.Level) {
@@ -278,14 +299,25 @@ struct ContentView: View {
     }
 
     private func startUlarTangga() {
-        let n = min(max(ularPlayers, 2), 4)
-        if opponent == .computer {
-            let computers = n == 2 ? [String(localized: "Komputer", bundle: .app)] : (1..<n).map { String(localized: "Komputer \($0)", bundle: .app) }
-            ularTable = UlarTanggaHostTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computers: computers)
-        } else {
-            let colors = [String(localized: "Merah", bundle: .app), String(localized: "Biru", bundle: .app), String(localized: "Hijau", bundle: .app), String(localized: "Kuning", bundle: .app)]
-            ularTable = UlarTanggaHostTable.passAndPlay(names: Array(colors.prefix(n)))
+        let seats = ularSeats
+        let computers = seats.filter { $0 == .computer }.count
+        let people = seats.filter { $0 == .person }.count
+        let colors = [String(localized: "Merah", bundle: .app), String(localized: "Biru", bundle: .app), String(localized: "Hijau", bundle: .app), String(localized: "Kuning", bundle: .app)]
+        var nextComputer = 0
+        var players: [LocalPlayer] = []
+        for (i, kind) in seats.enumerated() {
+            switch kind {
+            case .computer:
+                nextComputer += 1
+                let name = computers == 1 ? String(localized: "Komputer", bundle: .app) : String(localized: "Komputer \(nextComputer)", bundle: .app)
+                players.append(LocalPlayer(name: name, computer: true, color: i))
+            case .person:
+                // A lone person is "Kamu"; people passing the phone go by their pawn colour.
+                players.append(LocalPlayer(name: people == 1 ? String(localized: "Kamu", bundle: .app) : colors[i], computer: false, color: i))
+            default: break
+            }
         }
+        ularTable = UlarTanggaHostTable.local(players: players)
     }
 
     private func startPassAndPlay() {
@@ -339,8 +371,72 @@ private struct RemoveAdsButton: View {
     }
 }
 
-/// Who you play congklak against; the play card's first choice.
-private enum Opponent { case phone, computer, nearby }
+/// Where the game is played; the play card's first choice.
+private enum Place { case phone, nearby }
+
+/// One tile per seat of a game on this phone: a person, a computer, or empty (dashed). A tap on
+/// a seat in `tappable` moves it on (see `LocalSeats.next`). Same as Android.
+private struct SeatTiles: View {
+    let seats: [LocalSeat]
+    let colors: [Color]
+    let tappable: Set<Int>
+    let onTap: (Int) -> Void
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        HStack(spacing: 8 * s) {
+            ForEach(seats.indices, id: \.self) { i in tile(i) }
+        }
+    }
+
+    private func tile(_ i: Int) -> some View {
+        let kind = seats[i]
+        let empty = kind == .empty
+        let shape = RoundedRectangle(cornerRadius: 12 * s)
+        let dash = StrokeStyle(lineWidth: 1.5, dash: [6 * s, 4 * s])
+        let (label, icon): (LocalizedStringKey, String) = switch kind {
+        case .person: ("Orang", "person.2.fill")
+        case .computer: ("Komputer", "desktopcomputer")
+        default: ("Kosong", "plus")
+        }
+        return Button { Sounds.shared.play(.tap); onTap(i) } label: {
+            VStack(spacing: 3 * s) {
+                ZStack {
+                    if empty {
+                        Circle().stroke(Theme.border, style: dash)
+                    } else {
+                        Circle().fill(colors[i])
+                    }
+                    Image(systemName: icon).font(.system(size: 12 * s, weight: .bold))
+                        .foregroundStyle(empty ? Theme.muted : light(colors[i]) ? Theme.inkOnLight : .white)
+                }
+                .frame(width: 28 * s, height: 28 * s)
+                Text(label).font(Theme.font(12 * s, .bold)).foregroundStyle(empty ? Theme.muted : Theme.ink)
+                    .lineLimit(1).minimumScaleFactor(0.8)
+            }
+            .padding(.horizontal, 4 * s)
+            .frame(maxWidth: .infinity)
+            .frame(height: 60 * s)
+            .background(empty ? .clear : Theme.surfaceSoft, in: shape)
+            .overlay {
+                if empty { shape.stroke(Theme.line, style: dash) } else { shape.stroke(Theme.line, lineWidth: 1) }
+            }
+            .contentShape(shape)
+        }
+        .buttonStyle(.plain)
+        .disabled(!tappable.contains(i))
+        .accessibilityLabel(Text("Kursi \(i + 1)"))
+        .accessibilityValue(Text(label))
+        .accessibilityHint(tappable.contains(i) ? Text("Ganti") : Text(""))
+    }
+
+    /// Dark ink on a light circle (yellow pawn, seed), white on the rest.
+    private func light(_ color: Color) -> Bool {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0
+        UIColor(color).getRed(&r, green: &g, blue: &b, alpha: nil)
+        return r * 0.3 + g * 0.59 + b * 0.11 > 0.6
+    }
+}
 
 /// A small label above its control; no label keeps the rows' spacing. Same as Android.
 private struct SettingRow<Content: View>: View {

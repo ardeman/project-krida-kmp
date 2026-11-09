@@ -430,7 +430,7 @@ private fun EmptySeat(seat: Int, canAddBot: Boolean, modifier: Modifier, onAddBo
     }
 }
 
-private fun Modifier.dashedBorder(width: Dp, color: Color, radius: Dp) = drawBehind {
+internal fun Modifier.dashedBorder(width: Dp, color: Color, radius: Dp) = drawBehind {
     val w = width.toPx()
     drawRoundRect(
         color = color,

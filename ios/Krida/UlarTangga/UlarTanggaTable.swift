@@ -118,22 +118,26 @@ final class UlarTanggaHostTable: UlarTanggaTable {
         transport.close()
     }
 
-    static func passAndPlay(names: [String]) -> UlarTanggaTable {
+    /// A game on this phone: one seat per `players` entry (a name, and whether a computer plays
+    /// it) with that entry's pawn colour; the colours must rise with the seat. With a single
+    /// person their seat is "you"; with more the phone goes round. Same as Android.
+    static func local(players: [LocalPlayer]) -> UlarTanggaTable {
         let transport = LocalTransport()
         let session = HostSession<UlarTanggaState, UlarTanggaMove>(rules: UlarTanggaSettings.rules, transport: transport, roomCode: "LOCAL")
-        for name in names { _ = session.addLocalPlayer(name: name, platform: .ios) }
+        for p in players {
+            if p.computer {
+                _ = session.addBot(name: p.name, platform: .ios, bot: UlarTanggaBot.shared)
+            } else {
+                _ = session.addLocalPlayer(name: p.name, platform: .ios)
+            }
+        }
+        // Seat i joined with colour i. The chosen colours rise with the seat (each tile has its
+        // own colour, empty tiles are skipped), so setting them from the last seat down never
+        // asks for a colour another seat still holds.
+        for seat in players.indices.reversed() { _ = session.setColor(seat: Int32(seat), color: Int32(players[seat].color)) }
         session.start()
-        return UlarTanggaHostTable(session: session, mySeat: nil, transport: transport)
-    }
-
-    /// You at seat 0 against `computers` (one name per computer seat).
-    static func vsComputer(you: String, computers: [String]) -> UlarTanggaTable {
-        let transport = LocalTransport()
-        let session = HostSession<UlarTanggaState, UlarTanggaMove>(rules: UlarTanggaSettings.rules, transport: transport, roomCode: "LOCAL")
-        _ = session.addLocalPlayer(name: you, platform: .ios)
-        for name in computers { _ = session.addBot(name: name, platform: .ios, bot: UlarTanggaBot.shared) }
-        session.start()
-        return UlarTanggaHostTable(session: session, mySeat: 0, transport: transport)
+        let people = players.indices.filter { !players[$0].computer }
+        return UlarTanggaHostTable(session: session, mySeat: people.count == 1 ? people[0] : nil, transport: transport)
     }
 }
 
@@ -164,10 +168,18 @@ final class UlarTanggaGuestTable: UlarTanggaTable {
     override func leave() { session.leave() }
 }
 
-/// Ular tangga choices stored on this device: player count and the rule options. Same keys
+/// One seat of a game on this phone, for `UlarTanggaHostTable.local`.
+struct LocalPlayer {
+    let name: String
+    let computer: Bool
+    let color: Int
+}
+
+/// Ular tangga choices stored on this device: the seat tiles and the rule options. Same keys
 /// and defaults as Android.
 enum UlarTanggaSettings {
     static let playersKey = "ularTangga.players"
+    static let seatsKey = "ularTangga.seats"
     static let bounceBackKey = "ularTangga.bounceBack"
     static let sixToEnterKey = "ularTangga.sixToEnter"
     static let firstFinishEndsKey = "ularTangga.firstFinishEnds"
@@ -177,7 +189,7 @@ enum UlarTanggaSettings {
         UserDefaults.standard.object(forKey: key) as? Bool ?? fallback
     }
 
-    /// Seats at the table, 2...4 (you plus computers when playing the computer).
+    /// The player count stored before the seat tiles, 2...4; read once to seed the tiles.
     static var players: Int {
         min(max(UserDefaults.standard.object(forKey: playersKey) as? Int ?? 2, 2), 4)
     }

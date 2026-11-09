@@ -31,7 +31,6 @@
         <item>Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.</item>
     </string-array>
     <!-- The merged play card on the menu. -->
-    <string name="play_opponent">Lawan</string>
     <string name="play_level">Tingkat</string>
     <string name="play_tembak">Tembak</string>
     <string name="opponent_phone">HP ini</string>
@@ -99,6 +98,12 @@
     <string name="play_rules">Aturan</string>
     <string name="ular_detail_phone">HP digilir; semua melempar dadu saat gilirannya.</string>
     <string name="ular_detail_computer">Kamu melawan komputer.</string>
+    <string name="play_where">Main di</string>
+    <string name="seat_person">Orang</string>
+    <string name="seat_empty">Kosong</string>
+    <string name="seat_n">Kursi %1$d</string>
+    <string name="seat_change">Ganti</string>
+    <string name="ular_detail_mixed">HP digilir; komputer melempar dadunya sendiri.</string>
     <string name="ular_option_six_again">6 lempar lagi</string>
     <string name="ular_option_six_to_enter">6 untuk mulai</string>
     <string name="ular_option_bounce">Pantul di 100</string>
