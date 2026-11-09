@@ -88,6 +88,50 @@ data class UlarTanggaPlay(
 )
 
 /**
+ * Deterministic dice animation parameters, seeded by [seat] and [roll] so all players see the same
+ * trajectory and rotation on the board. The seed ensures the same pseudo-random values on all platforms.
+ *
+ * @param landX horizontal landing position in board units (deterministic within landing area)
+ * @param landZ depth landing position in board units (deterministic within landing area)
+ * @param spinYaw yaw rotation in radians (deterministic, affects which face is shown on landing)
+ */
+data class UlarTanggaDiceAnimation(
+    val landX: Float,
+    val landZ: Float,
+    val spinYaw: Float,
+) {
+    companion object {
+        /**
+         * Compute deterministic animation parameters for a dice throw from [seat] rolling [value].
+         * All clients produce the same parameters from these inputs alone, so the dice animation
+         * is consistent across players without any protocol changes.
+         */
+        fun compute(seat: Int, value: Int, isLongToss: Boolean): UlarTanggaDiceAnimation {
+            // Seed the RNG with seat and roll value to get consistent randomness across all clients
+            val seed = (seat.toLong() shl 32) or (value.toLong() and 0xFFFFFFFFL)
+            val rng = Random(seed)
+
+            val area = UlarTanggaBoard.dieLanding
+            val long = isLongToss
+            val midX = (area[0] + area[2]) / 2
+
+            // Landing position within the board area, using seeded random
+            val landX = if (long) {
+                area[0] + rng.nextFloat() * (midX - area[0])
+            } else {
+                midX + rng.nextFloat() * (area[2] - midX)
+            }
+            val landZ = area[1] + rng.nextFloat() * (area[3] - area[1])
+
+            // Spin rotation: quantized to 90-degree increments with some variation
+            val yaw = (rng.nextInt(4) * 90f + (rng.nextFloat() - 0.5f) * 40f) * kotlin.math.PI.toFloat() / 180f
+
+            return UlarTanggaDiceAnimation(landX, landZ, yaw)
+        }
+    }
+}
+
+/**
  * Standard rules (2–4 players, one fixed board), each changeable in [UlarTanggaOptions]:
  * - Everyone throws the die to set the play order, highest first; tied players throw again
  *   between themselves. Turns then go round in that order.

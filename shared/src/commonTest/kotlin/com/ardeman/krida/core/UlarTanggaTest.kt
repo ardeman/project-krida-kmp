@@ -6,6 +6,7 @@ import com.ardeman.krida.core.games.UlarTanggaMove
 import com.ardeman.krida.core.games.UlarTanggaOptions
 import com.ardeman.krida.core.games.UlarTanggaRules
 import com.ardeman.krida.core.games.UlarTanggaState
+import com.ardeman.krida.core.games.UlarTanggaDiceAnimation
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.transport.LoopbackNetwork
@@ -262,3 +263,25 @@ class UlarTanggaTest {
         assertTrue(moves > 0)
     }
 }
+
+    @Test
+    fun diceAnimationIsDeterministic() {
+        // Same seat and roll should always produce the same animation parameters
+        val anim1 = UlarTanggaDiceAnimation.compute(seat = 0, value = 3, isLongToss = false)
+        val anim2 = UlarTanggaDiceAnimation.compute(seat = 0, value = 3, isLongToss = false)
+        assertEquals(anim1.landX, anim2.landX)
+        assertEquals(anim1.landZ, anim2.landZ)
+        assertEquals(anim1.spinYaw, anim2.spinYaw)
+
+        // Different seats should produce different animations
+        val anim3 = UlarTanggaDiceAnimation.compute(seat = 1, value = 3, isLongToss = false)
+        assertFalse(anim1.landX == anim3.landX && anim1.landZ == anim3.landZ && anim1.spinYaw == anim3.spinYaw)
+
+        // Different rolls should produce different animations
+        val anim4 = UlarTanggaDiceAnimation.compute(seat = 0, value = 4, isLongToss = false)
+        assertFalse(anim1.landX == anim4.landX && anim1.landZ == anim4.landZ && anim1.spinYaw == anim4.spinYaw)
+
+        // Long toss and short toss should produce different animations
+        val anim5 = UlarTanggaDiceAnimation.compute(seat = 0, value = 3, isLongToss = true)
+        assertFalse(anim1.landX == anim5.landX && anim1.landZ == anim5.landZ && anim1.spinYaw == anim5.spinYaw)
+    }

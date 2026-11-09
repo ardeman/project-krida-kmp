@@ -346,7 +346,9 @@ final class UlarTanggaScene {
     /// Throws the die from the screen onto the board so it lands showing `value`; returns how
     /// long until it rests, in seconds. A long throw flies farther, tumbles and bounces more.
     /// It stays on the board until `recallDie`.
-    func throwDie(_ value: Int, toss: Toss, origin: CGPoint? = nil) -> Float {
+    /// `seat` is the throwing player's seat, used to seed deterministic animation so all clients
+    /// see the same trajectory and rotation.
+    func throwDie(_ value: Int, toss: Toss, origin: CGPoint? = nil, seat: Int = 0) -> Float {
         pressed = false
         shaking = false
         // Leave from the pose on screen, mid-spin or not.
@@ -357,18 +359,20 @@ final class UlarTanggaScene {
         if let origin { shown = diePosition(origin) }
         pressAmt = 0; shakeAmt = 0; rockAmt = 0; spinAngle = 0
         dieValue = value
-        let area = Self.floats(board.dieLanding)
         let long = toss == .long
-        // A tap lands on the near (right) side of the board, a throw carries across it.
-        let midX = (area[0] + area[2]) / 2
-        let tx = long ? area[0] + .random(in: 0...1) * (midX - area[0]) : midX + .random(in: 0...1) * (area[2] - midX)
-        let tz = area[1] + .random(in: 0...1) * (area[3] - area[1])
+
+        // Compute deterministic landing position and rotation from seat and roll value.
+        // This ensures all clients show the same animation without protocol changes.
+        let animation = UlarTanggaDiceAnimation.compute(seat: Int32(seat), value: Int32(value), isLongToss: long)
+        let tx = animation.landX
+        let tz = animation.landZ
+        let yaw = animation.spinYaw
+
         let dx = tx - shown.x, dz = tz - shown.z
         let len = max(hypot(dx, dz), 0.01)
         let heights: [Float] = long ? [2.2, 0.9, 0.3] : [1.2, 0.4]
         let weights = heights.map { $0.squareRoot() }
         let total = weights.reduce(0, +)
-        let yaw = (Float(Int.random(in: 0..<4)) * 90 + (.random(in: 0...1) - 0.5) * 40) * .pi / 180
         let seconds: Float = long ? 1.5 : 1.0
         flight = Flight(
             from: shown,

@@ -167,7 +167,7 @@ final class UlarTanggaGameModel: ObservableObject {
             if let offThrow, let thrower = offThrow.first?.intValue, let value = offThrow.second?.intValue {
                 // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
                 let origin = table.isLocal(thrower) ? nil : playerOrigins[thrower]
-                let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin)
+                let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin, seat: thrower)
                 try? await Task.sleep(for: .seconds(Double(seconds) + 0.15))
                 state = next
                 try? await Task.sleep(for: .seconds(0.45))
@@ -181,7 +181,7 @@ final class UlarTanggaGameModel: ObservableObject {
                 }
             } else if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
-                let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin)
+                let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                 try? await Task.sleep(for: .seconds(Double(seconds) + 0.2))
                 let play = game.play(state: state, seat: Int32(seat), roll: Int32(roll))
                 for square in play.steps {

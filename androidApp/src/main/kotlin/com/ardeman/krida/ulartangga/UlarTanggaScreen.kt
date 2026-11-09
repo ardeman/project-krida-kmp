@@ -185,7 +185,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
                 pendingToss[0] = null
                 val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
-                val seconds = renderer?.throwDie(value, toss, origin) ?: 0f
+                val seconds = renderer?.throwDie(value, toss, origin, thrower) ?: 0f
                 delay((seconds * 1000).toLong() + 150)
                 die = value
                 state = next
@@ -203,7 +203,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
                 pendingToss[0] = null
                 val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
-                val seconds = renderer?.throwDie(roll, toss, origin) ?: 0f
+                val seconds = renderer?.throwDie(roll, toss, origin, seat) ?: 0f
                 delay((seconds * 1000).toLong() + 200)
                 die = roll
                 val play = UlarTanggaGame.play(state, seat, roll)

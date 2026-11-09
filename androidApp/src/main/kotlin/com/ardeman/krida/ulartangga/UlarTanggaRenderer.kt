@@ -3,6 +3,7 @@ package com.ardeman.krida.ulartangga
 import android.view.TextureView
 import com.ardeman.krida.congklak.GlbWriter
 import com.ardeman.krida.core.games.UlarTanggaBoard
+import com.ardeman.krida.core.games.UlarTanggaDiceAnimation
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
 import java.nio.ByteBuffer
@@ -15,7 +16,6 @@ import kotlin.math.sqrt
 import kotlin.math.atan
 import kotlin.math.min
 import kotlin.math.tan
-import kotlin.random.Random
 
 /** The ular tangga board and one pawn per color as one .glb; pawn nodes are named by [pieceName]. */
 object UlarTanggaGlb {
@@ -221,8 +221,10 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
      * Throws the die from the screen onto the board so it lands showing [value]; returns how
      * long until it rests, in seconds. A [Toss.Long] flies farther, tumbles and bounces more.
      * It stays on the board until [recallDie].
+     * [seat] is the throwing player's seat, used to seed deterministic animation so all clients
+     * see the same trajectory and rotation.
      */
-    fun throwDie(value: Int, toss: Toss, origin: FloatArray? = null): Float {
+    fun throwDie(value: Int, toss: Toss, origin: FloatArray? = null, seat: Int = 0): Float {
         pressed = false
         shaking = false
         // Leave from the pose on screen, mid-shake or not.
@@ -233,19 +235,21 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         if (origin != null) diePosition(origin).copyInto(shown)
         pressAmt = 0f; shakeAmt = 0f; rockAmt = 0f; spinAngle = 0f
         dieValue = value
-        val area = UlarTanggaBoard.dieLanding
         val long = toss == Toss.Long
-        // A tap lands on the near (right) side of the board, a throw carries across it.
-        val midX = (area[0] + area[2]) / 2
-        val tx = if (long) area[0] + Random.nextFloat() * (midX - area[0]) else midX + Random.nextFloat() * (area[2] - midX)
-        val tz = area[1] + Random.nextFloat() * (area[3] - area[1])
+
+        // Compute deterministic landing position and rotation from seat and roll value.
+        // This ensures all clients show the same animation without protocol changes.
+        val animation = UlarTanggaDiceAnimation.compute(seat, value, long)
+        val tx = animation.landX
+        val tz = animation.landZ
+        val yaw = animation.spinYaw
+
         val dx = tx - shown[0]
         val dz = tz - shown[2]
         val len = hypot(dx, dz).coerceAtLeast(0.01f)
         val heights = if (long) floatArrayOf(2.2f, 0.9f, 0.3f) else floatArrayOf(1.2f, 0.4f)
         val weights = heights.map { sqrt(it) }
         val shares = weights.map { it / weights.sum() }.toFloatArray()
-        val yaw = (Random.nextInt(4) * 90f + (Random.nextFloat() - 0.5f) * 40f) * PI.toFloat() / 180f
         val seconds = if (long) 1.5f else 1.0f
         flight = Flight(
             from = shown.copyOf(),
