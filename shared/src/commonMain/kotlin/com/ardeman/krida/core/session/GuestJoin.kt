@@ -17,12 +17,20 @@ class GuestJoin(
     val transport: Transport,
     val name: String,
     val platform: Platform,
+    /** From a [SavedRoom]: asks the host for the seat this device had (rejoin). */
+    rejoinToken: String?,
 ) : TransportListener {
+    constructor(transport: Transport, name: String, platform: Platform) : this(transport, name, platform, null)
+
     private val received = mutableListOf<Pair<String, ByteArray>>()
     private var handedOver = false
 
     /** The room's game id (`GameRules.id`), once the host has welcomed this device. */
     var game: String? = null
+        private set
+
+    /** The token sent in Hello, then the one from the host's Welcome: save it to rejoin. */
+    var rejoinToken: String? = rejoinToken
         private set
 
     /** The host answered (a BLE link is up); Welcome or Reject follows. */
@@ -50,7 +58,7 @@ class GuestJoin(
     }
 
     override fun onPeerConnected(peer: String) {
-        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, null)))
+        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, rejoinToken)))
         onConnected?.invoke()
     }
 
@@ -63,6 +71,7 @@ class GuestJoin(
         if (msg !is Message.Ping) received += peer to data
         when (msg) {
             is Message.Welcome -> if (game == null) {
+                rejoinToken = msg.rejoinToken
                 game = msg.game
                 onGame?.invoke(msg.game)
             }

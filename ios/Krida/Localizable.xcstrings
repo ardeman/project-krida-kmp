@@ -2805,6 +2805,70 @@
         }
       }
     },
+    "%@ masih berjalan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is still on"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ masih berjalan"
+          }
+        }
+      }
+    },
+    "Gabung lagi" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejoin"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung lagi"
+          }
+        }
+      }
+    },
+    "Lupakan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forget"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lupakan"
+          }
+        }
+      }
+    },
+    "Room %@ · kursimu masih ada" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room %@ · your seat is waiting"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room %@ · kursimu masih ada"
+          }
+        }
+      }
+    },
     "Sambung lagi" : {
       "localizations" : {
         "en" : {

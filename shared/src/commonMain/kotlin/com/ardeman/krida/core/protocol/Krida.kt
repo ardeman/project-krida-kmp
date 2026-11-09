@@ -31,6 +31,7 @@ object Krida {
     /** The online relay (`relay/`); rooms are at `$RELAY_URL/v1/rooms/<CODE>`. */
     const val RELAY_URL: String = "wss://krida-relay.are-theman.workers.dev"
 
+    /** How long a transport keeps reopening a dropped link (online socket) before giving up. */
     const val RECONNECT_GRACE_MS: Long = 60_000L
     /** How long a game waits for a dropped player before the computer plays the seat. */
     const val HANDOFF_WAIT_MS: Long = 15_000L

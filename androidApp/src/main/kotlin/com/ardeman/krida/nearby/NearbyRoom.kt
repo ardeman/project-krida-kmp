@@ -23,6 +23,7 @@ import com.ardeman.krida.core.session.GuestJoin
 import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.session.RoomCode
+import com.ardeman.krida.core.session.SavedRoom
 import com.ardeman.krida.core.session.SeatColorRules
 import com.ardeman.krida.core.transport.Transport
 import com.ardeman.krida.online.OnlineGuestTransport
@@ -119,6 +120,9 @@ class NearbyRoom private constructor(
 
     fun leave() {
         main.removeCallbacks(notFound)
+        // A guest leaving the lobby gives up its seat; leaving a running game (the tables
+        // handle that) or a search keeps it to come back to.
+        if (!isHost && congklak == null && ular == null && stage == Stage.LOBBY) LastRoom.clear(code)
         when {
             congklak != null -> congklak?.leave()
             ular != null -> ular?.leave()
@@ -168,6 +172,7 @@ class NearbyRoom private constructor(
 
     private fun rejected(reason: String) {
         main.removeCallbacks(notFound)
+        LastRoom.clear(code)
         stage = when (reason) {
             RejectReason.VERSION -> Stage.VERSION
             RejectReason.FULL -> Stage.FULL
@@ -180,6 +185,7 @@ class NearbyRoom private constructor(
     private fun relayClosed(closeCode: Int) {
         main.removeCallbacks(notFound)
         if (failed || congklak != null || ular != null) return
+        if (closeCode != OnlineTransport.GAVE_UP) LastRoom.clear(code)
         stage = when (closeCode) {
             OnlineTransport.NO_ROOM -> Stage.NOT_FOUND
             OnlineTransport.FULL -> Stage.FULL
@@ -242,12 +248,14 @@ class NearbyRoom private constructor(
         fun join(context: Context, code: String, name: String, online: Boolean = false): NearbyRoom {
             val transport: Transport = if (online) OnlineGuestTransport(code) else BleGuestTransport(context, code)
             val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
-            val join = GuestJoin(transport, name, Platform.ANDROID)
+            // Joining a room this device has a seat in asks for that seat back.
+            val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online))
             room.join = join
             join.onConnected = { if (room.stage == Stage.SEARCHING) room.stage = Stage.CONNECTING }
             join.onRejected = room::rejected
             join.onDisconnected = room::lost
             join.onGame = { game ->
+                join.rejoinToken?.let { LastRoom.save(SavedRoom(code, online, game, it, System.currentTimeMillis())) }
                 when (game) {
                     CongklakGame.id -> room.guestSession(CongklakGame, join).also { s ->
                         s.onState = { _ -> room.congklak = GuestTable(s) }

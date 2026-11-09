@@ -120,7 +120,7 @@ private fun NearbyFrame(
 }
 
 @Composable
-private fun gameTitle(game: String?) = when (game) {
+internal fun gameTitle(game: String?) = when (game) {
     UlarTanggaGame.id -> stringResource(R.string.ular_title)
     CongklakGame.id -> stringResource(R.string.congklak_title)
     else -> stringResource(R.string.nearby_join_title)

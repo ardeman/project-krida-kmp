@@ -37,6 +37,7 @@ struct ContentView: View {
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
     @ObservedObject private var ads = Ads.shared
+    @ObservedObject private var lastRoom = LastRoom.shared
 
     var body: some View {
         Group {
@@ -149,6 +150,7 @@ struct ContentView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(spacing: 10 * s) {
+                            if let saved = lastRoom.current { rejoinCard(saved) }
                             playCard
                             AdButtons()
                         }
@@ -214,6 +216,35 @@ struct ContentView: View {
     /// with friends nearby over Bluetooth or online; right below it what that means (or the computer's
     /// level) with Mulai, and Gabung for "Teman dekat"; then the game's rules.
     /// Same as Android.
+    /// A running game this device left as a guest: go back to the same seat, or forget it.
+    private func rejoinCard(_ saved: SavedRoom) -> some View {
+        let name = saved.game == UlarTanggaGame.shared.id ? String(localized: "Ular tangga") : "Congklak"
+        return HStack(spacing: 8 * s) {
+            VStack(alignment: .leading, spacing: 2 * s) {
+                Text("\(name) masih berjalan").font(Theme.font(15 * s)).lineLimit(1)
+                detail("Room \(saved.code) · kursimu masih ada")
+            }
+            Spacer(minLength: 0)
+            Button("Lupakan") { lastRoom.clear() }
+                .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+            Button("Gabung lagi") {
+                // Backing out of a failed rejoin lands on the join screen, as after a typed code.
+                joining = true
+                joinOnline = saved.online
+                roomCode = saved.code
+                joinRoom()
+            }
+                .buttonStyle(PrimaryButtonStyle())
+        }
+        .lineLimit(1)
+        .padding(.leading, 18 * s)
+        .padding(.trailing, 14 * s)
+        .padding(.vertical, 12 * s)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
+        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.accent, lineWidth: 1.5))
+    }
+
     private var playCard: some View {
         let ular = game == .ularTangga
         // A room with other phones, over Bluetooth or the internet.

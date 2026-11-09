@@ -160,7 +160,7 @@ class UlarTanggaSessionTest {
     }
 
     @Test
-    fun computerKeepsTheSeatAfterTheGrace() {
+    fun playerTakesTheSeatBackLongAfterTheHandOff() {
         val guests = fullRoom()
         host.start()
         val token = checkNotNull(guests[1].rejoinToken)
@@ -168,13 +168,12 @@ class UlarTanggaSessionTest {
         now += Krida.HANDOFF_WAIT_MS
         assertTrue(host.replaceWithBot(2, UlarTanggaBot))
 
-        now += Krida.RECONNECT_GRACE_MS
-        var reason: String? = null
+        now += 10 * Krida.RECONNECT_GRACE_MS
         val late = GuestSession(UlarTanggaGame, net.guest("budi-2"), "budi", Platform.ANDROID, token)
-        late.onRejected = { reason = it }
         net.connect("budi-2")
-        assertEquals(RejectReason.STARTED, reason)
-        assertTrue(host.players[2].bot)
+        assertEquals(2, late.seat)
+        assertFalse(host.players[2].bot)
+        assertTrue(host.players[2].connected)
     }
 
     @Test

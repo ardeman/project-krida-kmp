@@ -186,6 +186,8 @@ final class UlarTanggaGuestTable: UlarTanggaTable {
 
     override func leave() {
         ticker?.stop()
+        // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
+        if session.finished, let code = session.roomCode { LastRoom.shared.clear(code) }
         session.leave()
     }
 }

@@ -22,7 +22,7 @@ import kotlin.time.TimeSource
  * - Remote players connect through [transport] and send intents. When one drops out mid-game,
  *   the others see the seat disconnected; after [Krida.HANDOFF_WAIT_MS] the host app hands it
  *   to a bot ([expiredSeats], [replaceWithBot]) so nobody is stuck on that turn. The player
- *   can still rejoin within the reconnect grace and takes the seat back from the bot.
+ *   can rejoin with its token at any time during the game and takes the seat back.
  * - Every applied move bumps [seq] and broadcasts a full snapshot.
  */
 class HostSession<S, M>(
@@ -163,9 +163,8 @@ class HostSession<S, M>(
 
     /**
      * Lets [bot] play a disconnected remote seat. The seat keeps its name and is shown with
-     * `bot` set. Its player can still rejoin within the reconnect grace (counted from the
-     * drop) and takes the seat back; after that the bot keeps it for the rest of the game and
-     * any restart. Returns false when [seat] is not a disconnected remote seat without a bot.
+     * `bot` set. Its player can rejoin with its token at any time, also after a restart, and
+     * takes the seat back. Returns false when [seat] is not a disconnected remote seat without a bot.
      * Call [stepBot] afterwards as usual, in case it is that seat's turn.
      */
     fun replaceWithBot(seat: Int, bot: Bot<S, M>): Boolean {
@@ -247,16 +246,15 @@ class HostSession<S, M>(
         // Rejoin with a token we issued earlier.
         val rejoin = hello.rejoinToken?.let { t -> seats.indexOfFirst { it.token == t && it.peer != null } }
         if (rejoin != null && rejoin >= 0) {
+            // No time limit: a seat only outlives its player in a running game, where the
+            // computer may stand in until the player comes back (even after leaving on purpose).
             val seat = seats[rejoin]
-            val withinGrace = seat.connected || clock() - seat.disconnectedAt <= Krida.RECONNECT_GRACE_MS
-            if (withinGrace) {
-                seat.peer = peer
-                seat.connected = true
-                seat.bot = null   // takes the seat back from a stand-in bot
-                send(peer, Message.Welcome(rejoin, roomCode, rules.id, seat.token))
-                if (started) broadcastState() else lobbyChanged()
-                return
-            }
+            seat.peer = peer
+            seat.connected = true
+            seat.bot = null   // takes the seat back from a stand-in bot
+            send(peer, Message.Welcome(rejoin, roomCode, rules.id, seat.token))
+            if (started) broadcastState() else lobbyChanged()
+            return
         }
 
         if (started) return reject(peer, RejectReason.STARTED)

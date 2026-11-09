@@ -69,6 +69,9 @@ final class NearbyRoom: ObservableObject {
 
     func leave() {
         notFoundTask?.cancel()
+        // A guest leaving the lobby gives up its seat; leaving a running game (the tables
+        // handle that) or a search keeps it to come back to. Same as Android.
+        if !isHost, congklak == nil, ular == nil, stage == .lobby { LastRoom.shared.clear(code) }
         if let congklak { congklak.leave() }
         else if let ular { ular.leave() }
         else if let guestLeave { guestLeave() }
@@ -121,6 +124,7 @@ final class NearbyRoom: ObservableObject {
 
     private func rejected(_ reason: String) {
         notFoundTask?.cancel()
+        LastRoom.shared.clear(code)
         stage = switch reason {
         case RejectReason.shared.VERSION: .version
         case RejectReason.shared.FULL: .full
@@ -133,6 +137,7 @@ final class NearbyRoom: ObservableObject {
     private func relayClosed(_ closeCode: Int) {
         notFoundTask?.cancel()
         if failed || congklak != nil || ular != nil { return }
+        if closeCode != OnlineTransport.gaveUp { LastRoom.shared.clear(code) }
         stage = switch closeCode {
         case OnlineTransport.noRoom: .notFound
         case OnlineTransport.full: .full
@@ -190,13 +195,18 @@ final class NearbyRoom: ObservableObject {
         let ble = online ? nil : BleGuestTransport(roomCode: code)
         let transport: Transport = (relay as Transport?) ?? ble!
         let room = NearbyRoom(code: code, isHost: false, online: online, transport: transport)
-        let join = GuestJoin(transport: transport, name: deviceName, platform: .ios)
+        // Joining a room this device has a seat in asks for that seat back.
+        let join = GuestJoin(transport: transport, name: deviceName, platform: .ios,
+                             rejoinToken: LastRoom.shared.token(for: code, online: online))
         room.join = join
         join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }
         join.onRejected = { [weak room] in room?.rejected($0) }
         join.onDisconnected = { [weak room] in room?.lost() }
         join.onGame = { [weak room, weak join] game in
             guard let room, let join else { return }
+            if let token = join.rejoinToken {
+                LastRoom.shared.save(code: code, online: online, game: game, token: token)
+            }
             switch game {
             case CongklakGame.shared.id:
                 let s: GuestSession<CongklakState, CongklakMove> = room.guestSession(CongklakGame.shared, join: join)

@@ -25,8 +25,11 @@ no game rules. Same `Transport` interface, same protocol messages (`docs/protoco
 - **Player drops (C).** Everyone sees "Waiting for Ayu… 15" (15 s), and the game waits when
   it is that seat's turn.
   After that the computer plays the seat (`HostSession.replaceWithBot`) and the game goes on.
-  The player can still rejoin within the 60 s reconnect grace (`rejoinToken`) and take the
-  seat back from the computer.
+  The player can rejoin with its `rejoinToken` at any time during the game and take the seat
+  back from the computer, also after leaving the room on purpose or closing the app: the app
+  keeps the seat (`SavedRoom`) and the menu offers "Rejoin".
+  The phone itself reopens a dropped socket for the 60 s reconnect grace; after that, or
+  after leaving, the player rejoins from the menu.
 - **Host drops.** Guests see the same 15 s wait. The game state lives on the host phone, so
   if the host doesn't return the game ends ("Host left"). Host migration is out of scope.
 - **Quick match (E).** A matchmaker Durable Object per game and player count. The first in
@@ -64,12 +67,17 @@ and the Pixel on different networks (one on mobile data).
 4. [ ] **iOS.** Same with `URLSessionWebSocketTask` (`Transport/OnlineTransport.swift`,
    `Nearby/Waiting.swift`); strings in the catalog. Code done and builds; device test
    iOS ↔ Android open.
-5. [ ] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
+5. [ ] **Rejoin.** Moved up from step 7 (2026-11-09). Code done: a guest keeps its seat
+   (`SavedRoom`, stored as `rooms.last` on both platforms) when it leaves a running game or
+   the app closes, the menu shows "<game> is still on · Rejoin / Forget", and joining that
+   code again (also "Reconnect") sends the token. The host takes a token back at any time
+   during the game. Forgotten after leaving a lobby or a finished game, when the host
+   refuses, or when the room is gone. Device test open: drop and return (airplane mode, app
+   to background, leave and rejoin) for guest and host, nearby and online.
+6. [ ] **Quick match.** Matchmaker Durable Object; "Play online" with a 20 s search, then
    the computer. Moved up from step 9 (2026-11-09): playing strangers comes before share links.
-6. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
+7. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and
    `apple-app-site-association`, intent filter and associated domain; share sheet button.
-7. [ ] **Rejoin.** Drop and return on a device (airplane mode, app to background) for guest
-   and host.
 8. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not
    stored), Play data safety, App Store privacy labels. Before any online release.
 9. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.

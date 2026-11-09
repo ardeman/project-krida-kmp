@@ -60,9 +60,10 @@ The host also sends a `state` with the same `seq` when only `players` changed du
 game: a guest dropped out (`connected: false`), rejoined, or was handed to the computer.
 Guests take the new `players` from it and keep the game state as it is. When a guest has been
 gone 15 s, the host may let a bot play its seat (`HostSession.replaceWithBot`), so the seat
-turns `bot: true` and keeps its name. If the guest rejoins within the reconnect grace (60 s
-from the drop), it takes the seat back and `bot` goes back to `false`; after the grace the bot
-keeps the seat. Guests show the 15 s countdown from the snapshot that first shows the seat
+turns `bot: true` and keeps its name. A guest that sends its `rejoinToken` in `hello` gets the
+seat back at any time while the game runs (also after a `bye` or a restart), and `bot` goes
+back to `false`. Older hosts only take a token back within the reconnect grace (60 s from the
+drop) and answer later ones with `reject` `started`. Guests show the 15 s countdown from the snapshot that first shows the seat
 `connected: false`. Older guests drop same-`seq` snapshots and catch up on the next move.
 
 `last` (optional, `{seat, move}`) is the move that produced this snapshot, so every device

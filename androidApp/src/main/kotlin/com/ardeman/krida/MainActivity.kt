@@ -108,6 +108,7 @@ import com.ardeman.krida.core.games.CongklakStarter
 import com.ardeman.krida.core.session.LocalSeat
 import com.ardeman.krida.core.session.LocalSeats
 import com.ardeman.krida.core.session.RoomCode
+import com.ardeman.krida.core.session.SavedRoom
 import com.ardeman.krida.nearby.dashedBorder
 import com.ardeman.krida.ulartangga.LocalPlayer
 import com.ardeman.krida.ulartangga.pawnColor
@@ -115,8 +116,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.stateDescription
 import com.ardeman.krida.nearby.ConnectingScreen
 import com.ardeman.krida.nearby.JoinScreen
+import com.ardeman.krida.nearby.LastRoom
 import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.nearby.RoomLobby
+import com.ardeman.krida.nearby.gameTitle
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -191,6 +194,7 @@ class MainActivity : ComponentActivity() {
         Sounds.english = Language.current(this) == Language.Lang.EN
         CongklakSettings.init(this)
         UlarTanggaSettings.init(this)
+        LastRoom.init(this)
         intent?.data?.toString()?.let { link ->
             RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true }
                 ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true }
@@ -299,6 +303,7 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().verticalScroll(scroll),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
+                        LastRoom.current?.let { RejoinCard(it) }
                         PlayCard(game)
                         AdButtons()
                     }
@@ -367,6 +372,34 @@ class MainActivity : ComponentActivity() {
      * with friends nearby over Bluetooth; right below it what that means (or the computer's
      * level) with Mulai, and "Gabung pakai kode" for "Teman dekat"; then the game's rules.
      */
+    /** A running game this device left as a guest: go back to the same seat, or forget it. */
+    @Composable
+    private fun RejoinCard(saved: SavedRoom) {
+        val shape = RoundedCornerShape(20.dp)
+        Row(
+            Modifier.fillMaxWidth().clip(shape).background(Theme.surface).border(1.5.dp, Theme.accent, shape)
+                .padding(start = 18.dp, end = 14.dp, top = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.rejoin_title, gameTitle(saved.game)), style = Theme.font(15, FontWeight.Bold, Theme.ink), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Detail(stringResource(R.string.rejoin_detail, saved.code))
+            }
+            SecondaryButton(stringResource(R.string.rejoin_forget), onClick = { LastRoom.clear() }, tint = Theme.muted)
+            PrimaryButton(
+                stringResource(R.string.rejoin_button),
+                onClick = {
+                    // Backing out of a failed rejoin lands on the join screen, as after a typed code.
+                    joining = true
+                    joinOnline = saved.online
+                    roomCode = saved.code
+                    joinRoom()
+                },
+            )
+        }
+    }
+
     @Composable
     private fun PlayCard(game: Game) {
         var place by rememberSaveable { mutableStateOf(Place.PHONE) }

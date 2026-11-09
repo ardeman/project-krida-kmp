@@ -1,5 +1,6 @@
 package com.ardeman.krida.ulartangga
 
+import com.ardeman.krida.nearby.LastRoom
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -193,6 +194,8 @@ class UlarTanggaGuestTable(
 
     override fun leave() {
         ticker.stop()
+        // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
+        if (session.finished) session.roomCode?.let(LastRoom::clear)
         session.leave()
     }
 }

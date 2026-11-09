@@ -6,8 +6,10 @@ import com.ardeman.krida.core.protocol.InvalidReason
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.RejectReason
+import com.ardeman.krida.core.session.GuestJoin
 import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
+import com.ardeman.krida.core.session.SavedRoom
 import com.ardeman.krida.core.transport.LoopbackNetwork
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -88,7 +90,7 @@ class SessionTest {
     }
 
     @Test
-    fun guestRejoinsWithinGraceKeepsSeat() {
+    fun guestRejoinsKeepsSeat() {
         host.addLocalPlayer("Redo", Platform.ANDROID)
         val first = guest("ayu-1")
         host.start()
@@ -103,13 +105,52 @@ class SessionTest {
         assertTrue(host.players[1].connected)
         assertEquals(1, back.stateSeq)
 
+        // Long after a drop the token still works: the seat waits for its player.
         net.drop("ayu-2")
-        now += Krida.RECONNECT_GRACE_MS + 1
+        now += 30 * 60_000L
+        val late = guest("ayu-3", token = token)
+        assertEquals(1, late.seat)
+        assertTrue(host.players[1].connected)
+
+        // Someone without the token can't take a seat in a running game.
         var reason: String? = null
-        val tooLate = GuestSession(CounterGame, net.guest("ayu-3"), "ayu", Platform.IOS, token)
-        tooLate.onRejected = { reason = it }
-        net.connect("ayu-3")
+        val stranger = GuestSession(CounterGame, net.guest("eko"), "eko", Platform.IOS, "0000000000000000")
+        stranger.onRejected = { reason = it }
+        net.connect("eko")
         assertEquals(RejectReason.STARTED, reason)
+    }
+
+    @Test
+    fun guestJoinRejoinsWithSavedToken() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        val first = guest("ayu-1")
+        host.start()
+        val saved = SavedRoom("ABC234", true, CounterGame.id, assertNotNull(first.rejoinToken), now)
+        net.drop("ayu-1")
+
+        // A fresh join by code (the game not known yet) sends the saved token in Hello.
+        val back = SavedRoom.decode(saved.encode())!!
+        val join = GuestJoin(net.guest("ayu-2"), "ayu", Platform.IOS, back.token)
+        var game: String? = null
+        join.onGame = { game = it }
+        net.connect("ayu-2")
+        assertEquals(CounterGame.id, game)
+        assertEquals(saved.token, join.rejoinToken)
+        val session = GuestSession(CounterGame, join)
+        session.replay()
+        assertEquals(1, session.seat)
+        assertEquals(1, session.stateSeq)
+        assertEquals(2, host.players.size)
+    }
+
+    @Test
+    fun savedRoomRoundTripsAndExpires() {
+        val room = SavedRoom("ABC234", false, "congklak", "0123456789abcdef", 1_000L)
+        assertEquals(room, SavedRoom.decode(room.encode()))
+        assertNull(SavedRoom.decode(null))
+        assertNull(SavedRoom.decode("ABC234|1|congklak"))
+        assertTrue(room.isFresh(1_000L + SavedRoom.MAX_AGE_MS))
+        assertFalse(room.isFresh(1_001L + SavedRoom.MAX_AGE_MS))
     }
 
     @Test
