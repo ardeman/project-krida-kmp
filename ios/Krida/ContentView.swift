@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var opponent: Opponent = .phone
     /// The tembak rule for every mode started here (and rooms this device hosts).
     @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
+    /// Who moves first in every mode started here: "me", "opponent" or "random".
+    @AppStorage(CongklakSettings.starterKey) private var starter = "random"
     /// The loading screen at app start, over the menu while its board snapshot renders.
     @State private var starting = true
     @State private var menuReady = false
@@ -202,6 +204,9 @@ struct ContentView: View {
             } else {
                 SettingRow(label: "Tembak") {
                     Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                }
+                SettingRow(label: "Jalan duluan") {
+                    Segmented(options: [("me", "Saya", nil), ("opponent", "Lawan", nil), ("random", "Acak", nil)], selection: $starter, label: "Siapa jalan duluan")
                 }
             }
         }

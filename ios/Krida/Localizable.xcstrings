@@ -113,6 +113,22 @@
         }
       }
     },
+    "Acak" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Random"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acak"
+          }
+        }
+      }
+    },
     "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -272,6 +288,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Berhenti di kepala ular: turun ke ekornya."
+          }
+        }
+      }
+    },
+    "Jalan duluan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goes first"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jalan duluan"
+          }
+        }
+      }
+    },
+    "Saya" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Me"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saya"
+          }
+        }
+      }
+    },
+    "Siapa jalan duluan" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who goes first"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siapa jalan duluan"
           }
         }
       }

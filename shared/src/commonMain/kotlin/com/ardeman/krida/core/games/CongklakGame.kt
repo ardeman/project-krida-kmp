@@ -161,11 +161,28 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
     }
 }
 
+/** Who moves first in a new game: [ME] is seat 0 (this device's player, or the host). */
+enum class CongklakStarter { ME, OPPONENT, RANDOM }
+
 /**
- * Congklak with the tembak rule chosen before the game: [CongklakGame] in every respect,
- * except that new games (and restarts) start with [tembakAfterStore]. Give this to the
- * host's `HostSession`; guests read the rule from the state, so they need nothing.
+ * Congklak with options chosen before the game: [CongklakGame] in every respect, except
+ * that new games (and restarts) start with [tembakAfterStore] and the [starter]'s turn
+ * ([CongklakStarter.RANDOM] draws from the host's `Random` for each game). Give this to the
+ * host's `HostSession`; guests read the rule and the turn from the state, so they need nothing.
  */
-class CongklakRules(val tembakAfterStore: Boolean) : GameRules<CongklakState, CongklakMove> by CongklakGame {
-    override fun initialState(players: Int, random: Random) = CongklakGame.initialState(tembakAfterStore)
+class CongklakRules(
+    val tembakAfterStore: Boolean,
+    val starter: CongklakStarter,
+) : GameRules<CongklakState, CongklakMove> by CongklakGame {
+    /** Seat 0 moves first, as before the starter option. */
+    constructor(tembakAfterStore: Boolean) : this(tembakAfterStore, CongklakStarter.ME)
+
+    override fun initialState(players: Int, random: Random): CongklakState {
+        val turn = when (starter) {
+            CongklakStarter.ME -> 0
+            CongklakStarter.OPPONENT -> 1
+            CongklakStarter.RANDOM -> random.nextInt(2)
+        }
+        return CongklakGame.initialState(tembakAfterStore).copy(turn = turn)
+    }
 }

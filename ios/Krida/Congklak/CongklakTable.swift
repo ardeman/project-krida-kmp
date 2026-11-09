@@ -148,6 +148,17 @@ enum CongklakSettings {
         UserDefaults.standard.object(forKey: tembakAfterStoreKey) as? Bool ?? true
     }
 
-    /// Rules for a new host session, with the chosen tembak rule.
-    static var rules: CongklakRules { CongklakRules(tembakAfterStore: tembakAfterStore) }
+    static let starterKey = "congklak.starter"
+
+    /// Who moves first: "me" (seat 0), "opponent" or "random" (default). Same values as Android.
+    static var starter: CongklakStarter {
+        switch UserDefaults.standard.string(forKey: starterKey) {
+        case "me": return .me
+        case "opponent": return .opponent
+        default: return .random
+        }
+    }
+
+    /// Rules for a new host session, with the chosen tembak rule and starter.
+    static var rules: CongklakRules { CongklakRules(tembakAfterStore: tembakAfterStore, starter: starter) }
 }

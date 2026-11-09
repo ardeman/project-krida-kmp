@@ -87,6 +87,11 @@
     <string name="tembak_title">Shooting rule</string>
     <string name="tembak_after_store">Past store</string>
     <string name="tembak_anytime">Anytime</string>
+    <string name="play_starter">Goes first</string>
+    <string name="starter_me">Me</string>
+    <string name="starter_opponent">Opponent</string>
+    <string name="starter_random">Random</string>
+    <string name="starter_title">Who goes first</string>
     <string name="congklak_rule_tembak_anytime">Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.</string>
     <!-- Ular tangga -->
     <string name="ular_title">Snakes &amp; ladders</string>

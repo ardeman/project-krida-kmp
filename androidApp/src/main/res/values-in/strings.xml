@@ -79,6 +79,11 @@
     <string name="tembak_title">Aturan tembak</string>
     <string name="tembak_after_store">Lewat lumbung</string>
     <string name="tembak_anytime">Bebas</string>
+    <string name="play_starter">Jalan duluan</string>
+    <string name="starter_me">Saya</string>
+    <string name="starter_opponent">Lawan</string>
+    <string name="starter_random">Acak</string>
+    <string name="starter_title">Siapa jalan duluan</string>
     <string name="congklak_rule_tembak_anytime">Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.</string>
     <!-- Ular tangga -->
     <string name="ular_title">Ular tangga</string>

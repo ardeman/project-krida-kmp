@@ -101,6 +101,7 @@ import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
+import com.ardeman.krida.core.games.CongklakStarter
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.NearbyRoom
 import com.ardeman.krida.ui.Language
@@ -417,6 +418,19 @@ class MainActivity : ComponentActivity() {
                     current = CongklakSettings.tembakAfterStore,
                     label = stringResource(R.string.tembak_title),
                     onChange = CongklakSettings::chooseTembakAfterStore,
+                    fill = true,
+                )
+            }
+            if (!ular) SettingRow(stringResource(R.string.play_starter)) {
+                Segmented(
+                    options = listOf(
+                        CongklakStarter.ME to stringResource(R.string.starter_me),
+                        CongklakStarter.OPPONENT to stringResource(R.string.starter_opponent),
+                        CongklakStarter.RANDOM to stringResource(R.string.starter_random),
+                    ),
+                    current = CongklakSettings.starter,
+                    label = stringResource(R.string.starter_title),
+                    onChange = CongklakSettings::chooseStarter,
                     fill = true,
                 )
             }

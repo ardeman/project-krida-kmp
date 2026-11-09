@@ -6,6 +6,7 @@ import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakGame.PITS
 import com.ardeman.krida.core.games.CongklakMove
 import com.ardeman.krida.core.games.CongklakRules
+import com.ardeman.krida.core.games.CongklakStarter
 import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.games.CongklakState
 import kotlin.random.Random
@@ -97,6 +98,17 @@ class CongklakTest {
         // Older hosts send no field: that decodes as the free rule.
         val old = Codec.json.decodeFromString(CongklakState.serializer(), """{"pits":[${List(PITS) { 0 }.joinToString(",")}],"turn":0}""")
         assertFalse(old.tembakAfterStore)
+    }
+
+    @Test
+    fun rulesStartWithTheChosenStarter() {
+        assertEquals(0, CongklakRules(true, CongklakStarter.ME).initialState(2, Random(1)).turn)
+        assertEquals(1, CongklakRules(true, CongklakStarter.OPPONENT).initialState(2, Random(1)).turn)
+        assertEquals(0, CongklakRules(tembakAfterStore = true).initialState(2, Random(1)).turn)
+        // Random draws from the host's Random, so both seats come up over a few games.
+        val rules = CongklakRules(true, CongklakStarter.RANDOM)
+        val random = Random(7)
+        assertEquals(setOf(0, 1), List(20) { rules.initialState(2, random).turn }.toSet())
     }
 
     @Test
