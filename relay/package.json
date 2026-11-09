@@ -1,0 +1,21 @@
+{
+  "name": "krida-relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261109.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.158.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261104.1": true,
+    "esbuild@0.28.2": true
+  }
+}

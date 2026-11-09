@@ -103,8 +103,55 @@ byte 3..   payload slice
 ```
 
 Max payload per frame = `mtu - 3 (ATT header) - 3 (frame header)`. The receiver
-reassembles per sender with `Reassembler`. LAN and online transports send whole
-messages (length-prefixed) and skip framing.
+reassembles per sender with `Reassembler`. LAN sends whole messages (length-prefixed) and
+the online relay one message per WebSocket frame (see below); neither uses BLE framing.
+
+## Online relay
+
+Online rooms go through a Cloudflare Worker (`relay/`) with one Durable Object per room. The
+relay only forwards bytes; the host phone stays authoritative and the messages above are
+unchanged. Online room codes are 6 chars from the same alphabet as `RoomCode`.
+
+Connect with a WebSocket to `wss://<relay>/v1/rooms/<CODE>`:
+
+- Host: `?role=host&key=<KEY>`. `KEY` is 16–64 chars `[A-Za-z0-9_-]`, random, made by the
+  host phone and kept for the room's life. The first host to connect claims the code with its
+  key; only the same key can connect as host again (rejoin). A new host socket with the right
+  key replaces an old one.
+- Guest: `?role=guest`. Allowed once a host has claimed the room, up to 4 guest sockets.
+
+Every WebSocket message is binary, one whole protocol message per frame:
+
+```
+byte 0     kind: 1 data, 2 connected, 3 disconnected, 4 kick (host → relay only)
+byte 1     peer
+byte 2..   payload (data only): the UTF-8 JSON message
+```
+
+On the host's socket `peer` is a guest id (1–255, given by the relay; the transport's peer
+id is its decimal string). The relay tags each guest's data with the guest's id, sends
+`connected`/`disconnected` as guests come and go, and on a host (re)connect sends
+`connected` for every guest already there. The host sends data with `peer` = a guest id, or
+`0` for every guest, and `kick` with a guest id to close that guest.
+
+On a guest's socket `peer` is always `0`, the host. The guest gets `connected` when a host is
+there (right after joining, or when the host comes back) and `disconnected` when the host
+drops. Guests send data with `peer` = `0`.
+
+If the host stays away for the reconnect grace (60 s), the relay closes the guests with
+`4010` and forgets the room. Close codes:
+
+| Code | Meaning |
+|---|---|
+| `4000` | Bad request (code, role, key, or a text frame) |
+| `4001` | Room taken: a host with another key holds this code; pick a new code |
+| `4004` | No such room (guest joined before any host) |
+| `4008` | Kicked by the host |
+| `4009` | Room full |
+| `4010` | Host gone past the grace |
+| `4011` | Replaced by a newer host socket |
+| `4013` | Message over 64 KB |
+| `4029` | Rate limited (bursts of 50, 20 messages/s sustained) |
 
 ## Compatibility rule
 

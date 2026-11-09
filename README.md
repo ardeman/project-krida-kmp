@@ -15,6 +15,7 @@ krida/
 ├── shared/       Kotlin Multiplatform core: game rules, protocol v1, sessions (Android + iOS)
 ├── androidApp/   Native Android app (Kotlin, Compose UI, Filament 3D) + BLE/LAN transports
 ├── ios/          Native iOS app (Swift, SwiftUI, RealityKit 3D) + BLE/LAN transports
+├── relay/        Online relay: Cloudflare Worker + Durable Object per room (TypeScript)
 ├── web/          Landing page for krida.ardeman.com (Astro, zero-JS static HTML, GitHub Pages)
 ├── docs/         architecture.md, protocol.md, brand.md (logo, icons, palette), store.md (listings, privacy answers)
 ├── scripts/      brand.swift: generates every icon and the wordmark
@@ -53,6 +54,11 @@ cd ios && xcodegen && open Krida.xcodeproj
 # Web landing
 cd web && npm install && npm run dev     # http://localhost:4321
 npm run build                            # static site in web/dist
+
+# Online relay (Cloudflare Worker)
+cd relay && npm install && npm run dev   # ws://localhost:8787
+npm run smoke                            # host + guests test client against the dev relay
+npm run deploy                           # needs `npx wrangler login` once
 ```
 
 ## Landing page hosting (GitHub Pages)

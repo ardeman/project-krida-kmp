@@ -45,7 +45,8 @@ Each step ends with the checks from `AGENTS.md` and, where it says so, a test on
 and the Pixel on different networks (one on mobile data).
 
 1. [ ] **Relay.** `relay/` Worker + room Durable Object, deployed to `workers.dev`; framing
-   in `docs/protocol.md`; tiny test client script.
+   in `docs/protocol.md`; tiny test client script. Code, framing and `npm run smoke` done
+   (passes against `npm run dev`); deploy waits for `wrangler login`.
 2. [ ] **Shared.** 6-char online codes and link parsing in `RoomCode`; 15 s pause and
    hand-to-computer in `HostSession`; tests in `shared/src/commonTest/`.
 3. [ ] **Android.** `OnlineHostTransport.kt` / `OnlineGuestTransport.kt` (OkHttp); "Online"
