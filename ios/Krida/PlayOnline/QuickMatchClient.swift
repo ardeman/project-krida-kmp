@@ -2,9 +2,7 @@ import Foundation
 import Shared
 
 /// Connects to the matchmaker WebSocket and waits for a match assignment.
-/// The matchmaker will respond with a Message.Matched containing:
-/// - role: "host" or "guest"
-/// - code: (only for host) the 6-char room code to connect to
+/// Group-search events are separate from the game-session protocol.
 actor QuickMatchClient {
     private let game: String
     private let playerCount: Int
@@ -17,15 +15,15 @@ actor QuickMatchClient {
     }
     
     func start(
-        onMatched: @escaping (_ role: String, _ code: String) -> Void,
-        onError: @escaping (_ error: String) -> Void
+        onEvent: @escaping (_ event: [String: Any]) -> Void,
+        onError: @escaping () -> Void
     ) {
         isRunning = true
         
-        // Connect to /v1/match/<GAME>/<PLAYER_COUNT>
-        let urlString = "\(Krida.shared.RELAY_URL)/v1/match/\(game)/\(playerCount)"
+        // Connect to /v1/match/<GAME>/<PLAYER_COUNT>?flow=group
+        let urlString = "\(Krida.shared.RELAY_URL)/v1/match/\(game)/\(playerCount)?flow=group"
         guard let url = URL(string: urlString) else {
-            onError("Invalid URL")
+            onError()
             return
         }
         
@@ -37,7 +35,47 @@ actor QuickMatchClient {
         
         // Listen for messages
         Task {
-            await receiveMessages(webSocket: webSocket, onMatched: onMatched, onError: onError)
+            await receiveMessages(webSocket: webSocket, onEvent: onEvent, onError: onError)
+        }
+    }
+    
+    func acceptBots(revision: Int) {
+        let json: [String: Any] = ["type": "accept_bots", "revision": revision]
+        if let data = try? JSONSerialization.data(withJSONObject: json),
+           let text = String(data: data, encoding: .utf8) {
+            webSocket?.send(.string(text)) { _ in }
+        }
+    }
+    
+    func acceptHumans(revision: Int) {
+        let json: [String: Any] = ["type": "accept_humans", "revision": revision]
+        if let data = try? JSONSerialization.data(withJSONObject: json),
+           let text = String(data: data, encoding: .utf8) {
+            webSocket?.send(.string(text)) { _ in }
+        }
+    }
+    
+    func keepSearching() {
+        let json: [String: Any] = ["type": "keep_searching"]
+        if let data = try? JSONSerialization.data(withJSONObject: json),
+           let text = String(data: data, encoding: .utf8) {
+            webSocket?.send(.string(text)) { _ in }
+        }
+    }
+    
+    func hostReady() {
+        let json: [String: Any] = ["type": "host_ready"]
+        if let data = try? JSONSerialization.data(withJSONObject: json),
+           let text = String(data: data, encoding: .utf8) {
+            webSocket?.send(.string(text)) { _ in }
+        }
+    }
+    
+    func playSolo(revision: Int, seats: Int) {
+        let json: [String: Any] = ["type": "play_solo", "revision": revision, "seats": seats]
+        if let data = try? JSONSerialization.data(withJSONObject: json),
+           let text = String(data: data, encoding: .utf8) {
+            webSocket?.send(.string(text)) { _ in }
         }
     }
     
@@ -49,8 +87,8 @@ actor QuickMatchClient {
     
     private func receiveMessages(
         webSocket: URLSessionWebSocketTask,
-        onMatched: @escaping (_ role: String, _ code: String) -> Void,
-        onError: @escaping (_ error: String) -> Void
+        onEvent: @escaping (_ event: [String: Any]) -> Void,
+        onError: @escaping () -> Void
     ) async {
         while isRunning {
             do {
@@ -58,39 +96,31 @@ actor QuickMatchClient {
                 
                 switch message {
                 case .data(let data):
-                    // Parse the message as JSON
                     do {
-                        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                           let type = json["type"] as? String,
-                           type == "matched",
-                           let role = json["role"] as? String {
-                            let code = (json["code"] as? String) ?? ""
-                            // Call on main thread
+                        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                             await MainActor.run {
-                                onMatched(role, code)
+                                if isRunning {
+                                    onEvent(json)
+                                }
                             }
-                            isRunning = false
                         }
                     } catch {
                         await MainActor.run {
-                            onError("Failed to parse message: \(error.localizedDescription)")
+                            if isRunning {
+                                close()
+                                onError()
+                            }
                         }
-                        isRunning = false
                     }
                     
                 case .string(let text):
-                    // Try to parse string as JSON
                     if let data = text.data(using: .utf8),
-                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let type = json["type"] as? String,
-                       type == "matched",
-                       let role = json["role"] as? String {
-                        let code = (json["code"] as? String) ?? ""
-                        // Call on main thread
+                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         await MainActor.run {
-                            onMatched(role, code)
+                            if isRunning {
+                                onEvent(json)
+                            }
                         }
-                        isRunning = false
                     }
                     
                 @unknown default:
@@ -99,10 +129,12 @@ actor QuickMatchClient {
             } catch {
                 if isRunning {
                     await MainActor.run {
-                        onError("Connection error: \(error.localizedDescription)")
+                        if isRunning {
+                            close()
+                            onError()
+                        }
                     }
                 }
-                isRunning = false
             }
         }
     }
