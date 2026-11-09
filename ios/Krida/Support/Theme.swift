@@ -214,7 +214,7 @@ struct SecondaryButtonStyle: ButtonStyle {
                 .padding(.horizontal, 18 * s)
                 .frame(height: height * s)
                 .background(Theme.surface.opacity(configuration.isPressed ? 0.7 : 1), in: RoundedRectangle(cornerRadius: 14 * s))
-                .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(tint == Theme.accent ? Theme.accent : Color(hex: 0xD9C6AF), lineWidth: 1.5))
+                .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(tint == Theme.accent ? Theme.accent : Theme.border, lineWidth: 1.5))
                 .tapSound(configuration.isPressed)
         }
     }

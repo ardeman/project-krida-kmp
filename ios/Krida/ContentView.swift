@@ -325,17 +325,15 @@ struct ContentView: View {
                     }
                 }
             }
-            // The action row: what this choice means (or the computer's level), then the
-            // buttons, right under the choice that changes them. "Gabung" (only for "Teman dekat")
-            // opens the join screen.
+            // Keep the description above the actions, with Quick Match as the full-width
+            // online action and equally sized Join/Create buttons underneath, as on Android.
             SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
-                HStack(spacing: 8 * s) {
-                    let level = !ular && !nearby && computers > 0
+                VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
                         detail(ular ? "Sampai 4 HP lewat internet, teman di mana saja" : "Lewat internet, teman di mana saja")
                     } else if nearby {
                         detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
-                    } else if level {
+                    } else if !ular && computers > 0 {
                         Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
                     } else if !ular {
                         detail("Berdua, gantian di satu HP")
@@ -346,26 +344,32 @@ struct ContentView: View {
                     } else {
                         detail("HP digilir; komputer melempar dadunya sendiri.")
                     }
-                    if !level { Spacer(minLength: 0) }
-                    if nearby {
-                        Button("Gabung") {
-                            if joinOnline != online { roomCode = "" }
-                            joinOnline = online
-                            joining = true
-                        }
-                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    }
                     if online {
-                        Button("Pencarian Cepat") {
+                        Button {
                             playingQuickMatch = true
                             quickMatchGame = ular ? UlarTanggaGame.shared.id : CongklakGame.shared.id
+                        } label: {
+                            Text("play_online_quick_match").frame(maxWidth: .infinity)
                         }
-                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    }
-                    Button(nearby ? "Buat room" : "Mulai", action: start)
                         .buttonStyle(PrimaryButtonStyle())
+                    }
+                    HStack(spacing: 10 * s) {
+                        if nearby {
+                            Button {
+                                if joinOnline != online { roomCode = "" }
+                                joinOnline = online
+                                joining = true
+                            } label: {
+                                Text("Gabung").frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                        }
+                        Button(action: start) {
+                            Text(nearby ? "Buat room" : "Mulai").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(PrimaryButtonStyle())
+                    }
                 }
-                .lineLimit(1)
             }
             if ular {
                 SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
