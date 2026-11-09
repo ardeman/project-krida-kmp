@@ -100,31 +100,109 @@ final class UlarTanggaScene {
     /// Vertical field of view of the screen-sized picture, before the view is enlarged.
     private var tanHalf: Float = 0
 
-    /// Fits the whole board into `room` (in the screen's coordinates), as large as fits and
-    /// centered in it, or, with `focus`, frames those points (x, y, z) to fill most of `room`.
+    /// Fits the whole board into `room` (in the screen's coordinates) as large as it goes
+    /// without covering any of `obstacles` (HUD boxes), as near the room's middle as it can,
+    /// or, with `focus`, frames those points (x, y, z) to fill most of `room`.
     /// Returns the frame the view must take.
     @discardableResult
-    func layout(size: CGSize, room: CGRect, focus: [SIMD3<Float>]? = nil) -> CGRect {
+    func layout(size: CGSize, room: CGRect, obstacles: [CGRect] = [], focus: [SIMD3<Float>]? = nil) -> CGRect {
         guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         screen = size
         let base = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
-        let points = focus ?? board.bounds().map { Self.vec($0) }
-        let shot = points.map { project($0, tanV: base, size: size) }
-        let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
-        let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
-        let fill: CGFloat = focus == nil ? 1 : 0.8
-        let k = fill * min(room.width / (x1 - x0), room.height / (y1 - y0))
-        tanHalf = base / Float(k)
-        // Scaling is about the screen's center; then shift the picture's middle to the room's.
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
-        let dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
-        let dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
+        let k: CGFloat
+        let dx: CGFloat
+        let dy: CGFloat
+        if let focus {
+            let shot = focus.map { project($0, tanV: base, size: size) }
+            let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
+            let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
+            k = 0.8 * min(room.width / (x1 - x0), room.height / (y1 - y0))
+            // Scaling is about the screen's center; then shift the picture's middle to the room's.
+            dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
+            dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
+        } else {
+            // A narrower view scales the picture about the screen's center and the view's offset
+            // moves it, so the board's outline is projected once, then scaled and moved: find the
+            // largest scale with a place in the room clear of the HUD, nearest the room's middle.
+            // One convex outline per part (board, start pad), so the pad may sit beside a HUD box.
+            let hulls = board.bounds().map { part in Self.convexHull(part.map { project(Self.vec($0), tanV: base, size: size) }) }
+            func place(_ k: CGFloat) -> CGPoint? {
+                let shapes = hulls.map { hull in hull.map { CGPoint(x: c.x + ($0.x - c.x) * k, y: c.y + ($0.y - c.y) * k) } }
+                let all = shapes.flatMap { $0 }
+                let x0 = all.map(\.x).min()!, x1 = all.map(\.x).max()!
+                let y0 = all.map(\.y).min()!, y1 = all.map(\.y).max()!
+                let loX = room.minX - x0, hiX = room.maxX - x1
+                let loY = room.minY - y0, hiY = room.maxY - y1
+                guard loX <= hiX, loY <= hiY else { return nil }
+                let mid = CGPoint(x: (loX + hiX) / 2, y: (loY + hiY) / 2)
+                var best: CGPoint?
+                var bestDistance = CGFloat.greatestFiniteMagnitude
+                for i in 0...Self.fitSteps {
+                    for j in 0...Self.fitSteps {
+                        let d = CGPoint(x: loX + (hiX - loX) * CGFloat(i) / CGFloat(Self.fitSteps),
+                                        y: loY + (hiY - loY) * CGFloat(j) / CGFloat(Self.fitSteps))
+                        let distance = (d.x - mid.x) * (d.x - mid.x) + (d.y - mid.y) * (d.y - mid.y)
+                        guard distance < bestDistance else { continue }
+                        if obstacles.contains(where: { box in shapes.contains { Self.overlaps($0, d, box) } }) { continue }
+                        best = d
+                        bestDistance = distance
+                    }
+                }
+                return best
+            }
+            // Search the scale on a log scale; `lo` always fits (or is the smallest tried).
+            var lo: CGFloat = log(0.05), hi: CGFloat = log(20)
+            for _ in 0..<20 {
+                let mid = (lo + hi) / 2
+                if place(exp(mid)) != nil { lo = mid } else { hi = mid }
+            }
+            k = exp(lo)
+            let best = place(k) ?? .zero
+            dx = best.x
+            dy = best.y
+        }
+        tanHalf = base / Float(k)
         let w = size.width + 2 * abs(dx), h = size.height + 2 * abs(dy)
         viewFrame = CGRect(x: c.x + dx - w / 2, y: c.y + dy - h / 2, width: w, height: h)
         // RealityKit's field of view is vertical and spans the whole (enlarged) view.
         camera.camera.fieldOfViewInDegrees = 2 * atan(tanHalf * Float(h / size.height)) * 180 / .pi
         updateHome()
         return viewFrame
+    }
+
+    /// Places tried along each axis when fitting the board.
+    private static let fitSteps = 24
+
+    /// Convex outline of `points`, counter-clockwise on screen (monotone chain).
+    private static func convexHull(_ points: [CGPoint]) -> [CGPoint] {
+        let sorted = points.sorted { $0.x != $1.x ? $0.x < $1.x : $0.y < $1.y }
+        func turn(_ o: CGPoint, _ a: CGPoint, _ b: CGPoint) -> CGFloat { (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x) }
+        func chain(_ ps: [CGPoint]) -> [CGPoint] {
+            var out: [CGPoint] = []
+            for p in ps {
+                while out.count >= 2 && turn(out[out.count - 2], out[out.count - 1], p) <= 0 { out.removeLast() }
+                out.append(p)
+            }
+            return out.dropLast()
+        }
+        return chain(sorted) + chain(sorted.reversed())
+    }
+
+    /// Whether convex `shape`, moved by `d`, overlaps `box` (separating axis test).
+    private static func overlaps(_ shape: [CGPoint], _ d: CGPoint, _ box: CGRect) -> Bool {
+        if shape.map(\.x).max()! + d.x <= box.minX || shape.map(\.x).min()! + d.x >= box.maxX { return false }
+        if shape.map(\.y).max()! + d.y <= box.minY || shape.map(\.y).min()! + d.y >= box.maxY { return false }
+        let corners = [CGPoint(x: box.minX, y: box.minY), CGPoint(x: box.maxX, y: box.minY),
+                       CGPoint(x: box.maxX, y: box.maxY), CGPoint(x: box.minX, y: box.maxY)]
+        for i in shape.indices {
+            let a = shape[i], b = shape[(i + 1) % shape.count]
+            let nx = b.y - a.y, ny = a.x - b.x
+            let s = shape.map { ($0.x + d.x) * nx + ($0.y + d.y) * ny }
+            let q = corners.map { $0.x * nx + $0.y * ny }
+            if s.max()! <= q.min()! || q.max()! <= s.min()! { return false }
+        }
+        return true
     }
 
     /// Screen point of `p` for a camera at the board's eye with vertical half-angle tangent `tanV`.
@@ -225,7 +303,15 @@ final class UlarTanggaScene {
     private var drawnRot: simd_quatf
     private var drawnPos = SIMD3<Float>(0, 20, 8)
     private var flight: Flight?
+    private var pressed = false
+    private var shaking = false
+    private var shakeTime: Float = 0
+    /// Radians the held die has spun; it settles back to a whole turn when the hold ends.
+    private var spinAngle: Float = 0
     private var idleTime: Float = 0
+    /// Eased 0...1 amounts of the press, the shake and the idle rocking, so none of them snaps.
+    private var pressAmt: Float = 0
+    private var shakeAmt: Float = 0
     private var rockAmt: Float = 0
 
     /// Where the die waits between rolls, in the screen's coordinates: its center and size.
@@ -234,12 +320,24 @@ final class UlarTanggaScene {
         didSet { updateHome() }
     }
 
+    /// Presses the die where it waits; `shake` spins it, as in a hand, until `throwDie`.
+    func holdDie(_ held: Bool, shake: Bool = false) {
+        guard dieMode == .home else { return }
+        if shake && !shaking { shakeTime = 0; spinAngle = 0 }
+        pressed = held
+        shaking = held && shake
+    }
+
     /// Throws the die from the screen onto the board so it lands showing `value`; returns how
-    /// long until it rests, in seconds. It stays on the board until `recallDie`.
+    /// long until it rests, in seconds. A long throw flies farther, tumbles and bounces more.
+    /// It stays on the board until `recallDie`.
     func throwDie(_ value: Int, toss: Toss) -> Float {
+        pressed = false
+        shaking = false
+        // Leave from the pose on screen, mid-spin or not.
         shown = drawnPos
         dieRot = drawnRot
-        rockAmt = 0
+        pressAmt = 0; shakeAmt = 0; rockAmt = 0; spinAngle = 0
         dieValue = value
         let area = Self.floats(board.dieLanding)
         let long = toss == .long
@@ -328,7 +426,21 @@ final class UlarTanggaScene {
         }
         guard dieMode == .home else { return }
         shown = home
-        rockAmt = Self.approach(rockAmt, dieReady ? 1 : 0, dt, 0.15)
+        // Ease toward the targets: quick to press, a little slower to build up a shake.
+        pressAmt = Self.approach(pressAmt, pressed ? 1 : 0, dt, 0.06)
+        shakeAmt = Self.approach(shakeAmt, shaking ? 1 : 0, dt, shaking ? 0.18 : 0.08)
+        rockAmt = Self.approach(rockAmt, dieReady && !pressed ? 1 : 0, dt, 0.15)
+        if shaking || shakeAmt > 0.002 { shakeTime += dt }
+        let turn = 2 * Float.pi
+        if shaking {
+            // Spin up from about one turn a second to three over the first moment of the hold.
+            spinAngle += dt * turn * shakeAmt * (1 + 2 * min(1, shakeTime / 0.8))
+        } else if spinAngle != 0 {
+            // Let go without a throw: finish the turn it is on and come to rest.
+            let rest = (spinAngle / turn).rounded(.up) * turn
+            spinAngle = Self.approach(spinAngle, rest, dt, 0.12)
+            if spinAngle == rest { spinAngle = 0 }
+        }
         if dieReady || rockAmt > 0.002 { idleTime += dt }
         applyDie()
     }
@@ -339,15 +451,34 @@ final class UlarTanggaScene {
         return abs(v - target) < 0.001 ? target : v
     }
 
-    /// Sets the die and its shadow; it rocks while it waits on screen.
+    /// Sets the die and its shadow: pressed, spun or rocking while it waits on screen.
     private func applyDie() {
         var q = dieRot
-        if dieMode == .home && rockAmt > 0 {
-            q = simd_quatf(angle: rockAmt * 0.18 * sin(idleTime * 2 * .pi / 1.6), axis: [0, 1, 0]) * q
+        var pos = shown
+        var scale: Float = 1
+        if dieMode == .home {
+            if spinAngle != 0 {
+                // Spinning in the air before the throw: whole turns about a tilted axis that
+                // slowly sweeps round, so every face flashes past.
+                let p = shakeTime * 1.3
+                let axis = simd_normalize(SIMD3<Float>(0.7 * sin(p), 0.6, 0.7 * cos(p)))
+                q = simd_quatf(angle: spinAngle, axis: axis) * q
+            }
+            if shakeAmt > 0 {
+                // A small toss up and down while it spins.
+                let s = shakeTime * 2 * .pi
+                let bob = board.DIE * 0.12 * shakeAmt
+                pos.x += bob * 0.5 * sin(s * 2.3)
+                pos.y += bob * abs(sin(s * 3.1))
+            }
+            if rockAmt > 0 {
+                q = simd_quatf(angle: rockAmt * 0.18 * sin(idleTime * 2 * .pi / 1.6), axis: [0, 1, 0]) * q
+            }
+            scale = 1 - 0.1 * pressAmt
         }
         drawnRot = q
-        drawnPos = shown
-        die.transform = Transform(scale: .one, rotation: q, translation: shown)
+        drawnPos = pos
+        die.transform = Transform(scale: SIMD3(repeating: scale), rotation: q, translation: pos)
         // The shadow on the tiles shrinks as the die rises.
         let sc = min(max(1 - (shown.y - restY) * 0.08, 0.3), 1)
         dieShadow.transform = Transform(scale: SIMD3(sc, 1, sc), rotation: simd_quatf(ix: 0, iy: 0, iz: 0, r: 1), translation: SIMD3(shown.x, board.TOP, shown.z))

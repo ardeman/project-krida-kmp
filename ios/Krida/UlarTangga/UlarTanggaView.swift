@@ -56,8 +56,8 @@ final class UlarTanggaGameModel: ObservableObject {
     var canRoll: Bool { !animating && queue.isEmpty && !state.finished && table.isLocal(turn) }
     var ready: Bool { canRoll && !offHold && !loading }
 
-    func layout(size: CGSize, room: CGRect, dieSpot: CGRect) {
-        viewFrame = scene.layout(size: size, room: room)
+    func layout(size: CGSize, room: CGRect, obstacles: [CGRect], dieSpot: CGRect) {
+        viewFrame = scene.layout(size: size, room: room, obstacles: obstacles)
         scene.dieSpot = (CGPoint(x: dieSpot.midX, y: dieSpot.midY), dieSpot.width * 0.45)
     }
 
@@ -74,12 +74,58 @@ final class UlarTanggaGameModel: ObservableObject {
         for seat in 0..<s.positions.count { scene.place(seat, spot(s, seat)) }
     }
 
-    /// Throws the die for the local player whose turn it is.
+    /// Throws the die for the local player whose turn it is; it stays pressed (spinning, for a
+    /// long throw) until the roll comes back.
     func roll(_ toss: UlarTanggaScene.Toss) {
-        guard canRoll, pendingToss == nil else { return }
+        guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
         pendingToss = toss
-        if !table.roll(seat: turn) { pendingToss = nil }
+        scene.holdDie(true, shake: toss == .long)
+        if !table.roll(seat: turn) {
+            pendingToss = nil
+            scene.holdDie(false)
+        }
         updateReady()
+        Task {
+            try? await Task.sleep(for: .seconds(4))
+            if pendingToss == toss && !animating {
+                pendingToss = nil
+                scene.holdDie(false)
+            }
+        }
+    }
+
+    // MARK: Holding the die
+
+    private var pressing = false
+    private var spinning = false
+    private var holdTimer: Task<Void, Never>?
+
+    /// A finger went down on the die: press it, and after a moment start spinning it.
+    func pressDie() {
+        guard !pressing else { return }
+        pressing = true
+        guard canRoll, pendingToss == nil else { return }
+        scene.holdDie(true)
+        holdTimer = Task {
+            try? await Task.sleep(for: .seconds(0.5))
+            guard !Task.isCancelled, pressing else { return }
+            spinning = true
+            scene.holdDie(true, shake: true)
+            sounds.play(.tap)
+        }
+    }
+
+    /// The finger lifted: a quick tap tosses the die, a hold throws it long. `inside` is false
+    /// when the finger slid off a die that wasn't spinning yet, which cancels.
+    func releaseDie(inside: Bool) {
+        guard pressing else { return }
+        pressing = false
+        holdTimer?.cancel()
+        holdTimer = nil
+        let long = spinning
+        spinning = false
+        guard canRoll, pendingToss == nil else { return }
+        if long { roll(.long) } else if inside { roll(.short) } else { scene.holdDie(false) }
     }
 
     func restart() { table.restart() }
@@ -217,9 +263,10 @@ private struct UlarTanggaBoardView: View {
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
     @State private var size: CGSize = .zero
-    @State private var leftColumn: CGRect = .zero
-    @State private var rightColumn: CGRect = .zero
-    @State private var dieBox: CGRect = .zero
+    /// HUD boxes the board stays clear of, and "room" for where it may go, in `space`.
+    @State private var boxes: [String: CGRect] = [:]
+    /// True while a finger is on the die; resets on a cancelled gesture too, unlike `onEnded`.
+    @GestureState private var dieDown = false
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
     let onExit: () -> Void
@@ -259,7 +306,13 @@ private struct UlarTanggaBoardView: View {
         }
         .ignoresSafeArea()
         .background(Theme.backdropGradient)
-        .onChange(of: layoutKey) { _, _ in relayout() }
+        .onChange(of: boxes) { _, _ in relayout() }
+        .onChange(of: size) { _, _ in relayout() }
+        .onChange(of: dieDown) { _, down in
+            // A cancelled gesture never reaches onEnded: let go of the die without a throw.
+            // After onEnded has had its turn, where it's a no-op.
+            if !down { DispatchQueue.main.async { model.releaseDie(inside: false) } }
+        }
         .onChange(of: loading) { _, now in
             model.loading = now
             model.updateReady()
@@ -269,17 +322,16 @@ private struct UlarTanggaBoardView: View {
         .sheet(isPresented: $showRules) { RulesSheet(options: model.state.options) }
     }
 
-    /// Everything the board's fit depends on.
-    private var layoutKey: [CGFloat] {
-        [size.width, size.height, leftColumn.maxX, rightColumn.minX, leftColumn.minY, leftColumn.maxY, dieBox.midX, dieBox.midY, dieBox.width]
-    }
+    private static let hudKeys = ["back", "players", "buttons", "die", "status"]
 
-    /// The board takes the room between the two HUD columns, the die sits on its spot.
+    /// The board takes the largest place in the room clear of every HUD box (with a margin);
+    /// the die sits on its spot.
     private func relayout() {
-        guard size.width > 0, leftColumn.width > 0, rightColumn.width > 0, dieBox.width > 0 else { return }
+        guard size.width > 0, let room = boxes["room"], let die = boxes["die"], die.width > 0,
+              Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
-        let room = CGRect(x: leftColumn.maxX + margin, y: leftColumn.minY, width: rightColumn.minX - leftColumn.maxX - 2 * margin, height: leftColumn.height)
-        model.layout(size: size, room: room, dieSpot: dieBox)
+        let obstacles = Self.hudKeys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
+        model.layout(size: size, room: room, obstacles: obstacles, dieSpot: die)
     }
 
     private func exit() {
@@ -287,8 +339,8 @@ private struct UlarTanggaBoardView: View {
         onExit()
     }
 
-    private func frame(_ binding: Binding<CGRect>) -> some ViewModifier {
-        FrameReader(space: Self.space, frame: binding)
+    private func hudBox(_ key: String) -> some ViewModifier {
+        FrameReader(space: Self.space, frame: Binding(get: { boxes[key] ?? .zero }, set: { boxes[key] = $0 }))
     }
 
     // MARK: Seats
@@ -353,6 +405,7 @@ private struct UlarTanggaBoardView: View {
             // Left: back, then the players, two tiles a row.
             VStack(alignment: .leading, spacing: 10 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Kembali ke menu", action: exit)
+                    .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
                 let rows = stride(from: 0, to: tileOrder.count, by: 2).map { Array(tileOrder[$0..<min($0 + 2, tileOrder.count)]) }
                 VStack(spacing: 8 * s) {
@@ -365,11 +418,11 @@ private struct UlarTanggaBoardView: View {
                         }
                     }
                 }
+                .modifier(hudBox("players"))
                 Spacer(minLength: 0)
             }
             .frame(width: 136 * s)
             .frame(maxHeight: .infinity)
-            .modifier(frame($leftColumn))
             Spacer(minLength: 0)
             // Right: sound and rules, then the die and whose turn it is.
             VStack(spacing: 0) {
@@ -377,17 +430,20 @@ private struct UlarTanggaBoardView: View {
                     SoundToggles()
                     CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
                 }
+                .modifier(hudBox("buttons"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
-                // The die itself is 3D, drawn by the scene over this spot; tap it to throw.
+                // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
+                // hold it to spin it and let go to throw it.
                 Color.clear
                     .frame(width: 104 * s, height: 104 * s)
                     .contentShape(Rectangle())
-                    .onTapGesture { model.roll(.short) }
-                    .modifier(frame($dieBox))
+                    .gesture(dieGesture)
+                    .modifier(hudBox("die"))
                     .accessibilityElement()
                     .accessibilityLabel(Text("Lempar"))
                     .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { model.roll(.short) }
                 Text(status)
                     .font(Theme.font(14 * s, .bold))
                     .foregroundStyle(Theme.muted)
@@ -395,17 +451,29 @@ private struct UlarTanggaBoardView: View {
                     // Two lines kept even for a short status, so the die and the board don't move.
                     .lineLimit(2, reservesSpace: true)
                     .frame(maxWidth: .infinity)
+                    .modifier(hudBox("status"))
                     .padding(.top, 10 * s)
             }
             .frame(width: 148 * s)
             .frame(maxHeight: .infinity)
-            .modifier(frame($rightColumn))
         }
+        .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
         .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
         .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
+    }
+
+    /// Down presses the die; up tosses it, or throws it long after a hold.
+    private var dieGesture: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .local)
+            .updating($dieDown) { _, down, _ in down = true }
+            .onChanged { _ in model.pressDie() }
+            .onEnded { value in
+                let inside = CGRect(x: 0, y: 0, width: 104 * s, height: 104 * s).contains(value.location)
+                model.releaseDie(inside: inside)
+            }
     }
 
     /// A seat as a square tile: its square (or finishing place, or dice-off throw) inside a
