@@ -1,7 +1,5 @@
 package com.ardeman.krida.ulartangga
 
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +13,10 @@ import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.transport.LocalTransport
 import com.ardeman.krida.core.transport.Transport
+import com.ardeman.krida.online.GuestWaiting
+import com.ardeman.krida.online.SecondTicker
+import com.ardeman.krida.online.Waiting
+import com.ardeman.krida.online.waiting
 
 /** A new snapshot; [fresh] when it follows a roll that can be animated from the one before. */
 class UlarTanggaUpdate(val state: UlarTanggaState, val fresh: Boolean)
@@ -33,6 +35,10 @@ abstract class UlarTanggaTable {
 
     /** A string resource to show under the status (disconnects, refusals), or null. */
     var notice by mutableStateOf<Int?>(null)
+        protected set
+
+    /** A dropped player the game waits for, with the seconds left; shown instead of [notice]. */
+    var waiting by mutableStateOf<Waiting?>(null)
         protected set
 
     /** Latest snapshot; the screen starts from it. */
@@ -85,14 +91,10 @@ class UlarTanggaHostTable(
 ) : UlarTanggaTable() {
     override val canRestart = true
 
-    private val main = Handler(Looper.getMainLooper())
-
-    /** Hands guests gone past the reconnect grace to the computer, so nobody waits on them. */
-    private val watch = object : Runnable {
-        override fun run() {
-            session.expiredSeats().forEach { session.replaceWithBot(it, UlarTanggaBot) }
-            main.postDelayed(this, WATCH_MS)
-        }
+    /** Counts down a dropped guest's wait, then lets the computer play that seat. */
+    private val ticker = SecondTicker {
+        session.expiredSeats().forEach { session.replaceWithBot(it, UlarTanggaBot) }
+        waiting = session.waiting()
     }
 
     init {
@@ -107,7 +109,7 @@ class UlarTanggaHostTable(
             notice = if (players.any { !it.connected }) R.string.ular_player_lost else null
             deliver(state, session.seq)
         }
-        if (transport !is LocalTransport) main.postDelayed(watch, WATCH_MS)
+        if (transport !is LocalTransport) ticker.start()
     }
 
     override fun roll(seat: Int) = session.submitLocal(seat, UlarTanggaMove()) == null
@@ -121,13 +123,11 @@ class UlarTanggaHostTable(
     }
 
     override fun leave() {
-        main.removeCallbacks(watch)
+        ticker.stop()
         transport.close()
     }
 
     companion object {
-        private const val WATCH_MS = 5_000L
-
         /**
          * A game on this phone: one seat per [players] entry (a name, and whether a computer
          * plays it) with that entry's pawn colour; the colours must rise with the seat. With a
@@ -158,27 +158,43 @@ class UlarTanggaGuestTable(
     override val mySeat: Int? get() = session.seat
     override val canRestart = false
 
+    private val away = GuestWaiting()
+
+    /** The host's and other guests' waits; past the host's wait the game is over ("host left"). */
+    private val ticker = SecondTicker {
+        val w = away.current(players)
+        waiting = w?.takeIf { it.seconds > 0 }
+        if (w?.host == true && w.seconds == 0) notice = R.string.nearby_host_lost
+    }
+
     init {
         players = session.players
+        away.players(players)
         first(checkNotNull(session.state), session.stateSeq)
         session.onState = { state ->
             players = session.players
+            away.players(players)
             notice = if (players.any { !it.connected }) R.string.ular_player_lost else null
             deliver(state, session.stateSeq)
         }
         session.onPlayers = { list ->
             players = list
+            away.players(list)
             notice = if (list.any { !it.connected }) R.string.ular_player_lost else null
         }
         session.onInvalid = { notice = R.string.nearby_move_refused }
-        session.onDisconnected = { notice = R.string.nearby_host_lost }
+        session.onDisconnected = { away.hostLost() }
+        ticker.start()
     }
 
     override fun roll(seat: Int) = seat == session.seat && session.sendMove(UlarTanggaMove()) != null
 
     override fun restart() = Unit
 
-    override fun leave() = session.leave()
+    override fun leave() {
+        ticker.stop()
+        session.leave()
+    }
 }
 
 /** One seat of a game on this phone, for [UlarTanggaHostTable.local]. */

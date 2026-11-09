@@ -87,4 +87,6 @@ dependencies {
     implementation(libs.fragment)
     // QR join: Play services shows the scanner, so no camera permission and no ML model in the APK.
     implementation(libs.code.scanner)
+    // WebSocket client for online rooms through the relay (docs/online.md).
+    implementation(libs.okhttp)
 }

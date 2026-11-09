@@ -10,6 +10,7 @@ ump = "4.0.0"
 billing = "9.1.0"
 fragment = "1.9.1"
 code-scanner = "16.1.0"
+okhttp = "4.12.0"
 
 [libraries]
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
@@ -25,6 +26,7 @@ ump = { module = "com.google.android.ump:user-messaging-platform", version.ref =
 billing = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "code-scanner" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

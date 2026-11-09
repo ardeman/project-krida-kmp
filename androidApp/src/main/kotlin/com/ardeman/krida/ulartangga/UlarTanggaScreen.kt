@@ -429,9 +429,12 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth().hud("status"),
                 )
-                table.notice?.let { notice ->
+                val away = table.waiting
+                val notice = away?.let { stringResource(R.string.online_waiting_for, it.name, it.seconds) }
+                    ?: table.notice?.let { stringResource(it) }
+                notice?.let { notice ->
                     Text(
-                        stringResource(notice),
+                        notice,
                         style = Theme.font(13, FontWeight.Bold, Theme.error),
                         textAlign = TextAlign.Center,
                         maxLines = 2,

@@ -28,6 +28,9 @@ object Krida {
     /** Share link and QR for online rooms: "https://krida.ardeman.com/r/ABC234". */
     const val SHARE_URL_PREFIX: String = "https://krida.ardeman.com/r/"
 
+    /** The online relay (`relay/`); rooms are at `$RELAY_URL/v1/rooms/<CODE>`. */
+    const val RELAY_URL: String = "wss://krida-relay.are-theman.workers.dev"
+
     const val RECONNECT_GRACE_MS: Long = 60_000L
     /** How long a game waits for a dropped player before the computer plays the seat. */
     const val HANDOFF_WAIT_MS: Long = 15_000L

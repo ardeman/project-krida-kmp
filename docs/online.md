@@ -54,8 +54,13 @@ and the Pixel on different networks (one on mobile data).
    block moves while a player is away (congklak's host screens don't hand seats to the
    computer yet, so a hard pause could freeze a game); the game waits on that seat's turn and
    the apps show the countdown (`HostSession.handOffInMs`).
-3. [ ] **Android.** `OnlineHostTransport.kt` / `OnlineGuestTransport.kt` (OkHttp); "Online"
-   next to "Nearby", create/join by code, lobby, waiting countdown. Strings in ID + EN.
+3. [x] **Android.** `online/OnlineTransport.kt` (OkHttp; host and guest reopen a dropped
+   socket for up to the 60 s grace); "Online" next to "Nearby" reuses `NearbyRoom` and its
+   screens with 6-letter codes and the share link in the QR; "Waiting for Ayu… 15" in both
+   games (`online/Waiting.kt`), after which congklak and ular tangga hand the seat to the
+   computer, and a guest whose host stays away sees "Disconnected from the host". When the
+   host's own socket drops, its guests count as away too and get their seats back on rejoin.
+   Not yet tried on a device.
 4. [ ] **iOS.** Same with `URLSessionWebSocketTask`; strings in the catalog. Device test
    iOS ↔ Android.
 5. [ ] **Share links.** `/r/CODE` page in `web/`, `assetlinks.json` and

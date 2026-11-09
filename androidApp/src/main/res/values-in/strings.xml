@@ -190,4 +190,18 @@
     <string name="nearby_refused_detail">Coba lagi, atau minta host membuat room baru.</string>
     <string name="nearby_try_again">Coba lagi</string>
     <string name="nearby_reconnect">Sambung lagi</string>
+    <!-- Online rooms through the relay -->
+    <string name="opponent_online">Online</string>
+    <string name="online_detail">Lewat internet, teman di mana saja</string>
+    <string name="ular_detail_online">Sampai 4 HP lewat internet, teman di mana saja</string>
+    <string name="online_subtitle">Online · lewat internet</string>
+    <string name="online_host_hint">Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya</string>
+    <string name="online_join_needs_code">Masuk aktif setelah 6 huruf</string>
+    <string name="online_searching_title">Menyambung ke room…</string>
+    <string name="online_searching_detail">Lewat internet. Kedua HP perlu koneksi.</string>
+    <string name="online_not_found_detail">Cek kodenya, pastikan host masih membuka room, lalu coba lagi.</string>
+    <string name="online_lost_detail">Sambungan internet ke host hilang.</string>
+    <string name="online_offline_title">Krida online tidak terjangkau</string>
+    <string name="online_offline_detail">Cek koneksi internet HP ini, lalu coba lagi.</string>
+    <string name="online_waiting_for">Menunggu %1$s… %2$d</string>
 </resources>

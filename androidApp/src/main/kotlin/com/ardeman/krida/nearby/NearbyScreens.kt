@@ -66,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import com.ardeman.krida.R
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.UlarTanggaGame
+import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.core.qr.QrCode
 import com.ardeman.krida.core.session.RoomCode
@@ -140,7 +141,7 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
     val names = colorNames()
     val title = gameTitle(room.game)
     val subtitle = if (room.isHost) {
-        stringResource(R.string.nearby_subtitle)
+        subtitle(room.online)
     } else {
         stringResource(R.string.nearby_room_host, room.code, room.players.firstOrNull { it.seat == 0 }?.name ?: "")
     }
@@ -156,7 +157,7 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
         ) {
-            if (room.isHost) HostCode(room.code) else JoinedNote(room, names)
+            if (room.isHost) HostCode(room.code, room.online) else JoinedNote(room, names)
         }
         Column(
             Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
@@ -170,7 +171,7 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
 }
 
 @Composable
-private fun ColumnScope.HostCode(code: String) {
+private fun ColumnScope.HostCode(code: String, online: Boolean) {
     Text(
         stringResource(R.string.nearby_code).uppercase(),
         style = Theme.font(13, FontWeight.ExtraBold, Theme.muted),
@@ -179,24 +180,28 @@ private fun ColumnScope.HostCode(code: String) {
         Modifier.semantics(mergeDescendants = true) { contentDescription = code.toList().joinToString(" ") },
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // Six online letters get narrower boxes, so they fit the same card.
         code.forEach { ch ->
-            Box(Modifier.size(46.dp, 52.dp).clip(RoundedCornerShape(12.dp)).background(Theme.chip), contentAlignment = Alignment.Center) {
-                Text(ch.toString(), style = Theme.font(30, FontWeight.Black, Theme.ink).copy(fontFamily = FontFamily.Monospace))
+            Box(Modifier.size(if (online) 36.dp else 46.dp, 52.dp).clip(RoundedCornerShape(12.dp)).background(Theme.chip), contentAlignment = Alignment.Center) {
+                Text(ch.toString(), style = Theme.font(if (online) 26 else 30, FontWeight.Black, Theme.ink).copy(fontFamily = FontFamily.Monospace))
             }
         }
     }
-    RoomQr(code)
+    RoomQr(if (online) RoomCode.shareUrl(code) else RoomCode.joinUrl(code))
     Text(
-        stringResource(R.string.nearby_host_hint),
+        stringResource(if (online) R.string.online_host_hint else R.string.nearby_host_hint),
         style = Theme.font(12, FontWeight.Bold, Theme.muted),
         textAlign = TextAlign.Center,
     )
 }
 
+@Composable
+private fun subtitle(online: Boolean) = stringResource(if (online) R.string.online_subtitle else R.string.nearby_subtitle)
+
 /** The room link as a QR code: dark modules on white in both themes, so any camera reads it. */
 @Composable
-private fun RoomQr(code: String) {
-    val qr = remember(code) { QrCode.encode(RoomCode.joinUrl(code)) }
+private fun RoomQr(link: String) {
+    val qr = remember(link) { QrCode.encode(link) }
     val label = stringResource(R.string.nearby_qr_label)
     val shape = RoundedCornerShape(12.dp)
     Canvas(
@@ -442,7 +447,8 @@ internal fun Modifier.dashedBorder(width: Dp, color: Color, radius: Dp) = drawBe
 }
 
 /**
- * Join a room: scan the host's QR (left) or type its 4-letter code (right). [error] is a
+ * Join a room: scan the host's QR (left) or type its code (right), 4 letters nearby or 6
+ * [online]. [error] is a
  * string resource shown under the code (scanner or permission trouble), or null.
  */
 @Composable
@@ -453,8 +459,10 @@ fun JoinScreen(
     onJoin: () -> Unit,
     onBack: () -> Unit,
     error: Int?,
+    online: Boolean,
 ) {
-    NearbyFrame(stringResource(R.string.nearby_join_title), stringResource(R.string.nearby_subtitle), stringResource(R.string.congklak_back), onBack) {
+    val valid = if (online) RoomCode.isValidOnline(code) else RoomCode.isValid(code)
+    NearbyFrame(stringResource(R.string.nearby_join_title), subtitle(online), stringResource(R.string.congklak_back), onBack) {
         Column(
             Modifier.weight(1f).fillMaxHeight().card().padding(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -488,10 +496,10 @@ fun JoinScreen(
         ) {
             Text(stringResource(R.string.nearby_type_title), style = Theme.font(22, FontWeight.Black, Theme.ink))
             Text(stringResource(R.string.nearby_code_hint), style = Theme.font(14, FontWeight.Bold, Theme.muted))
-            CodeBoxes(code, onCode, onJoin)
-            PrimaryButton(stringResource(R.string.nearby_join), onClick = onJoin, enabled = RoomCode.isValid(code), height = 48.dp, modifier = Modifier.widthIn(min = 200.dp))
+            CodeBoxes(code, if (online) Krida.ONLINE_ROOM_CODE_LENGTH else Krida.ROOM_CODE_LENGTH, valid, onCode, onJoin)
+            PrimaryButton(stringResource(R.string.nearby_join), onClick = onJoin, enabled = valid, height = 48.dp, modifier = Modifier.widthIn(min = 200.dp))
             // Keeps its line when empty, so the boxes don't jump once the code is complete.
-            val note = error ?: R.string.nearby_join_needs_code.takeUnless { RoomCode.isValid(code) }
+            val note = error ?: (if (online) R.string.online_join_needs_code else R.string.nearby_join_needs_code).takeUnless { valid }
             Text(
                 note?.let { stringResource(it) } ?: "",
                 style = Theme.font(12, FontWeight.Bold, if (error != null) Theme.error else Theme.muted),
@@ -501,27 +509,28 @@ fun JoinScreen(
     }
 }
 
-/** One text field drawn as 4 letter boxes; the next box to fill is outlined while typing. */
+/** One text field drawn as [length] letter boxes; the next box to fill is outlined while typing. */
 @Composable
-private fun CodeBoxes(code: String, onCode: (String) -> Unit, onDone: () -> Unit) {
+private fun CodeBoxes(code: String, length: Int, valid: Boolean, onCode: (String) -> Unit, onDone: () -> Unit) {
     val hint = stringResource(R.string.nearby_code_hint)
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     BasicTextField(
         value = code,
-        onValueChange = { onCode(it.uppercase().filter(Char::isLetterOrDigit).take(4)) },
+        onValueChange = { onCode(it.uppercase().filter(Char::isLetterOrDigit).take(length)) },
         singleLine = true,
         interactionSource = source,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Go),
-        keyboardActions = KeyboardActions(onGo = { if (RoomCode.isValid(code)) onDone() }),
+        keyboardActions = KeyboardActions(onGo = { if (valid) onDone() }),
         modifier = Modifier.semantics { contentDescription = hint },
         decorationBox = {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                repeat(4) { i ->
-                    val active = focused && i == code.length.coerceAtMost(3)
+            val wide = length <= Krida.ROOM_CODE_LENGTH
+            Row(horizontalArrangement = Arrangement.spacedBy(if (wide) 10.dp else 6.dp)) {
+                repeat(length) { i ->
+                    val active = focused && i == code.length.coerceAtMost(length - 1)
                     val shape = RoundedCornerShape(14.dp)
                     Box(
-                        Modifier.size(54.dp, 64.dp).clip(shape)
+                        Modifier.size(if (wide) 54.dp else 42.dp, 64.dp).clip(shape)
                             .background(if (active) Theme.surface else Theme.chip)
                             .border(2.dp, if (active) Theme.accent else Theme.line, shape),
                         contentAlignment = Alignment.Center,
@@ -559,24 +568,30 @@ private fun IconPrimaryButton(@DrawableRes icon: Int, text: String, onClick: () 
 @Composable
 fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit) {
     val (title, detail) = when (room.stage) {
-        NearbyRoom.Stage.SEARCHING -> R.string.nearby_searching_title to R.string.nearby_searching_detail
+        NearbyRoom.Stage.SEARCHING -> if (room.online) {
+            R.string.online_searching_title to R.string.online_searching_detail
+        } else {
+            R.string.nearby_searching_title to R.string.nearby_searching_detail
+        }
         NearbyRoom.Stage.CONNECTING, NearbyRoom.Stage.LOBBY -> R.string.nearby_connecting_title to R.string.nearby_connecting_detail
         NearbyRoom.Stage.FULL -> R.string.nearby_rejected_full to R.string.nearby_full_detail
         NearbyRoom.Stage.STARTED -> R.string.nearby_rejected_started to R.string.nearby_started_detail
         NearbyRoom.Stage.VERSION -> R.string.nearby_version_title to R.string.nearby_version_detail
-        NearbyRoom.Stage.NOT_FOUND -> R.string.nearby_not_found_title to R.string.nearby_not_found_detail
-        NearbyRoom.Stage.LOST -> R.string.nearby_host_lost to R.string.nearby_lost_detail
+        NearbyRoom.Stage.NOT_FOUND -> R.string.nearby_not_found_title to
+            if (room.online) R.string.online_not_found_detail else R.string.nearby_not_found_detail
+        NearbyRoom.Stage.LOST -> R.string.nearby_host_lost to if (room.online) R.string.online_lost_detail else R.string.nearby_lost_detail
+        NearbyRoom.Stage.OFFLINE -> R.string.online_offline_title to R.string.online_offline_detail
         NearbyRoom.Stage.UNKNOWN_GAME -> R.string.nearby_rejected to R.string.nearby_unknown_game
         NearbyRoom.Stage.REFUSED -> R.string.nearby_rejected to R.string.nearby_refused_detail
     }
     val retry = when (room.stage) {
-        NearbyRoom.Stage.NOT_FOUND, NearbyRoom.Stage.REFUSED -> R.string.nearby_try_again
+        NearbyRoom.Stage.NOT_FOUND, NearbyRoom.Stage.REFUSED, NearbyRoom.Stage.OFFLINE -> R.string.nearby_try_again
         NearbyRoom.Stage.LOST -> R.string.nearby_reconnect
         else -> null
     }
     val failed = room.failed
     val cancel = stringResource(if (failed) R.string.congklak_back else R.string.nearby_cancel)
-    NearbyFrame(gameTitle(room.game), stringResource(R.string.nearby_subtitle), cancel, onCancel) {
+    NearbyFrame(gameTitle(room.game), subtitle(room.online), cancel, onCancel) {
         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
                 Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = 22.dp),

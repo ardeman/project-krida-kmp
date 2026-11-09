@@ -14,6 +14,10 @@ import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.transport.LocalTransport
 import com.ardeman.krida.core.transport.Transport
+import com.ardeman.krida.online.GuestWaiting
+import com.ardeman.krida.online.SecondTicker
+import com.ardeman.krida.online.Waiting
+import com.ardeman.krida.online.waiting
 
 /** A new snapshot, plus the move that produced it when it can be animated. */
 class CongklakUpdate(val state: CongklakState, val seat: Int?, val move: CongklakMove?)
@@ -32,6 +36,10 @@ abstract class CongklakTable {
 
     /** A string resource to show under the score (disconnects, refusals), or null. */
     var notice by mutableStateOf<Int?>(null)
+        protected set
+
+    /** A dropped player the game waits for, with the seconds left; shown instead of [notice]. */
+    var waiting by mutableStateOf<Waiting?>(null)
         protected set
 
     /** The computer's difficulty, shown next to its name; null without a computer player. */
@@ -69,6 +77,12 @@ class HostTable(
 
     override val canRestart = true
 
+    /** Counts down a dropped guest's wait, then lets the computer play that seat. */
+    private val ticker = SecondTicker {
+        session.expiredSeats().forEach { session.replaceWithBot(it, CongklakBot(CongklakBot.Level.NORMAL)) }
+        waiting = session.waiting()
+    }
+
     init {
         players = session.players
         session.onPlayersChanged = { list ->
@@ -82,6 +96,7 @@ class HostTable(
             deliver(state, session.lastSeat.takeIf { fresh }, session.lastMove.takeIf { fresh })
         }
         session.state?.let { deliver(it, null, null) }
+        if (transport !is LocalTransport) ticker.start()
     }
 
     override fun play(seat: Int, hole: Int) = session.submitLocal(seat, CongklakMove(hole)) == null
@@ -95,7 +110,10 @@ class HostTable(
         session.stepBot()
     }
 
-    override fun leave() = transport.close()
+    override fun leave() {
+        ticker.stop()
+        transport.close()
+    }
 
     companion object {
         fun passAndPlay(names: List<String>): HostTable {
@@ -123,21 +141,41 @@ class GuestTable(private val session: GuestSession<CongklakState, CongklakMove>)
     override val mySeat: Int? get() = session.seat
     override val canRestart = false
 
+    private val away = GuestWaiting()
+
+    /** The host's and other guests' waits; past the host's wait the game is over ("host left"). */
+    private val ticker = SecondTicker {
+        val w = away.current(players)
+        waiting = w?.takeIf { it.seconds > 0 }
+        if (w?.host == true && w.seconds == 0) notice = R.string.nearby_host_lost
+    }
+
     init {
         players = session.players
+        away.players(players)
         session.onState = { state ->
             players = session.players
+            away.players(players)
             notice = null
             deliver(state, session.lastSeat, session.lastMove)
         }
+        session.onPlayers = { list ->
+            players = list
+            away.players(list)
+            notice = null
+        }
         session.onInvalid = { notice = R.string.nearby_move_refused }
-        session.onDisconnected = { notice = R.string.nearby_host_lost }
+        session.onDisconnected = { away.hostLost() }
         session.state?.let { deliver(it, null, null) }
+        ticker.start()
     }
 
     override fun play(seat: Int, hole: Int) = session.sendMove(CongklakMove(hole)) != null
 
     override fun restart() = Unit
 
-    override fun leave() = session.leave()
+    override fun leave() {
+        ticker.stop()
+        session.leave()
+    }
 }

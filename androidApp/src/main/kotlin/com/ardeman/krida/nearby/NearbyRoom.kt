@@ -25,23 +25,31 @@ import com.ardeman.krida.core.session.HostSession
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.core.session.SeatColorRules
 import com.ardeman.krida.core.transport.Transport
+import com.ardeman.krida.online.OnlineGuestTransport
+import com.ardeman.krida.online.OnlineHostTransport
+import com.ardeman.krida.online.OnlineTransport
 import com.ardeman.krida.ulartangga.UlarTanggaGuestTable
 import com.ardeman.krida.ulartangga.UlarTanggaHostTable
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 
 /**
- * A room over BLE ("Teman dekat"), from hosting or joining until the game starts. Then
- * [congklak] or [ular] takes over the session and that game's screen shows it. A guest joins
- * by code and learns the game from the host's Welcome.
+ * A room over BLE ("Nearby") or through the online relay ("Online"), from hosting or joining
+ * until the game starts. Then [congklak] or [ular] takes over the session and that game's
+ * screen shows it. A guest joins by code and learns the game from the host's Welcome.
  */
 class NearbyRoom private constructor(
     val code: String,
     val isHost: Boolean,
+    /** Through the relay rather than over Bluetooth. */
+    val online: Boolean,
     private val transport: Transport,
 ) {
-    /** Where the room stands; a guest goes SEARCHING → CONNECTING → LOBBY, or stops at a failure. */
-    enum class Stage { SEARCHING, CONNECTING, LOBBY, FULL, STARTED, VERSION, NOT_FOUND, LOST, UNKNOWN_GAME, REFUSED }
+    /**
+     * Where the room stands; a guest goes SEARCHING → CONNECTING → LOBBY, or stops at a
+     * failure. OFFLINE: the relay couldn't be reached (online only, host or guest).
+     */
+    enum class Stage { SEARCHING, CONNECTING, LOBBY, FULL, STARTED, VERSION, NOT_FOUND, LOST, UNKNOWN_GAME, REFUSED, OFFLINE }
 
     /** The room's game id (`GameRules.id`); null for a guest until the host welcomes it. */
     var game by mutableStateOf<String?>(null)
@@ -73,6 +81,9 @@ class NearbyRoom private constructor(
         private set
 
     val failed: Boolean get() = stage !in listOf(Stage.SEARCHING, Stage.CONNECTING, Stage.LOBBY)
+
+    /** What the host chose, for [retry]. */
+    private var hostGame: Game? = null
 
     private var begin: (() -> Unit)? = null
     private var guest: GuestSession<*, *>? = null
@@ -117,10 +128,17 @@ class NearbyRoom private constructor(
         }
     }
 
-    private fun <S, M> hostSession(rules: GameRules<S, M>, name: String, ble: BleHostTransport): HostSession<S, M> {
+    /** Leaves and opens the same kind of room again: a new one for a host, the same code for a guest. */
+    fun retry(context: Context, name: String): NearbyRoom {
+        leave()
+        val game = hostGame
+        return if (isHost && game != null) host(context, name, game, online) else join(context, code, name, online)
+    }
+
+    private fun <S, M> hostSession(rules: GameRules<S, M>, name: String, transport: Transport): HostSession<S, M> {
         game = rules.id
         maxPlayers = rules.maxPlayers
-        val session = HostSession(rules, ble, roomCode = code)
+        val session = HostSession(rules, transport, roomCode = code)
         colorCount = session.colorCount
         session.onPlayersChanged = { list ->
             players = list
@@ -158,6 +176,19 @@ class NearbyRoom private constructor(
         }
     }
 
+    /** The relay closed a guest's socket for good; the game's table shows drops once it runs. */
+    private fun relayClosed(closeCode: Int) {
+        main.removeCallbacks(notFound)
+        if (failed || congklak != null || ular != null) return
+        stage = when (closeCode) {
+            OnlineTransport.NO_ROOM -> Stage.NOT_FOUND
+            OnlineTransport.FULL -> Stage.FULL
+            OnlineTransport.KICKED -> Stage.REFUSED
+            OnlineTransport.GAVE_UP -> if (stage == Stage.SEARCHING) Stage.OFFLINE else Stage.LOST
+            else -> Stage.LOST
+        }
+    }
+
     private fun lost() {
         main.removeCallbacks(notFound)
         if (!failed) stage = Stage.LOST
@@ -169,41 +200,49 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up with "Room tidak ketemu". */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game): NearbyRoom {
-            val code = RoomCode.generate()
-            val ble = BleHostTransport(context, code)
-            val room = NearbyRoom(code, isHost = true, transport = ble)
+        fun host(context: Context, name: String, game: Game, online: Boolean = false): NearbyRoom {
+            val code = if (online) RoomCode.generateOnline() else RoomCode.generate()
+            val transport: Transport = if (online) OnlineHostTransport(code) else BleHostTransport(context, code)
+            val room = NearbyRoom(code, isHost = true, online = online, transport = transport)
+            room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
-                    val session = room.hostSession(CongklakSettings.rules, name, ble)
+                    val session = room.hostSession(CongklakSettings.rules, name, transport)
                     room.begin = {
                         if (session.canStart()) {
                             session.start()
-                            room.congklak = HostTable(session, mySeat = 0, transport = ble)
+                            room.congklak = HostTable(session, mySeat = 0, transport = transport)
                         }
                     }
                 }
                 Game.ULAR_TANGGA -> {
-                    val session = room.hostSession(UlarTanggaSettings.rules, name, ble)
+                    val session = room.hostSession(UlarTanggaSettings.rules, name, transport)
                     room.canAddBots = true
                     room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, UlarTanggaBot) }
                     room.removeBot = { seat -> session.removeBot(seat) }
                     room.begin = {
                         if (session.canStart()) {
                             session.start()
-                            room.ular = UlarTanggaHostTable(session, mySeat = 0, transport = ble)
+                            room.ular = UlarTanggaHostTable(session, mySeat = 0, transport = transport)
                         }
                     }
                 }
             }
-            ble.start()
+            when (transport) {
+                is BleHostTransport -> transport.start()
+                is OnlineHostTransport -> {
+                    // Only before the game: once it runs, the table shows the drop.
+                    transport.onClosed = { if (room.congklak == null && room.ular == null) room.stage = Stage.OFFLINE }
+                    transport.start()
+                }
+            }
             return room
         }
 
-        fun join(context: Context, code: String, name: String): NearbyRoom {
-            val ble = BleGuestTransport(context, code)
-            val room = NearbyRoom(code, isHost = false, transport = ble)
-            val join = GuestJoin(ble, name, Platform.ANDROID)
+        fun join(context: Context, code: String, name: String, online: Boolean = false): NearbyRoom {
+            val transport: Transport = if (online) OnlineGuestTransport(code) else BleGuestTransport(context, code)
+            val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
+            val join = GuestJoin(transport, name, Platform.ANDROID)
             room.join = join
             join.onConnected = { if (room.stage == Stage.SEARCHING) room.stage = Stage.CONNECTING }
             join.onRejected = room::rejected
@@ -222,7 +261,13 @@ class NearbyRoom private constructor(
                 }
             }
             room.main.postDelayed(room.notFound, NOT_FOUND_MS)
-            ble.start()
+            when (transport) {
+                is BleGuestTransport -> transport.start()
+                is OnlineGuestTransport -> {
+                    transport.onClosed = { closeCode -> room.relayClosed(closeCode) }
+                    transport.start()
+                }
+            }
             return room
         }
     }

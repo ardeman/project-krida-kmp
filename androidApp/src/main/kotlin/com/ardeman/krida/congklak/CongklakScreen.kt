@@ -344,9 +344,11 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             }
             Spacer(Modifier.weight(1f))
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val notice = table.notice
+                val away = table.waiting
+                val notice = away?.let { stringResource(R.string.online_waiting_for, it.name, it.seconds) }
+                    ?: table.notice?.let { stringResource(it) }
                 if (notice != null) {
-                    Text(stringResource(notice), style = Theme.font(14, FontWeight.Bold, Theme.error))
+                    Text(notice, style = Theme.font(14, FontWeight.Bold, Theme.error))
                 } else {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(painterResource(R.drawable.ic_rotate_cw), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(15.dp))

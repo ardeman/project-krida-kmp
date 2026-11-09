@@ -139,6 +139,8 @@ class MainActivity : ComponentActivity() {
 
     private var roomCode by mutableStateOf("")
     private var joining by mutableStateOf(false)
+    /** The join screen takes a 6-letter online code instead of a 4-letter nearby one. */
+    private var joinOnline by mutableStateOf(false)
     private var room by mutableStateOf<NearbyRoom?>(null)
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
@@ -189,7 +191,10 @@ class MainActivity : ComponentActivity() {
         Sounds.english = Language.current(this) == Language.Lang.EN
         CongklakSettings.init(this)
         UlarTanggaSettings.init(this)
-        intent?.data?.toString()?.let { RoomCode.parse(it) }?.let { roomCode = it; joining = true }
+        intent?.data?.toString()?.let { link ->
+            RoomCode.parse(link)?.let { roomCode = it; joinOnline = false; joining = true }
+                ?: RoomCode.parseOnline(link)?.let { roomCode = it; joinOnline = true; joining = true }
+        }
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
             // start them once the loading screen is on screen, not before the first frame.
@@ -215,7 +220,8 @@ class MainActivity : ComponentActivity() {
                         onScan = ::scanRoomQr,
                         onJoin = ::joinRoom,
                         onBack = { joining = false; joinError = null },
-                        error = joinError ?: R.string.nearby_permission_denied.takeIf { permissionDenied },
+                        error = joinError ?: R.string.nearby_permission_denied.takeIf { permissionDenied && !joinOnline },
+                        online = joinOnline,
                     )
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
                 }
@@ -365,7 +371,9 @@ class MainActivity : ComponentActivity() {
     private fun PlayCard(game: Game) {
         var place by rememberSaveable { mutableStateOf(Place.PHONE) }
         val ular = game == Game.ULAR_TANGGA
-        val nearby = place == Place.NEARBY
+        // A room with other phones, over Bluetooth or the internet.
+        val nearby = place != Place.PHONE
+        val online = place == Place.ONLINE
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
         val congklak = LocalSeats.decode(congklakSeats, 2, listOf(LocalSeat.PERSON, LocalSeat.PERSON))
@@ -415,6 +423,7 @@ class MainActivity : ComponentActivity() {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.weight(1f)) {
                         when {
+                            online -> Detail(stringResource(if (ular) R.string.ular_detail_online else R.string.online_detail))
                             nearby -> Detail(stringResource(if (ular) R.string.ular_detail_nearby else R.string.nearby_detail))
                             !ular && computers > 0 -> LevelPicker(level) { level = it }
                             !ular -> Detail(stringResource(R.string.mode_pass_detail))
@@ -424,12 +433,21 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     if (nearby) {
-                        SecondaryButton(stringResource(R.string.nearby_join_with_code), onClick = { joining = true }, tint = Theme.muted)
+                        SecondaryButton(
+                            stringResource(R.string.nearby_join_with_code),
+                            onClick = {
+                                if (joinOnline != online) roomCode = ""
+                                joinOnline = online
+                                joining = true
+                            },
+                            tint = Theme.muted,
+                        )
                     }
                     PrimaryButton(
                         stringResource(if (nearby) R.string.nearby_host else R.string.bot_start),
                         onClick = {
                             when {
+                                online -> room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK, online = true)
                                 nearby -> withBlePermissions {
                                     room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
                                 }
@@ -479,16 +497,20 @@ class MainActivity : ComponentActivity() {
                     fill = true,
                 )
             }
-            if (permissionDenied) {
+            if (permissionDenied && !online) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
         }
     }
 
-    /** Joins the room [roomCode] names, after asking for the Bluetooth permissions if needed. */
+    /** Joins the room [roomCode] names: online, or nearby after asking for the Bluetooth permissions. */
     private fun joinRoom() {
-        if (!RoomCode.isValid(roomCode)) return
         joinError = null
+        if (joinOnline) {
+            if (RoomCode.isValidOnline(roomCode)) room = NearbyRoom.join(this, roomCode, myName, online = true)
+            return
+        }
+        if (!RoomCode.isValid(roomCode)) return
         withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) }
     }
 
@@ -498,11 +520,15 @@ class MainActivity : ComponentActivity() {
         val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
         GmsBarcodeScanning.getClient(this, options).startScan()
             .addOnSuccessListener { barcode ->
-                val code = barcode.rawValue?.let(RoomCode::parse)
-                if (code == null) {
+                // Either kind of room, whichever join screen is open.
+                val raw = barcode.rawValue
+                val nearbyCode = raw?.let(RoomCode::parse)
+                val onlineCode = raw?.let(RoomCode::parseOnline)
+                if (nearbyCode == null && onlineCode == null) {
                     joinError = R.string.nearby_scan_not_room
                 } else {
-                    roomCode = code
+                    joinOnline = nearbyCode == null
+                    roomCode = nearbyCode ?: onlineCode!!
                     joinRoom()
                 }
             }
@@ -518,13 +544,10 @@ class MainActivity : ComponentActivity() {
             room = null
             if (r.isHost || r.stage == NearbyRoom.Stage.LOBBY) joining = false
         }
-        if (r.isHost || r.stage == NearbyRoom.Stage.LOBBY) {
+        if ((r.isHost && !r.failed) || r.stage == NearbyRoom.Stage.LOBBY) {
             RoomLobby(r, onLeave = ::leave)
         } else {
-            ConnectingScreen(r, onCancel = ::leave, onRetry = {
-                r.leave()
-                room = NearbyRoom.join(this@MainActivity, r.code, myName)
-            })
+            ConnectingScreen(r, onCancel = ::leave, onRetry = { room = r.retry(this@MainActivity, myName) })
         }
     }
 
@@ -553,6 +576,7 @@ private fun levelLabel(level: CongklakBot.Level) = when (level) {
 private enum class Place(val label: Int, val icon: Int) {
     PHONE(R.string.opponent_phone, R.drawable.ic_people),
     NEARBY(R.string.opponent_nearby, R.drawable.ic_bluetooth),
+    ONLINE(R.string.opponent_online, R.drawable.ic_globe),
 }
 
 /**
