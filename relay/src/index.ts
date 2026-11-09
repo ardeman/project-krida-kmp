@@ -160,15 +160,16 @@ export class Room implements DurableObject {
     }
   }
 
-  async webSocketClose(ws: WebSocket): Promise<void> {
-    await this.left(ws);
+  async webSocketClose(ws: WebSocket, code: number): Promise<void> {
+    await this.left(ws, code === 1000);
   }
 
   async webSocketError(ws: WebSocket): Promise<void> {
     await this.left(ws);
   }
 
-  private async left(ws: WebSocket): Promise<void> {
+  /** [onPurpose]: the socket closed normally (1000), i.e. the app left the room. */
+  private async left(ws: WebSocket, onPurpose = false): Promise<void> {
     this.buckets.delete(ws);
     closeQuietly(ws, 1000, "bye");
     const att = ws.deserializeAttachment() as Attachment | null;
@@ -176,6 +177,10 @@ export class Room implements DurableObject {
 
     if (att.role === "guest") {
       for (const host of this.hosts(ws)) sendQuietly(host, frame(KIND_DISCONNECTED, att.id));
+    } else if (this.hosts(ws).length === 0 && onPurpose) {
+      // The host left the room: end it now instead of making guests wait out the grace.
+      for (const guest of this.guests(ws)) closeQuietly(guest, CLOSE.hostGone, "host left");
+      await this.ctx.storage.deleteAll();
     } else if (this.hosts(ws).length === 0) {
       // Not a replaced socket: the host is really gone. Guests wait; the alarm ends the room.
       for (const guest of this.guests(ws)) sendQuietly(guest, frame(KIND_DISCONNECTED, HOST_PEER));

@@ -144,7 +144,8 @@ there (right after joining, or when the host comes back) and `disconnected` when
 drops. Guests send data with `peer` = `0`.
 
 If the host stays away for the reconnect grace (60 s), the relay closes the guests with
-`4010` and forgets the room. Close codes:
+`4010` and forgets the room. A host that closes its socket normally (`1000`, leaving the room
+on purpose) ends the room at once the same way; a dropped connection gets the grace. Close codes:
 
 | Code | Meaning |
 |---|---|
@@ -153,7 +154,7 @@ If the host stays away for the reconnect grace (60 s), the relay closes the gues
 | `4004` | No such room (guest joined before any host) |
 | `4008` | Kicked by the host |
 | `4009` | Room full |
-| `4010` | Host gone past the grace |
+| `4010` | Host left (closed normally) or gone past the grace |
 | `4011` | Replaced by a newer host socket |
 | `4013` | Message over 64 KB |
 | `4029` | Rate limited (bursts of 50, 20 messages/s sustained) |

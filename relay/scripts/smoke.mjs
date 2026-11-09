@@ -78,6 +78,7 @@ expect(await host.next(), { kind: DISCONNECTED, peer: 1 }, "host sees guest 1 le
 const stranger = open(`role=host&key=${"x".repeat(32)}`);
 expect({ code: await timeout(stranger.closed, "close") }, { code: 4001 }, "wrong host key gets 4001");
 
+// No status code (1005), like a drop: guests wait for the host to come back.
 host.close();
 expect(await b.next(), { kind: DISCONNECTED, peer: 0 }, "guest sees host drop");
 
@@ -85,7 +86,11 @@ const back = open(`role=host&key=${key}`);
 expect(await back.next(), { kind: CONNECTED, peer: 2 }, "returning host is told about guest 2");
 expect(await b.next(), { kind: CONNECTED, peer: 0 }, "guest sees host return");
 
-back.close();
-b.close();
+back.close(1000);
+// Local workerd never finishes a close the relay starts outside a message handler (the
+// grace alarm's 4010 doesn't arrive locally either), so check this one live only.
+if (!/localhost|127\.0\.0\.1/.test(base)) {
+  expect({ code: await timeout(b.closed, "close") }, { code: 4010 }, "host leaving on purpose ends the room (4010)");
+} else b.close();
 console.log("all ok");
 process.exit(0);
