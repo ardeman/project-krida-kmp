@@ -43,7 +43,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,6 +85,7 @@ import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.Theme
 import kotlin.math.hypot
 import kotlin.random.Random
+import com.ardeman.krida.ui.rememberGameLifetime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -143,7 +143,13 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     val turned = LocalStageTurned.current
     var renderer by remember { mutableStateOf<BoardRenderer?>(null) }
     val queue = remember { ArrayDeque<CongklakUpdate>() }
-    val scope = rememberCoroutineScope()
+    val lifetime = rememberGameLifetime(table) {
+        table.onUpdate = null
+        queue.clear()
+        table.leave()
+        Sounds.stopGameAudio()
+    }
+    val scope = lifetime.scope
 
     fun push() {
         renderer?.setSeedTargets(seeds.targets())
@@ -160,7 +166,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     }
 
     fun drain() {
-        if (animating) return
+        if (!lifetime.active || animating) return
         val update = queue.removeFirstOrNull() ?: return idle()
         animating = true
         scope.launch {
@@ -196,10 +202,10 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     DisposableEffect(table) {
         table.onUpdate = { update -> waiting = false; queue.addLast(update); drain() }
         drain()
-        onDispose { table.onUpdate = null }
+        onDispose { lifetime.stop() }
     }
 
-    fun canPlay() = !animating && !waiting && queue.isEmpty() && !state.finished &&
+    fun canPlay() = lifetime.active && !animating && !waiting && queue.isEmpty() && !state.finished &&
         (table.mySeat == null || table.mySeat == state.turn)
 
     fun play(hole: Int) {
@@ -210,7 +216,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     }
 
     fun exit() {
-        table.leave()
+        lifetime.stop()
         onExit()
     }
 

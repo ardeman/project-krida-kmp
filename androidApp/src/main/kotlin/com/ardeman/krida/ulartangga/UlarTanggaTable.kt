@@ -59,7 +59,11 @@ abstract class UlarTanggaTable {
         this.seq = seq
     }
 
+    protected var active = true
+        private set
+
     protected fun deliver(state: UlarTanggaState, seq: Int) {
+        if (!active) return
         // Rebroadcasts keep seq, and a restart's first state has no throw yet; only a throw
         // or roll right after the shown state animates.
         val thrown = state.lastRoll != null || state.openingRolls.any { round -> round.any { it != 0 } }
@@ -81,7 +85,7 @@ abstract class UlarTanggaTable {
     open fun stepBot() = Unit
 
     abstract fun restart()
-    abstract fun leave()
+    open fun leave() { active = false; onUpdate = null }
 }
 
 /** The authoritative table: on this device only, or hosting a nearby room. */
@@ -113,17 +117,19 @@ class UlarTanggaHostTable(
         if (transport !is LocalTransport) ticker.start()
     }
 
-    override fun roll(seat: Int) = session.submitLocal(seat, UlarTanggaMove()) == null
+    override fun roll(seat: Int) = active && session.submitLocal(seat, UlarTanggaMove()) == null
 
     override fun stepBot() {
-        session.stepBot()
+        if (active) session.stepBot()
     }
 
     override fun restart() {
-        if (latest.finished) session.restart()
+        if (active && latest.finished) session.restart()
     }
 
     override fun leave() {
+        if (!active) return
+        super.leave()
         ticker.stop()
         transport.close()
     }
@@ -188,11 +194,13 @@ class UlarTanggaGuestTable(
         ticker.start()
     }
 
-    override fun roll(seat: Int) = seat == session.seat && session.sendMove(UlarTanggaMove()) != null
+    override fun roll(seat: Int) = active && seat == session.seat && session.sendMove(UlarTanggaMove()) != null
 
     override fun restart() = Unit
 
     override fun leave() {
+        if (!active) return
+        super.leave()
         ticker.stop()
         // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
         if (session.finished) session.roomCode?.let(LastRoom::clear)

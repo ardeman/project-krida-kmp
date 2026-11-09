@@ -18,6 +18,8 @@ A change is done only when the checks for the parts you touched pass. If you can
 - `androidApp/`: `./gradlew :androidApp:assembleDebug`.
 - `ios/`: `cd ios && xcodegen && xcodebuild -scheme Krida -destination 'generic/platform=iOS Simulator' build`.
 - `web/`: `cd web && npm run build`.
+- Native game task lifetime changes: `./scripts/test-ios-game-lifetime.sh` for the iOS
+  cancellation helper, plus the build for each changed platform.
 
 Gradle needs JDK 17–21; Android Studio's bundled JDK 25 is too new (see `README.md`).
 
@@ -27,6 +29,12 @@ Gradle needs JDK 17–21; Android Studio's bundled JDK 25 is too new (see `READM
 - The host is authoritative. Guests send intents only; dice and validation happen on the host.
 - Keep `shared/` callable from Swift: plain callback interfaces (no coroutines or `Flow` in public API), and a secondary constructor without default arguments wherever Kotlin defaults matter.
 - Transports call their listener on one thread (the main thread), so sessions need no locks.
+- Every game must stop board work on exit and screen removal. Use native `GameLifetime`
+  (`rememberGameLifetime` on Android) for animations, bot delays, gesture timers and timeout
+  work; SwiftUI view loading uses cancellable `.task`. Never ignore sleep cancellation.
+  Cleanup is idempotent: detach callbacks (including renderer audio callbacks), clear queued
+  updates, stop timers and game effects/voice, and leave the table/transport. Closed tables
+  reject moves, bot steps and restarts. Menu music and tap feedback remain available.
 - Protocol changes follow the compatibility rule in `docs/protocol.md`: never change an existing field's meaning, add optional fields only, bump `protocol` for a breaking change. Update `docs/protocol.md` in the same commit.
 - Rendering and radios stay native: Filament (Android) and RealityKit (iOS), BLE and LAN per platform. No cross-platform engine or WebView.
 - Install size budget is under 15 MB per store download. Ask before adding a dependency; prefer generating voxel meshes in code over shipping assets, and use `.glb` with vertex colors (no textures) when an asset is needed.

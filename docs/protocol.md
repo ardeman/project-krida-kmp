@@ -180,7 +180,7 @@ Players that cancel during the wait (close the WebSocket) are removed from the q
 
 ### Opt-in group search
 
-The redesigned Android client adds `?flow=group` to the same match URL. It uses a separate
+Android and iOS clients add `?flow=group` to the same match URL. It uses a separate
 `GroupMatchmaker` Durable Object namespace so legacy clients keep their existing flow.
 Valid selections are `congklak/2` and `ular_tangga/2`, `/3`, `/4`, using the shared game IDs. All group events are JSON text WebSocket frames, independent of game-session
 messages and binary room framing. Clients close the socket to cancel.
@@ -217,7 +217,7 @@ and `seats` equal to the human count. A lone player may instead send
 the revision, game limit and lone membership before returning `matched` with `role: "solo"`
 and the chosen `seats`; the client starts locally with `seats - 1` computers. Earlier group
 clients retain their existing computer-fill choice and cannot cast humans-only votes.
-Android's solo button instead closes the match socket and starts the selected local game
+Both apps' solo buttons instead close the match socket and start the selected local game
 directly, so this path also works before the updated relay is deployed. Leaving removes
 the player from the queue as with cancellation; any concurrent arrival stays in the queue.
 

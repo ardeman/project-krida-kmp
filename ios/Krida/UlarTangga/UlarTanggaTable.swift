@@ -22,6 +22,7 @@ class UlarTanggaTable: ObservableObject {
     /// Receives every snapshot after `latest`, in order.
     var onUpdate: ((UlarTanggaUpdate) -> Void)?
 
+    fileprivate(set) var active = true
     private var seq: Int32
 
     /// This device's seat; nil for pass-and-play (whoever's turn it is).
@@ -37,6 +38,7 @@ class UlarTanggaTable: ObservableObject {
     }
 
     fileprivate func deliver(_ state: UlarTanggaState, seq: Int32) {
+        guard active else { return }
         // Rebroadcasts keep seq, and a restart's first state has no throw yet; only a throw
         // or roll right after the shown state animates.
         let thrown = state.lastRoll != nil || state.openingRolls.contains { $0.contains { $0.intValue != 0 } }
@@ -67,7 +69,7 @@ class UlarTanggaTable: ObservableObject {
     /// Lets a computer roll if it is its turn. Called once the board is idle.
     func stepBot() {}
     func restart() {}
-    func leave() {}
+    func leave() { active = false; onUpdate = nil }
 }
 
 /// The authoritative table: on this device only, or hosting a nearby room.
@@ -106,16 +108,18 @@ final class UlarTanggaHostTable: UlarTanggaTable {
     override var canRestart: Bool { true }
 
     override func roll(seat: Int) -> Bool {
-        session.submitLocal(seat: Int32(seat), move: UlarTanggaMove()) == nil
+        active && session.submitLocal(seat: Int32(seat), move: UlarTanggaMove()) == nil
     }
 
-    override func stepBot() { _ = session.stepBot() }
+    override func stepBot() { if active { _ = session.stepBot() } }
 
     override func restart() {
-        if latest.finished { session.restart() }
+        if active && latest.finished { session.restart() }
     }
 
     override func leave() {
+        guard active else { return }
+        super.leave()
         ticker?.stop()
         transport.close()
     }
@@ -181,10 +185,12 @@ final class UlarTanggaGuestTable: UlarTanggaTable {
     override var mySeat: Int? { session.seat.map { Int($0.int32Value) } }
 
     override func roll(seat: Int) -> Bool {
-        seat == mySeat && session.sendMove(move: UlarTanggaMove()) != nil
+        active && seat == mySeat && session.sendMove(move: UlarTanggaMove()) != nil
     }
 
     override func leave() {
+        guard active else { return }
+        super.leave()
         ticker?.stop()
         // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
         if session.finished, let code = session.roomCode { LastRoom.shared.clear(code) }

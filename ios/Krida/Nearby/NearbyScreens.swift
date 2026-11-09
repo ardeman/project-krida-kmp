@@ -17,7 +17,7 @@ private extension View {
 }
 
 /// Back button, title and the "Teman dekat" or "Online" line, over the screen's cards.
-private struct NearbyFrame<Content: View>: View {
+struct NearbyFrame<Content: View>: View {
     let title: Text
     let subtitle: Text
     var online = false
@@ -54,11 +54,11 @@ private struct NearbyFrame<Content: View>: View {
 }
 
 /// The line under a room screen's title: Bluetooth nearby, or the internet.
-private func placeLine(_ online: Bool) -> Text {
+func placeLine(_ online: Bool) -> Text {
     online ? Text("Online · lewat internet") : Text("Teman dekat · Bluetooth, tanpa internet")
 }
 
-private func gameTitle(_ game: String?) -> Text {
+func gameTitle(_ game: String?) -> Text {
     switch game {
     case UlarTanggaGame.shared.id: Text("Ular tangga")
     case CongklakGame.shared.id: Text("Congklak")
@@ -317,7 +317,7 @@ struct RoomLobby: View {
             }
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            if p.bot && room.isHost {
+            if p.bot && room.isHost && room.canAddBots {
                 Button {
                     Sounds.shared.play(.tap)
                     room.removeBot(seat: seat)

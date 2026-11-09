@@ -43,7 +43,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -86,6 +85,7 @@ import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.Theme
 import com.ardeman.krida.ui.gameInsets
+import com.ardeman.krida.ui.rememberGameLifetime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -144,7 +144,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     val turned = LocalStageTurned.current
     val activity = LocalActivity.current
     val queue = remember { ArrayDeque<UlarTanggaUpdate>() }
-    val scope = rememberCoroutineScope()
+    val lifetime = rememberGameLifetime(table) {
+        table.onUpdate = null
+        queue.clear()
+        renderer?.onDieBounce = null
+        renderer?.holdDie(false)
+        table.leave()
+        Sounds.stopGameAudio()
+    }
+    val scope = lifetime.scope
     val players = state.positions.size
 
     fun recallDie(next: UlarTanggaState) {
@@ -171,7 +179,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     }
 
     fun drain() {
-        if (animating) return
+        if (!lifetime.active || animating) return
         val update = queue.removeFirstOrNull() ?: return idle()
         animating = true
         scope.launch {
@@ -245,7 +253,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     DisposableEffect(table) {
         table.onUpdate = { queue.addLast(it); drain() }
         queue.addLast(UlarTanggaUpdate(table.latest, fresh = false))
-        onDispose { table.onUpdate = null }
+        onDispose { lifetime.stop() }
     }
     LaunchedEffect(renderer) {
         if (renderer == null) return@LaunchedEffect
@@ -253,7 +261,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         drain()
     }
 
-    fun canRoll() = !animating && queue.isEmpty() && !state.finished && table.isLocal(state.turn)
+    fun canRoll() = lifetime.active && !animating && queue.isEmpty() && !state.finished && table.isLocal(state.turn)
 
     /** Throws the die for the local player whose turn it is; it shakes until the roll comes back. */
     fun roll(toss: UlarTanggaRenderer.Toss) {
@@ -273,7 +281,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     }
 
     fun exit() {
-        table.leave()
+        lifetime.stop()
         onExit()
     }
 
@@ -317,7 +325,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                 view.also {
                     renderer = UlarTanggaRenderer(view).apply {
                         this.onFirstFrame = onFirstFrame
-                        onDieBounce = { Sounds.play(Sounds.Effect.Die) }
+                        onDieBounce = { if (lifetime.active) Sounds.play(Sounds.Effect.Die) }
                         resume()
                     }
                     view.tag = renderer

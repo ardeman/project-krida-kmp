@@ -67,6 +67,14 @@ final class Sounds: ObservableObject {
         player.play()
     }
 
+    /// Leaving a board stops its effects and voice without interrupting menu music or taps.
+    func stopGameAudio() {
+        for (effect, pool) in effects where effect != .tap {
+            for player in pool { player.stop() }
+        }
+        for player in Array(lines.values) + Array(linesEn.values) { player.stop() }
+    }
+
     /// A voice line cuts off the one before it, so two never talk over each other.
     func say(_ line: Line) {
         let english = Language.shared.code == .en

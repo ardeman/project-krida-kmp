@@ -23,6 +23,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Theme, buttons, landscape stage | `ui/Theme.kt` | `Support/Theme.swift` |
 | Loading screen | `ui/Loading.kt` | `Support/Loading.swift` |
 | Sounds | `ui/Sounds.kt` | `Support/Sounds.swift` |
+| Board task lifetime | `ui/GameLifetime.kt` (`rememberGameLifetime`) | `Support/GameLifetime.swift` |
 | Language picker | `ui/Language.kt` | `Support/Language.swift` |
 | 3D view host | `ui/VoxelStage.kt` | (RealityKit `ARView` in each scene) |
 | Congklak screen | `congklak/CongklakScreen.kt` | `Congklak/CongklakView.swift` |
@@ -62,5 +63,9 @@ A change to one side usually needs the same change in the file on the same row.
    settings, following congklak and ular tangga.
 3. A card in the menu's game switch and a play-card variant in `MainActivity.kt` /
    `ContentView.swift`.
+   Bind the board's asynchronous work to the native `GameLifetime`; stop it on explicit
+   exit and screen removal. Detach updates/render callbacks, leave the table, stop tickers
+   and game audio, and reject late moves/restarts after leaving. Test exiting during an
+   animation, a pending computer turn and a held gesture before adding another game.
 4. Rooms work through the game-agnostic `NearbyRoom` once the game's table has host and guest
    variants.

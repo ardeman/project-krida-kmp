@@ -27,6 +27,7 @@ final class UlarTanggaGameModel: ObservableObject {
     private let game = UlarTanggaGame.shared
     private let board = UlarTanggaBoard.shared
     private var queue: [UlarTanggaUpdate] = []
+    private let lifetime = GameLifetime()
     /// How the local player threw the die, for the roll the table hasn't sent back yet.
     private var pendingToss: UlarTanggaScene.Toss?
     /// The loading screen still covers the board; computers wait for it.
@@ -40,10 +41,14 @@ final class UlarTanggaGameModel: ObservableObject {
     init(table: UlarTanggaTable) {
         self.table = table
         state = table.latest
-        scene.onDieBounce = { Sounds.shared.play(.die) }
+        scene.onDieBounce = { [weak self] in
+            guard let self, self.lifetime.active else { return }
+            self.sounds.play(.die)
+        }
         table.onUpdate = { [weak self] update in
-            self?.queue.append(update)
-            self?.drain()
+            guard let self, self.lifetime.active else { return }
+            self.queue.append(update)
+            self.drain()
         }
         // The first state runs through the queue too, so the pawns are placed.
         queue.append(UlarTanggaUpdate(state: table.latest, fresh: false))
@@ -54,8 +59,22 @@ final class UlarTanggaGameModel: ObservableObject {
     var turn: Int { Int(state.turn) }
     var queueEmpty: Bool { queue.isEmpty }
 
-    var canRoll: Bool { !animating && queue.isEmpty && !state.finished && table.isLocal(turn) }
+    var canRoll: Bool { lifetime.active && !animating && queue.isEmpty && !state.finished && table.isLocal(turn) }
     var ready: Bool { canRoll && !offHold && !loading }
+
+    func stop() {
+        guard lifetime.active else { return }
+        lifetime.stop()
+        table.onUpdate = nil
+        scene.onDieBounce = nil
+        scene.holdDie(false)
+        scene.dieReady = false
+        queue.removeAll()
+        pressing = false
+        pendingToss = nil
+        table.leave()
+        sounds.stopGameAudio()
+    }
 
     func layout(size: CGSize, room: CGRect, obstacles: [CGRect], dieSpot: CGRect) {
         viewFrame = scene.layout(size: size, room: room, obstacles: obstacles)
@@ -86,8 +105,8 @@ final class UlarTanggaGameModel: ObservableObject {
             scene.holdDie(false)
         }
         updateReady()
-        Task {
-            try? await Task.sleep(for: .seconds(4))
+        lifetime.launch("rollTimeout") { [self] in
+            try await Task.sleep(for: .seconds(4))
             if pendingToss == toss && !animating {
                 pendingToss = nil
                 scene.holdDie(false)
@@ -99,15 +118,14 @@ final class UlarTanggaGameModel: ObservableObject {
 
     private var pressing = false
     private var spinning = false
-    private var holdTimer: Task<Void, Never>?
 
     /// A finger went down on the die: press it, and after a moment start spinning it.
     func pressDie() {
         guard !pressing, canRoll, pendingToss == nil else { return }
         pressing = true
         scene.holdDie(true)
-        holdTimer = Task {
-            try? await Task.sleep(for: .seconds(0.5))
+        lifetime.launch("hold") { [self] in
+            try await Task.sleep(for: .seconds(0.5))
             guard !Task.isCancelled, pressing else { return }
             spinning = true
             scene.holdDie(true, shake: true)
@@ -124,8 +142,7 @@ final class UlarTanggaGameModel: ObservableObject {
     func releaseDie(completed: Bool) {
         guard pressing else { return }
         pressing = false
-        holdTimer?.cancel()
-        holdTimer = nil
+        lifetime.cancel("hold")
         let long = spinning
         spinning = false
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
@@ -133,14 +150,14 @@ final class UlarTanggaGameModel: ObservableObject {
         roll(long ? .long : .short)
     }
 
-    func restart() { table.restart() }
+    func restart() { if lifetime.active { table.restart() } }
 
     /// Once the board is still, give a computer player its turn after a short pause.
     private func idle() {
         updateReady()
-        Task {
-            while loading { try? await Task.sleep(for: .milliseconds(100)) }
-            try? await Task.sleep(for: .seconds(Self.botPause))
+        lifetime.launch("bot") { [self] in
+            while loading { try await Task.sleep(for: .milliseconds(100)) }
+            try await Task.sleep(for: .seconds(Self.botPause))
             if !animating && queue.isEmpty { table.stepBot() }
         }
     }
@@ -156,52 +173,53 @@ final class UlarTanggaGameModel: ObservableObject {
     }
 
     private func drain() {
-        guard !animating else { return }
+        guard lifetime.active, !animating else { return }
         guard !queue.isEmpty else { return idle() }
         let update = queue.removeFirst()
+        lifetime.cancel("bot")
         animating = true
         updateReady()
-        Task {
+        lifetime.launch("animation") { [self] in
             let next = update.state
             let offThrow = update.fresh ? game.diceOffThrowBetween(before: state, after: next) : nil
             if let offThrow, let thrower = offThrow.first?.intValue, let value = offThrow.second?.intValue {
                 // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
                 let origin = table.isLocal(thrower) ? nil : playerOrigins[thrower]
                 let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin, seat: thrower)
-                try? await Task.sleep(for: .seconds(Double(seconds) + 0.15))
+                try await Task.sleep(for: .seconds(Double(seconds) + 0.15))
                 state = next
-                try? await Task.sleep(for: .seconds(0.45))
+                try await Task.sleep(for: .seconds(0.45))
                 recallDie(for: next)
                 if !next.opening {
                     // The order is set: show every throw a moment, then the tiles line up in order.
                     offHold = true
-                    try? await Task.sleep(for: .seconds(1.8))
+                    try await Task.sleep(for: .seconds(1.8))
                     offHold = false
                     announceTurn(Int(next.turn))
                 }
             } else if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
                 let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
-                try? await Task.sleep(for: .seconds(Double(seconds) + 0.2))
+                try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
                 let play = game.play(state: state, seat: Int32(seat), roll: Int32(roll))
                 for square in play.steps {
                     let to = UlarTanggaScene.vec(board.pieceSpot(square: square.int32Value, seat: Int32(seat), shared: false))
                     scene.move(seat, [to], seconds: Float(Self.hop * 0.9), hop: 0.7)
                     sounds.play(.step)
-                    try? await Task.sleep(for: .seconds(Self.hop))
+                    try await Task.sleep(for: .seconds(Self.hop))
                 }
                 let landed = play.steps.last?.int32Value
                 if let landed, play.jumpTo != nil {
-                    try? await Task.sleep(for: .seconds(0.16))
+                    try await Task.sleep(for: .seconds(0.16))
                     let ladder = game.LADDERS[KotlinInt(int: landed)] != nil
                     let path = (ladder ? board.ladderPath(foot: landed) : board.snakePath(head: landed)).map { UlarTanggaScene.vec($0) }
                     let seconds = Self.length(path) / Self.jumpUnitsPerSecond + 0.2
                     sounds.play(ladder ? .store : .capture)
                     scene.move(seat, Array(path.dropFirst()), seconds: seconds)
-                    try? await Task.sleep(for: .seconds(Double(seconds) + 0.08))
+                    try await Task.sleep(for: .seconds(Double(seconds) + 0.08))
                 }
                 for s in 0..<next.positions.count { scene.move(s, [spot(next, s)], seconds: Float(Self.settle)) }
-                try? await Task.sleep(for: .seconds(Self.settle))
+                try await Task.sleep(for: .seconds(Self.settle))
                 recallDie(for: next)
                 state = next
                 let last = game.LAST
@@ -256,9 +274,11 @@ struct UlarTanggaView: View {
             if loading { LoadingScreen().transition(.opacity) }
         }
         .task {
-            try? await Task.sleep(for: .milliseconds(50))
+            do { try await Task.sleep(for: .milliseconds(50)) }
+            catch { return }
             mounted = true
-            try? await Task.sleep(for: .seconds(4))
+            do { try await Task.sleep(for: .seconds(4)) }
+            catch { return }
             finishLoading()
         }
     }
@@ -330,6 +350,7 @@ private struct UlarTanggaBoardView: View {
         }
         .ignoresSafeArea()
         .background(Theme.backdropGradient)
+        .onDisappear { model.stop() }
         .onChange(of: boxes) { _, _ in relayout() }
         .onChange(of: size) { _, _ in relayout() }
         .onChange(of: dieDown) { _, down in
@@ -366,7 +387,7 @@ private struct UlarTanggaBoardView: View {
     }
 
     private func exit() {
-        table.leave()
+        model.stop()
         onExit()
     }
 

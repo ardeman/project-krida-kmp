@@ -2,55 +2,58 @@ import Foundation
 import Shared
 import SwiftUI
 
+private func matchString(_ key: String) -> String {
+    Bundle.app.localizedString(forKey: key, value: nil, table: nil)
+}
+
 struct PlayOnlineView: View {
     let game: String
     let onCancel: () -> Void
-    let onHost: (_ code: String, _ game: String) -> Void
-    let onJoin: (_ code: String, _ game: String) -> Void
-    
-    @State private var playerCount = 2
+    let createHost: (String, Int, Int, @escaping () -> Void) -> NearbyRoom
+    let onHost: (NearbyRoom) -> Void
+    let onJoin: (String) -> Void
+    let onComputer: (Int) -> Void
+
+    @State private var playerCount: Int
     @State private var searching = false
     @State private var attempt = 0
     @Environment(\.uiScale) private var s
-    
+
+    init(game: String, onCancel: @escaping () -> Void,
+         createHost: @escaping (String, Int, Int, @escaping () -> Void) -> NearbyRoom,
+         onHost: @escaping (NearbyRoom) -> Void, onJoin: @escaping (String) -> Void,
+         onComputer: @escaping (Int) -> Void) {
+        self.game = game
+        self.onCancel = onCancel
+        self.createHost = createHost
+        self.onHost = onHost
+        self.onJoin = onJoin
+        self.onComputer = onComputer
+        _playerCount = State(initialValue: game == UlarTanggaGame.shared.id ? 4 : 2)
+    }
+
     var body: some View {
-        ZStack {
-            Theme.backdropGradient.ignoresSafeArea()
-            
-            VStack(spacing: 24 * s) {
+        NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true,
+                    backLabel: "Batal", onBack: onCancel) {
+            Group {
                 if searching {
-                    MatchSearch(
-                        game: game,
-                        target: playerCount,
-                        onCancel: {
-                            searching = false
-                            onCancel()
-                        },
-                        onRetry: { attempt += 1 },
-                        onHost: { code in
-                            onHost(code, game)
-                        },
-                        onJoin: { code in
-                            onJoin(code, game)
-                        },
-                        onComputer: { _ in
-                            // For now, just go back - will need to be integrated with game start
-                            onCancel()
-                        }
-                    )
-                    .padding(.horizontal, 24 * s)
+                    MatchSearch(game: game, target: playerCount, onCancel: onCancel,
+                                onRetry: { attempt += 1 }, createHost: createHost,
+                                onHost: onHost, onJoin: onJoin, onComputer: onComputer)
+                        .id(attempt)
                 } else {
-                    SelectPlayersCard(
-                        game: game,
-                        playerCount: $playerCount,
-                        onStart: { searching = true },
-                        onCancel: onCancel
-                    )
-                    .padding(.horizontal, 24 * s)
+                    SelectPlayersCard(game: game, playerCount: $playerCount,
+                                      onStart: { searching = true }, onCancel: onCancel)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .frame(width: 480 * s)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        #if DEBUG
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-searchQuickMatch") { searching = true }
+        }
+        #endif
     }
 }
 
@@ -62,75 +65,47 @@ private struct SelectPlayersCard: View {
     @Environment(\.uiScale) private var s
     
     var body: some View {
-        VStack(spacing: 20 * s) {
+        VStack(spacing: 12 * s) {
             VStack(spacing: 8 * s) {
-                Text(NSLocalizedString("play_online_quick_match", comment: ""))
-                    .font(Theme.font(24 * s, .black))
+                Text(matchString("play_online_quick_match"))
+                    .font(Theme.font(22 * s, .black))
                 
-                Text(NSLocalizedString("play_online_description", comment: ""))
+                Text(matchString("play_online_description"))
                     .font(Theme.font(14 * s))
                     .foregroundStyle(Theme.muted)
             }
             .multilineTextAlignment(.center)
             
-            if game == "ular-tangga" {
+            if game == UlarTanggaGame.shared.id {
                 VStack(spacing: 12 * s) {
-                    Text(NSLocalizedString("play_players", comment: ""))
+                    Text(matchString("play_players"))
                         .font(Theme.font(13 * s, .semibold))
                         .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    HStack(spacing: 8 * s) {
-                        ForEach(2...4, id: \.self) { count in
-                            PlayerCountButton(
-                                count: count,
-                                selected: playerCount == count,
-                                action: { playerCount = count }
-                            )
-                        }
-                    }
+                    Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
+                              selection: $playerCount, label: "Pemain")
                 }
             } else {
-                Text(NSLocalizedString("match_two_players", comment: ""))
+                Text(matchString("match_two_players"))
                     .font(Theme.font(14 * s))
                     .foregroundStyle(Theme.muted)
             }
             
-            Text(NSLocalizedString("match_fallback_hint", comment: ""))
+            Text(matchString("match_fallback_hint"))
                 .font(Theme.font(14 * s))
                 .foregroundStyle(Theme.muted)
             
             HStack(spacing: 10 * s) {
-                Button(NSLocalizedString("nearby_cancel", comment: ""), action: onCancel)
+                Button(matchString("nearby_cancel"), action: onCancel)
                     .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                Button(NSLocalizedString("button_search", comment: ""), action: onStart)
+                Button(matchString("button_search"), action: onStart)
                     .buttonStyle(PrimaryButtonStyle())
             }
         }
-        .padding(20 * s)
+        .padding(.horizontal, 24 * s)
+        .padding(.vertical, 22 * s)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
-    }
-}
-
-private struct PlayerCountButton: View {
-    let count: Int
-    let selected: Bool
-    let action: () -> Void
-    @Environment(\.uiScale) private var s
-    
-    var body: some View {
-        Button(action: action) {
-            Text("\(count)")
-                .font(Theme.font(16 * s, .semibold))
-                .foregroundStyle(selected ? .white : Theme.ink)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44 * s)
-                .background(selected ? Theme.accent : Theme.surface, in: RoundedRectangle(cornerRadius: 12 * s))
-                .overlay(RoundedRectangle(cornerRadius: 12 * s).stroke(
-                    selected ? Theme.accent : Theme.line,
-                    lineWidth: 1.5
-                ))
-        }
     }
 }
 
@@ -139,7 +114,8 @@ private struct MatchSearch: View {
     let target: Int
     let onCancel: () -> Void
     let onRetry: () -> Void
-    let onHost: (_ code: String) -> Void
+    let createHost: (String, Int, Int, @escaping () -> Void) -> NearbyRoom
+    let onHost: (NearbyRoom) -> Void
     let onJoin: (_ code: String) -> Void
     let onComputer: (_ seats: Int) -> Void
     
@@ -157,11 +133,12 @@ private struct MatchSearch: View {
     @State private var preparing = false
     @State private var failed = false
     @State private var transferred = false
+    @State private var pendingRoom: NearbyRoom?
     
     @Environment(\.uiScale) private var s
     
     var body: some View {
-        VStack(spacing: if offer && !preparing && !failed { 6 * s } else { 12 * s }) {
+        VStack(spacing: offer && !preparing && !failed ? 6 * s : 12 * s) {
             // Icon
             ZStack {
                 if failed {
@@ -183,7 +160,7 @@ private struct MatchSearch: View {
                         .frame(width: 64 * s, height: 64 * s)
                 }
             }
-            .frame(height: 64 * s)
+            .frame(height: offer && !preparing && !failed ? 32 * s : 64 * s)
             
             // Title
             Text(titleText)
@@ -192,22 +169,14 @@ private struct MatchSearch: View {
             
             // Detail
             Text(detailText)
-                .font(Theme.font(14 * s, .semibold))
+                .font(Theme.font(14 * s, .bold))
                 .foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
             
             // Solo seat selector
-            if offer && !preparing && !failed && humans == 1 && game == "ular-tangga" {
-                HStack(spacing: 8 * s) {
-                    ForEach(2...4, id: \.self) { count in
-                        PlayerCountButton(
-                            count: count,
-                            selected: soloSeats == count,
-                            action: { soloSeats = count }
-                        )
-                    }
-                }
-                .frame(maxWidth: .infinity)
+            if offer && !preparing && !failed && humans == 1 && game == UlarTanggaGame.shared.id {
+                Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
+                          selection: $soloSeats, label: "Pemain")
             }
             
             // Offer buttons
@@ -217,8 +186,8 @@ private struct MatchSearch: View {
                         Button(action: {
                             client?.acceptHumans(revision: revision)
                         }) {
-                            Text(acceptedHumans ? String(format: NSLocalizedString("match_agreed", comment: ""), agreedHumans, humans) : String(format: NSLocalizedString("match_play_humans", comment: ""), humans))
-                                .font(Theme.font(14 * s, .semibold))
+                            Text(acceptedHumans ? String(format: matchString("match_agreed"), agreedHumans, humans) : String(format: matchString("match_play_humans"), humans))
+                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -227,8 +196,8 @@ private struct MatchSearch: View {
                         Button(action: {
                             client?.acceptBots(revision: revision)
                         }) {
-                            Text(accepted ? String(format: NSLocalizedString("match_agreed", comment: ""), agreed, humans) : NSLocalizedString("match_play_bots", comment: ""))
-                                .font(Theme.font(14 * s, .semibold))
+                            Text(accepted ? String(format: matchString("match_agreed"), agreed, humans) : matchString("match_play_bots"))
+                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -240,8 +209,8 @@ private struct MatchSearch: View {
                             client?.close()
                             onComputer(soloSeats)
                         }) {
-                            Text(NSLocalizedString("match_play_bots", comment: ""))
-                                .font(Theme.font(14 * s, .semibold))
+                            Text(matchString("match_play_bots"))
+                                .font(Theme.font(14 * s, .bold))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -249,25 +218,26 @@ private struct MatchSearch: View {
                 }
                 
                 HStack(spacing: 10 * s) {
-                    Button(NSLocalizedString("nearby_cancel", comment: ""), action: onCancel)
+                    Button(matchString("nearby_cancel"), action: onCancel)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    Button(NSLocalizedString("match_keep_searching", comment: ""), action: {
+                    Button(matchString("match_keep_searching"), action: {
                         client?.keepSearching()
                     })
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 }
             } else if !offer || preparing || failed {
                 HStack(spacing: 10 * s) {
-                    Button(NSLocalizedString(failed ? "congklak_back" : "nearby_cancel", comment: ""), action: onCancel)
+                    Button(matchString(failed ? "congklak_back" : "nearby_cancel"), action: onCancel)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                     if failed {
-                        Button(NSLocalizedString("nearby_try_again", comment: ""), action: onRetry)
+                        Button(matchString("nearby_try_again"), action: onRetry)
                             .buttonStyle(PrimaryButtonStyle())
                     }
                 }
             }
         }
-        .padding(if offer && !preparing && !failed { 16 * s } else { 22 * s })
+        .padding(.horizontal, 24 * s)
+        .padding(.vertical, offer && !preparing && !failed ? 16 * s : 22 * s)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
         .onAppear {
@@ -294,14 +264,19 @@ private struct MatchSearch: View {
                     revision = number(key: "revision")
                     
                 case "prepare_host":
+                    guard let code = event["code"] as? String,
+                          number(key: "humans") >= 2, number(key: "bots") >= 0 else {
+                        fail()
+                        return
+                    }
                     preparing = true
+                    pendingRoom = createHost(code, number(key: "humans"), number(key: "bots"), newClient.hostReady)
                     
                 case "preparing":
                     preparing = true
                     
                 case "match_error":
-                    failed = true
-                    newClient.close()
+                    fail()
                     
                 case "matched":
                     newClient.close()
@@ -311,70 +286,67 @@ private struct MatchSearch: View {
                         let seats = number(key: "seats")
                         onComputer(seats > 0 ? seats : target)
                     case "host":
-                        let code = event["code"] as? String ?? ""
+                        guard let room = pendingRoom else { fail(); return }
                         transferred = true
-                        onHost(code)
+                        onHost(room)
                     case "guest":
-                        let code = event["code"] as? String ?? ""
-                        transferred = true
+                        guard let code = event["code"] as? String else { fail(); return }
                         onJoin(code)
                     default:
-                        failed = true
+                        fail()
                     }
                     
                 default:
                     break
                 }
             }, onError: {
-                failed = true
-                newClient.close()
+                fail()
             })
         }
         .onDisappear {
-            if !transferred {
-                client?.close()
-            }
+            client?.close()
+            if !transferred { pendingRoom?.leave() }
         }
         .task(id: countdownVersion) {
             while !offer && !preparing && !failed && seconds > 0 {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                seconds -= 1
+                do { try await Task.sleep(nanoseconds: 1_000_000_000) }
+                catch { return }
+                guard !Task.isCancelled else { return }
+                seconds = max(0, seconds - 1)
             }
         }
     }
     
+    private func fail() {
+        failed = true
+        client?.close()
+        pendingRoom?.leave()
+        pendingRoom = nil
+    }
+
     private var titleText: String {
         if failed {
-            return NSLocalizedString("match_error_title", comment: "")
+            return matchString("match_error_title")
         } else if preparing {
-            return NSLocalizedString("match_preparing", comment: "")
+            return matchString("match_preparing")
         } else if offer {
-            return NSLocalizedString("match_offer_title", comment: "")
+            return matchString("match_offer_title")
         } else {
-            return NSLocalizedString("play_online_searching_title", comment: "")
+            return matchString("play_online_searching_title")
         }
     }
     
     private var detailText: String {
         if failed {
-            return NSLocalizedString("match_error_detail", comment: "")
+            return matchString("match_error_detail")
         } else if preparing {
-            return NSLocalizedString("match_preparing_detail", comment: "")
+            return matchString("match_preparing_detail")
         } else if offer && humans == 1 {
-            return NSLocalizedString("match_solo_detail", comment: "")
+            return matchString("match_solo_detail")
         } else if offer {
-            return String(format: NSLocalizedString("match_offer_detail", comment: ""), humans, target, target - humans)
+            return String(format: matchString("match_offer_detail"), humans, target, target - humans)
         } else {
-            return String(format: NSLocalizedString("match_search_detail", comment: ""), humans, target, seconds)
+            return String(format: matchString("match_search_detail"), humans, target, seconds)
         }
     }
-}
-
-#Preview {
-    PlayOnlineView(
-        game: "ular-tangga",
-        onCancel: {},
-        onHost: { _, _ in },
-        onJoin: { _, _ in }
-    )
 }

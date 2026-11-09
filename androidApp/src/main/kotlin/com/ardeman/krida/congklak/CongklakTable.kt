@@ -54,7 +54,11 @@ abstract class CongklakTable {
     /** Receives every snapshot after [latest], in order. */
     var onUpdate: ((CongklakUpdate) -> Unit)? = null
 
+    protected var active = true
+        private set
+
     protected fun deliver(state: CongklakState, seat: Int?, move: CongklakMove?) {
+        if (!active) return
         latest = state
         onUpdate?.invoke(CongklakUpdate(state, seat, move))
     }
@@ -62,7 +66,7 @@ abstract class CongklakTable {
     /** Sow from [hole] for [seat]. Returns false when nothing was sent. */
     abstract fun play(seat: Int, hole: Int): Boolean
     abstract fun restart()
-    abstract fun leave()
+    open fun leave() { active = false; onUpdate = null }
 
     /** Lets a computer player move if it is its turn. Called once the board is idle. */
     open fun stepBot() = Unit
@@ -100,18 +104,21 @@ class HostTable(
         if (transport !is LocalTransport) ticker.start()
     }
 
-    override fun play(seat: Int, hole: Int) = session.submitLocal(seat, CongklakMove(hole)) == null
+    override fun play(seat: Int, hole: Int) = active && session.submitLocal(seat, CongklakMove(hole)) == null
 
     override fun restart() {
+        if (!active) return
         val s = session.state ?: return
         if (CongklakGame.isFinished(s)) session.restart()
     }
 
     override fun stepBot() {
-        session.stepBot()
+        if (active) session.stepBot()
     }
 
     override fun leave() {
+        if (!active) return
+        super.leave()
         ticker.stop()
         transport.close()
     }
@@ -171,11 +178,13 @@ class GuestTable(private val session: GuestSession<CongklakState, CongklakMove>)
         ticker.start()
     }
 
-    override fun play(seat: Int, hole: Int) = session.sendMove(CongklakMove(hole)) != null
+    override fun play(seat: Int, hole: Int) = active && session.sendMove(CongklakMove(hole)) != null
 
     override fun restart() = Unit
 
     override fun leave() {
+        if (!active) return
+        super.leave()
         ticker.stop()
         // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
         if (session.finished) session.roomCode?.let(LastRoom::clear)

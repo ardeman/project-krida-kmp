@@ -3264,7 +3264,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pertandingan Cepat"
+            "value" : "Pencarian Cepat"
           }
         }
       }
@@ -3280,7 +3280,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cari pemain dan bermain melalui internet"
+            "value" : "Temukan pemain dan main lewat internet"
           }
         }
       }
@@ -3328,7 +3328,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Setelah 20 detik, setuju bermain dengan pemain yang ditemukan atau tambahkan komputer."
+            "value" : "Setelah 20 detik, sepakati main dengan pemain yang ketemu atau tambah komputer."
           }
         }
       }
@@ -3360,7 +3360,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ditemukan · %3$d detik tersisa"
+            "value" : "%1$d dari %2$d pemain ketemu · tersisa %3$d dtk"
           }
         }
       }
@@ -3392,7 +3392,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ditemukan · %3$d kursi kosong.\nSemua orang harus menyetujui cara memulai."
+            "value" : "%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nSemua pemain harus sepakat cara mulai."
           }
         }
       }
@@ -3408,7 +3408,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tidak ada lawan yang ditemukan. Pilih total pemain, termasuk kamu, dan bermain melawan komputer."
+            "value" : "Belum ada lawan. Pilih jumlah pemain termasuk kamu, lalu main melawan komputer."
           }
         }
       }
@@ -3424,7 +3424,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bermain dengan %1$d pemain"
+            "value" : "Main %1$d pemain"
           }
         }
       }
@@ -3440,7 +3440,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bermain dengan komputer"
+            "value" : "Main dengan komputer"
           }
         }
       }
@@ -3472,7 +3472,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lanjut cari"
+            "value" : "Lanjut mencari"
           }
         }
       }
@@ -3488,7 +3488,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tidak dapat terhubung"
+            "value" : "Tidak bisa terhubung"
           }
         }
       }
@@ -3504,7 +3504,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Periksa koneksi internet Anda, lalu coba lagi."
+            "value" : "Cek koneksi internet kamu, lalu coba lagi."
           }
         }
       }
@@ -3520,7 +3520,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menyiapkan ruangan Anda…"
+            "value" : "Menyiapkan room…"
           }
         }
       }
@@ -3536,7 +3536,7 @@
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pemain ditemukan. Terhubung ke host."
+            "value" : "Pemain ketemu. Menghubungkan ke host."
           }
         }
       }

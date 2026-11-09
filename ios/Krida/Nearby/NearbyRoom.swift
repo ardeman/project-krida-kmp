@@ -57,15 +57,40 @@ final class NearbyRoom: ObservableObject {
         mySeat = isHost ? 0 : nil
     }
 
-    func start() { begin?() }
+    private var quickMatchTarget = 0
+    private var quickMatchExpectedHumans = 0
+    private var quickMatchHumans = 0
+    private var quickMatchBots = 0
+    private var quickMatchBotName = ""
+
+    func configureQuickMatch(humans: Int, bots: Int, botName: String) {
+        quickMatchTarget = humans + bots
+        quickMatchExpectedHumans = humans
+        quickMatchHumans = humans
+        quickMatchBots = bots
+        quickMatchBotName = botName
+        canAddBots = false
+        canStart = false
+        fillQuickMatchSeats()
+    }
+
+    private func fillQuickMatchSeats() {
+        guard quickMatchHumans > 0, players.filter({ !$0.bot }).count >= quickMatchHumans else { return }
+        let missing = quickMatchBots - players.filter({ $0.bot }).count
+        // Adding a bot synchronously calls onPlayersChanged again.
+        quickMatchHumans = 0
+        for _ in 0..<max(0, missing) { addBotAction?(quickMatchBotName) }
+    }
+
+    func start() { if canStart { begin?() } }
 
     /// Asks for pawn colour `color`: the host takes it at once, a guest asks the host.
     func pickColor(_ color: Int) { pickColorAction?(color) }
 
     /// Seats a computer called `name` in the next empty seat (host, ular tangga).
-    func addBot(name: String) { addBotAction?(name) }
+    func addBot(name: String) { if quickMatchTarget == 0 { addBotAction?(name) } }
 
-    func removeBot(seat: Int) { removeBotAction?(seat) }
+    func removeBot(seat: Int) { if quickMatchTarget == 0 { removeBotAction?(seat) } }
 
     func leave() {
         notFoundTask?.cancel()
@@ -96,7 +121,10 @@ final class NearbyRoom: ObservableObject {
         session.onPlayersChanged = { [weak self, weak session] list in
             guard let self, let session else { return }
             self.players = list
-            self.canStart = session.canStart()
+            self.fillQuickMatchSeats()
+            self.canStart = session.canStart() && (self.quickMatchTarget == 0 ||
+                self.players.count == self.quickMatchTarget &&
+                self.players.filter { !$0.bot }.count >= self.quickMatchExpectedHumans)
         }
         _ = session.addLocalPlayer(name: Self.deviceName, platform: .ios)
         pickColorAction = { [weak session] in _ = session?.setColor(seat: 0, color: Int32($0)) }
@@ -152,7 +180,7 @@ final class NearbyRoom: ObservableObject {
         if !failed { stage = .lost }
     }
 
-    static func host(game: Game, online: Bool = false, code: String? = nil) -> NearbyRoom {
+    static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil) -> NearbyRoom {
         let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
         let relay = online ? OnlineHostTransport(code: roomCode) : nil
         let ble = online ? nil : BleHostTransport(roomCode: roomCode)
@@ -184,6 +212,7 @@ final class NearbyRoom: ObservableObject {
                 guard let room, room.congklak == nil, room.ular == nil else { return }
                 room.stage = .offline
             }
+            relay.onReady = onOnlineReady
             relay.start()
         }
         ble?.start()

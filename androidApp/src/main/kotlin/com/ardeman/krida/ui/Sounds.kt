@@ -55,6 +55,7 @@ object Sounds {
     private val idsEn = mutableMapOf<Line, Int>()
     private var music: MediaPlayer? = null
     private var lineStream = 0
+    private val gameStreams = mutableListOf<Int>()
     private var active = false
 
     /**
@@ -91,7 +92,10 @@ object Sounds {
     fun play(effect: Effect) {
         if (!soundOn) return
         val id = ids[effect] ?: return
-        pool?.play(id, effect.volume, effect.volume, 1, 0, 1f)
+        val stream = pool?.play(id, effect.volume, effect.volume, 1, 0, 1f) ?: return
+        if (effect != Effect.Tap && stream != 0) {
+            gameStreams.add(stream)
+        }
     }
 
     /** A voice line cuts off the one before it, so two never talk over each other. */
@@ -101,6 +105,14 @@ object Sounds {
         val id = (if (english) idsEn[line] else ids[line]) ?: return
         if (lineStream != 0) pool.stop(lineStream)
         lineStream = pool.play(id, 1f, 1f, 2, 0, 1f)
+    }
+
+    /** Stop board effects and voice on exit; menu music and tap feedback continue. */
+    fun stopGameAudio() {
+        gameStreams.forEach { pool?.stop(it) }
+        gameStreams.clear()
+        if (lineStream != 0) pool?.stop(lineStream)
+        lineStream = 0
     }
 
     fun toggleSound() {

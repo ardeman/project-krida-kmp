@@ -25,6 +25,7 @@ final class CongklakGameModel: ObservableObject {
     private let sounds = Sounds.shared
     private let seeds: CongklakSeeds
     private var queue: [CongklakUpdate] = []
+    private let lifetime = GameLifetime()
 
     private static let pickUpDelay: UInt64 = 260_000_000
     private static let sowDelay: UInt64 = 170_000_000
@@ -40,7 +41,7 @@ final class CongklakGameModel: ObservableObject {
         board.viewSeat = table.mySeat ?? 0
         board.setSeedTargets(seeds.targets())
         table.onUpdate = { [weak self] update in
-            guard let self else { return }
+            guard let self, self.lifetime.active else { return }
             self.waiting = false
             self.queue.append(update)
             self.drain()
@@ -54,7 +55,17 @@ final class CongklakGameModel: ObservableObject {
     var viewSeat: Int32 { board.viewSeat }
 
     var canPlay: Bool {
-        !animating && !waiting && queue.isEmpty && !finished && (table.mySeat == nil || table.mySeat == state.turn)
+        lifetime.active && !animating && !waiting && queue.isEmpty && !finished && (table.mySeat == nil || table.mySeat == state.turn)
+    }
+
+    /// Stop work owned by this board before navigation releases it.
+    func stop() {
+        guard lifetime.active else { return }
+        lifetime.stop()
+        table.onUpdate = nil
+        queue.removeAll()
+        table.leave()
+        sounds.stopGameAudio()
     }
 
     func layout(size: CGSize) {
@@ -115,39 +126,48 @@ final class CongklakGameModel: ObservableObject {
 
     /// Once the board is still, give a computer player its turn after a short pause.
     private func idle() {
-        Task {
-            try? await Task.sleep(nanoseconds: Self.botPause)
+        lifetime.launch("bot") { [weak self] in
+            do { try await Task.sleep(nanoseconds: Self.botPause) }
+            catch { return }
+            guard let self, self.lifetime.active, !Task.isCancelled else { return }
             if !animating && queue.isEmpty { table.stepBot() }
         }
     }
 
     private func drain() {
-        guard !animating else { return }
+        guard lifetime.active, !animating else { return }
         guard !queue.isEmpty else {
             updateRings()
             return idle()
         }
         let update = queue.removeFirst()
+        lifetime.cancel("bot")
         animating = true
         board.showRings([])
-        Task {
+        lifetime.launch("animation") { [self] in
             var sowed = false
             var shot = false
             if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
                 let sowing = game.play(state: state, seat: seat, move: move)
                 let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
                 for step in steps {
+                    guard lifetime.active, !Task.isCancelled else { return }
                     seeds.apply(step: step)
                     push()
                     if !step.pickUp { sounds.play(game.isStore(pit: step.pit) ? .store : .sow) }
-                    try? await Task.sleep(nanoseconds: step.pickUp ? Self.pickUpDelay : Self.sowDelay)
+                    do { try await Task.sleep(nanoseconds: step.pickUp ? Self.pickUpDelay : Self.sowDelay) }
+                    catch { return }
                 }
                 sowed = true
                 shot = sowing.capturedFrom != nil
             }
             // Captures, the end-of-game sweep, a restart: move whatever differs to match.
             if seeds.counts() != update.state.pits {
-                if sowed { try? await Task.sleep(nanoseconds: Self.settleDelay) }
+                if sowed {
+                    do { try await Task.sleep(nanoseconds: Self.settleDelay) }
+                    catch { return }
+                }
+                guard lifetime.active, !Task.isCancelled else { return }
                 if shot {
                     sounds.play(.capture)
                     sounds.say(.shoot)
@@ -155,6 +175,7 @@ final class CongklakGameModel: ObservableObject {
                 seeds.settle(pits: update.state.pits)
                 push()
             }
+            guard lifetime.active, !Task.isCancelled else { return }
             if sowed { announce(before: state, after: update.state) }
             state = update.state
             hint = nil
@@ -207,9 +228,11 @@ struct CongklakView: View {
         }
         .task {
             // Let the loading screen reach the display before the board is built.
-            try? await Task.sleep(for: .milliseconds(50))
+            do { try await Task.sleep(for: .milliseconds(50)) }
+            catch { return }
             mounted = true
-            try? await Task.sleep(for: .seconds(4))
+            do { try await Task.sleep(for: .seconds(4)) }
+            catch { return }
             finishLoading()
         }
     }
@@ -263,6 +286,7 @@ private struct CongklakBoardView: View {
         }
         .ignoresSafeArea()
         .background(Theme.backdropGradient)
+        .onDisappear { model.stop() }
         .onChange(of: table.notice) { _, notice in if notice != nil { model.noticeChanged() } }
         .sheet(isPresented: $showRules) { RulesSheet(tembakAfterStore: model.state.tembakAfterStore) }
     }
@@ -273,7 +297,7 @@ private struct CongklakBoardView: View {
     }
 
     private func exit() {
-        table.leave()
+        model.stop()
         onExit()
     }
 

@@ -1,7 +1,7 @@
 # Matchmaking alignment proposal
 
-Approved by the owner, including the partial-group computer-seat choice. Android and relay
-implementation complete; relay deployment and iOS parity remain pending.
+Approved by the owner, including the partial-group computer-seat choice. Android, iOS and relay
+implementation complete; relay rollout verification and cross-phone checks remain pending.
 
 Open [the light and dark mockup](matchmaking.svg). Each panel is 874 × 402, the landscape
 phone design size. The preview uses the current theme colours and a system rounded font
@@ -32,31 +32,32 @@ exit, failure or a successful match. Raw server errors must not appear in the UI
 Follow the agreed platform order: Android after mockup approval, iOS in the following session.
 Build each changed platform and inspect light/dark on a physical device when available.
 
-## Follow-up handoff
+## Platform implementation
 
-- iOS: expose and reuse its existing `NearbyFrame`/card styling, adopt the group JSON events
-  in `QuickMatchClient.swift`, use a cancellable countdown, and add EN/ID catalog entries.
-- Wire native host readiness before releasing guests, direct guest joining, unanimous
-  agreement for computers or humans only, and local solo fallback with the chosen total,
-  matching Android. Include the optional `acceptedHumans`, `agreedHumans` and `seats` fields
-  and the new `accept_humans` action in the protocol documentation. A lone player's local
-  computer-game button closes the search socket and starts directly, without waiting for
-  relay approval; this also works against a relay predating `play_solo`.
-- On iOS, match Android's quick-match lobby restrictions: wait for all expected humans,
-  add only agreed bots and disable Start until the selected total is present.
-- The Android offer card adds a second button row for Keep searching, with compact spacing
-  to fit the landscape height. It shows real counts and the requirement for everyone's
-  agreement; the original visual above predates that approved flow addition.
-- Group search is opt-in (`?flow=group`); deployment must include the `v3` Durable Object
+- Both platforms reuse the room frame, compact cards and segmented picker, with matching
+  EN/ID copy. Congklak has two seats; ular tangga defaults to four and permits 2–4.
+- iOS now uses the shared `ular_tangga` game ID, creates the host room during `prepare_host`,
+  and sends `host_ready` only after its room socket opens. Guests join directly.
+- Both hosts wait for all expected humans before adding agreed bots, disable Start until
+  the agreed seats are present, and hide manual bot changes in quick-match lobbies.
+- Both clients support unanimous agreement for computers or humans only, preserving revision
+  resets. Solo fallback closes the search socket and immediately starts the chosen local
+  game, without relay approval. Retry creates a fresh search; exit/failure closes any
+  untransferred host room, socket and countdown.
+- Group search is opt-in (`?flow=group`); deployment includes the `v3` Durable Object
   migration in `relay/wrangler.toml`. Existing clients stay on the old matchmaker.
-- Run `cd relay && npm run test:match && npm run check`, then the Android build in AGENTS.md.
-- Verify a four-seat search with two humans, consent from each, one cancellation, continuing
-  the search, and a successful online game with two computers on physical phones after
-  deploying the relay. Until deployed, the new app's search will show the friendly error.
+- Still verify a four-seat search on Android/iOS phones: two humans, agreement from each,
+  one cancellation, continuing the search, and an online game with two computers.
+- iOS debug builds accept `-openQuickMatch ular_tangga` (or `congklak`) for screenshots;
+  add `-searchQuickMatch` to exercise the real relay search and 20-second offer.
 
 ## Validation
 
-Android `assembleDebug`, relay TypeScript checks, and 20 targeted group-search tests pass.
+Android `assembleDebug`, the iOS simulator build, relay TypeScript checks, and 20 targeted
+group-search tests pass. The iOS quick-match catalog matches Android in EN and ID for
+all 22 strings used by this flow; it also respects the in-app language picker.
+iOS visual/timeout verification remains pending: simulator installation/launch stalled
+during this check, so no light/dark or native end-to-end result is claimed.
 The added tests cover unanimous starts with two/three humans, conflicting votes, choice
 changes, membership/revision resets, solo 2/3/4-seat choices and congklak's two-seat limit.
 The updated setup was inspected on the Pixel XL in light mode: four seats selected by

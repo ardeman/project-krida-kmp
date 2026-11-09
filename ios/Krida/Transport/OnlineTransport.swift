@@ -27,6 +27,9 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     /// The relay closed this room for good with one of its close codes (4001, 4004, …).
     var onClosed: ((Int) -> Void)?
 
+    /// Called on main after the room socket opens, before matched guests are released.
+    var onReady: (() -> Void)?
+
     private var session: URLSession?
     private var task: URLSessionWebSocketTask?
     private var closed = false
@@ -125,6 +128,7 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         guard webSocketTask === task else { return }
         trace("opened task=\(webSocketTask.taskIdentifier)")
+        onReady?()
         attempt = 0
         downSince = nil
         // Keeps NATs and mobile networks from dropping an idle game.

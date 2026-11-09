@@ -149,14 +149,17 @@ button.
 - [ ] iOS sizes use `* s`; colours and fonts only from `Theme`.
 - [ ] All text in EN + ID; no raw error messages shown.
 - [ ] Back button, system back and Cancel agree; every button works.
+- [ ] Leaving a game stops its `GameLifetime`, updates, timers, renderer audio callbacks
+      and effects/voice; closed tables ignore delayed actions. Check exit during animation,
+      a computer's pause and a held die. Menu music/taps continue. The iOS lifetime helper
+      regression check is `./scripts/test-ios-game-lifetime.sh`.
 - [ ] Compose state is in `remember { }` (a bare `mutableStateOf` in a composable resets on
       every recomposition); timers and clients are stopped when the screen goes away.
 
 ## Known gaps
 
-- **Quick match iOS (`PlayOnline/PlayOnlineScreens.swift`)** still needs the approved room
-  header/status-card redesign and group-search flow. Android now reuses `NearbyFrame`, card,
-  buttons and the menu's shared segmented picker, with translated messages, retry, cleanup,
-  real player counts and unanimous computer-seat agreement. See
-  [the implementation handoff](mockups/matchmaking.md).
+- Quick match now reuses the native room frame, card, buttons and segmented picker on
+  both platforms, with matching EN/ID copy, retry, cleanup, player counts and unanimous
+  agreement. Cross-phone checks of the group flow remain pending; see
+  [the implementation notes](mockups/matchmaking.md).
 - Android's game card is a carousel (`HorizontalPager`); iOS switches games without one.

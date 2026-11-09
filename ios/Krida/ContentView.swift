@@ -61,14 +61,32 @@ struct ContentView: View {
                 PlayOnlineView(
                     game: quickMatchGame,
                     onCancel: { playingQuickMatch = false; quickMatchGame = "" },
-                    onHost: { code, game in
-                        room = NearbyRoom.host(game: game == "ular-tangga" ? .ularTangga : .congklak, online: true, code: code)
+                    createHost: { code, humans, bots, onReady in
+                        let host = NearbyRoom.host(
+                            game: quickMatchGame == UlarTanggaGame.shared.id ? .ularTangga : .congklak,
+                            online: true, code: code, onOnlineReady: onReady
+                        )
+                        host.configureQuickMatch(humans: humans, bots: bots, botName: String(localized: "Komputer", bundle: .app))
+                        return host
+                    },
+                    onHost: { matchedRoom in
+                        room = matchedRoom
                         playingQuickMatch = false
                     },
-                    onJoin: { code, game in
-                        roomCode = code
-                        joinOnline = true
-                        joining = true
+                    onJoin: { code in
+                        room = NearbyRoom.join(code: code, online: true)
+                        playingQuickMatch = false
+                    },
+                    onComputer: { count in
+                        if quickMatchGame == UlarTanggaGame.shared.id {
+                            let you = String(localized: "Kamu", bundle: .app)
+                            let computer = String(localized: "Komputer", bundle: .app)
+                            ularTable = UlarTanggaHostTable.local(players: (0..<count).map { seat in
+                                LocalPlayer(name: seat == 0 ? you : computer, computer: seat != 0, color: seat)
+                            })
+                        } else {
+                            startVsComputer(.normal)
+                        }
                         playingQuickMatch = false
                     }
                 )
@@ -81,6 +99,19 @@ struct ContentView: View {
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
+        #if DEBUG
+        // Direct entry for quick-match screenshots and native flow checks.
+        .onAppear {
+            let args = ProcessInfo.processInfo.arguments
+            if let index = args.firstIndex(of: "-openQuickMatch"), args.indices.contains(index + 1) {
+                let selected = args[index + 1]
+                if [CongklakGame.shared.id, UlarTanggaGame.shared.id].contains(selected) {
+                    quickMatchGame = selected
+                    playingQuickMatch = true
+                }
+            }
+        }
+        #endif
         // A room link opens the app ready to join: the code field on "Teman dekat" or "Online".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
@@ -327,7 +358,7 @@ struct ContentView: View {
                     if online {
                         Button("Pencarian Cepat") {
                             playingQuickMatch = true
-                            quickMatchGame = ular ? "ular-tangga" : "congklak"
+                            quickMatchGame = ular ? UlarTanggaGame.shared.id : CongklakGame.shared.id
                         }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                     }
@@ -548,7 +579,7 @@ private struct SettingRow<Content: View>: View {
 
 /// Segmented picker on a track, the options sharing its full width: the chosen one is a
 /// raised surface chip, with an optional SF Symbol before its text.
-private struct Segmented<T: Hashable>: View {
+struct Segmented<T: Hashable>: View {
     let options: [(T, LocalizedStringKey, String?)]
     @Binding var selection: T
     let label: LocalizedStringKey

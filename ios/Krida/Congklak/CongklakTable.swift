@@ -20,6 +20,7 @@ class CongklakTable: ObservableObject {
 
     /// The computer's difficulty, shown next to its name; nil without a computer player.
     fileprivate(set) var botLevel: String?
+    fileprivate(set) var active = true
 
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: CongklakState?
@@ -33,6 +34,7 @@ class CongklakTable: ObservableObject {
     var isRemote: Bool { false }
 
     fileprivate func deliver(_ state: CongklakState, seat: Int32?, move: CongklakMove?) {
+        guard active else { return }
         latest = state
         onUpdate?(CongklakUpdate(state: state, seat: seat, move: move))
     }
@@ -40,7 +42,10 @@ class CongklakTable: ObservableObject {
     /// Sow from `hole` for `seat`. Returns false when nothing was sent.
     func play(seat: Int32, hole: Int32) -> Bool { false }
     func restart() {}
-    func leave() {}
+    func leave() {
+        active = false
+        onUpdate = nil
+    }
     /// Lets a computer player move if it is its turn. Called once the board is idle.
     func stepBot() {}
 }
@@ -90,17 +95,19 @@ final class HostTable: CongklakTable {
     override var canRestart: Bool { true }
 
     override func play(seat: Int32, hole: Int32) -> Bool {
-        session.submitLocal(seat: seat, move: CongklakMove(hole: hole)) == nil
+        active && session.submitLocal(seat: seat, move: CongklakMove(hole: hole)) == nil
     }
 
     override func restart() {
-        guard let s = session.state, CongklakGame.shared.isFinished(state: s) else { return }
+        guard active, let s = session.state, CongklakGame.shared.isFinished(state: s) else { return }
         session.restart()
     }
 
-    override func stepBot() { _ = session.stepBot() }
+    override func stepBot() { if active { _ = session.stepBot() } }
 
     override func leave() {
+        guard active else { return }
+        super.leave()
         ticker?.stop()
         transport.close()
     }
@@ -169,10 +176,12 @@ final class GuestTable: CongklakTable {
     override var isRemote: Bool { true }
 
     override func play(seat: Int32, hole: Int32) -> Bool {
-        session.sendMove(move: CongklakMove(hole: hole)) != nil
+        active && session.sendMove(move: CongklakMove(hole: hole)) != nil
     }
 
     override func leave() {
+        guard active else { return }
+        super.leave()
         ticker?.stop()
         // Leaving a running game keeps the seat to rejoin; after the end there is nothing to go back to.
         if session.finished, let code = session.roomCode { LastRoom.shared.clear(code) }
