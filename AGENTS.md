@@ -2,6 +2,14 @@
 
 Instructions for AI coding agents working in this repo. Read `README.md` for the overview, setup, commands and layout, and `docs/architecture.md` and `docs/protocol.md` before touching sessions, transports or the wire format. This file does not repeat them.
 
+Also read:
+
+- `docs/structure.md`: where code lives, and which Android file matches which iOS file.
+- `docs/design.md` before any UI work: tokens, the components to reuse, screen patterns and a checklist. New screens are built from existing components, the same on both platforms.
+- `docs/decisions.md`: product and rule decisions already made with the owner. Don't reverse one without asking; record new ones there.
+
+Docs go in `docs/` with lowercase names, never in the repo root (only `README.md`, `AGENTS.md` and `CLAUDE.md` live there).
+
 ## Definition of done
 
 A change is done only when the checks for the parts you touched pass. If you can't run one, say so; don't claim it passed.

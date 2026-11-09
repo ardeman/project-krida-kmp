@@ -17,7 +17,8 @@ krida/
 ├── ios/          Native iOS app (Swift, SwiftUI, RealityKit 3D) + BLE/LAN transports
 ├── relay/        Online relay: Cloudflare Worker + Durable Object per room (TypeScript)
 ├── web/          Landing page for krida.ardeman.com (Astro, zero-JS static HTML, GitHub Pages)
-├── docs/         architecture.md, protocol.md, brand.md (logo, icons, palette), store.md (listings, privacy answers)
+├── docs/         architecture.md, structure.md, design.md (UI guide), decisions.md, protocol.md, online.md,
+│                 brand.md, store.md, install.md (install scripts), dice-animation.md
 ├── scripts/      brand.swift: generates every icon and the wordmark
 └── bitbucket-pipelines.yml
 ```
