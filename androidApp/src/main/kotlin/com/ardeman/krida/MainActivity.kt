@@ -106,7 +106,13 @@ import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.CongklakStarter
 import com.ardeman.krida.core.session.RoomCode
+import com.ardeman.krida.nearby.ConnectingScreen
+import com.ardeman.krida.nearby.JoinScreen
 import com.ardeman.krida.nearby.NearbyRoom
+import com.ardeman.krida.nearby.RoomLobby
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.ardeman.krida.ui.Language
 import com.ardeman.krida.ui.LanguagePicker
 import com.ardeman.krida.ui.LoadingScreen
@@ -130,6 +136,8 @@ class MainActivity : ComponentActivity() {
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
     private var permissionDenied by mutableStateOf(false)
+    /** A string resource under the join screen's code: the scanner failed or read another QR. */
+    private var joinError by mutableStateOf<Int?>(null)
     private var pendingAction: (() -> Unit)? = null
 
     /** The menu card's board snapshot is on screen; ends the startup loading screen. */
@@ -191,9 +199,17 @@ class MainActivity : ComponentActivity() {
                 val table = passAndPlay ?: r?.congklak
                 val ular = ularTable ?: r?.ular
                 when {
-                    ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null })
-                    table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null })
+                    ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
+                    table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null; joining = false })
                     r != null -> Lobby(r)
+                    joining -> JoinScreen(
+                        code = roomCode,
+                        onCode = { roomCode = it; joinError = null },
+                        onScan = ::scanRoomQr,
+                        onJoin = ::joinRoom,
+                        onBack = { joining = false; joinError = null },
+                        error = joinError ?: R.string.nearby_permission_denied.takeIf { permissionDenied },
+                    )
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
                 }
                 StartupCover()
@@ -340,8 +356,7 @@ class MainActivity : ComponentActivity() {
      */
     @Composable
     private fun PlayCard(game: Game) {
-        // A room link opens the app ready to join: start on "Teman dekat".
-        var opponent by rememberSaveable { mutableStateOf(if (joining) Opponent.NEARBY else Opponent.PHONE) }
+        var opponent by rememberSaveable { mutableStateOf(Opponent.PHONE) }
         val ular = game == Game.ULAR_TANGGA
         val opponents = Opponent.entries
         val colorNames = listOf(R.string.ular_player_red, R.string.ular_player_blue, R.string.ular_player_green, R.string.ular_player_yellow)
@@ -363,7 +378,7 @@ class MainActivity : ComponentActivity() {
                     options = opponents.map { it to stringResource(it.label) },
                     current = opponent,
                     label = stringResource(R.string.play_opponent),
-                    onChange = { opponent = it; if (it != Opponent.NEARBY) joining = false },
+                    onChange = { opponent = it },
                     icons = opponents.map { it.icon },
                     fill = true,
                 )
@@ -382,7 +397,7 @@ class MainActivity : ComponentActivity() {
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
             SettingRow(if (opponent == Opponent.COMPUTER && !ular) stringResource(R.string.play_level) else "") {
-                if (joining) JoinRow() else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.weight(1f)) {
                         when {
                             ular -> Detail(stringResource(when (opponent) {
@@ -447,82 +462,46 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The room code field, cancel and Gabung, in place of the "Teman dekat" description. */
-    @Composable
-    private fun JoinRow() {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            CodeField(Modifier.weight(1f))
-            val cancel = stringResource(R.string.nearby_cancel)
-            Box(
-                Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Theme.track)
-                    .clickable(role = Role.Button, onClickLabel = cancel) { joining = false }
-                    .semantics { contentDescription = cancel },
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
-            }
-            PrimaryButton(
-                stringResource(R.string.nearby_join),
-                onClick = { withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) } },
-                enabled = RoomCode.isValid(roomCode),
-                height = 44.dp,
-            )
-        }
+    /** Joins the room [roomCode] names, after asking for the Bluetooth permissions if needed. */
+    private fun joinRoom() {
+        if (!RoomCode.isValid(roomCode)) return
+        joinError = null
+        withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) }
     }
 
-    @Composable
-    private fun CodeField(modifier: Modifier) {
-        val hint = stringResource(R.string.nearby_code_hint)
-        val shape = RoundedCornerShape(12.dp)
-        BasicTextField(
-            value = roomCode,
-            onValueChange = { roomCode = it.uppercase().filter(Char::isLetterOrDigit).take(4) },
-            singleLine = true,
-            textStyle = Theme.font(17, color = Theme.ink).copy(letterSpacing = 2.sp),
-            cursorBrush = SolidColor(Theme.accent),
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false),
-            modifier = modifier.height(44.dp).semantics { contentDescription = hint },
-            decorationBox = { inner ->
-                Box(
-                    Modifier.fillMaxSize().background(Theme.surfaceSoft, shape).border(1.5.dp, Theme.border, shape).padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    if (roomCode.isEmpty()) Text(stringResource(R.string.nearby_code), style = Theme.font(17, FontWeight.SemiBold, Theme.muted))
-                    inner()
+    /** Google's code scanner (no camera permission; Play services shows the camera). */
+    private fun scanRoomQr() {
+        joinError = null
+        val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
+        GmsBarcodeScanning.getClient(this, options).startScan()
+            .addOnSuccessListener { barcode ->
+                val code = barcode.rawValue?.let(RoomCode::parse)
+                if (code == null) {
+                    joinError = R.string.nearby_scan_not_room
+                } else {
+                    roomCode = code
+                    joinRoom()
                 }
-            },
-        )
+            }
+            .addOnFailureListener { joinError = R.string.nearby_scan_failed }
     }
 
     @Composable
     private fun Lobby(r: NearbyRoom) {
-        fun leave() { r.leave(); room = null }
-        BackHandler(onBack = ::leave)
-        Column(
-            Modifier.fillMaxSize().background(Theme.backdropBrush).windowInsetsPadding(gameInsets).padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val title = when (r.game) {
-                UlarTanggaGame.id -> stringResource(R.string.ular_title)
-                CongklakGame.id -> stringResource(R.string.congklak_title)
-                else -> ""
-            }
-            Text(title, style = Theme.font(24, FontWeight.Black, Theme.ink))
-            Text(stringResource(R.string.nearby_room_code), style = Theme.font(15, FontWeight.SemiBold, Theme.muted))
-            Text(r.code, style = Theme.font(44, FontWeight.Bold, Theme.ink).copy(fontFamily = FontFamily.Monospace))
-            Text(stringResource(r.status), style = Theme.font(16, FontWeight.SemiBold, Theme.ink))
-            if (r.game != null) {
-                Text(stringResource(R.string.nearby_player_count, r.players.size, r.maxPlayers), style = Theme.font(14, FontWeight.SemiBold, Theme.muted))
-            }
-            r.players.forEach { p ->
-                Text("${p.seat + 1}. ${p.name}", style = Theme.font(16, FontWeight.SemiBold, Theme.ink))
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (r.isHost) PrimaryButton(stringResource(R.string.nearby_start), onClick = r::start, enabled = r.canStart)
-                SecondaryButton(stringResource(R.string.congklak_back), onClick = ::leave)
-            }
-            Spacer(Modifier.weight(1f))
-            Ads.Banner()
+        // Leaving a room the guest got into, or the host's own, goes back to the menu; backing
+        // out of a search or a failure goes back to the join screen.
+        fun leave() {
+            r.leave()
+            room = null
+            if (r.isHost || r.stage == NearbyRoom.Stage.LOBBY) joining = false
+        }
+        if (r.isHost || r.stage == NearbyRoom.Stage.LOBBY) {
+            RoomLobby(r, onLeave = ::leave)
+        } else {
+            ConnectingScreen(r, onCancel = ::leave, onRetry = {
+                r.leave()
+                room = NearbyRoom.join(this@MainActivity, r.code, myName)
+            })
         }
     }
 

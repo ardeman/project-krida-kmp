@@ -110,7 +110,11 @@ documented in the file). Pass-and-play congklak on a voxel board on **Android** 
 `androidApp/.../congklak/`) and **iOS** (RealityKit, `ios/Krida/Congklak/`). Board geometry,
 seed layout and sowing animation steps are shared (`CongklakBoard.kt`), so both boards match.
 Congklak over BLE on both platforms: host a room or join one by its code, iOS ↔ Android; the
-board turns so your side is near, and remote moves animate like local ones.
+board turns so your side is near, and remote moves animate like local ones. Android has the
+redesigned nearby screens: a two-column lobby with the room's QR (encoded by
+`shared/.../qr/QrCode.kt`), pawn colour picks and "+ Komputer" seats for ular tangga, a join
+screen that scans the QR (Google code scanner) or takes the code, and one card for connecting
+and its failures. iOS still has the old lobby.
 Bot seats in the shared core: `HostSession.addBot` / `stepBot` and `CongklakBot` (easy,
 normal, hard). Android and iOS play congklak vs computer (Mudah / Sedang / Sulit). Both apps
 have the reworked UI (two-column home, turn pills, gold rings on playable holes, result card).
@@ -118,7 +122,7 @@ Sound on both: seed clicks while sowing, "Tembak!" ("Shoot!") on a capture, turn
 voice lines in the app language (`vo_*_en.m4a` for English), and looping gamelan music, each switched off on its own from home or the board.
 The `.m4a` files are made with ElevenLabs in `../project-pamerstudio-node/krida` (its README).
 Ads on both (AdMob behind the UMP consent form; `androidApp/.../ads/`, `ios/Krida/Ads/`): a
-banner on the home and lobby screens, an interstitial every 2nd finished game, and a rewarded ad
+banner on the home screen (and the iOS lobby), an interstitial every 2nd finished game, and a rewarded ad
 for a hint ("Petunjuk": the hard bot's move). The "Hapus iklan" purchase (non-consumable
 `hapus_iklan`: Play Billing; StoreKit 2 on iOS, with "Pulihkan pembelian") turns ads off and
 makes hints free. The real AdMob ids are in `res/values/ads.xml` and `ios/Krida/Ads/AdIds.swift`

@@ -85,4 +85,6 @@ dependencies {
     implementation(libs.billing)
     // play-services-ads pulls in an old Fragment that breaks registerForActivityResult.
     implementation(libs.fragment)
+    // QR join: Play services shows the scanner, so no camera permission and no ML model in the APK.
+    implementation(libs.code.scanner)
 }

@@ -54,5 +54,9 @@
                 <data android:scheme="krida" android:host="join" />
             </intent-filter>
         </activity>
+        <!-- Has Play services fetch the QR scanner at install, not on the first scan. -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode_ui" />
     </application>
 </manifest>

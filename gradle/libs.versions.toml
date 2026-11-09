@@ -9,6 +9,7 @@ play-services-ads = "25.5.0"
 ump = "4.0.0"
 billing = "9.1.0"
 fragment = "1.9.1"
+code-scanner = "16.1.0"
 
 [libraries]
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
@@ -23,6 +24,7 @@ play-services-ads = { module = "com.google.android.gms:play-services-ads", versi
 ump = { module = "com.google.android.ump:user-messaging-platform", version.ref = "ump" }
 billing = { module = "com.android.billingclient:billing-ktx", version.ref = "billing" }
 fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
+code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "code-scanner" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
