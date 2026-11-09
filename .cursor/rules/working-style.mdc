@@ -1,0 +1,67 @@
+---
+description: How the owner wants work done in this repo (applies to every request)
+alwaysApply: true
+---
+
+# Working style
+
+Read `AGENTS.md` first: it holds the project rules, checks and commit format. This file adds
+how the owner likes to work. `docs/status.md` lists open work outside the online plan.
+
+## Understand the request
+
+- The owner writes short messages, often with a screenshot. Read the screenshot carefully: it
+  usually shows the screen or the previous agent's last message the request refers to.
+- "Next" or "continue" means the next unticked step in the relevant plan: `docs/online.md`
+  (online play), the README's multiplayer roadmap, or `docs/status.md`. Check `git log -10`
+  to see what was done last before starting.
+- If a request is ambiguous and the answer changes what you build, ask one short question.
+  Otherwise pick the sensible default, say which you picked, and go.
+- Decisions in `docs/decisions.md` are agreed with the owner. Don't reverse one without
+  asking; record new decisions there.
+
+## Keep usage low
+
+- One task per session. When it is done, say so in one line and suggest starting a new chat.
+- Before a long investigation (more than a few steps), give a short plan and ask if it is
+  worth it.
+- Read only the needed part of big files; keep command output short (`tail`, `grep`, `head`).
+- While working run only targeted tests; the full suite once before a push.
+- A flaky test: at most two tries to reproduce, then report and ask.
+
+## Doing the work
+
+- UI work: read `docs/design.md`, reuse existing components, build the same thing on Android
+  and iOS. For a new screen or a big redesign, agree on a mockup with the owner before code.
+- Every user-facing string in English and Indonesian (see `AGENTS.md`). No hardcoded strings.
+- Game rules only in `shared/`; congklak must match the traditional game (clockwise sowing,
+  each player's store on their left).
+- No simulator or emulator: the Mac is small. Build for the connected iPhone 17 or Pixel XL
+  (`xcodebuild -destination 'id=<device>'`, `adb install`). If none is connected, just build
+  and ask the owner to check on the device.
+- iOS builds need JDK 21 for the shared framework: `JAVA_HOME=$(/usr/libexec/java_home -v 21)`
+  (or Homebrew `openjdk@21`). Gradle needs JDK 17–21, not Android Studio's JDK 25.
+- Run the checks from `AGENTS.md` for every part you touched. Report results honestly: if a
+  check failed or you couldn't run it, say so. Never claim a device test you didn't do.
+
+## Finishing
+
+- Tick or update the step in `docs/online.md` / README roadmap / `docs/status.md` in the same
+  commit as the work, so the next session can pick up from the repo alone.
+- Commit only when the owner asks (or the task clearly includes it). Conventional Commits, see
+  `AGENTS.md`.
+- Never add `Co-Authored-By`, "Generated with …" or any AI attribution to commits or PRs.
+- Pushing to `main` deploys whatever the workflows in `.github/workflows/` cover (the relay,
+  the web site). Mention that before pushing relay or web changes.
+- Reply short: what changed, what was checked, what is still open, the next step.
+
+## Releases
+
+- TestFlight / App Store: build and upload yourself with
+  `xcrun altool --upload-app --type ios -f <ipa> --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"`
+  (key in `~/.appstoreconnect/private_keys/`, env vars in `~/.zshenv`). Use a build number
+  higher than the last upload.
+- Don't upload to Play internal testing until several games are ready.
+- Google Play policy deadlines to remind the owner of: new app quality thresholds from
+  February 2027; precise location needs a declaration from 2027-01-27; target API 37+ apps
+  must use the location button/picker and declare Local Network use.
