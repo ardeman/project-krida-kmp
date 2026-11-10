@@ -64,4 +64,7 @@ jobs:
           echo "Relay: $url"
           # A new custom domain may need time for DNS and its certificate.
           for i in $(seq 1 60); do curl -sf "$url/" && break; sleep 5; done
-          node scripts/smoke.mjs "${url/https:/wss:}"
+          ws="${url/https:/wss:}"
+          node scripts/smoke.mjs "$ws"
+          npm run smoke:group -- "$ws"
+          npm run smoke:public -- "$ws"

@@ -51,15 +51,15 @@ when available. This proposal changes documentation only; no runtime checks have
 
 ## Implementation status
 
-Android and relay implementation complete; iOS follows in the next session. Android uses
-these two cards for online creation and joining, with the actual saved rule controls in
-Room setup. The private/public choice defaults to Private. Room setup can scroll on a short
-screen while the Create room action remains visible in the other card. Both languages use
-the same layout. The existing nearby/Bluetooth join screen stays available.
+Android, iOS and relay implementation complete. Both apps use these two cards for online
+creation and joining, with the actual saved rule controls in Room setup. The private/public
+choice defaults to Private. Room setup can scroll on a short screen while the Create room
+action remains visible in the other card. Both languages use the same layout. The existing
+nearby/Bluetooth join screen stays available.
 
-The relay stores discovery entries alongside group-search state. New Android searches opt
-in with `public=1`; older clients keep their existing queue. Reservations last 15 seconds,
-are consumed on admission, and prevent manual joins taking held seats. Cancelling during
+The relay stores discovery entries alongside group-search state. New searches opt in with
+`public=1`; older clients keep their existing queue. Reservations last 15 seconds, are
+consumed on admission, and prevent manual joins taking held seats. Cancelling during
 reservation releases them; abandoning an already delivered match expires its reservation.
 A host adding computers or starting before a reserved guest arrives can invalidate that
 admission; the guest gets the existing room-full failure with retry/code joining available.
@@ -69,7 +69,8 @@ Public-room hosts retain their settings, computers, and manual Start behavior.
 Validation: Android assembleDebug, shared JVM tests, relay TypeScript and targeted relay
 checks pass. The local Workers runtime smoke test covers a waiting two-person group,
 private-room exclusion, joining a newly public room with reservations, and started-room
-exclusion. Relay deployment and cross-phone end-to-end checks remain pending.
+exclusion. Live relay smoke (room, group, public) against `krida-relay.ardeman.com` passed
+2026-11-11; cross-phone end-to-end checks remain open.
 
 Physical Pixel XL validation: the online home actions, Create room for congklak, and merged
 Join room for both games were inspected in Indonesian/light mode. Setup is on the left;

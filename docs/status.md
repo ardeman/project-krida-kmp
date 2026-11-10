@@ -1,7 +1,7 @@
 # Status and open work
 
 What is still open outside the online plan (`docs/online.md` has its own steps). Update this
-file in the same commit when an item is done or a new one comes up. Last updated 2026-11-10.
+file in the same commit when an item is done or a new one comes up. Last updated 2026-11-11.
 
 ## Next
 
@@ -11,8 +11,8 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 Real users will try online play first; don't push for these, ask whether feedback came in.
 
-- Online: iOS ↔ Android room, rejoin (steps 4–5), quick match, tapping a share link on both
-  phones, emotes in a running game.
+- Online: iOS ↔ Android room, rejoin (steps 4–5), public Create/Join and quick match,
+  tapping a share link on both phones, emotes in a running game.
 - Nearby: iPhone ↔ Pixel room for ular tangga. Last try: the Pixel joining the iPhone's room
   showed only "Kode room" (no code, status or Back) and never connected. Not investigated.
 - Ludo: iPhone and Pixel (menu, this phone, nearby, online). Android and iOS are wired; not checked on a device.

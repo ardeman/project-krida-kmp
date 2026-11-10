@@ -91,9 +91,9 @@ and the Pixel on different networks (one on mobile data).
    `singleTask` and `onNewIntent` (a link only applies from the menus, never over a game or
    lobby); iOS has `applinks:krida.ardeman.com` in `Krida.entitlements` and the existing
    `onOpenURL`. A "Share" pill beside the room code in the online host lobby opens the share
-   sheet. Open: add the Play app signing key's SHA-256 to `assetlinks.json` once Play signs
-   the app (Play Console › App integrity); check that `/.well-known/` is live after the
-   Pages deploy; tap a link on both phones.
+   sheet. `/.well-known/assetlinks.json` and `apple-app-site-association` are live on
+   `krida.ardeman.com` (upload and debug keys only). Open: add the Play app signing key's
+   SHA-256 once Play signs the app (Play Console › App integrity); tap a link on both phones.
 8. [x] **Privacy and store.** Privacy page covers the relay (IP and game traffic pass through,
    not kept as a history; short-lived room state only) in Indonesian and English, effective
    10 November 2026. Play Data safety and App Store privacy labels for AdMob + the online
@@ -122,6 +122,8 @@ session token. Optional relay metadata and the reservation field are in [protoco
 No new Durable Object migration or dependencies are required.
 
 Android build, shared JVM tests, relay type checks and targeted discovery/group tests pass,
-as does the actual local Workers runtime public-room smoke test. iOS (2026-11-10) builds;
-it uses the same relay query, lobby status frames and reservations. Deployment and Android/iOS multi-phone checks
-remain pending. The approved design and handoff are in [mockups/public-rooms.md](mockups/public-rooms.md).
+as does the local Workers runtime public-room smoke test. iOS (2026-11-10) builds with the
+same relay query, lobby status frames and reservations. Live relay smoke (room, group,
+public) against `wss://krida-relay.ardeman.com` passed 2026-11-11; Android/iOS multi-phone
+checks remain open. The approved design and handoff are in
+[mockups/public-rooms.md](mockups/public-rooms.md).
