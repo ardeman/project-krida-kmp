@@ -35,7 +35,7 @@
     </string-array>
     <!-- The merged play card on the menu. -->
     <string name="play_level">Level</string>
-    <string name="play_tembak">Shooting</string>
+    <string name="play_capture">Shooting</string>
     <string name="opponent_phone">This phone</string>
     <string name="opponent_computer">Computer</string>
     <string name="opponent_nearby">Nearby</string>
@@ -81,15 +81,15 @@
     <string name="language_id_name" translatable="false">Bahasa Indonesia</string>
     <string name="language_en_name" translatable="false">English</string>
     <string name="loading">Loading</string>
-    <string name="tembak_title">Shooting rule</string>
-    <string name="tembak_after_store">Past store</string>
-    <string name="tembak_anytime">Anytime</string>
+    <string name="capture_title">Shooting rule</string>
+    <string name="capture_after_store">Past store</string>
+    <string name="capture_anytime">Anytime</string>
     <string name="play_starter">Goes first</string>
     <string name="starter_me">Me</string>
     <string name="starter_opponent">Opponent</string>
     <string name="starter_random">Random</string>
     <string name="starter_title">Who goes first</string>
-    <string name="congklak_rule_tembak_anytime">Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.</string>
+    <string name="congklak_rule_capture_anytime">Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.</string>
     <!-- Ular tangga -->
     <string name="ular_title">Snakes &amp; ladders</string>
     <string name="ular_roll">Roll</string>
@@ -116,8 +116,8 @@
     <string name="ular_option_six_to_enter">6 to start</string>
     <string name="ular_option_bounce">Bounce off 100</string>
     <string name="ular_option_first_ends">First to 100 ends</string>
-    <string name="tembak_hint_after_store">A capture (tembak) only counts once your seeds have passed your own store this turn.</string>
-    <string name="tembak_hint_anytime">Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite.</string>
+    <string name="capture_hint_after_store">A capture (tembak) only counts once your seeds have passed your own store this turn.</string>
+    <string name="capture_hint_anytime">Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite.</string>
     <string name="ular_hint_tap">Tap a rule to turn it on or off; it is explained here.</string>
     <string name="ular_hint_six_again_on">6 rolls again: roll a 6 and you roll once more.</string>
     <string name="ular_hint_six_again_off">6 rolls again off: a 6 ends your turn like any roll.</string>
@@ -272,4 +272,11 @@
     <string name="room_have_code">Have a room code?</string>
     <string name="room_join_code_detail">Join a public or private room directly.</string>
     <string name="room_scan_qr">Scan QR</string>
+    <string name="emote_open">Send a reaction</string>
+    <string name="emote_nice">Nice!</string>
+    <string name="emote_lets_go">Let\'s go!</string>
+    <string name="emote_awesome">Awesome!</string>
+    <string name="emote_oops">Oops!</string>
+    <string name="emote_hmm">Hmm…</string>
+    <string name="emote_ready">Ready!</string>
 </resources>

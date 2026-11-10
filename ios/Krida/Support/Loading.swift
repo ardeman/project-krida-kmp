@@ -27,7 +27,7 @@ struct LoadingScreen: View {
         .onTapGesture {}
         .ignoresSafeArea()
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Memuat", bundle: .app))
+        .accessibilityLabel(String(localized: "Loading", bundle: .app))
     }
 }
 
@@ -47,7 +47,7 @@ struct LoadingIndicator: View {
         }
         .frame(width: size * s, height: size * s)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Memuat", bundle: .app))
+        .accessibilityLabel(String(localized: "Loading", bundle: .app))
     }
 }
 

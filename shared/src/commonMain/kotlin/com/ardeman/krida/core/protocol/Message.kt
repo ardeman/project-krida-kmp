@@ -124,6 +124,15 @@ sealed class Message {
     @SerialName("pong")
     data class Pong(val t: Long) : Message()
 
+    /**
+     * Preset reaction during a running game. Guest → host sends only [id]; the host fills
+     * [seat] and fans the same message out to every guest (including the sender). Older
+     * peers drop the unknown type. Ids are from [Emotes].
+     */
+    @Serializable
+    @SerialName("emote")
+    data class Emote(val id: String, val seat: Int? = null) : Message()
+
     /** either side: leaving on purpose. */
     @Serializable
     @SerialName("bye")

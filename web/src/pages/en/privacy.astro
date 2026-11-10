@@ -21,7 +21,7 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <article class="doc">
       <h1>Privacy Policy</h1>
-      <p class="doc-date">Effective 8 November 2026</p>
+      <p class="doc-date">Effective 10 November 2026</p>
 
       <p>
         Krida is a collection of board games for Android and iPhone, made by Ardeman. This page explains what data
@@ -31,18 +31,21 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2>In short</h2>
       <ul>
         <li>Krida does not ask for an account, your real name, email, phone number, or contacts.</li>
-        <li>We have no server that stores player data.</li>
+        <li>Online play goes through a relay that only forwards game traffic while a room is open; it does not keep
+          accounts or a history of games.</li>
         <li>Ads in Krida are provided by Google AdMob, which collects some device data as described below.</li>
         <li>Payments are processed by Google Play or the App Store; we never see your payment details.</li>
       </ul>
 
       <h2>Data stored on your device</h2>
       <p>
-        Settings (such as sound and music) and the status of the <i>Remove ads</i> purchase are stored on your own
-        device and are not sent to us. This data is deleted when you uninstall the app.
+        Settings (such as sound and music), the status of the <i>Remove ads</i> purchase, and — if you leave a
+        running online or nearby game — a short rejoin token for that room are stored on your own device and are
+        not sent to us as a profile. This data is deleted when you uninstall the app, or when you forget the room
+        from the menu.
       </p>
 
-      <h2>Playing together over Bluetooth and Wi-Fi</h2>
+      <h2>Playing together nearby (Bluetooth and Wi-Fi)</h2>
       <p>
         When you play with friends nearby, Krida uses Bluetooth or the same Wi-Fi network to send game data (the
         room code, player names in the room, and game moves) directly between devices. That data does not pass
@@ -52,6 +55,26 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
         On Android 11 and earlier, Android requires the location permission to search for nearby Bluetooth devices.
         Krida asks for that permission only to find people to play with; Krida does not read, store, or send your
         location.
+      </p>
+
+      <h2>Playing together online</h2>
+      <p>
+        When you play online (a room by code or link, a public lobby, or quick match), your phone connects to our
+        relay at <code>krida-relay.ardeman.com</code>, run on Cloudflare Workers. The relay only forwards bytes
+        between the host phone and the guests; it does not understand or change the game.
+      </p>
+      <p>
+        While you are connected, the relay necessarily sees your IP address and the game traffic it forwards (room
+        codes, seat names chosen in the lobby, moves, and the same lobby status needed to keep the room running).
+        That traffic is not kept as a log or a history of games. The relay holds only the short-lived state needed
+        for an open room (for example the host's reconnect key, whether the lobby is public, and seat reservations)
+        and deletes the room when it ends or after a short idle period. We do not sell this data or use it for
+        advertising.
+      </p>
+      <p>
+        Cloudflare processes the connection as part of running the Workers platform under
+        <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's Privacy Policy</a>. Krida does not use
+        Cloudflare Analytics or other Cloudflare products that would build a player profile from this traffic.
       </p>
 
       <h2>Ads (Google AdMob)</h2>

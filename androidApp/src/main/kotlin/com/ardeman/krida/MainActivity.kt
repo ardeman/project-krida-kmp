@@ -742,16 +742,16 @@ private enum class Game(val title: Int, val players: Int, val tagline: Int, val 
 private fun GameRoomOptions(ular: Boolean) {
     if (ular) SettingRow(stringResource(R.string.play_rules)) {
         UlarTanggaOptionChips()
-    } else SettingRow(stringResource(R.string.play_tembak)) {
+    } else SettingRow(stringResource(R.string.play_capture)) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Segmented(
-                options = listOf(true to stringResource(R.string.tembak_after_store), false to stringResource(R.string.tembak_anytime)),
+                options = listOf(true to stringResource(R.string.capture_after_store), false to stringResource(R.string.capture_anytime)),
                 current = CongklakSettings.tembakAfterStore,
-                label = stringResource(R.string.tembak_title),
+                label = stringResource(R.string.capture_title),
                 onChange = CongklakSettings::chooseTembakAfterStore,
                 fill = true,
             )
-            Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.tembak_hint_after_store else R.string.tembak_hint_anytime))
+            Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.capture_hint_after_store else R.string.capture_hint_anytime))
         }
     }
     if (!ular) SettingRow(stringResource(R.string.play_starter)) {

@@ -1,6 +1,7 @@
 package com.ardeman.krida.core.session
 
 import com.ardeman.krida.core.protocol.Codec
+import com.ardeman.krida.core.protocol.Emotes
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.Message
 import com.ardeman.krida.core.protocol.Platform
@@ -64,6 +65,8 @@ class GuestSession<S, M>(
     var onRejected: ((String) -> Unit)? = null
     var onInvalid: ((String) -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
+    /** A preset reaction the host fanned out; [seat] is who sent it. */
+    var onEmote: ((seat: Int, id: String) -> Unit)? = null
 
     private var join: GuestJoin? = null
 
@@ -112,6 +115,12 @@ class GuestSession<S, M>(
     fun leave() {
         transport.send(null, Codec.encode(Message.Bye))
         transport.close()
+    }
+
+    /** Asks the host to fan out a preset reaction. The answer is [onEmote] for everyone. */
+    fun sendEmote(id: String) {
+        if (seat == null || !Emotes.valid(id)) return
+        transport.send(null, Codec.encode(Message.Emote(id)))
     }
 
     override fun onPeerConnected(peer: String) {
@@ -170,6 +179,10 @@ class GuestSession<S, M>(
             }
             is Message.Reject -> onRejected?.invoke(msg.reason)
             is Message.Invalid -> onInvalid?.invoke(msg.reason)
+            is Message.Emote -> {
+                val s = msg.seat ?: return
+                if (Emotes.valid(msg.id)) onEmote?.invoke(s, msg.id)
+            }
             is Message.Ping -> transport.send(null, Codec.encode(Message.Pong(msg.t)))
             else -> Unit
         }

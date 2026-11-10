@@ -79,6 +79,7 @@ import com.ardeman.krida.core.games.UlarTanggaState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
+import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -400,6 +401,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
                 Spacer(Modifier.weight(1f))
+                val youLabel = stringResource(R.string.bot_you)
+                EmoteHud(
+                    canEmote = table.canEmote,
+                    emote = table.emote,
+                    playerName = { seat -> if (seat == table.mySeat) youLabel else table.name(seat) },
+                    onSend = table::sendEmote,
+                    modifier = Modifier.hud("emote"),
+                )
+                if (table.canEmote) Spacer(Modifier.height(10.dp))
                 // The die itself is 3D, drawn by the renderer over this spot; tap it to toss
                 // it, hold it to shake it and let go to throw it.
                 Box(

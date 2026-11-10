@@ -42,6 +42,10 @@ abstract class UlarTanggaTable {
     var waiting by mutableStateOf<Waiting?>(null)
         protected set
 
+    /** Latest preset reaction to show as a bubble; null when none is up. */
+    var emote by mutableStateOf<Pair<Int, String>?>(null)
+        protected set
+
     /** Latest snapshot; the screen starts from it. */
     lateinit var latest: UlarTanggaState
         private set
@@ -53,6 +57,9 @@ abstract class UlarTanggaTable {
 
     /** Seats the computer plays (including dropped guests handed to it). */
     val botSeats: Set<Int> get() = players.filter { it.bot }.map { it.seat }.toSet()
+
+    /** True in a nearby/online room (preset reactions); false for games on this phone only. */
+    open val canEmote: Boolean get() = false
 
     protected fun first(state: UlarTanggaState, seq: Int) {
         latest = state
@@ -73,6 +80,10 @@ abstract class UlarTanggaTable {
         onUpdate?.invoke(UlarTanggaUpdate(state, fresh))
     }
 
+    protected fun showEmote(seat: Int, id: String) {
+        if (active) emote = seat to id
+    }
+
     fun name(seat: Int) = players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
 
     /** The seat can be played from this device (own seat, or any person in pass-and-play). */
@@ -85,7 +96,10 @@ abstract class UlarTanggaTable {
     open fun stepBot() = Unit
 
     abstract fun restart()
-    open fun leave() { active = false; onUpdate = null }
+    open fun leave() { active = false; onUpdate = null; emote = null }
+
+    /** Sends a preset reaction from this device's seat. No-op when [canEmote] is false. */
+    open fun sendEmote(id: String) = Unit
 }
 
 /** The authoritative table: on this device only, or hosting a nearby room. */
@@ -114,8 +128,11 @@ class UlarTanggaHostTable(
             notice = if (players.any { !it.connected }) R.string.ular_player_lost else null
             deliver(state, session.seq)
         }
+        session.onEmote = { seat, id -> showEmote(seat, id) }
         if (transport !is LocalTransport) ticker.start()
     }
+
+    override val canEmote: Boolean get() = transport !is LocalTransport
 
     override fun roll(seat: Int) = active && session.submitLocal(seat, UlarTanggaMove()) == null
 
@@ -125,6 +142,11 @@ class UlarTanggaHostTable(
 
     override fun restart() {
         if (active && latest.finished) session.restart()
+    }
+
+    override fun sendEmote(id: String) {
+        val seat = mySeat ?: return
+        if (active && canEmote) session.sendEmote(seat, id)
     }
 
     override fun leave() {
@@ -191,12 +213,19 @@ class UlarTanggaGuestTable(
         }
         session.onInvalid = { notice = R.string.nearby_move_refused }
         session.onDisconnected = { away.hostLost() }
+        session.onEmote = { seat, id -> showEmote(seat, id) }
         ticker.start()
     }
+
+    override val canEmote: Boolean get() = true
 
     override fun roll(seat: Int) = active && seat == session.seat && session.sendMove(UlarTanggaMove()) != null
 
     override fun restart() = Unit
+
+    override fun sendEmote(id: String) {
+        if (active) session.sendEmote(id)
+    }
 
     override fun leave() {
         if (!active) return

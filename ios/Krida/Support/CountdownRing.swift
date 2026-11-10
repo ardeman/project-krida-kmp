@@ -30,7 +30,7 @@ struct CountdownRing: View {
         .padding(width / 2)
         .frame(width: size * s, height: size * s)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(format: Bundle.app.localizedString(forKey: seconds == 1 ? "seconds_left_one" : "seconds_left_other", value: nil, table: nil), seconds))
+        .accessibilityLabel(String(format: Bundle.app.localizedString(forKey: seconds == 1 ? "%d second left" : "%d seconds left", value: nil, table: nil), seconds))
     }
 }
 

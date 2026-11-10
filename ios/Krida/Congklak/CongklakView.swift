@@ -320,9 +320,9 @@ private struct CongklakBoardView: View {
         table.players.first { $0.seat == Int32(seat) }?.name ?? "\(seat + 1)"
     }
 
-    /// "Kamu" for this device's own seat; the player's name otherwise.
+    /// "You" for this device's own seat; the player's name otherwise.
     private func displayName(_ seat: Int) -> String {
-        table.mySeat.map(Int.init) == seat ? String(localized: "Kamu", bundle: .app) : name(seat)
+        table.mySeat.map(Int.init) == seat ? String(localized: "You", bundle: .app) : name(seat)
     }
 
     /// The seat can be played from this device (own seat, or anyone in pass-and-play).
@@ -333,44 +333,60 @@ private struct CongklakBoardView: View {
     private func active(_ seat: Int) -> Bool { !model.finished && model.turn == seat }
 
     private func status(_ seat: Int) -> String {
-        guard active(seat) else { return String(localized: "menunggu", bundle: .app) }
-        if model.animating && model.inHand > 0 { return String(localized: "Menabur · \(model.inHand) biji di tangan", bundle: .app) }
-        if isLocal(seat) { return String(localized: "Giliranmu · pilih lubang yang menyala", bundle: .app) }
-        return seat == botSeat ? String(localized: "berpikir…", bundle: .app) : String(localized: "gilirannya", bundle: .app)
+        guard active(seat) else { return String(localized: "waiting", bundle: .app) }
+        if model.animating && model.inHand > 0 { return String(localized: "Sowing · \(model.inHand) seeds in hand", bundle: .app) }
+        if isLocal(seat) { return String(localized: "Your turn · pick a glowing hole", bundle: .app) }
+        return seat == botSeat ? String(localized: "thinking…", bundle: .app) : String(localized: "their turn", bundle: .app)
     }
 
     // MARK: HUD
 
     private var hud: some View {
-        VStack(spacing: 0 * s) {
-            TopBar(gap: 8 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Kembali ke menu", action: exit)
-                opponentPill
-                HStack(spacing: 8 * s) {
-                    SoundToggles()
-                    if model.canPlay && isLocal(model.turn) && model.hint == nil {
-                        CircleIconButton(systemImage: "lightbulb", label: ads.removed ? "Petunjuk" : "Petunjuk (tonton iklan)", action: model.showHint)
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0 * s) {
+                TopBar(gap: 8 * s) {
+                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    opponentPill
+                    HStack(spacing: 8 * s) {
+                        SoundToggles()
+                        if model.canPlay && isLocal(model.turn) && model.hint == nil {
+                            CircleIconButton(systemImage: "lightbulb", label: ads.removed ? "Hint" : "Hint (watch an ad)", action: model.showHint)
+                        }
+                        CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
                     }
-                    CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
                 }
-            }
-            .padding(.horizontal, 24 * s)
-            .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0)) // the back button clears a top-leading hole
-            .padding(.top, 14 * s)
-            Spacer()
-            VStack(spacing: 8 * s) {
-                if let away = table.waiting {
-                    CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000))
-                } else if let notice = table.notice {
-                    Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
-                } else {
-                    Label("Searah jarum jam · lumbungmu di kiri", systemImage: "arrow.clockwise")
-                        .font(Theme.font(13 * s, .bold))
-                        .foregroundStyle(Theme.muted)
+                .padding(.horizontal, 24 * s)
+                .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0)) // the back button clears a top-leading hole
+                .padding(.top, 14 * s)
+                Spacer()
+                VStack(spacing: 8 * s) {
+                    if let away = table.waiting {
+                        CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000))
+                    } else if let notice = table.notice {
+                        Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
+                    } else {
+                        Label("Clockwise · your store is on the left", systemImage: "arrow.clockwise")
+                            .font(Theme.font(13 * s, .bold))
+                            .foregroundStyle(Theme.muted)
+                    }
+                    playerPill(nearSeat)
                 }
-                playerPill(nearSeat)
+                .padding(.bottom, 14 * s)
             }
-            .padding(.bottom, 14 * s)
+            EmoteHud(
+                canEmote: table.canEmote,
+                emote: table.emote,
+                playerName: { seat in
+                    if let mine = table.mySeat.map(Int.init), mine == seat {
+                        return String(localized: "You", bundle: .app)
+                    }
+                    return table.players.first { Int($0.seat) == seat }?.name ?? "\(seat + 1)"
+                },
+                onSend: table.sendEmote,
+                s: s
+            )
+            .padding(.trailing, 24 * s)
+            .padding(.bottom, 68 * s)
         }
         .foregroundStyle(Theme.ink)
     }
@@ -457,7 +473,7 @@ private struct CongklakBoardView: View {
 
     /// Short label on a store: KAMU, KOM, or the player's name.
     private func storeTag(_ seat: Int) -> String {
-        if seat == botSeat { return String(localized: "KOM", bundle: .app) }
+        if seat == botSeat { return String(localized: "CPU", bundle: .app) }
         return String(displayName(seat).uppercased().prefix(8))
     }
 
@@ -486,13 +502,13 @@ private struct CongklakBoardView: View {
                     scoreTile(farSeat, winner: winner)
                 }
                 HStack(spacing: 10 * s) {
-                    Button { ads.afterGame(then: exit) } label: { Text("Ke menu").frame(maxWidth: .infinity) }
+                    Button { ads.afterGame(then: exit) } label: { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
-                        Button(action: restart) { Text("Main lagi").frame(maxWidth: .infinity) }
+                        Button(action: restart) { Text("Play again").frame(maxWidth: .infinity) }
                             .buttonStyle(PrimaryButtonStyle(height: 48))
                     } else {
-                        Text("Menunggu host memulai lagi…")
+                        Text("Waiting for the host to start again…")
                             .font(Theme.font(14 * s, .bold))
                             .foregroundStyle(Theme.muted)
                             .multilineTextAlignment(.center)
@@ -516,9 +532,9 @@ private struct CongklakBoardView: View {
 
     private func resultTitle(_ winner: Int?) -> String {
         guard let winner else { return "" }
-        if winner < 0 { return String(localized: "Seri!", bundle: .app) }
-        if table.mySeat.map(Int.init) == winner { return String(localized: "Kamu menang!", bundle: .app) }
-        return String(localized: "\(name(winner)) menang!", bundle: .app)
+        if winner < 0 { return String(localized: "Draw!", bundle: .app) }
+        if table.mySeat.map(Int.init) == winner { return String(localized: "You win!", bundle: .app) }
+        return String(localized: "\(name(winner)) wins!", bundle: .app)
     }
 
     private func scoreTile(_ seat: Int, winner: Int?) -> some View {
@@ -562,7 +578,7 @@ private struct TopBar: Layout {
     }
 }
 
-/// "Cara main": the rule variant from shared/ CongklakGame, in short.
+/// "How to play": the rule variant from shared/ CongklakGame, in short.
 struct CongklakRulesSheet: View {
     /// The tembak rule this game is played with.
     let tembakAfterStore: Bool
@@ -572,26 +588,26 @@ struct CongklakRulesSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    rule("Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam.")
-                    rule("Lumbungmu di kiri ikut diisi; lumbung lawan dilewati.")
-                    rule("Biji terakhir jatuh di lumbungmu: kamu main lagi.")
-                    rule("Jatuh di lubang yang berisi: ambil semuanya dan terus menabur.")
+                    rule("Take all the seeds from one hole on your side and sow them one by one, clockwise.")
+                    rule("Your store on the left gets a seed too; your opponent's store is skipped.")
+                    rule("Last seed lands in your store: play again.")
+                    rule("Lands in a hole with seeds: pick them all up and keep sowing.")
                     if tembakAfterStore {
-                        rule("Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.")
-                        rule("Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai.")
+                        rule("Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store.")
+                        rule("Haven't passed your store this turn? The seed stays in that hole and your turn ends.")
                     } else {
-                        rule("Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu.")
+                        rule("Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.")
                     }
-                    rule("Jatuh di lubang kosong di sisi lawan: giliranmu selesai.")
-                    rule("Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang.")
+                    rule("Lands in an empty hole on your opponent's side: your turn ends.")
+                    rule("If all your holes are empty on your turn, the game ends. Most seeds in the store wins.")
                 }
                 .padding(24)
             }
             .background(Theme.surface)
-            .navigationTitle(Text("Cara main"))
+            .navigationTitle(Text("How to play"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Tutup") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } }
             }
         }
     }

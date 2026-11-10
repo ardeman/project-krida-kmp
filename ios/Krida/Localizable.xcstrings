@@ -1,3946 +1,3962 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A capture (tembak) only counts once your seeds have passed your own store this turn."
+  "sourceLanguage": "en",
+  "strings": {
+    "%1$@, taken by player %2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, taken by player %2$lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, dipakai pemain %lld"
           }
         }
       }
     },
-    "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite."
+    "%1$d of %2$d players found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d of %2$d players found"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d dari %2$d pemain ketemu"
           }
         }
       }
     },
-    "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap a rule to turn it on or off; it is explained here."
+    "%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nPilih cara mulai. Pilihan dengan suara terbanyak menang."
           }
         }
       }
     },
-    "6 lempar lagi: dapat 6, lempar dadu sekali lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 rolls again: roll a 6 and you roll once more."
+    "%1$d/%2$d votes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d/%2$d votes"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 lempar lagi: dapat 6, lempar dadu sekali lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$d/%2$d suara"
           }
         }
       }
     },
-    "6 lempar lagi mati: dapat 6, giliran tetap pindah." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 rolls again off: a 6 ends your turn like any roll."
+    "%@": {
+      "shouldTranslate": false
+    },
+    "%@ (you)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (you)"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 lempar lagi mati: dapat 6, giliran tetap pindah."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (kamu)"
           }
         }
       }
     },
-    "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 to start: a pawn enters the board on square 1 only with a 6."
+    "%@ is still on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is still on"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ masih berjalan"
           }
         }
       }
     },
-    "6 untuk mulai mati: pion langsung jalan dari start." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 to start off: pawns move off the start with any roll."
+    "%@ pawn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ pawn"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 untuk mulai mati: pion langsung jalan dari start."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pion %@"
           }
         }
       }
     },
-    "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bounce off 100: a roll past 100 walks back the extra squares."
+    "%@ pawn · on the host's phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ pawn · on the host's phone"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pion %@ · di HP host"
           }
         }
       }
     },
-    "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bounce off 100 off: a roll past 100 leaves the pawn where it is."
+    "%@ wins!": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ wins!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ menang!"
           }
         }
       }
     },
-    "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First to 100 ends: the game ends when the first player reaches 100."
+    "%@'s turn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@'s turn"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giliran %@"
           }
         }
       }
     },
-    "Juara 1 selesai mati: main terus sampai tinggal satu pemain." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First to 100 ends off: play goes on until one player is left."
+    "%@, chosen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, chosen"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, dipilih"
           }
         }
       }
     },
-    "Main di" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play on"
+    "%@, throw the die to set the playing order": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, throw the die to set the playing order"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Main di"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, lempar dadu untuk urutan main"
           }
         }
       }
     },
-    "Orang" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Person"
+    "%@. %@": {
+      "shouldTranslate": false
+    },
+    "%d player still choosing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d player still choosing"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Orang"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d pemain masih memilih"
           }
         }
       }
     },
-    "Kosong" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty"
+    "%d players still choosing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d players still choosing"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kosong"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d pemain masih memilih"
           }
         }
       }
     },
-    "Kursi %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seat %lld"
+    "%d second left": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d second left"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kursi %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d detik lagi"
           }
         }
       }
     },
-    "Ganti" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change"
+    "%d seconds left": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d seconds left"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ganti"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d detik lagi"
           }
         }
       }
+    },
+    "2": {
+      "shouldTranslate": false
     },
-    "HP digilir; komputer melempar dadunya sendiri." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pass the phone round; computers roll on their own."
+    "2 players": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 players"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HP digilir; komputer melempar dadunya sendiri."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 pemain"
           }
         }
       }
     },
-    "%@" : {
-      "shouldTranslate" : false
-    },
-    "%@ menang!" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ wins!"
+    "2 players · you and an opponent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 players · you and an opponent"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ menang!"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 pemain · kamu dan lawan"
           }
         }
       }
     },
-    "%@, lempar dadu untuk urutan main" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, throw the die to set the playing order"
+    "2–4 players": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2–4 players"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, lempar dadu untuk urutan main"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2–4 pemain"
           }
         }
       }
     },
-    "%@. %@" : {
-      "shouldTranslate" : false
+    "3": {
+      "shouldTranslate": false
     },
-    "2" : {
-      "shouldTranslate" : false
+    "4": {
+      "shouldTranslate": false
     },
-    "2 pemain" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2 players"
+    "6 rolls again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 rolls again"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2 pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lempar lagi"
           }
         }
       }
     },
-    "2–4 pemain" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2–4 players"
+    "6 rolls again off: a 6 ends your turn like any roll.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 rolls again off: a 6 ends your turn like any roll."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2–4 pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lempar lagi mati: dapat 6, giliran tetap pindah."
           }
         }
       }
-    },
-    "3" : {
-      "shouldTranslate" : false
-    },
-    "4" : {
-      "shouldTranslate" : false
     },
-    "6 lempar lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 rolls again"
+    "6 rolls again: roll a 6 and you roll once more.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 rolls again: roll a 6 and you roll once more."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 lempar lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lempar lagi: dapat 6, lempar dadu sekali lagi."
           }
         }
       }
     },
-    "6 untuk mulai" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 to start"
+    "6 to start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to start"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6 untuk mulai"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk mulai"
           }
         }
       }
     },
-    "Acak" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Random"
+    "6 to start off: pawns move off the start with any roll.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to start off: pawns move off the start with any roll."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Acak"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk mulai mati: pion langsung jalan dari start."
           }
         }
       }
     },
-    "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Take all the seeds from one hole on your side and sow them one by one, clockwise."
+    "6 to start: a pawn enters the board on square 1 only with a 6.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to start: a pawn enters the board on square 1 only with a 6."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6."
           }
         }
       }
     },
-    "Aturan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rules"
+    "A 6 rolls again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A 6 rolls again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aturan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dadu 6 boleh melempar lagi."
           }
         }
       }
     },
-    "Aturan tembak" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shooting rule"
+    "A capture (tembak) only counts once your seeds have passed your own store this turn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A capture (tembak) only counts once your seeds have passed your own store this turn."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aturan tembak"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
           }
         }
       }
     },
-    "Bahasa" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Language"
+    "A player disconnected. The computer takes over after 15 seconds.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A player disconnected. The computer takes over after 15 seconds."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bahasa"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik."
           }
         }
       }
     },
-    "Batal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "A six · roll again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A six · roll again"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batal"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dapat 6 · lempar lagi"
           }
         }
       }
     },
-    "Bebas" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anytime"
+    "A tie · %@ throws again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tie · %@ throws again"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bebas"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seri · %@ lempar lagi"
           }
         }
       }
     },
-    "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haven't passed your store this turn? The seed stays in that hole and your turn ends."
+    "Ad privacy": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ad privacy"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privasi iklan"
           }
         }
       }
     },
-    "Berdua, gantian di satu HP" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Two players, taking turns on one phone"
+    "Add a computer in seat %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a computer in seat %lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berdua, gantian di satu HP"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tambah komputer di kursi %lld"
           }
         }
       }
     },
-    "Berhenti di kaki tangga: naik ke ujung atasnya." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Land on the foot of a ladder: climb to its top."
+    "After 20 seconds, agree to play with the players found or add computers.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After 20 seconds, agree to play with the players found or add computers."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berhenti di kaki tangga: naik ke ujung atasnya."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setelah 20 detik, sepakati main dengan pemain yang ketemu atau tambah komputer."
           }
         }
       }
     },
-    "Berhenti di kepala ular: turun ke ekornya." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Land on a snake's head: slide down to its tail."
+    "Anytime": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anytime"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berhenti di kepala ular: turun ke ekornya."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bebas"
           }
         }
       }
     },
-    "Jalan duluan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Goes first"
+    "Awesome!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Awesome!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jalan duluan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keren!"
           }
         }
       }
     },
-    "Saya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Me"
+    "Back": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kembali"
           }
         }
       }
     },
-    "Siapa jalan duluan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Who goes first"
+    "Back to menu": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to menu"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siapa jalan duluan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kembali ke menu"
           }
         }
       }
     },
-    "berpikir…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "thinking…"
+    "Blue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blue"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "berpikir…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biru"
           }
         }
       }
     },
-    "Biji terakhir jatuh di lumbungmu: kamu main lagi." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Last seed lands in your store: play again."
+    "Bluetooth, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth, no internet"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Biji terakhir jatuh di lumbungmu: kamu main lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth, tanpa internet"
           }
         }
       }
     },
-    "Biru" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Blue"
+    "Bounce off 100": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bounce off 100"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Biru"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantul di 100"
           }
         }
       }
     },
-    "Bluetooth, tanpa internet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth, no internet"
+    "Bounce off 100 off: a roll past 100 leaves the pawn where it is.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bounce off 100 off: a roll past 100 leaves the pawn where it is."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth, tanpa internet"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat."
           }
         }
       }
     },
-    "Buat room" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create room"
+    "Bounce off 100: a roll past 100 walks back the extra squares.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bounce off 100: a roll past 100 walks back the extra squares."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buat room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya."
           }
         }
       }
     },
-    "Cara main" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How to play"
+    "CPU": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cara main"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KOM"
           }
         }
       }
     },
-    "Congklak" : {
-      "shouldTranslate" : false
+    "Can't reach Krida online": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't reach Krida online"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krida online tidak terjangkau"
+          }
+        }
+      }
     },
-    "Dadu 6 boleh melempar lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A 6 rolls again."
+    "Cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dadu 6 boleh melempar lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Batal"
           }
         }
       }
     },
-    "Dapat 6 · lempar lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A six · roll again"
+    "Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dapat 6 · lempar lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya."
           }
         }
       }
     },
-    "Giliran %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@'s turn"
+    "Change": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giliran %@"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ganti"
           }
         }
       }
     },
-    "Giliranmu · lempar dadu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your turn · roll the die"
+    "Check the code, make sure the host is still on the room screen, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the code, make sure the host is still on the room screen, then try again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giliranmu · lempar dadu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cek kodenya, pastikan host masih di layar room, lalu coba lagi."
           }
         }
       }
     },
-    "Giliranmu · pilih lubang yang menyala" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your turn · pick a glowing hole"
+    "Check the code, make sure the host still has the room open, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the code, make sure the host still has the room open, then try again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Giliranmu · pilih lubang yang menyala"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cek kodenya, pastikan host masih membuka room, lalu coba lagi."
           }
         }
       }
     },
-    "gilirannya" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "their turn"
+    "Check this phone's internet connection, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check this phone's internet connection, then try again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "gilirannya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cek koneksi internet HP ini, lalu coba lagi."
           }
         }
       }
     },
-    "Hapus iklan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove ads"
+    "Check your internet connection, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your internet connection, then try again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hapus iklan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cek koneksi internet kamu, lalu coba lagi."
           }
         }
       }
     },
-    "Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You must land on 100 exactly; a roll that goes past it leaves you where you are."
+    "Climb the ladders, dodge the snakes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Climb the ladders, dodge the snakes."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naiki tangga, hindari ular."
           }
         }
       }
     },
-    "Harus pas di 100; sisa langkah yang lewat berjalan mundur." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You must land on 100 exactly; a roll that goes past it walks back down the extra squares."
+    "Clockwise · your store is on the left": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clockwise · your store is on the left"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Harus pas di 100; sisa langkah yang lewat berjalan mundur."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searah jarum jam · lumbungmu di kiri"
           }
         }
       }
     },
-    "Hijau" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Green"
+    "Close": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hijau"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tutup"
           }
         }
       }
     },
-    "HP digilir; semua melempar dadu saat gilirannya." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pass the phone round; everyone rolls on their turn."
+    "Computer": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HP digilir; semua melempar dadu saat gilirannya."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komputer"
           }
         }
       }
     },
-    "HP ini" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This phone"
+    "Computer %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer %lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HP ini"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komputer %lld"
           }
         }
       }
+    },
+    "Congklak": {
+      "shouldTranslate": false
     },
-    "Jatuh di lubang kosong di sisi lawan: giliranmu selesai." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lands in an empty hole on your opponent's side: your turn ends."
+    "Connecting to the room…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting to the room…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jatuh di lubang kosong di sisi lawan: giliranmu selesai."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menyambung ke room…"
           }
         }
       }
     },
-    "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store."
+    "Connecting…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menghubungkan…"
           }
         }
       }
     },
-    "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store."
+    "Couldn't join the room": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't join the room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak bisa masuk room"
           }
         }
       }
     },
-    "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lands in a hole with seeds: pick them all up and keep sowing."
+    "Couldn't open the QR scanner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't open the QR scanner"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemindai QR tidak bisa dibuka"
           }
         }
       }
     },
-    "Juara 1 selesai" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "First to 100 ends"
+    "Create room": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Juara 1 selesai"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buat room"
           }
         }
       }
     },
-    "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If all your holes are empty on your turn, the game ends. Most seeds in the store wins."
+    "Different app versions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Different app versions"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versi aplikasi berbeda"
           }
         }
       }
     },
-    "Kamu" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You"
+    "Difficulty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Difficulty"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tingkat kesulitan"
           }
         }
       }
     },
-    "Kamu melawan komputer." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You against the computer."
+    "Disconnected from the host": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnected from the host"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu melawan komputer."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terputus dari host"
           }
         }
       }
     },
-    "Kamu menang!" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You win!"
+    "Draw!": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draw!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu menang!"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seri!"
           }
         }
       }
     },
-    "Ke menu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menu"
+    "Easy": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Easy"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ke menu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mudah"
           }
         }
       }
     },
-    "Kembali" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
+    "Empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kembali"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kosong"
           }
         }
       }
     },
-    "Kembali ke menu" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back to menu"
+    "Empty seats don't play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty seats don't play"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kembali ke menu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kursi kosong tidak ikut main"
           }
         }
       }
     },
-    "Kode room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room code"
+    "Every seat is taken. Ask the host to make a new room.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every seat is taken. Ask the host to make a new room."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kode room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semua kursi sudah terisi. Minta host membuat room baru."
           }
         }
       }
     },
-    "Kode room dari temanmu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room code from your friend"
+    "Everyone starts off the board; a roll of 4 puts you on square 4.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone starts off the board; a roll of 4 puts you on square 4."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kode room dari temanmu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semua mulai di luar papan; dadu 4 membawamu ke kotak 4."
           }
         }
       }
     },
-    "KOM" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CPU"
+    "Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "KOM"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu."
           }
         }
       }
     },
-    "Komputer" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Computer"
+    "Find a match": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find a match"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komputer"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cari pemain"
           }
         }
       }
     },
-    "Komputer %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Computer %lld"
+    "Find a player and play through the internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find a player and play through the internet"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komputer %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temukan pemain dan main lewat internet"
           }
         }
       }
     },
-    "Kumpulkan biji terbanyak di lumbungmu." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gather the most seeds in your store."
+    "Find a room": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find a room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kumpulkan biji terbanyak di lumbungmu."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cari room"
           }
         }
       }
     },
-    "Kuning" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yellow"
+    "Finding a player…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finding a player…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kuning"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencari pemain…"
           }
         }
       }
     },
-    "Langkah ditolak" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move refused"
+    "First to 100 ends": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First to 100 ends"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Langkah ditolak"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai"
           }
         }
       }
     },
-    "Lawan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opponent"
+    "First to 100 ends off: play goes on until one player is left.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First to 100 ends off: play goes on until one player is left."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lawan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
           }
         }
       }
     },
-    "Lempar" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Roll"
+    "First to 100 ends: the game ends when the first player reaches 100.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First to 100 ends: the game ends when the first player reaches 100."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lempar"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100."
           }
         }
       }
     },
-    "Lempar dadu untuk urutan main" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Throw the die to set the playing order"
+    "Forget": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lempar dadu untuk urutan main"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lupakan"
           }
         }
       }
     },
-    "Lewat lumbung" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Past store"
+    "Found the room. Almost in.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found the room. Almost in."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lewat lumbung"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room ketemu. Sebentar lagi masuk."
           }
         }
       }
     },
-    "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your store on the left gets a seed too; your opponent's store is skipped."
+    "Friends can still use its code or QR.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Friends can still use its code or QR."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman tetap bisa pakai kode atau QR room."
           }
         }
       }
     },
-    "Main lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play again"
+    "Gather the most seeds in your store.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gather the most seeds in your store."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Main lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kumpulkan biji terbanyak di lumbungmu."
           }
         }
       }
     },
-    "Masuk" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join"
+    "Goes first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goes first"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masuk"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jalan duluan"
           }
         }
       }
     },
-    "Matikan musik" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn music off"
+    "Green": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Green"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Matikan musik"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hijau"
           }
         }
       }
     },
-    "Matikan suara" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn sound off"
+    "Hard": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hard"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Matikan suara"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sulit"
           }
         }
       }
     },
-    "Memuat" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading"
+    "Have a room code?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Have a room code?"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Memuat"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Punya kode room?"
           }
         }
       }
     },
-    "Menabur · %lld biji di tangan" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sowing · %lld seeds in hand"
+    "Haven't passed your store this turn? The seed stays in that hole and your turn ends.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haven't passed your store this turn? The seed stays in that hole and your turn ends."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menabur · %lld biji di tangan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum melewati lumbungmu di giliran ini? Bijinya tinggal di lubang itu dan giliranmu selesai."
           }
         }
       }
     },
-    "Mencari room…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Looking for the room…"
+    "Hint": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hint"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mencari room…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Petunjuk"
           }
         }
       }
     },
-    "match_restart_tie" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The vote was tied. Searching again…"
+    "Hint (watch an ad)": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hint (watch an ad)"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suara seimbang. Mencari lagi…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Petunjuk (tonton iklan)"
           }
         }
       }
     },
-    "match_undecided_one" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d player still choosing"
+    "Hmm…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hmm…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d pemain masih memilih"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hmm…"
           }
         }
       }
     },
-    "match_undecided_other" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d players still choosing"
+    "Hold your phone near the host's. Bluetooth must be on on both phones.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold your phone near the host's. Bluetooth must be on on both phones."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d pemain masih memilih"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP."
           }
         }
       }
     },
-    "match_restart_no_votes" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No one voted. Searching again…"
+    "Host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidak ada yang memilih. Mencari lagi…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host"
           }
         }
       }
     },
-    "match_votes" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d/%2$d votes"
+    "Host · %@ pawn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host · %@ pawn"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d/%2$d suara"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host · pion %@"
           }
         }
       }
     },
-    "match_your_vote" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your vote · %1$d/%2$d"
+    "Host · this phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host · this phone"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilihanmu · %1$d/%2$d"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Host · HP ini"
           }
         }
       }
     },
-    "menunggu" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "waiting"
+    "How to play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How to play"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "menunggu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cara main"
           }
         }
       }
     },
-    "Menunggu host memulai lagi…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for the host to start again…"
+    "If all your holes are empty on your turn, the game ends. Most seeds in the store wins.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If all your holes are empty on your turn, the game ends. Most seeds in the store wins."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu host memulai lagi…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalau semua lubangmu kosong saat giliranmu, permainan selesai. Biji terbanyak di lumbung menang."
           }
         }
       }
     },
-    "Merah" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Red"
+    "Join": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Merah"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk"
           }
         }
       }
     },
-    "Mudah" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Easy"
+    "Join a public or private room directly.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join a public or private room directly."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mudah"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langsung gabung room publik atau privat."
           }
         }
       }
     },
-    "Mulai" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
+    "Join a public room (its host's rules) or find other players (standard rules).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join a public room (its host's rules) or find other players (standard rules)."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mulai"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar)."
           }
         }
       }
     },
-    "Naiki tangga, hindari ular." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Climb the ladders, dodge the snakes."
+    "Join a room": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join a room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Naiki tangga, hindari ular."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gabung room"
           }
         }
       }
     },
-    "Nyalakan musik" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn music on"
+    "Join my Krida game!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join my Krida game!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nyalakan musik"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayo main Krida bareng aku!"
           }
         }
       }
     },
-    "Nyalakan suara" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn sound on"
+    "Join turns on after 4 letters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join turns on after 4 letters"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nyalakan suara"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk aktif setelah 4 huruf"
           }
         }
       }
     },
-    "Pantul di 100" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bounce off 100"
+    "Join turns on after 6 letters": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join turns on after 6 letters"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pantul di 100"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk aktif setelah 6 huruf"
           }
         }
       }
     },
-    "Pemain" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Players"
+    "Keep searching": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep searching"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lanjut mencari"
           }
         }
       }
     },
-    "Pemain 1" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Player 1"
+    "Land on a snake's head: slide down to its tail.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Land on a snake's head: slide down to its tail."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain 1"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berhenti di kepala ular: turun ke ekornya."
           }
         }
       }
     },
-    "Pemain 2" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Player 2"
+    "Land on the foot of a ladder: climb to its top.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Land on the foot of a ladder: climb to its top."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain 2"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berhenti di kaki tangga: naik ke ujung atasnya."
           }
         }
       }
     },
-    "Pemain lain terputus. Menunggu dia kembali…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The other player disconnected. Waiting for them to return…"
+    "Lands in a hole with seeds: pick them all up and keep sowing.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lands in a hole with seeds: pick them all up and keep sowing."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain lain terputus. Menunggu dia kembali…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jatuh di lubang yang berisi: ambil semuanya dan terus menabur."
           }
         }
       }
     },
-    "Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You need a 6 to get on the board; it puts you on square 1."
+    "Lands in an empty hole on your opponent's side: your turn ends.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lands in an empty hole on your opponent's side: your turn ends."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jatuh di lubang kosong di sisi lawan: giliranmu selesai."
           }
         }
       }
     },
-    "Permainan berikutnya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next game"
+    "Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lands in an empty hole on your side after passing your store: shoot! That seed and the seeds in the opposite hole go to your store."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permainan berikutnya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jatuh di lubang kosong di sisimu setelah melewati lumbungmu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
           }
         }
       }
     },
-    "Permainan sebelumnya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous game"
+    "Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lands in an empty hole on your side: shoot! That seed and the seeds in the opposite hole go to your store."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permainan sebelumnya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jatuh di lubang kosong di sisimu: tembak! Biji itu dan isi lubang lawan di depannya masuk ke lumbungmu."
           }
         }
       }
     },
-    "Permainan sudah dimulai" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The game has already started"
+    "Language": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permainan sudah dimulai"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bahasa"
           }
         }
       }
     },
-    "Petunjuk" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hint"
+    "Last seed lands in your store: play again.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last seed lands in your store: play again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Petunjuk"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biji terakhir jatuh di lumbungmu: kamu main lagi."
           }
         }
       }
     },
-    "Petunjuk (tonton iklan)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hint (watch an ad)"
+    "Leave room": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Petunjuk (tonton iklan)"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keluar room"
           }
         }
       }
     },
-    "Pilihan lain di bawah" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "More options below"
+    "Let's go!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let's go!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilihan lain di bawah"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Semangat!"
           }
         }
       }
     },
-    "Privasi iklan" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ad privacy"
+    "Level": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privasi iklan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tingkat"
           }
         }
       }
     },
-    "Pulihkan pembelian" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore purchases"
+    "Loading": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulihkan pembelian"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memuat"
           }
         }
       }
     },
-    "Room sudah penuh" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The room is full"
+    "Looking for the room…": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking for the room…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room sudah penuh"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mencari room…"
           }
         }
       }
     },
-    "Searah jarum jam · lumbungmu di kiri" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clockwise · your store is on the left"
+    "Matchmaking can find your room.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matchmaking can find your room."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Searah jarum jam · lumbungmu di kiri"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room kamu bisa ditemukan lewat pencarian pemain."
           }
         }
       }
     },
-    "Sedang" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medium"
+    "Me": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sedang"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saya"
           }
         }
       }
     },
-    "Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order."
+    "Medium": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Medium"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sedang"
           }
         }
       }
     },
-    "Semua mulai di luar papan; dadu 4 membawamu ke kotak 4." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everyone starts off the board; a roll of 4 puts you on square 4."
+    "Menu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semua mulai di luar papan; dadu 4 membawamu ke kotak 4."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ke menu"
           }
         }
       }
     },
-    "Seri · %@ lempar lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A tie · %@ throws again"
+    "More options below": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More options below"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seri · %@ lempar lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilihan lain di bawah"
           }
         }
       }
     },
-    "Seri!" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Draw!"
+    "Move refused": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move refused"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seri!"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Langkah ditolak"
           }
         }
       }
     },
-    "Start" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
+    "Nearby": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nearby"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman dekat"
           }
         }
       }
     },
-    "Sulit" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hard"
+    "Nearby · Bluetooth, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nearby · Bluetooth, no internet"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sulit"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman dekat · Bluetooth, tanpa internet"
           }
         }
       }
     },
-    "Teman dekat" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nearby"
+    "Next game": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next game"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teman dekat"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permainan berikutnya"
           }
         }
       }
     },
-    "Tembak" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shooting"
+    "Nice!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nice!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tembak"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagus!"
           }
         }
       }
     },
-    "Terputus dari host" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Disconnected from the host"
+    "No one voted. Searching again…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No one voted. Searching again…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terputus dari host"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak ada yang memilih. Mencari lagi…"
           }
         }
       }
     },
-    "Tidak bisa masuk room" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't join the room"
+    "No opponent found. Choose the total players, including you, and play against computers.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No opponent found. Choose the total players, including you, and play against computers."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidak bisa masuk room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum ada lawan. Pilih jumlah pemain termasuk kamu, lalu main melawan komputer."
           }
         }
       }
     },
-    "Tingkat" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Level"
+    "Online": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tingkat"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online"
           }
         }
       }
     },
-    "Tingkat kesulitan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Difficulty"
+    "Online · over the internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online · over the internet"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tingkat kesulitan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online · lewat internet"
           }
         }
       }
     },
-    "Tutup" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
+    "Only players with your code or QR can join.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only players with your code or QR can join."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tutup"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hanya pemain dengan kode atau QR kamu yang bisa gabung."
           }
         }
       }
     },
-    "Ular tangga" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Snakes & ladders"
+    "Only the host can start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the host can start"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ular tangga"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hanya host yang bisa memulai"
           }
         }
       }
     },
-    "Urutan siap · %@ duluan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Order set · %@ goes first"
+    "Oops!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oops!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Urutan siap · %@ duluan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ups!"
           }
         }
       }
     },
-    "Yang pertama sampai 100 menang dan permainan selesai." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The first player to reach 100 wins and the game ends."
+    "Open camera": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open camera"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yang pertama sampai 100 menang dan permainan selesai."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka kamera"
           }
         }
       }
     },
-    "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Players who reach 100 leave the board in order; play goes on until one player is left."
+    "Opponent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opponent"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lawan"
           }
         }
       }
     },
-    "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A player disconnected. The computer takes over after 15 seconds."
+    "Order set · %@ goes first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Order set · %@ goes first"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Urutan siap · %@ duluan"
           }
         }
       }
     },
-    "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This room plays a game this app doesn't have. Update the app."
+    "Over the internet, friends anywhere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over the internet, friends anywhere"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewat internet, teman di mana saja"
           }
         }
       }
     },
-    "Sampai 4 HP lewat Bluetooth, tanpa internet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Up to 4 phones over Bluetooth, no internet"
+    "Over the internet. Both phones need a connection.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over the internet. Both phones need a connection."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sampai 4 HP lewat Bluetooth, tanpa internet"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewat internet. Kedua HP perlu koneksi."
           }
         }
       }
     },
-    "%@ (kamu)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ (you)"
+    "Pass the phone round; computers roll on their own.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass the phone round; computers roll on their own."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ (kamu)"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP digilir; komputer melempar dadunya sendiri."
           }
         }
       }
     },
-    "%@, dipakai pemain %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, taken by player %2$lld"
+    "Pass the phone round; everyone rolls on their turn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass the phone round; everyone rolls on their turn."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, dipakai pemain %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP digilir; semua melempar dadu saat gilirannya."
           }
         }
       }
     },
-    "%@, dipilih" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, chosen"
+    "Past store": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Past store"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, dipilih"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewat lumbung"
           }
         }
       }
     },
-    "Arahkan kamera ke QR di layar HP host. Langsung masuk, tanpa mengetik." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Point the camera at the QR on the host's phone. You're in, no typing."
+    "Person": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Person"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Arahkan kamera ke QR di layar HP host. Langsung masuk, tanpa mengetik."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orang"
           }
         }
       }
     },
-    "Buka kamera" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open camera"
+    "Play again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play again"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buka kamera"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main lagi"
           }
         }
       }
     },
-    "Cek kodenya, pastikan host masih di layar room, lalu coba lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check the code, make sure the host is still on the room screen, then try again."
+    "Play on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play on"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cek kodenya, pastikan host masih di layar room, lalu coba lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main di"
           }
         }
       }
     },
-    "Coba lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again"
+    "Play with %1$d players": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play with %1$d players"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coba lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main %1$d pemain"
           }
         }
       }
     },
-    "Coba lagi, atau minta host membuat room baru." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again, or ask the host to make a new room."
+    "Play with computers": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play with computers"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coba lagi, atau minta host membuat room baru."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main dengan komputer"
           }
         }
       }
     },
-    "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hold your phone near the host's. Bluetooth must be on on both phones."
+    "Player 1": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Player 1"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dekatkan HP ke HP host. Bluetooth harus menyala di kedua HP."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain 1"
           }
         }
       }
     },
-    "Gabung" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join"
+    "Player 2": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Player 2"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain 2"
           }
         }
       }
     },
-    "Gabung room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join a room"
+    "Players": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain"
           }
         }
       }
     },
-    "Hanya host yang bisa memulai" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only the host can start"
+    "Players found. Connecting to the host.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players found. Connecting to the host."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hanya host yang bisa memulai"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain ketemu. Menghubungkan ke host."
           }
         }
       }
     },
-    "Hapus komputer dari kursi %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove the computer from seat %lld"
+    "Players who reach 100 leave the board in order; play goes on until one player is left.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players who reach 100 leave the board in order; play goes on until one player is left."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hapus komputer dari kursi %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain."
           }
         }
       }
     },
-    "Host" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host"
+    "Players · %1$lld of %2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players · %1$lld of %2$lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain · %lld dari %lld"
           }
         }
       }
     },
-    "Host · HP ini" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host · this phone"
+    "Point the camera at the QR on the host's phone. You're in, no typing.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Point the camera at the QR on the host's phone. You're in, no typing."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host · HP ini"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arahkan kamera ke QR di layar HP host. Langsung masuk, tanpa mengetik."
           }
         }
       }
     },
-    "Host · pion %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host · %@ pawn"
+    "Preparing your room…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing your room…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Host · pion %@"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menyiapkan room…"
           }
         }
       }
     },
-    "Kamu pemain %lld, pion %@." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're player %1$lld, %2$@ pawn."
+    "Previous game": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous game"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu pemain %lld, pion %@."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permainan sebelumnya"
           }
         }
       }
     },
-    "Kamu pemain %lld." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're player %lld."
+    "Private": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Private"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu pemain %lld."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privat"
           }
         }
       }
     },
-    "Keluar room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Leave room"
+    "Public": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Public"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keluar room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Publik"
           }
         }
       }
     },
-    "Ketik kode" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Type the code"
+    "Quick Match": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Match"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ketik kode"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pencarian Cepat"
           }
         }
       }
     },
-    "Kursi kosong tidak ikut main" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty seats don't play"
+    "Random": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Random"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kursi kosong tidak ikut main"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acak"
           }
         }
       }
     },
-    "Masuk aktif setelah 4 huruf" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join turns on after 4 letters"
+    "Ready!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masuk aktif setelah 4 huruf"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siap!"
           }
         }
       }
     },
-    "Menghubungkan…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connecting…"
+    "Reconnect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconnect"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menghubungkan…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambung lagi"
           }
         }
       }
     },
-    "Menunggu host memulai…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for the host to start…"
+    "Red": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu host memulai…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merah"
           }
         }
       }
     },
-    "Menunggu teman masuk" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for a friend to join"
+    "Rejoin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rejoin"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu teman masuk"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gabung lagi"
           }
         }
       }
     },
-    "Menunggu teman…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for a friend…"
+    "Remove ads": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove ads"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu teman…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus iklan"
           }
         }
       }
     },
-    "Pemain · %lld dari %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Players · %1$lld of %2$lld"
+    "Remove the computer from seat %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove the computer from seat %lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain · %lld dari %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus komputer dari kursi %lld"
           }
         }
       }
     },
-    "Pemindai QR tidak bisa dibuka" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Couldn't open the QR scanner"
+    "Restore purchases": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore purchases"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemindai QR tidak bisa dibuka"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pulihkan pembelian"
           }
         }
       }
     },
-    "Perbarui Krida di kedua HP, lalu coba lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Update Krida on both phones, then try again."
+    "Roll": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roll"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perbarui Krida di kedua HP, lalu coba lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lempar"
           }
         }
       }
     },
-    "Pindai QR" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scan the QR"
+    "Room %1$@ · host %2$@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room %1$@ · host %2$@"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pindai QR"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room %@ · host %@"
           }
         }
       }
     },
-    "Pion %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ pawn"
+    "Room %@ · your seat is waiting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room %@ · your seat is waiting"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pion %@"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room %@ · kursimu masih ada"
           }
         }
       }
     },
-    "Pion %@ · di HP host" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ pawn · on the host's phone"
+    "Room QR code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room QR code"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pion %@ · di HP host"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR kode room"
           }
         }
       }
     },
-    "QR itu bukan room Krida" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "That QR isn't a Krida room"
+    "Room code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room code"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QR itu bukan room Krida"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kode room"
           }
         }
       }
     },
-    "QR kode room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room QR code"
+    "Room code from your friend": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room code from your friend"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QR kode room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kode room dari temanmu"
           }
         }
       }
     },
-    "Room %@ · host %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room %1$@ · host %2$@"
+    "Room full, ready to play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room full, ready to play"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room %@ · host %@"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room penuh, siap main"
           }
         }
       }
     },
-    "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This room is already playing. Wait for the next round or make your own room."
+    "Room not found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room not found"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room tidak ketemu"
           }
         }
       }
     },
-    "Room ketemu. Sebentar lagi masuk." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Found the room. Almost in."
+    "Room setup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room setup"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room ketemu. Sebentar lagi masuk."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pengaturan room"
           }
         }
       }
     },
-    "Room penuh, siap main" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room full, ready to play"
+    "Rules": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rules"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room penuh, siap main"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aturan"
           }
         }
       }
     },
-    "Room tidak ketemu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room not found"
+    "Scan the QR": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the QR"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room tidak ketemu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pindai QR"
           }
         }
       }
     },
-    "%@ masih berjalan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ is still on"
+    "Search": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ masih berjalan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cari"
           }
         }
       }
     },
-    "Gabung lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rejoin"
+    "Seat %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seat %lld"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kursi %lld"
           }
         }
       }
     },
-    "Lupakan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Forget"
+    "Send a reaction": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send a reaction"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lupakan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kirim reaksi"
           }
         }
       }
     },
-    "Room %@ · kursimu masih ada" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room %@ · your seat is waiting"
+    "Share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room %@ · kursimu masih ada"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagikan"
           }
         }
       }
     },
-    "Sambung lagi" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reconnect"
+    "Shooting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shooting"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sambung lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tembak"
           }
         }
       }
     },
-    "Sambungan Bluetooth ke host hilang." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The Bluetooth connection to the host was lost."
+    "Shooting rule": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shooting rule"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sambungan Bluetooth ke host hilang."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aturan tembak"
           }
         }
       }
     },
-    "Semua kursi sudah terisi. Minta host membuat room baru." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Every seat is taken. Ask the host to make a new room."
+    "Snakes & ladders": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snakes & ladders"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Semua kursi sudah terisi. Minta host membuat room baru."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ular tangga"
           }
         }
       }
     },
-    "Sudah masuk" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You're in"
+    "Sowing · %lld seeds in hand": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sowing · %lld seeds in hand"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sudah masuk"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menabur · %lld biji di tangan"
           }
         }
       }
     },
-    "Tambah komputer di kursi %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a computer in seat %lld"
+    "Start": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tambah komputer di kursi %lld"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mulai"
           }
         }
       }
     },
-    "Teman dekat · Bluetooth, tanpa internet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nearby · Bluetooth, no internet"
+    "Still waiting for players": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still waiting for players"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teman dekat · Bluetooth, tanpa internet"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masih menunggu pemain"
           }
         }
       }
     },
-    "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your friend opens Nearby › Join,\nthen scans this QR or types the code"
+    "Take all the seeds from one hole on your side and sow them one by one, clockwise.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take all the seeds from one hole on your side and sow them one by one, clockwise."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambil semua biji dari satu lubang di sisimu, lalu tabur satu per satu searah jarum jam."
           }
         }
       }
     },
-    "Tunggu teman, atau isi kursi dengan komputer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wait for friends, or fill a seat with the computer"
+    "Tap a rule to turn it on or off; it is explained here.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a rule to turn it on or off; it is explained here."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tunggu teman, atau isi kursi dengan komputer"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini."
           }
         }
       }
     },
-    "Versi aplikasi berbeda" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Different app versions"
+    "That QR isn't a Krida room": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That QR isn't a Krida room"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versi aplikasi berbeda"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR itu bukan room Krida"
           }
         }
       }
     },
-    "Warna pionmu" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your pawn color"
+    "The Bluetooth connection to the host was lost.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Bluetooth connection to the host was lost."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warna pionmu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambungan Bluetooth ke host hilang."
           }
         }
       }
     },
-    "atau" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "or"
+    "The first player to reach 100 wins and the game ends.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first player to reach 100 wins and the game ends."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "atau"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yang pertama sampai 100 menang dan permainan selesai."
           }
         }
       }
     },
-    "Online" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online"
+    "The game has already started": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The game has already started"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permainan sudah dimulai"
           }
         }
       }
     },
-    "Lewat internet, teman di mana saja" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Over the internet, friends anywhere"
+    "The internet connection to the host was lost.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The internet connection to the host was lost."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lewat internet, teman di mana saja"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambungan internet ke host hilang."
           }
         }
       }
     },
-    "Sampai 4 HP lewat internet, teman di mana saja" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Up to 4 phones over the internet, friends anywhere"
+    "The other player disconnected. Waiting for them to return…": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The other player disconnected. Waiting for them to return…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sampai 4 HP lewat internet, teman di mana saja"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain lain terputus. Menunggu dia kembali…"
           }
         }
       }
     },
-    "Online · lewat internet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online · over the internet"
+    "The room is full": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The room is full"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online · lewat internet"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room sudah penuh"
           }
         }
       }
     },
-    "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your friend opens Online › Join,\nthen scans this QR or types the code"
+    "The vote was tied. Searching again…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vote was tied. Searching again…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suara seimbang. Mencari lagi…"
           }
         }
       }
     },
-    "Masuk aktif setelah 6 huruf" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join turns on after 6 letters"
+    "This phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phone"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masuk aktif setelah 6 huruf"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP ini"
           }
         }
       }
     },
-    "Menyambung ke room…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connecting to the room…"
+    "This room is already playing. Wait for the next round or make your own room.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This room is already playing. Wait for the next round or make your own room."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menyambung ke room…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room ini sudah main. Tunggu ronde berikutnya atau buat room sendiri."
           }
         }
       }
     },
-    "Lewat internet. Kedua HP perlu koneksi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Over the internet. Both phones need a connection."
+    "This room plays a game this app doesn't have. Update the app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This room plays a game this app doesn't have. Update the app."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lewat internet. Kedua HP perlu koneksi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Room ini memainkan permainan yang belum ada di aplikasi ini. Perbarui aplikasi."
           }
         }
       }
     },
-    "Cek kodenya, pastikan host masih membuka room, lalu coba lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check the code, make sure the host still has the room open, then try again."
+    "Throw the die to set the playing order": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Throw the die to set the playing order"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cek kodenya, pastikan host masih membuka room, lalu coba lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lempar dadu untuk urutan main"
           }
         }
       }
     },
-    "Sambungan internet ke host hilang." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The internet connection to the host was lost."
+    "Try again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sambungan internet ke host hilang."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coba lagi"
           }
         }
       }
     },
-    "Krida online tidak terjangkau" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can't reach Krida online"
+    "Try again, or ask the host to make a new room.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again, or ask the host to make a new room."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Krida online tidak terjangkau"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coba lagi, atau minta host membuat room baru."
           }
         }
       }
     },
-    "Cek koneksi internet HP ini, lalu coba lagi." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check this phone's internet connection, then try again."
+    "Turn music off": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn music off"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cek koneksi internet HP ini, lalu coba lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matikan musik"
           }
         }
       }
     },
-    "Menunggu %@…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for %@…"
+    "Turn music on": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn music on"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menunggu %@…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyalakan musik"
           }
         }
       }
     },
-    "seconds_left_one" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d second left"
+    "Turn sound off": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn sound off"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d detik lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matikan suara"
           }
         }
       }
     },
-    "seconds_left_other" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d seconds left"
+    "Turn sound on": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn sound on"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d detik lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyalakan suara"
           }
         }
       }
     },
-    "play_online_quick_match" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick Match"
+    "Two players, taking turns on one phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two players, taking turns on one phone"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pencarian Cepat"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berdua, gantian di satu HP"
           }
         }
       }
     },
-    "play_online_description" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find a player and play through the internet"
+    "Type the code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the code"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Temukan pemain dan main lewat internet"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketik kode"
           }
         }
       }
     },
-    "play_players" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Players"
+    "Unable to connect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to connect"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak bisa terhubung"
           }
         }
       }
     },
-    "match_two_players" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2 players · you and an opponent"
+    "Up to 4 phones over Bluetooth, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 4 phones over Bluetooth, no internet"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2 pemain · kamu dan lawan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sampai 4 HP lewat Bluetooth, tanpa internet"
           }
         }
       }
     },
-    "match_fallback_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "After 20 seconds, agree to play with the players found or add computers."
+    "Up to 4 phones over the internet, friends anywhere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 4 phones over the internet, friends anywhere"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Setelah 20 detik, sepakati main dengan pemain yang ketemu atau tambah komputer."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sampai 4 HP lewat internet, teman di mana saja"
           }
         }
       }
     },
-    "play_online_searching_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finding a player…"
+    "Update Krida on both phones, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Krida on both phones, then try again."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mencari pemain…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perbarui Krida di kedua HP, lalu coba lagi."
           }
         }
       }
     },
-    "match_search_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d of %2$d players found"
+    "Wait for friends, or fill a seat with the computer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wait for friends, or fill a seat with the computer"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ketemu"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunggu teman, atau isi kursi dengan komputer"
           }
         }
       }
     },
-    "match_offer_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Still waiting for players"
+    "Waiting for %@…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for %@…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masih menunggu pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu %@…"
           }
         }
       }
     },
-    "match_offer_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins."
+    "Waiting for a friend to join": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for a friend to join"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$d dari %2$d pemain ketemu · %3$d kursi kosong.\nPilih cara mulai. Pilihan dengan suara terbanyak menang."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu teman masuk"
           }
         }
       }
     },
-    "match_solo_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No opponent found. Choose the total players, including you, and play against computers."
+    "Waiting for a friend…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for a friend…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Belum ada lawan. Pilih jumlah pemain termasuk kamu, lalu main melawan komputer."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu teman…"
           }
         }
       }
     },
-    "match_play_humans" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play with %1$d players"
+    "Waiting for the host to start again…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the host to start again…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Main %1$d pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu host memulai lagi…"
           }
         }
       }
     },
-    "match_play_bots" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Play with computers"
+    "Waiting for the host to start…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the host to start…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Main dengan komputer"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu host memulai…"
           }
         }
       }
     },
-    "match_keep_searching" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keep searching"
+    "Who can join?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who can join?"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lanjut mencari"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siapa yang bisa gabung?"
           }
         }
       }
     },
-    "match_error_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unable to connect"
+    "Who goes first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who goes first"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidak bisa terhubung"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siapa jalan duluan"
           }
         }
       }
     },
-    "match_error_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check your internet connection, then try again."
+    "Yellow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yellow"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cek koneksi internet kamu, lalu coba lagi."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kuning"
           }
         }
       }
     },
-    "match_preparing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preparing your room…"
+    "You": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menyiapkan room…"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu"
           }
         }
       }
     },
-    "match_preparing_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Players found. Connecting to the host."
+    "You against the computer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You against the computer."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemain ketemu. Menghubungkan ke host."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu melawan komputer."
           }
         }
       }
     },
-    "button_search" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search"
+    "You must land on 100 exactly; a roll that goes past it leaves you where you are.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You must land on 100 exactly; a roll that goes past it leaves you where you are."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cari"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat."
           }
         }
       }
     },
-    "nearby_cancel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "You must land on 100 exactly; a roll that goes past it walks back down the extra squares.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You must land on 100 exactly; a roll that goes past it walks back down the extra squares."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batal"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harus pas di 100; sisa langkah yang lewat berjalan mundur."
           }
         }
       }
     },
-    "nearby_try_again" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try again"
+    "You need a 6 to get on the board; it puts you on square 1.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You need a 6 to get on the board; it puts you on square 1."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coba lagi"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1."
           }
         }
       }
     },
-    "congklak_back" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
+    "You win!": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You win!"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kembali"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu menang!"
           }
         }
       }
     },
-    "Pengaturan room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room setup"
+    "You're in": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're in"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pengaturan room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah masuk"
           }
         }
       }
     },
-    "Siapa yang bisa gabung?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Who can join?"
+    "You're player %1$lld, %2$@ pawn.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're player %1$lld, %2$@ pawn."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siapa yang bisa gabung?"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu pemain %lld, pion %@."
           }
         }
       }
     },
-    "Privat" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Private"
+    "You're player %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're player %lld."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privat"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu pemain %lld."
           }
         }
       }
     },
-    "Publik" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Public"
+    "Your friend opens Nearby › Join,\nthen scans this QR or types the code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your friend opens Nearby › Join,\nthen scans this QR or types the code"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Publik"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temanmu buka Teman dekat › Gabung,\nlalu pindai QR ini atau ketik kodenya"
           }
         }
       }
     },
-    "Room kamu bisa ditemukan lewat pencarian pemain." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Matchmaking can find your room."
+    "Your friend opens Online › Join,\nthen scans this QR or types the code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your friend opens Online › Join,\nthen scans this QR or types the code"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Room kamu bisa ditemukan lewat pencarian pemain."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temanmu buka Online › Gabung,\nlalu pindai QR ini atau ketik kodenya"
           }
         }
       }
     },
-    "Hanya pemain dengan kode atau QR kamu yang bisa gabung." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only players with your code or QR can join."
+    "Your pawn color": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your pawn color"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hanya pemain dengan kode atau QR kamu yang bisa gabung."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warna pionmu"
           }
         }
       }
     },
-    "Teman tetap bisa pakai kode atau QR room." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Friends can still use its code or QR."
+    "Your store on the left gets a seed too; your opponent's store is skipped.": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your store on the left gets a seed too; your opponent's store is skipped."
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teman tetap bisa pakai kode atau QR room."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lumbungmu di kiri ikut diisi; lumbung lawan dilewati."
           }
         }
       }
     },
-    "Cari room" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find a room"
+    "Your turn · pick a glowing hole": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your turn · pick a glowing hole"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cari room"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giliranmu · pilih lubang yang menyala"
           }
         }
       }
     },
-    "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar)." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join a public room (its host's rules) or find other players (standard rules)."
+    "Your turn · roll the die": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your turn · roll the die"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar)."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giliranmu · lempar dadu"
           }
         }
       }
     },
-    "Cari pemain" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find a match"
+    "Your vote · %1$d/%2$d": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your vote · %1$d/%2$d"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cari pemain"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilihanmu · %1$d/%2$d"
           }
         }
       }
     },
-    "Punya kode room?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Have a room code?"
+    "or": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "or"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Punya kode room?"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "atau"
           }
         }
       }
     },
-    "Langsung gabung room publik atau privat." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join a public or private room directly."
+    "their turn": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "their turn"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Langsung gabung room publik atau privat."
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gilirannya"
           }
         }
       }
     },
-    "Ayo main Krida bareng aku!" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join my Krida game!"
+    "thinking…": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "thinking…"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ayo main Krida bareng aku!"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "berpikir…"
           }
         }
       }
     },
-    "Bagikan" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share"
+    "waiting": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "waiting"
           }
         },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bagikan"
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "menunggu"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

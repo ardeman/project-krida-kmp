@@ -17,6 +17,8 @@ class UlarTanggaTable: ObservableObject {
     @Published fileprivate(set) var notice: String?
     /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
     @Published fileprivate(set) var waiting: Waiting?
+    /// Latest preset reaction to show as a bubble; nil when none is up.
+    @Published fileprivate(set) var emote: (seat: Int, id: String)?
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: UlarTanggaState
     /// Receives every snapshot after `latest`, in order.
@@ -28,6 +30,8 @@ class UlarTanggaTable: ObservableObject {
     /// This device's seat; nil for pass-and-play (whoever's turn it is).
     var mySeat: Int? { nil }
     var canRestart: Bool { false }
+    /// Nearby/online rooms can send preset reactions; games on this phone only cannot.
+    var canEmote: Bool { false }
 
     /// Seats the computer plays (including dropped guests handed to it).
     var botSeats: Set<Int> { Set(players.filter(\.bot).map { Int($0.seat) }) }
@@ -48,10 +52,15 @@ class UlarTanggaTable: ObservableObject {
         onUpdate?(UlarTanggaUpdate(state: state, fresh: fresh))
     }
 
+    fileprivate func showEmote(seat: Int, id: String) {
+        guard active else { return }
+        emote = (seat, id)
+    }
+
     fileprivate func playersChanged(_ list: [PlayerInfo]) {
         players = list
         notice = list.contains { !$0.connected }
-            ? String(localized: "Ada pemain yang terputus. Komputer menggantikannya setelah 15 detik.", bundle: .app)
+            ? String(localized: "A player disconnected. The computer takes over after 15 seconds.", bundle: .app)
             : nil
     }
 
@@ -69,7 +78,9 @@ class UlarTanggaTable: ObservableObject {
     /// Lets a computer roll if it is its turn. Called once the board is idle.
     func stepBot() {}
     func restart() {}
-    func leave() { active = false; onUpdate = nil }
+    func leave() { active = false; onUpdate = nil; emote = nil }
+    /// Sends a preset reaction from this device's seat. No-op when `canEmote` is false.
+    func sendEmote(_ id: String) {}
 }
 
 /// The authoritative table: on this device only, or hosting a nearby room.
@@ -91,6 +102,7 @@ final class UlarTanggaHostTable: UlarTanggaTable {
             self.playersChanged(session.players)
             self.deliver(state, seq: session.seq)
         }
+        session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
         if !(transport is LocalTransport) {
             // Counts down a dropped guest's wait, then lets the computer play that seat.
             ticker = SecondTicker { [weak self, weak session] in
@@ -106,6 +118,7 @@ final class UlarTanggaHostTable: UlarTanggaTable {
 
     override var mySeat: Int? { seat }
     override var canRestart: Bool { true }
+    override var canEmote: Bool { !(transport is LocalTransport) }
 
     override func roll(seat: Int) -> Bool {
         active && session.submitLocal(seat: Int32(seat), move: UlarTanggaMove()) == nil
@@ -115,6 +128,11 @@ final class UlarTanggaHostTable: UlarTanggaTable {
 
     override func restart() {
         if active && latest.finished { session.restart() }
+    }
+
+    override func sendEmote(_ id: String) {
+        guard active, canEmote, let seat else { return }
+        _ = session.sendEmote(seat: Int32(seat), id: id)
     }
 
     override func leave() {
@@ -168,24 +186,30 @@ final class UlarTanggaGuestTable: UlarTanggaTable {
             self?.playersChanged(list)
             self?.away.players(list)
         }
-        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
+        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Move refused", bundle: .app) }
         session.onDisconnected = { [weak self] in self?.away.hostLost() }
+        session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
         // The host's and other guests' waits; past the host's wait the game is over ("host left").
         ticker = SecondTicker { [weak self] in
             guard let self else { return }
             let w = self.away.current(self.players)
             self.waiting = w.flatMap { $0.seconds > 0 ? $0 : nil }
             if let w, w.host, w.seconds == 0 {
-                self.notice = String(localized: "Terputus dari host", bundle: .app)
+                self.notice = String(localized: "Disconnected from the host", bundle: .app)
             }
         }
         ticker?.start()
     }
 
     override var mySeat: Int? { session.seat.map { Int($0.int32Value) } }
+    override var canEmote: Bool { true }
 
     override func roll(seat: Int) -> Bool {
         active && seat == mySeat && session.sendMove(move: UlarTanggaMove()) != nil
+    }
+
+    override func sendEmote(_ id: String) {
+        if active { session.sendEmote(id: id) }
     }
 
     override func leave() {

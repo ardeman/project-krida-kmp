@@ -94,9 +94,15 @@ and the Pixel on different networks (one on mobile data).
    sheet. Open: add the Play app signing key's SHA-256 to `assetlinks.json` once Play signs
    the app (Play Console › App integrity); check that `/.well-known/` is live after the
    Pages deploy; tap a link on both phones.
-8. [ ] **Privacy and store.** Privacy page (IP address and game traffic pass the relay, not
-   stored), Play data safety, App Store privacy labels. Before any online release.
-9. [ ] **Emotes.** Optional protocol message (`emote`), picker in the game screen.
+8. [x] **Privacy and store.** Privacy page covers the relay (IP and game traffic pass through,
+   not kept as a history; short-lived room state only) in Indonesian and English, effective
+   10 November 2026. Play Data safety and App Store privacy labels for AdMob + the online
+   relay are in `docs/store.md` (enter them in the consoles when submitting). Listing copy
+   there now mentions online play. Entering the answers in Play Console / App Store Connect
+   still waits on the first online release upload.
+9. [x] **Emotes.** Optional `emote` message and fixed bilingual catalog in `Emotes`; host
+   fans out with a 2 s cooldown. Picker + bubble on congklak and ular tangga (Android and
+   iOS), nearby and online only. Shared tests cover fan-out and cooldown; device check open.
 10. [ ] **Accounts, friends, invites.**
 
 ## Public rooms and combined joining (2026-11-10)

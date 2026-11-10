@@ -3,7 +3,7 @@ import SwiftUI
 @preconcurrency import UserMessagingPlatform
 
 /// AdMob: a banner on the menus, an interstitial after every [interstitialEvery]th finished game,
-/// and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all of it off;
+/// and a rewarded ad that pays for a hint. Owning "Remove ads" ([removed]) turns all of it off;
 /// hints are then free. Nothing is requested before the UMP consent flow allows it.
 /// Mirrors androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
 @MainActor
@@ -13,12 +13,12 @@ final class Ads: NSObject, ObservableObject {
     private static let interstitialEvery = 2
     private static let removedKey = "ads.removed"
 
-    /// The player owns "Hapus iklan". Cached so ads never flash on before the App Store answers.
+    /// The player owns "Remove ads". Cached so ads never flash on before the App Store answers.
     @Published private(set) var removed = UserDefaults.standard.bool(forKey: removedKey)
     /// The consent rules for this user require a way back into the consent form.
     @Published private(set) var privacyOptionsRequired = false
     @Published private(set) var started = false
-    /// Price of "Hapus iklan" from the App Store; nil hides the buy button.
+    /// Price of "Remove ads" from the App Store; nil hides the buy button.
     @Published private(set) var removeAdsPrice: String?
 
     private var store: Store!

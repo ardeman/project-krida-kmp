@@ -43,6 +43,10 @@ abstract class CongklakTable {
     var waiting by mutableStateOf<Waiting?>(null)
         protected set
 
+    /** Latest preset reaction to show as a bubble; null when none is up. */
+    var emote by mutableStateOf<Pair<Int, String>?>(null)
+        protected set
+
     /** The computer's difficulty, shown next to its name; null without a computer player. */
     var botLevel: String? = null
         protected set
@@ -57,19 +61,29 @@ abstract class CongklakTable {
     protected var active = true
         private set
 
+    /** True in a nearby/online room (preset reactions); false for pass-and-play / vs computer. */
+    open val canEmote: Boolean get() = false
+
     protected fun deliver(state: CongklakState, seat: Int?, move: CongklakMove?) {
         if (!active) return
         latest = state
         onUpdate?.invoke(CongklakUpdate(state, seat, move))
     }
 
+    protected fun showEmote(seat: Int, id: String) {
+        if (active) emote = seat to id
+    }
+
     /** Sow from [hole] for [seat]. Returns false when nothing was sent. */
     abstract fun play(seat: Int, hole: Int): Boolean
     abstract fun restart()
-    open fun leave() { active = false; onUpdate = null }
+    open fun leave() { active = false; onUpdate = null; emote = null }
 
     /** Lets a computer player move if it is its turn. Called once the board is idle. */
     open fun stepBot() = Unit
+
+    /** Sends a preset reaction from this device's seat. No-op when [canEmote] is false. */
+    open fun sendEmote(id: String) = Unit
 }
 
 /** The authoritative table: pass-and-play, vs computer (no transport peers) or hosting a BLE room. */
@@ -100,9 +114,12 @@ class HostTable(
             seq = session.seq
             deliver(state, session.lastSeat.takeIf { fresh }, session.lastMove.takeIf { fresh })
         }
+        session.onEmote = { seat, id -> showEmote(seat, id) }
         session.state?.let { deliver(it, null, null) }
         if (transport !is LocalTransport) ticker.start()
     }
+
+    override val canEmote: Boolean get() = transport !is LocalTransport
 
     override fun play(seat: Int, hole: Int) = active && session.submitLocal(seat, CongklakMove(hole)) == null
 
@@ -114,6 +131,11 @@ class HostTable(
 
     override fun stepBot() {
         if (active) session.stepBot()
+    }
+
+    override fun sendEmote(id: String) {
+        val seat = mySeat ?: return
+        if (active && canEmote) session.sendEmote(seat, id)
     }
 
     override fun leave() {
@@ -174,13 +196,20 @@ class GuestTable(private val session: GuestSession<CongklakState, CongklakMove>)
         }
         session.onInvalid = { notice = R.string.nearby_move_refused }
         session.onDisconnected = { away.hostLost() }
+        session.onEmote = { seat, id -> showEmote(seat, id) }
         session.state?.let { deliver(it, null, null) }
         ticker.start()
     }
 
+    override val canEmote: Boolean get() = true
+
     override fun play(seat: Int, hole: Int) = active && session.sendMove(CongklakMove(hole)) != null
 
     override fun restart() = Unit
+
+    override fun sendEmote(id: String) {
+        if (active) session.sendEmote(id)
+    }
 
     override fun leave() {
         if (!active) return

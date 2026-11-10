@@ -78,7 +78,7 @@ struct ContentView: View {
                             game: quickMatchGame == UlarTanggaGame.shared.id ? .ularTangga : .congklak,
                             online: true, code: code, onOnlineReady: onReady, standardRules: true
                         )
-                        host.configureQuickMatch(humans: humans, bots: bots, botName: String(localized: "Komputer", bundle: .app))
+                        host.configureQuickMatch(humans: humans, bots: bots, botName: String(localized: "Computer", bundle: .app))
                         return host
                     },
                     onHost: { matchedRoom in
@@ -91,8 +91,8 @@ struct ContentView: View {
                     },
                     onComputer: { count in
                         if quickMatchGame == UlarTanggaGame.shared.id {
-                            let you = String(localized: "Kamu", bundle: .app)
-                            let computer = String(localized: "Komputer", bundle: .app)
+                            let you = String(localized: "You", bundle: .app)
+                            let computer = String(localized: "Computer", bundle: .app)
                             ularTable = UlarTanggaHostTable.local(players: (0..<count).map { seat in
                                 LocalPlayer(name: seat == 0 ? you : computer, computer: seat != 0, color: seat)
                             })
@@ -132,7 +132,7 @@ struct ContentView: View {
             }
         }
         #endif
-        // A room link opens the app ready to join: the code field on "Teman dekat" or "Online".
+        // A room link opens the app ready to join: the code field on "Nearby" or "Online".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
         .onChange(of: roomCode) { _, _ in joinError = nil }
@@ -147,7 +147,7 @@ struct ContentView: View {
                         roomCode = code
                         joinRoom()
                     } else {
-                        joinError = "QR itu bukan room Krida"
+                        joinError = "That QR isn't a Krida room"
                     }
                 },
                 onClose: { scanning = false }
@@ -184,7 +184,7 @@ struct ContentView: View {
     private func scanRoomQr() {
         joinError = nil
         Task {
-            if await QrScannerView.available() { scanning = true } else { joinError = "Pemindai QR tidak bisa dibuka" }
+            if await QrScannerView.available() { scanning = true } else { joinError = "Couldn't open the QR scanner" }
         }
     }
 
@@ -273,7 +273,7 @@ struct ContentView: View {
                     .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text("Pilihan lain di bawah"))
+            .accessibilityLabel(Text("More options below"))
         }
         .opacity(moreBelow ? 1 : 0)
         .allowsHitTesting(moreBelow)
@@ -282,20 +282,20 @@ struct ContentView: View {
 
     /// One card for every way to play: on this phone (seat tiles for people and computers) or
     /// with friends nearby over Bluetooth or online; right below it what that means (or the computer's
-    /// level) with Mulai, and Gabung for "Teman dekat"; then the game's rules.
+    /// level) with Mulai, and Gabung for "Nearby"; then the game's rules.
     /// Same as Android.
     /// A running game this device left as a guest: go back to the same seat, or forget it.
     private func rejoinCard(_ saved: SavedRoom) -> some View {
-        let name = saved.game == UlarTanggaGame.shared.id ? String(localized: "Ular tangga") : "Congklak"
+        let name = saved.game == UlarTanggaGame.shared.id ? String(localized: "Snakes & ladders") : "Congklak"
         return HStack(spacing: 8 * s) {
             VStack(alignment: .leading, spacing: 2 * s) {
-                Text("\(name) masih berjalan").font(Theme.font(15 * s)).lineLimit(1)
-                detail("Room \(saved.code) · kursimu masih ada")
+                Text("\(name) is still on").font(Theme.font(15 * s)).lineLimit(1)
+                detail("Room \(saved.code) · your seat is waiting")
             }
             Spacer(minLength: 0)
-            Button("Lupakan") { lastRoom.clear() }
+            Button("Forget") { lastRoom.clear() }
                 .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-            Button("Gabung lagi") {
+            Button("Rejoin") {
                 // Backing out of a failed rejoin lands on the join screen, as after a typed code.
                 joining = true
                 joinOnline = saved.online
@@ -323,16 +323,16 @@ struct ContentView: View {
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
         let places: [(Place, LocalizedStringKey, String?)] = [
-            (.phone, "HP ini", "person.2"), (.nearby, "Teman dekat", "antenna.radiowaves.left.and.right"),
+            (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
             (.online, "Online", "globe"),
         ]
         return VStack(alignment: .leading, spacing: 10 * s) {
-            SettingRow(label: "Main di") {
-                Segmented(options: places, selection: $place, label: "Main di")
+            SettingRow(label: "Play on") {
+                Segmented(options: places, selection: $place, label: "Play on")
             }
             // In a nearby room everyone who joins plays, up to 4.
             if !nearby {
-                SettingRow(label: "Pemain") {
+                SettingRow(label: "Players") {
                     SeatTiles(
                         seats: seats,
                         colors: ular ? seats.indices.map { pawnColor($0) } : [Theme.wood, Theme.seed],
@@ -348,22 +348,22 @@ struct ContentView: View {
             }
             // The description above equally sized Join/Create buttons, as on Android. Online
             // rules move to the Create room screen.
-            SettingRow(label: !ular && !nearby && computers > 0 ? "Tingkat" : nil) {
+            SettingRow(label: !ular && !nearby && computers > 0 ? "Level" : nil) {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
-                        detail(ular ? "Sampai 4 HP lewat internet, teman di mana saja" : "Lewat internet, teman di mana saja")
+                        detail(ular ? "Up to 4 phones over the internet, friends anywhere" : "Over the internet, friends anywhere")
                     } else if nearby {
-                        detail(ular ? "Sampai 4 HP lewat Bluetooth, tanpa internet" : "Bluetooth, tanpa internet")
+                        detail(ular ? "Up to 4 phones over Bluetooth, no internet" : "Bluetooth, no internet")
                     } else if !ular && computers > 0 {
-                        Segmented(options: [(.easy, "Mudah", nil), (.normal, "Sedang", nil), (.hard, "Sulit", nil)], selection: $level, label: "Tingkat kesulitan")
+                        Segmented(options: [(.easy, "Easy", nil), (.normal, "Medium", nil), (.hard, "Hard", nil)], selection: $level, label: "Difficulty")
                     } else if !ular {
-                        detail("Berdua, gantian di satu HP")
+                        detail("Two players, taking turns on one phone")
                     } else if computers == 0 {
-                        detail("HP digilir; semua melempar dadu saat gilirannya.")
+                        detail("Pass the phone round; everyone rolls on their turn.")
                     } else if people == 1 {
-                        detail("Kamu melawan komputer.")
+                        detail("You against the computer.")
                     } else {
-                        detail("HP digilir; komputer melempar dadunya sendiri.")
+                        detail("Pass the phone round; computers roll on their own.")
                     }
                     HStack(spacing: 10 * s) {
                         if nearby {
@@ -373,12 +373,12 @@ struct ContentView: View {
                                 quickMatchGame = ular ? UlarTanggaGame.shared.id : CongklakGame.shared.id
                                 joining = true
                             } label: {
-                                Text(online ? "Gabung room" : "Gabung").frame(maxWidth: .infinity)
+                                Text(online ? "Join a room" : "Join").frame(maxWidth: .infinity)
                             }
                             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                         }
                         Button(action: start) {
-                            Text(nearby ? "Buat room" : "Mulai").frame(maxWidth: .infinity)
+                            Text(nearby ? "Create room" : "Start").frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
                     }
@@ -423,29 +423,29 @@ struct ContentView: View {
 
     private func startVsComputer(_ level: CongklakBot.Level) {
         let name = switch level {
-        case .easy: String(localized: "Mudah", bundle: .app)
-        case .hard: String(localized: "Sulit", bundle: .app)
-        default: String(localized: "Sedang", bundle: .app)
+        case .easy: String(localized: "Easy", bundle: .app)
+        case .hard: String(localized: "Hard", bundle: .app)
+        default: String(localized: "Medium", bundle: .app)
         }
-        passAndPlay = HostTable.vsComputer(you: String(localized: "Kamu", bundle: .app), computer: String(localized: "Komputer", bundle: .app), level: level, levelName: name)
+        passAndPlay = HostTable.vsComputer(you: String(localized: "You", bundle: .app), computer: String(localized: "Computer", bundle: .app), level: level, levelName: name)
     }
 
     private func startUlarTangga() {
         let seats = ularSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
-        let colors = [String(localized: "Merah", bundle: .app), String(localized: "Biru", bundle: .app), String(localized: "Hijau", bundle: .app), String(localized: "Kuning", bundle: .app)]
+        let colors = [String(localized: "Red", bundle: .app), String(localized: "Blue", bundle: .app), String(localized: "Green", bundle: .app), String(localized: "Yellow", bundle: .app)]
         var nextComputer = 0
         var players: [LocalPlayer] = []
         for (i, kind) in seats.enumerated() {
             switch kind {
             case .computer:
                 nextComputer += 1
-                let name = computers == 1 ? String(localized: "Komputer", bundle: .app) : String(localized: "Komputer \(nextComputer)", bundle: .app)
+                let name = computers == 1 ? String(localized: "Computer", bundle: .app) : String(localized: "Computer \(nextComputer)", bundle: .app)
                 players.append(LocalPlayer(name: name, computer: true, color: i))
             case .person:
-                // A lone person is "Kamu"; people passing the phone go by their pawn colour.
-                players.append(LocalPlayer(name: people == 1 ? String(localized: "Kamu", bundle: .app) : colors[i], computer: false, color: i))
+                // A lone person is "You"; people passing the phone go by their pawn colour.
+                players.append(LocalPlayer(name: people == 1 ? String(localized: "You", bundle: .app) : colors[i], computer: false, color: i))
             default: break
             }
         }
@@ -453,11 +453,11 @@ struct ContentView: View {
     }
 
     private func startPassAndPlay() {
-        passAndPlay = HostTable.passAndPlay(names: [String(localized: "Pemain 1", bundle: .app), String(localized: "Pemain 2", bundle: .app)])
+        passAndPlay = HostTable.passAndPlay(names: [String(localized: "Player 1", bundle: .app), String(localized: "Player 2", bundle: .app)])
     }
 }
 
-/// "Pulihkan pembelian" while ads are on; "Privasi iklan" where required. "Hapus iklan" sits beside the banner.
+/// "Restore purchases" while ads are on; "Ad privacy" where required. "Remove ads" sits beside the banner.
 private struct AdButtons: View {
     @ObservedObject private var ads = Ads.shared
     @Environment(\.uiScale) private var s
@@ -466,11 +466,11 @@ private struct AdButtons: View {
         if !ads.removed || ads.privacyOptionsRequired {
             HStack(spacing: 8 * s) {
                 if !ads.removed {
-                    Button("Pulihkan pembelian", action: ads.restorePurchases)
+                    Button("Restore purchases", action: ads.restorePurchases)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 }
                 if ads.privacyOptionsRequired {
-                    Button("Privasi iklan", action: ads.showPrivacyOptions)
+                    Button("Ad privacy", action: ads.showPrivacyOptions)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 }
                 Spacer(minLength: 0)
@@ -481,7 +481,7 @@ private struct AdButtons: View {
     }
 }
 
-/// "Hapus iklan" beside the banner where the ad is: the cards above keep the full height.
+/// "Remove ads" beside the banner where the ad is: the cards above keep the full height.
 /// The price shows in the App Store sheet, not on the button. Only while the banner shows and
 /// the App Store knows the product. Same as Android.
 private struct RemoveAdsButton: View {
@@ -491,7 +491,7 @@ private struct RemoveAdsButton: View {
     var body: some View {
         if !ads.removed && ads.started && ads.removeAdsPrice != nil {
             Button(action: ads.buyRemoveAds) {
-                Text("Hapus iklan").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
+                Text("Remove ads").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
                 .lineLimit(1)
                 .padding(.horizontal, 14 * s)
                 .frame(height: 50 * s)
@@ -527,9 +527,9 @@ private struct SeatTiles: View {
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         let dash = StrokeStyle(lineWidth: 1.5, dash: [6 * s, 4 * s])
         let (label, icon): (LocalizedStringKey, String) = switch kind {
-        case .person: ("Orang", "person.2.fill")
-        case .computer: ("Komputer", "desktopcomputer")
-        default: ("Kosong", "plus")
+        case .person: ("Person", "person.2.fill")
+        case .computer: ("Computer", "desktopcomputer")
+        default: ("Empty", "plus")
         }
         return Button { Sounds.shared.play(.tap); onTap(i) } label: {
             VStack(spacing: 3 * s) {
@@ -559,7 +559,7 @@ private struct SeatTiles: View {
         .disabled(!tappable.contains(i))
         .accessibilityLabel(Text("Kursi \(i + 1)"))
         .accessibilityValue(Text(label))
-        .accessibilityHint(tappable.contains(i) ? Text("Ganti") : Text(""))
+        .accessibilityHint(tappable.contains(i) ? Text("Change") : Text(""))
     }
 
     /// Dark ink on a light circle (yellow pawn, seed), white on the rest.
@@ -581,18 +581,18 @@ struct GameRoomOptions: View {
 
     var body: some View {
         if ular {
-            SettingRow(label: "Aturan") { UlarTanggaOptionChips() }
+            SettingRow(label: "Rules") { UlarTanggaOptionChips() }
         } else {
-            SettingRow(label: "Tembak") {
+            SettingRow(label: "Shooting") {
                 VStack(alignment: .leading, spacing: 6 * s) {
-                    Segmented(options: [(true, "Lewat lumbung", nil), (false, "Bebas", nil)], selection: $tembakAfterStore, label: "Aturan tembak")
+                    Segmented(options: [(true, "Past store", nil), (false, "Anytime", nil)], selection: $tembakAfterStore, label: "Shooting rule")
                     RuleHint(text: tembakAfterStore
-                        ? "Tembak (ambil biji di lubang lawan) hanya berlaku setelah bijimu melewati lumbungmu di giliran itu."
-                        : "Tembak kapan saja: biji terakhir di lubang kosongmu mengambil biji di lubang lawan di depannya.")
+                        ? "A capture (tembak) only counts once your seeds have passed your own store this turn."
+                        : "Capture anytime: your last seed in an empty hole on your side takes the seeds in the hole opposite.")
                 }
             }
-            SettingRow(label: "Jalan duluan") {
-                Segmented(options: [("me", "Saya", nil), ("opponent", "Lawan", nil), ("random", "Acak", nil)], selection: $starter, label: "Siapa jalan duluan")
+            SettingRow(label: "Goes first") {
+                Segmented(options: [("me", "Me", nil), ("opponent", "Opponent", nil), ("random", "Random", nil)], selection: $starter, label: "Who goes first")
             }
         }
     }
@@ -658,9 +658,9 @@ struct Segmented<T: Hashable>: View {
 enum MenuGame: CaseIterable {
     case congklak, ularTangga
 
-    var title: LocalizedStringKey { self == .congklak ? "Congklak" : "Ular tangga" }
-    var players: LocalizedStringKey { self == .congklak ? "2 pemain" : "2–4 pemain" }
-    var tagline: LocalizedStringKey { self == .congklak ? "Kumpulkan biji terbanyak di lumbungmu." : "Naiki tangga, hindari ular." }
+    var title: LocalizedStringKey { self == .congklak ? "Congklak" : "Snakes & ladders" }
+    var players: LocalizedStringKey { self == .congklak ? "2 players" : "2–4 players" }
+    var tagline: LocalizedStringKey { self == .congklak ? "Gather the most seeds in your store." : "Climb the ladders, dodge the snakes." }
     var face: Color { self == .congklak ? Theme.wood : Color(hex: 0x4F8A3B) }
     var edge: Color { self == .congklak ? Theme.woodShadow : Color(hex: 0x3B6A2B) }
 }
@@ -681,8 +681,8 @@ private struct GameCard: View {
                 .transition(.asymmetric(insertion: .move(edge: forward ? .trailing : .leading), removal: .move(edge: forward ? .leading : .trailing)))
             // The arrows stay put above the sliding cards.
             HStack(spacing: 6 * s) {
-                arrow("chevron.left", label: "Permainan sebelumnya") { step(-1) }
-                arrow("chevron.right", label: "Permainan berikutnya") { step(1) }
+                arrow("chevron.left", label: "Previous game") { step(-1) }
+                arrow("chevron.right", label: "Next game") { step(1) }
             }
             .padding(.top, 12 * s)
             .padding(.trailing, 10 * s)
@@ -769,10 +769,10 @@ private struct UlarTanggaOptionChips: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6 * s) {
             FlowRow(spacing: 6 * s) {
-                chip(0, "6 lempar lagi", $sixRollsAgain)
-                chip(1, "6 untuk mulai", $sixToEnter)
-                chip(2, "Pantul di 100", $bounceBack)
-                chip(3, "Juara 1 selesai", $firstFinishEnds)
+                chip(0, "6 rolls again", $sixRollsAgain)
+                chip(1, "6 to start", $sixToEnter)
+                chip(2, "Bounce off 100", $bounceBack)
+                chip(3, "First to 100 ends", $firstFinishEnds)
             }
             RuleHint(text: hint)
         }
@@ -781,11 +781,11 @@ private struct UlarTanggaOptionChips: View {
     /// What the last tapped chip means now that it is on or off.
     private var hint: LocalizedStringKey {
         switch last {
-        case 0: sixRollsAgain ? "6 lempar lagi: dapat 6, lempar dadu sekali lagi." : "6 lempar lagi mati: dapat 6, giliran tetap pindah."
-        case 1: sixToEnter ? "6 untuk mulai: pion baru masuk ke kotak 1 kalau dapat 6." : "6 untuk mulai mati: pion langsung jalan dari start."
-        case 2: bounceBack ? "Pantul di 100: kalau lemparan lewat dari 100, pion memantul mundur sisanya." : "Pantul di 100 mati: kalau lemparan lewat dari 100, pion diam di tempat."
-        case 3: firstFinishEnds ? "Juara 1 selesai: permainan berakhir saat pemain pertama sampai 100." : "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
-        default: "Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini."
+        case 0: sixRollsAgain ? "6 rolls again: roll a 6 and you roll once more." : "6 rolls again off: a 6 ends your turn like any roll."
+        case 1: sixToEnter ? "6 to start: a pawn enters the board on square 1 only with a 6." : "6 to start off: pawns move off the start with any roll."
+        case 2: bounceBack ? "Bounce off 100: a roll past 100 walks back the extra squares." : "Bounce off 100 off: a roll past 100 leaves the pawn where it is."
+        case 3: firstFinishEnds ? "First to 100 ends: the game ends when the first player reaches 100." : "First to 100 ends off: play goes on until one player is left."
+        default: "Tap a rule to turn it on or off; it is explained here."
         }
     }
 

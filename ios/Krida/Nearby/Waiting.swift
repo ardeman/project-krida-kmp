@@ -8,7 +8,7 @@ struct Waiting {
     let seconds: Int
     var host = false
 
-    var text: String { String(localized: "Menunggu \(name)…", bundle: .app) }
+    var text: String { String(localized: "Waiting for \(name)…", bundle: .app) }
 }
 
 /// Runs `tick` on the main thread once a second until `stop`.

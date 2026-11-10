@@ -71,6 +71,6 @@ struct LanguagePicker: View {
         .padding(3 * s)
         .background(Theme.track, in: RoundedRectangle(cornerRadius: 12 * s))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text("Bahasa"))
+        .accessibilityLabel(Text("Language"))
     }
 }

@@ -37,6 +37,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `invalid` | host → guest | `seq`, `reason` |
 | `matched` | relay (matchmaker) → player | `role` (`host` or `guest`), `code?` (6-char room code, only on host; optional, new in quick match) |
 | `ping` / `pong` | both | `t` |
+| `emote` | guest → host, then host → all | `id` (preset from `Emotes`), `seat?` (filled by the host when fanning out) |
 | `bye` | both | — |
 
 `seq` in `intent` is the guest's own counter; `seq` in `state` is the host's state version.
@@ -100,6 +101,13 @@ before these fields, so they replace the earlier host-rolled dice-off without a 
 It also carries `colors` (optional, default empty): each seat's pawn colour, `0` red, `1`
 blue, `2` green, `3` yellow, all different. Empty means seat order (seat 0 red, seat 1 blue,
 ...). Hosts fill it from the lobby colours.
+
+`emote` is a preset reaction during a running game (nearby or online). The catalog lives in
+`Emotes` (`nice`, `lets_go`, `awesome`, `oops`, `hmm`, `ready`); there is no free text. A guest
+sends `{type:"emote",id}` only; the host checks the id, enforces a 2 s cooldown per seat,
+fills `seat`, and fans the same message out to every guest (including the sender). A local
+host player uses the same fan-out. Unknown ids are dropped. Older peers drop the unknown
+type; no protocol bump.
 
 ## BLE framing
 

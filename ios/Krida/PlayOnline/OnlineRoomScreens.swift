@@ -1,7 +1,7 @@
 import Shared
 import SwiftUI
 
-// Online "Buat room" and "Gabung room" from the public-rooms mockup
+// Online "Create room" and "Join a room" from the public-rooms mockup
 // (`docs/mockups/public-rooms.md`). Same as Android's `OnlineRoomScreens.kt`.
 
 /// Room setup (players and rules) on the left, Private / Public and Create on the right.
@@ -26,10 +26,10 @@ struct CreateOnlineRoomView<Options: View>: View {
     }
 
     var body: some View {
-        NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true, backLabel: "Kembali", onBack: onBack) {
+        NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true, backLabel: "Back", onBack: onBack) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10 * s) {
-                    RoomHeading(text: "Pengaturan room")
+                    RoomHeading(text: "Room setup")
                     RoomPlayerCount(game: game, seats: $seats)
                     options
                 }
@@ -39,17 +39,17 @@ struct CreateOnlineRoomView<Options: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .nearbyCard(s)
             VStack(alignment: .leading, spacing: 12 * s) {
-                RoomHeading(text: "Buat room")
-                RoomDetail(text: "Siapa yang bisa gabung?")
-                Segmented(options: [(false, "Privat", nil), (true, "Publik", nil)],
-                          selection: $publicRoom, label: "Siapa yang bisa gabung?")
+                RoomHeading(text: "Create room")
+                RoomDetail(text: "Who can join?")
+                Segmented(options: [(false, "Private", nil), (true, "Public", nil)],
+                          selection: $publicRoom, label: "Who can join?")
                 RoomDetail(text: publicRoom
-                    ? "Room kamu bisa ditemukan lewat pencarian pemain."
-                    : "Hanya pemain dengan kode atau QR kamu yang bisa gabung.")
-                RoomDetail(text: "Teman tetap bisa pakai kode atau QR room.")
+                    ? "Matchmaking can find your room."
+                    : "Only players with your code or QR can join.")
+                RoomDetail(text: "Friends can still use its code or QR.")
                 Spacer(minLength: 0)
                 Button { onCreate(publicRoom, seats) } label: {
-                    Text("Buat room").frame(maxWidth: .infinity)
+                    Text("Create room").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryButtonStyle())
             }
@@ -88,15 +88,15 @@ struct JoinOnlineRoomView: View {
     private var valid: Bool { RoomCode.shared.isValidOnline(code: code) }
 
     var body: some View {
-        NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true, backLabel: "Kembali", onBack: onBack) {
+        NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true, backLabel: "Back", onBack: onBack) {
             VStack(alignment: .leading, spacing: 12 * s) {
-                RoomHeading(text: "Cari room")
-                RoomDetail(text: "Gabung room publik (aturan dari host) atau cari pemain lain (aturan standar).")
+                RoomHeading(text: "Find a room")
+                RoomDetail(text: "Join a public room (its host's rules) or find other players (standard rules).")
                 RoomPlayerCount(game: game, seats: $seats)
-                RoomDetail(text: "match_fallback_hint")
+                RoomDetail(text: "After 20 seconds, agree to play with the players found or add computers.")
                 Spacer(minLength: 0)
                 Button { onSearch(seats) } label: {
-                    Text("Cari pemain").frame(maxWidth: .infinity)
+                    Text("Find a match").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryButtonStyle())
             }
@@ -104,8 +104,8 @@ struct JoinOnlineRoomView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .nearbyCard(s)
             VStack(alignment: .leading, spacing: 8 * s) {
-                RoomHeading(text: "Punya kode room?")
-                RoomDetail(text: "Langsung gabung room publik atau privat.")
+                RoomHeading(text: "Have a room code?")
+                RoomDetail(text: "Join a public or private room directly.")
                 CodeBoxes(code: $code, length: Int(Krida.shared.ONLINE_ROOM_CODE_LENGTH),
                           valid: valid, onSubmit: onJoin, compact: true)
                     .frame(maxWidth: .infinity)
@@ -114,11 +114,11 @@ struct JoinOnlineRoomView: View {
                 }
                 Spacer(minLength: 0)
                 Button(action: onScan) {
-                    Label("Pindai QR", systemImage: "qrcode.viewfinder").frame(maxWidth: .infinity)
+                    Label("Scan the QR", systemImage: "qrcode.viewfinder").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 Button(action: onJoin) {
-                    Text("Gabung room").frame(maxWidth: .infinity)
+                    Text("Join a room").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .opacity(valid ? 1 : 0.5)
@@ -139,11 +139,11 @@ private struct RoomPlayerCount: View {
 
     var body: some View {
         if game == UlarTanggaGame.shared.id {
-            RoomDetail(text: "play_players")
+            RoomDetail(text: "Players")
             Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
-                      selection: $seats, label: "Pemain")
+                      selection: $seats, label: "Players")
         } else {
-            RoomDetail(text: "match_two_players")
+            RoomDetail(text: "2 players · you and an opponent")
         }
     }
 }

@@ -17,6 +17,8 @@ class CongklakTable: ObservableObject {
     @Published fileprivate(set) var notice: String?
     /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
     @Published fileprivate(set) var waiting: Waiting?
+    /// Latest preset reaction to show as a bubble; nil when none is up.
+    @Published fileprivate(set) var emote: (seat: Int, id: String)?
 
     /// The computer's difficulty, shown next to its name; nil without a computer player.
     fileprivate(set) var botLevel: String?
@@ -32,11 +34,18 @@ class CongklakTable: ObservableObject {
     var canRestart: Bool { false }
     /// True when a move waits for the host's snapshot instead of applying at once.
     var isRemote: Bool { false }
+    /// Nearby/online rooms can send preset reactions; pass-and-play and vs computer cannot.
+    var canEmote: Bool { false }
 
     fileprivate func deliver(_ state: CongklakState, seat: Int32?, move: CongklakMove?) {
         guard active else { return }
         latest = state
         onUpdate?(CongklakUpdate(state: state, seat: seat, move: move))
+    }
+
+    fileprivate func showEmote(seat: Int, id: String) {
+        guard active else { return }
+        emote = (seat, id)
     }
 
     /// Sow from `hole` for `seat`. Returns false when nothing was sent.
@@ -45,9 +54,12 @@ class CongklakTable: ObservableObject {
     func leave() {
         active = false
         onUpdate = nil
+        emote = nil
     }
     /// Lets a computer player move if it is its turn. Called once the board is idle.
     func stepBot() {}
+    /// Sends a preset reaction from this device's seat. No-op when `canEmote` is false.
+    func sendEmote(_ id: String) {}
 }
 
 /// The authoritative table: pass-and-play, vs computer (no transport peers) or hosting a BLE room.
@@ -68,7 +80,7 @@ final class HostTable: CongklakTable {
         session.onPlayersChanged = { [weak self] list in
             guard let self else { return }
             self.players = list
-            self.notice = list.contains { !$0.connected } ? String(localized: "Pemain lain terputus. Menunggu dia kembali…", bundle: .app) : nil
+            self.notice = list.contains { !$0.connected } ? String(localized: "The other player disconnected. Waiting for them to return…", bundle: .app) : nil
         }
         session.onStateChanged = { [weak self, weak session] state in
             guard let self, let session, let state else { return }
@@ -77,6 +89,7 @@ final class HostTable: CongklakTable {
             self.seq = session.seq
             self.deliver(state, seat: fresh ? session.lastSeat?.int32Value : nil, move: fresh ? session.lastMove : nil)
         }
+        session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
         if let state = session.state { deliver(state, seat: nil, move: nil) }
         if !(transport is LocalTransport) {
             // Counts down a dropped guest's wait, then lets the computer play that seat.
@@ -93,6 +106,7 @@ final class HostTable: CongklakTable {
 
     override var mySeat: Int32? { seat }
     override var canRestart: Bool { true }
+    override var canEmote: Bool { !(transport is LocalTransport) }
 
     override func play(seat: Int32, hole: Int32) -> Bool {
         active && session.submitLocal(seat: seat, move: CongklakMove(hole: hole)) == nil
@@ -104,6 +118,11 @@ final class HostTable: CongklakTable {
     }
 
     override func stepBot() { if active { _ = session.stepBot() } }
+
+    override func sendEmote(_ id: String) {
+        guard active, canEmote, let seat else { return }
+        _ = session.sendEmote(seat: seat, id: id)
+    }
 
     override func leave() {
         guard active else { return }
@@ -151,7 +170,7 @@ final class GuestTable: CongklakTable {
             self.notice = nil
             self.deliver(state, seat: session.lastSeat?.int32Value, move: session.lastMove)
         }
-        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Langkah ditolak", bundle: .app) }
+        session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Move refused", bundle: .app) }
         session.onPlayers = { [weak self] list in
             guard let self else { return }
             self.players = list
@@ -159,6 +178,7 @@ final class GuestTable: CongklakTable {
             self.notice = nil
         }
         session.onDisconnected = { [weak self] in self?.away.hostLost() }
+        session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
         if let state = session.state { deliver(state, seat: nil, move: nil) }
         // The host's and other guests' waits; past the host's wait the game is over ("host left").
         ticker = SecondTicker { [weak self] in
@@ -166,7 +186,7 @@ final class GuestTable: CongklakTable {
             let w = self.away.current(self.players)
             self.waiting = w.flatMap { $0.seconds > 0 ? $0 : nil }
             if let w, w.host, w.seconds == 0, self.notice == nil {
-                self.notice = String(localized: "Terputus dari host", bundle: .app)
+                self.notice = String(localized: "Disconnected from the host", bundle: .app)
             }
         }
         ticker?.start()
@@ -174,9 +194,14 @@ final class GuestTable: CongklakTable {
 
     override var mySeat: Int32? { session.seat?.int32Value }
     override var isRemote: Bool { true }
+    override var canEmote: Bool { true }
 
     override func play(seat: Int32, hole: Int32) -> Bool {
         active && session.sendMove(move: CongklakMove(hole: hole)) != nil
+    }
+
+    override func sendEmote(_ id: String) {
+        if active { session.sendEmote(id: id) }
     }
 
     override func leave() {

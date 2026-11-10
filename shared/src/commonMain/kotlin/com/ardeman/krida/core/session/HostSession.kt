@@ -1,6 +1,7 @@
 package com.ardeman.krida.core.session
 
 import com.ardeman.krida.core.protocol.Codec
+import com.ardeman.krida.core.protocol.Emotes
 import com.ardeman.krida.core.protocol.InvalidReason
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.LastMove
@@ -78,6 +79,11 @@ class HostSession<S, M>(
     /** UI hooks. Called on the transport's thread. */
     var onPlayersChanged: ((List<PlayerInfo>) -> Unit)? = null
     var onStateChanged: ((S) -> Unit)? = null
+    /** A preset reaction from [seat] (local or remote); show it on the board. */
+    var onEmote: ((seat: Int, id: String) -> Unit)? = null
+
+    /** Last successful emote time per seat, for [Emotes.COOLDOWN_MS]. */
+    private val lastEmoteAt = mutableMapOf<Int, Long>()
 
     init {
         transport.setListener(this)
@@ -214,6 +220,16 @@ class HostSession<S, M>(
         return submit(seat, move)
     }
 
+    /**
+     * Sends a preset reaction from a local seat during a running game. Returns false when the
+     * seat is remote/bot, the id is unknown, the game has not started, or the cooldown applies.
+     */
+    fun sendEmote(seat: Int, id: String): Boolean {
+        val s = seats.getOrNull(seat) ?: return false
+        if (s.peer != null || s.bot != null) return false
+        return fanoutEmote(seat, id)
+    }
+
     // ---- TransportListener -------------------------------------------------
 
     override fun onPeerConnected(peer: String) {
@@ -238,6 +254,7 @@ class HostSession<S, M>(
             is Message.Hello -> handleHello(peer, msg)
             is Message.Intent -> handleIntent(peer, msg)
             is Message.PickColor -> handlePickColor(peer, msg)
+            is Message.Emote -> handleEmote(peer, msg)
             is Message.Ping -> send(peer, Message.Pong(msg.t))
             is Message.Bye -> onPeerDisconnected(peer)
             else -> Unit // host ignores host->guest messages
@@ -310,6 +327,24 @@ class HostSession<S, M>(
         }
         val reason = submit(seat, move)
         if (reason != null) send(peer, Message.Invalid(intent.seq, reason))
+    }
+
+    private fun handleEmote(peer: String, msg: Message.Emote) {
+        val seat = seats.indexOfFirst { it.peer == peer && it.connected }
+        if (seat < 0) return
+        fanoutEmote(seat, msg.id)
+    }
+
+    private fun fanoutEmote(seat: Int, id: String): Boolean {
+        if (!started || !Emotes.valid(id)) return false
+        val now = clock()
+        val last = lastEmoteAt[seat]
+        if (last != null && now - last < Emotes.COOLDOWN_MS) return false
+        lastEmoteAt[seat] = now
+        val bytes = Codec.encode(Message.Emote(id, seat))
+        remotePeers().forEach { transport.send(it, bytes) }
+        onEmote?.invoke(seat, id)
+        return true
     }
 
     private fun submit(seat: Int, move: M): String? {

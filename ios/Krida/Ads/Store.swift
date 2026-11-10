@@ -1,7 +1,7 @@
 import StoreKit
 
-/// StoreKit 2 for the one non-consumable product, "Hapus iklan". Ownership comes from
-/// `Transaction.currentEntitlements`, re-read on every [refresh]; "Pulihkan pembelian" syncs
+/// StoreKit 2 for the one non-consumable product, "Remove ads". Ownership comes from
+/// `Transaction.currentEntitlements`, re-read on every [refresh]; "Restore purchases" syncs
 /// with the App Store first, as App Review expects a restore button.
 @MainActor
 final class Store {

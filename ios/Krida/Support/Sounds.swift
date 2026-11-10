@@ -109,9 +109,9 @@ struct SoundToggles: View {
     var body: some View {
         HStack(spacing: 8 * s) {
             CircleIconButton(systemImage: sounds.soundOn ? "speaker.wave.2.fill" : "speaker.slash.fill",
-                             label: sounds.soundOn ? "Matikan suara" : "Nyalakan suara") { sounds.soundOn.toggle() }
+                             label: sounds.soundOn ? "Turn sound off" : "Turn sound on") { sounds.soundOn.toggle() }
             // SF Symbols has no slashed note, so music off is the note struck through.
-            CircleIconButton(systemImage: "music.note", label: sounds.musicOn ? "Matikan musik" : "Nyalakan musik",
+            CircleIconButton(systemImage: "music.note", label: sounds.musicOn ? "Turn music off" : "Turn music on",
                              struck: !sounds.musicOn) { sounds.musicOn.toggle() }
         }
     }

@@ -79,6 +79,7 @@ import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
+import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.PrimaryButton
@@ -333,39 +334,49 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         }
 
         // HUD: back, opponent, help on top; direction hint and your pill at the bottom.
-        Column(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp)) {
-            TopBar(gap = 12.dp) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
-                OpponentPill(
-                    seats = seats,
-                    on = active(seats.far),
-                    detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
-                    modifier = Modifier,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SoundToggles()
-                    if (canPlay() && seats.isLocal(state.turn) && hint == null) {
-                        CircleIconButton(R.drawable.ic_hint, stringResource(if (Ads.removed) R.string.hint_free else R.string.hint), ::showHint)
-                    }
-                    CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
-                }
-            }
-            Spacer(Modifier.weight(1f))
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val away = table.waiting
-                val notice = table.notice?.let { stringResource(it) }
-                if (away != null) {
-                    CountdownNotice(stringResource(R.string.online_waiting_for, away.name), away.seconds, (Krida.HANDOFF_WAIT_MS / 1000).toInt())
-                } else if (notice != null) {
-                    Text(notice, style = Theme.font(14, FontWeight.Bold, Theme.error))
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(painterResource(R.drawable.ic_rotate_cw), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(15.dp))
-                        Text(stringResource(R.string.congklak_direction), style = Theme.font(13, FontWeight.Bold, Theme.muted))
+        Box(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp)) {
+            Column(Modifier.fillMaxSize()) {
+                TopBar(gap = 12.dp) {
+                    CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                    OpponentPill(
+                        seats = seats,
+                        on = active(seats.far),
+                        detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
+                        modifier = Modifier,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SoundToggles()
+                        if (canPlay() && seats.isLocal(state.turn) && hint == null) {
+                            CircleIconButton(R.drawable.ic_hint, stringResource(if (Ads.removed) R.string.hint_free else R.string.hint), ::showHint)
+                        }
+                        CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                     }
                 }
-                PlayerPill(seats, seats.near, active(seats.near), status(seats.near))
+                Spacer(Modifier.weight(1f))
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val away = table.waiting
+                    val notice = table.notice?.let { stringResource(it) }
+                    if (away != null) {
+                        CountdownNotice(stringResource(R.string.online_waiting_for, away.name), away.seconds, (Krida.HANDOFF_WAIT_MS / 1000).toInt())
+                    } else if (notice != null) {
+                        Text(notice, style = Theme.font(14, FontWeight.Bold, Theme.error))
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(painterResource(R.drawable.ic_rotate_cw), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(15.dp))
+                            Text(stringResource(R.string.congklak_direction), style = Theme.font(13, FontWeight.Bold, Theme.muted))
+                        }
+                    }
+                    PlayerPill(seats, seats.near, active(seats.near), status(seats.near))
+                }
             }
+            val youLabel = stringResource(R.string.bot_you)
+            EmoteHud(
+                canEmote = table.canEmote,
+                emote = table.emote,
+                playerName = { seat -> if (seat == table.mySeat) youLabel else seats.name(seat) },
+                onSend = table::sendEmote,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 52.dp),
+            )
         }
 
         AnimatedVisibility(finished && !animating, enter = fadeIn(), exit = fadeOut()) {
@@ -562,7 +573,7 @@ private fun announce(before: CongklakState, after: CongklakState, me: Int?) {
 @Composable
 internal fun CongklakRulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Unit) {
     val all = stringArrayResource(R.array.congklak_rules)
-    val anytime = stringResource(R.string.congklak_rule_tembak_anytime)
+    val anytime = stringResource(R.string.congklak_rule_capture_anytime)
     // Items 4 and 5 are the "Lewat lumbung" tembak; "Bebas" has one simpler line instead.
     val rules = if (tembakAfterStore) all.toList() else all.take(4) + anytime + all.drop(6)
     // An overlay inside the stage, not a Dialog: a Dialog is its own window and would stay

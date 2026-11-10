@@ -21,7 +21,7 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <article class="doc">
       <h1>Kebijakan Privasi</h1>
-      <p class="doc-date">Berlaku sejak 8 November 2026</p>
+      <p class="doc-date">Berlaku sejak 10 November 2026</p>
 
       <p>
         Krida adalah kumpulan permainan papan untuk Android dan iPhone, dibuat oleh Ardeman. Halaman ini
@@ -31,18 +31,21 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2>Singkatnya</h2>
       <ul>
         <li>Krida tidak meminta akun, nama asli, email, nomor telepon, atau kontak.</li>
-        <li>Kami tidak punya server yang menyimpan data pemain.</li>
+        <li>Main online lewat relay yang hanya meneruskan lalu lintas permainan selama room terbuka; relay tidak
+          menyimpan akun atau riwayat permainan.</li>
         <li>Iklan di Krida disediakan oleh Google AdMob, yang mengumpulkan sebagian data perangkat seperti dijelaskan di bawah.</li>
         <li>Pembayaran diproses oleh Google Play atau App Store; kami tidak pernah melihat data pembayaranmu.</li>
       </ul>
 
       <h2>Data yang tersimpan di perangkatmu</h2>
       <p>
-        Pengaturan (misalnya suara dan musik) dan status pembelian <i>Hapus iklan</i> disimpan di perangkatmu
-        sendiri dan tidak dikirim ke kami. Data ini terhapus saat aplikasi dihapus.
+        Pengaturan (misalnya suara dan musik), status pembelian <i>Hapus iklan</i>, dan — jika kamu meninggalkan
+        permainan online atau nearby yang masih berjalan — token singkat untuk bergabung kembali ke room itu
+        disimpan di perangkatmu sendiri dan tidak dikirim ke kami sebagai profil. Data ini terhapus saat aplikasi
+        dihapus, atau saat kamu memilih Lupa room dari menu.
       </p>
 
-      <h2>Main bareng lewat Bluetooth dan Wi-Fi</h2>
+      <h2>Main bareng di dekatmu (Bluetooth dan Wi-Fi)</h2>
       <p>
         Saat kamu main bersama teman di dekatmu, Krida memakai Bluetooth atau jaringan Wi-Fi yang sama untuk
         mengirim data permainan (kode room, nama pemain di room, dan langkah permainan) langsung antarperangkat.
@@ -52,6 +55,26 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
         Di Android 11 ke bawah, sistem Android mewajibkan izin lokasi untuk mencari perangkat Bluetooth di sekitar.
         Krida meminta izin itu hanya untuk mencari teman bermain; Krida tidak membaca, menyimpan, atau mengirim
         lokasimu.
+      </p>
+
+      <h2>Main bareng online</h2>
+      <p>
+        Saat kamu main online (room lewat kode atau tautan, lobi publik, atau quick match), ponselmu terhubung ke
+        relay kami di <code>krida-relay.ardeman.com</code>, yang berjalan di Cloudflare Workers. Relay hanya
+        meneruskan byte antara ponsel host dan tamu; ia tidak memahami atau mengubah permainan.
+      </p>
+      <p>
+        Selama kamu terhubung, relay tentu melihat alamat IP-mu dan lalu lintas permainan yang diteruskannya (kode
+        room, nama kursi di lobi, langkah, dan status lobi yang dibutuhkan agar room tetap berjalan). Lalu lintas
+        itu tidak disimpan sebagai log atau riwayat permainan. Relay hanya menyimpan keadaan singkat yang dibutuhkan
+        untuk room yang terbuka (misalnya kunci reconnect host, apakah lobi publik, dan reservasi kursi) dan
+        menghapus room saat permainan berakhir atau setelah idle sebentar. Kami tidak menjual data ini dan tidak
+        memakainya untuk iklan.
+      </p>
+      <p>
+        Cloudflare memproses koneksi sebagai bagian dari menjalankan platform Workers menurut
+        <a href="https://www.cloudflare.com/privacypolicy/">Kebijakan Privasi Cloudflare</a>. Krida tidak memakai
+        Cloudflare Analytics atau produk Cloudflare lain yang akan membuat profil pemain dari lalu lintas ini.
       </p>
 
       <h2>Iklan (Google AdMob)</h2>

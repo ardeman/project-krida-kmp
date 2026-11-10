@@ -2,7 +2,7 @@ import Foundation
 import Shared
 import UIKit
 
-/// A room over BLE ("Teman dekat" on the play card) or through the online relay ("Online"),
+/// A room over BLE ("Nearby" on the play card) or through the online relay ("Online"),
 /// from hosting or joining until the game starts. Then `congklak` or `ular` takes over the session and that game's screen shows it.
 /// A guest joins by code and learns the game from the host's Welcome. Same as Android.
 @MainActor

@@ -376,7 +376,9 @@ private struct UlarTanggaBoardView: View {
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
         // The notice (a dropped player, the host lost) only while it shows.
-        let keys = Self.hudKeys + ((table.waiting != nil || table.notice != nil) ? ["notice"] : [])
+        var keys = Self.hudKeys
+        if table.waiting != nil || table.notice != nil { keys.append("notice") }
+        if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
         model.layout(size: size, room: room, obstacles: obstacles, dieSpot: die)
         for seat in 0..<model.players {
@@ -398,7 +400,7 @@ private struct UlarTanggaBoardView: View {
     // MARK: Seats
 
     private func displayName(_ seat: Int) -> String {
-        table.mySeat == seat ? String(localized: "Kamu", bundle: .app) : table.name(seat)
+        table.mySeat == seat ? String(localized: "You", bundle: .app) : table.name(seat)
     }
 
     private var highlighted: Int? { model.state.finished || !model.queueEmpty ? nil : model.turn }
@@ -432,21 +434,21 @@ private struct UlarTanggaBoardView: View {
     private var status: String {
         let st = model.state
         let seat = model.turn
-        if model.offHold { return String(localized: "Urutan siap · \(displayName(seat)) duluan", bundle: .app) }
+        if model.offHold { return String(localized: "Order set · \(displayName(seat)) goes first", bundle: .app) }
         if st.finished || model.animating { return "" }
         let bot = table.botSeats.contains(seat)
         if st.opening {
-            if bot { return String(localized: "berpikir…", bundle: .app) }
-            if st.openingRolls.count > 1 { return String(localized: "Seri · \(displayName(seat)) lempar lagi", bundle: .app) }
-            if table.mySeat == seat { return String(localized: "Lempar dadu untuk urutan main", bundle: .app) }
-            return String(localized: "\(table.name(seat)), lempar dadu untuk urutan main", bundle: .app)
+            if bot { return String(localized: "thinking…", bundle: .app) }
+            if st.openingRolls.count > 1 { return String(localized: "A tie · \(displayName(seat)) throws again", bundle: .app) }
+            if table.mySeat == seat { return String(localized: "Throw the die to set the playing order", bundle: .app) }
+            return String(localized: "\(table.name(seat)), throw the die to set the playing order", bundle: .app)
         }
         if st.lastSeat?.intValue == seat && st.lastRoll?.intValue == 6 && st.options.sixRollsAgain {
-            return String(localized: "Dapat 6 · lempar lagi", bundle: .app)
+            return String(localized: "A six · roll again", bundle: .app)
         }
-        if bot { return String(localized: "berpikir…", bundle: .app) }
-        if table.mySeat == seat { return String(localized: "Giliranmu · lempar dadu", bundle: .app) }
-        return String(localized: "Giliran \(table.name(seat))", bundle: .app)
+        if bot { return String(localized: "thinking…", bundle: .app) }
+        if table.mySeat == seat { return String(localized: "Your turn · roll the die", bundle: .app) }
+        return String(localized: "\(table.name(seat))'s turn", bundle: .app)
     }
 
     // MARK: HUD
@@ -456,7 +458,7 @@ private struct UlarTanggaBoardView: View {
         return HStack(alignment: .top, spacing: 0) {
             // Left: back, then the players, two tiles a row.
             VStack(alignment: .leading, spacing: 10 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Kembali ke menu", action: exit)
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
                 let rows = stride(from: 0, to: tileOrder.count, by: 2).map { Array(tileOrder[$0..<min($0 + 2, tileOrder.count)]) }
@@ -481,11 +483,23 @@ private struct UlarTanggaBoardView: View {
             VStack(spacing: 0) {
                 HStack(spacing: 8 * s) {
                     SoundToggles()
-                    CircleIconButton(systemImage: "questionmark", label: "Cara main") { showRules = true }
+                    CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
                 }
                 .modifier(hudBox("buttons"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
+                EmoteHud(
+                    canEmote: table.canEmote,
+                    emote: table.emote,
+                    playerName: { seat in
+                        if table.mySeat == seat { return String(localized: "You", bundle: .app) }
+                        return table.name(seat)
+                    },
+                    onSend: table.sendEmote,
+                    s: s
+                )
+                .modifier(hudBox("emote"))
+                if table.canEmote { Spacer().frame(height: 10 * s) }
                 // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
                 // hold it to spin it and let go to throw it.
                 Color.clear
@@ -494,7 +508,7 @@ private struct UlarTanggaBoardView: View {
                     .gesture(dieGesture)
                     .modifier(hudBox("die"))
                     .accessibilityElement()
-                    .accessibilityLabel(Text("Lempar"))
+                    .accessibilityLabel(Text("Roll"))
                     .accessibilityAddTraits(.isButton)
                     .accessibilityAction { model.roll(.short) }
                 Text(status)
@@ -597,7 +611,7 @@ private struct UlarTanggaBoardView: View {
         let st = model.state
         let ranking = UlarTanggaGame.shared.ranking(state: st).map(\.intValue)
         let winner = ranking.first ?? 0
-        let title = table.mySeat == winner ? String(localized: "Kamu menang!", bundle: .app) : String(localized: "\(table.name(winner)) menang!", bundle: .app)
+        let title = table.mySeat == winner ? String(localized: "You win!", bundle: .app) : String(localized: "\(table.name(winner)) wins!", bundle: .app)
         return ZStack {
             Theme.ink.opacity(0.45).ignoresSafeArea()
             VStack(spacing: 10 * s) {
@@ -622,13 +636,13 @@ private struct UlarTanggaBoardView: View {
                     }
                 }
                 HStack(spacing: 10 * s) {
-                    Button { ads.afterGame(then: exit) } label: { Text("Ke menu").frame(maxWidth: .infinity) }
+                    Button { ads.afterGame(then: exit) } label: { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
-                        Button { ads.afterGame(then: model.restart) } label: { Text("Main lagi").frame(maxWidth: .infinity) }
+                        Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }
                             .buttonStyle(PrimaryButtonStyle(height: 48))
                     } else {
-                        Text("Menunggu host memulai lagi…")
+                        Text("Waiting for the host to start again…")
                             .font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
                             .frame(maxWidth: .infinity)
                     }
@@ -658,7 +672,7 @@ private struct FrameReader: ViewModifier {
     }
 }
 
-/// "Cara main" with this game's options.
+/// "How to play" with this game's options.
 struct UlarTanggaRulesSheet: View {
     let options: UlarTanggaOptions
     @Environment(\.dismiss) private var dismiss
@@ -667,33 +681,33 @@ struct UlarTanggaRulesSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    rule("Semua melempar dadu untuk menentukan urutan main, angka tertinggi duluan; yang seri melempar lagi di antara mereka. Lalu giliran berjalan sesuai urutan itu.")
+                    rule("Everyone throws the die to set the playing order, highest first; tied players throw again between themselves. Turns then go round in that order.")
                     if options.sixToEnter {
-                        rule("Perlu dadu 6 untuk masuk papan; 6 itu membawamu ke kotak 1.")
+                        rule("You need a 6 to get on the board; it puts you on square 1.")
                     } else {
-                        rule("Semua mulai di luar papan; dadu 4 membawamu ke kotak 4.")
+                        rule("Everyone starts off the board; a roll of 4 puts you on square 4.")
                     }
-                    rule("Berhenti di kaki tangga: naik ke ujung atasnya.")
-                    rule("Berhenti di kepala ular: turun ke ekornya.")
+                    rule("Land on the foot of a ladder: climb to its top.")
+                    rule("Land on a snake's head: slide down to its tail.")
                     if options.bounceBack {
-                        rule("Harus pas di 100; sisa langkah yang lewat berjalan mundur.")
+                        rule("You must land on 100 exactly; a roll that goes past it walks back down the extra squares.")
                     } else {
-                        rule("Harus pas di 100; lemparan yang lewat membuat bidak diam di tempat.")
+                        rule("You must land on 100 exactly; a roll that goes past it leaves you where you are.")
                     }
-                    if options.sixRollsAgain { rule("Dadu 6 boleh melempar lagi.") }
+                    if options.sixRollsAgain { rule("A 6 rolls again.") }
                     if options.firstFinishEnds {
-                        rule("Yang pertama sampai 100 menang dan permainan selesai.")
+                        rule("The first player to reach 100 wins and the game ends.")
                     } else {
-                        rule("Yang sampai 100 keluar dari papan berurutan; permainan lanjut sampai tersisa satu pemain.")
+                        rule("Players who reach 100 leave the board in order; play goes on until one player is left.")
                     }
                 }
                 .padding(24)
             }
             .background(Theme.surface)
-            .navigationTitle(Text("Cara main"))
+            .navigationTitle(Text("How to play"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Tutup") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("Close") { dismiss() } }
             }
         }
     }

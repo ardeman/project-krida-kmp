@@ -18,7 +18,7 @@ private struct VoteTally: View {
             ForEach(0..<players, id: \.self) { index in
                 Circle().fill(index < votes ? Theme.accent : Theme.line).frame(width: 8 * s, height: 8 * s)
             }
-            Text(String(format: matchString(mine ? "match_your_vote" : "match_votes"), votes, players))
+            Text(String(format: matchString(mine ? "Your vote · %1$d/%2$d" : "%1$d/%2$d votes"), votes, players))
                 .font(Theme.font(12 * s, .bold))
                 .foregroundStyle(mine ? Theme.accent : Theme.muted)
                 .padding(.leading, 4 * s)
@@ -41,7 +41,7 @@ struct PlayOnlineView: View {
 
     var body: some View {
         NearbyFrame(title: gameTitle(game), subtitle: placeLine(true), online: true,
-                    backLabel: "Batal", onBack: onCancel) {
+                    backLabel: "Cancel", onBack: onCancel) {
             MatchSearch(game: game, target: target, onCancel: onCancel,
                         onRetry: { attempt += 1 }, createHost: createHost,
                         onHost: onHost, onJoin: onJoin, onComputer: onComputer)
@@ -130,7 +130,7 @@ private struct MatchSearch: View {
             // Solo seat selector
             if offer && !preparing && !failed && humans == 1 && game == UlarTanggaGame.shared.id {
                 Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
-                          selection: $soloSeats, label: "Pemain")
+                          selection: $soloSeats, label: "Players")
             }
             
             // Offer buttons
@@ -140,7 +140,7 @@ private struct MatchSearch: View {
                     HStack(alignment: .top, spacing: 10 * s) {
                         VStack(spacing: 6 * s) {
                             Button(action: { client?.acceptHumans(revision: revision) }) {
-                                Text(String(format: matchString("match_play_humans"), humans)).frame(maxWidth: .infinity)
+                                Text(String(format: matchString("Play with %1$d players"), humans)).frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PrimaryButtonStyle())
                             .disabled(acceptedHumans)
@@ -148,7 +148,7 @@ private struct MatchSearch: View {
                         }
                         VStack(spacing: 6 * s) {
                             Button(action: { client?.acceptBots(revision: revision) }) {
-                                Text(matchString("match_play_bots")).frame(maxWidth: .infinity)
+                                Text(matchString("Play with computers")).frame(maxWidth: .infinity)
                             }
                             .buttonStyle(PrimaryButtonStyle())
                             .disabled(accepted)
@@ -157,7 +157,7 @@ private struct MatchSearch: View {
                     }
                     let undecided = max(0, humans - agreed - agreedHumans)
                     if undecided > 0 {
-                        Text(String(format: matchString(undecided == 1 ? "match_undecided_one" : "match_undecided_other"), undecided))
+                        Text(String(format: matchString(undecided == 1 ? "%d player still choosing" : "%d players still choosing"), undecided))
                             .font(Theme.font(12 * s, .bold))
                             .foregroundStyle(Theme.muted)
                             .multilineTextAlignment(.center)
@@ -168,7 +168,7 @@ private struct MatchSearch: View {
                             client?.close()
                             onComputer(soloSeats)
                         }) {
-                            Text(matchString("match_play_bots"))
+                            Text(matchString("Play with computers"))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PrimaryButtonStyle())
@@ -177,20 +177,20 @@ private struct MatchSearch: View {
                 
                 HStack(spacing: 10 * s) {
                     Button(action: onCancel) {
-                        Text(matchString("nearby_cancel")).frame(maxWidth: .infinity)
+                        Text(matchString("Cancel")).frame(maxWidth: .infinity)
                     }
                     .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                     Button(action: { client?.keepSearching() }) {
-                        Text(matchString("match_keep_searching")).frame(maxWidth: .infinity)
+                        Text(matchString("Keep searching")).frame(maxWidth: .infinity)
                     }
                     .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                 }
             } else if !offer || preparing || failed {
                 HStack(spacing: 10 * s) {
-                    Button(matchString(failed ? "congklak_back" : "nearby_cancel"), action: onCancel)
+                    Button(matchString(failed ? "Back" : "Cancel"), action: onCancel)
                         .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
                     if failed {
-                        Button(matchString("nearby_try_again"), action: onRetry)
+                        Button(matchString("Try again"), action: onRetry)
                             .buttonStyle(PrimaryButtonStyle())
                     }
                 }
@@ -291,30 +291,30 @@ private struct MatchSearch: View {
 
     private var titleText: String {
         if failed {
-            return matchString("match_error_title")
+            return matchString("Unable to connect")
         } else if preparing {
-            return matchString("match_preparing")
+            return matchString("Preparing your room…")
         } else if offer {
-            return matchString("match_offer_title")
+            return matchString("Still waiting for players")
         } else {
-            return matchString("play_online_searching_title")
+            return matchString("Finding a player…")
         }
     }
     
     private var detailText: String {
         if failed {
-            return matchString("match_error_detail")
+            return matchString("Check your internet connection, then try again.")
         } else if preparing {
-            return matchString("match_preparing_detail")
+            return matchString("Players found. Connecting to the host.")
         } else if offer && humans == 1 {
-            return matchString("match_solo_detail")
+            return matchString("No opponent found. Choose the total players, including you, and play against computers.")
         } else if offer {
-            return String(format: matchString("match_offer_detail"), humans, target, target - humans)
+            return String(format: matchString("%1$d of %2$d players found · %3$d empty seats.\nVote on how to start. The choice with more votes wins."), humans, target, target - humans)
         } else {
-            let search = String(format: matchString("match_search_detail"), humans, target)
+            let search = String(format: matchString("%1$d of %2$d players found"), humans, target)
             switch restart {
-            case "no_votes": return matchString("match_restart_no_votes") + "\n" + search
-            case "tie": return matchString("match_restart_tie") + "\n" + search
+            case "no_votes": return matchString("No one voted. Searching again…") + "\n" + search
+            case "tie": return matchString("The vote was tied. Searching again…") + "\n" + search
             default: return search
             }
         }
