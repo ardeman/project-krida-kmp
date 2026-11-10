@@ -157,10 +157,16 @@ final class CongklakGameModel: ObservableObject {
             if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
                 let sowing = game.play(state: state, seat: seat, move: move)
                 let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
+                // One soft frame for the whole sow — zooming every pit feels dizzy at low FPS.
+                var seen = Set<Int32>()
+                let path: [SIMD3<Float>] = steps.compactMap { step in
+                    guard seen.insert(step.pit).inserted else { return nil }
+                    let a = CongklakBoard.shared.pitAnchor(pit: step.pit)
+                    return SIMD3(a.get(index: 0), a.get(index: 1), a.get(index: 2))
+                }
+                board.watch(path)
                 for step in steps {
                     guard lifetime.active, !Task.isCancelled else { return }
-                    let a = CongklakBoard.shared.pitAnchor(pit: step.pit)
-                    board.watch([SIMD3(a.get(index: 0), a.get(index: 1), a.get(index: 2))])
                     seeds.apply(step: step)
                     push()
                     if !step.pickUp { sounds.play(game.isStore(pit: step.pit) ? .store : .sow) }

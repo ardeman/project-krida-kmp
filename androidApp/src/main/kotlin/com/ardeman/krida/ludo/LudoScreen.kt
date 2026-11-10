@@ -36,9 +36,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -72,6 +74,7 @@ import com.ardeman.krida.core.games.LudoState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
+import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
@@ -149,6 +152,9 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
 
     fun placeAll(s: LudoState) {
         val r = renderer ?: return
+        // Your colour (or seat 0 when passing the phone) sits bottom-right next to the die.
+        val viewSeat = table.mySeat ?: 0
+        r.setViewColor(s.color(viewSeat.coerceIn(0, s.tokens.lastIndex)))
         r.setSeats(List(s.tokens.size) { s.color(it) })
         for (seat in s.tokens.indices) for (pawn in 0 until LudoGame.PAWNS) {
             r.place(seat, pawn, spot(s, seat, pawn))
@@ -187,20 +193,22 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             val pawn = after.lastPawn
             if (pawn != null && after.lastFrom != null && after.lastTo != null) {
                 val color = after.color(seat)
-                val path = LudoGame.walk(after.lastFrom!!, after.lastTo!!).map {
+                val fromPos = after.lastFrom!!
+                val path = LudoGame.walk(fromPos, after.lastTo!!).map {
                     LudoBoard.tokenAnchor(color, pawn, it)
                 }
-                // Zoom onto the hop (and any captured token's return).
-                val focus = path.toMutableList()
-                for (cap in after.lastCaptures) {
-                    focus += spot(before, cap.seat, cap.pawn)
-                    focus += spot(after, cap.seat, cap.pawn)
-                }
-                r.watch(focus)
+                // Frame only the mover (start + hops). Capture yards used to pull the
+                // camera across the board away from the piece that moves.
+                val start = LudoBoard.tokenAnchor(color, pawn, fromPos)
+                r.watch(listOf(start) + path)
+                delay(180L)
                 r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
                 delay(path.size * HOP_MS + 80L)
                 for (cap in after.lastCaptures) {
-                    r.move(cap.seat, cap.pawn, listOf(spot(after, cap.seat, cap.pawn)), 0.35f, hop = 0.5f)
+                    val from = spot(before, cap.seat, cap.pawn)
+                    val to = spot(after, cap.seat, cap.pawn)
+                    r.watch(listOf(from, to))
+                    r.move(cap.seat, cap.pawn, listOf(to), 0.35f, hop = 0.5f)
                 }
                 if (after.lastCaptures.isNotEmpty()) delay(400L)
             }
@@ -245,6 +253,11 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     val canRoll = !state.finished && state.roll == null && table.isLocal(state.turn) && !animating && queue.isEmpty()
     val legal = state.roll?.let { LudoGame.legalPawns(state, state.turn, it) }.orEmpty()
     val canPick = !state.finished && state.roll != null && table.isLocal(state.turn) && !animating && queue.isEmpty()
+    var holdingDie by remember { mutableStateOf(false) }
+    var rollSeconds by remember { mutableIntStateOf(0) }
+    val rollTotal = (Krida.ROLL_TURN_MS / 1000L).toInt()
+    val holdingNow by rememberUpdatedState(holdingDie)
+    val canRollNow by rememberUpdatedState(canRoll)
 
     // Zoom onto the tokens the player may tap; ease back out when pick ends.
     LaunchedEffect(canPick, legal, renderer, animating, state.turn, state.roll) {
@@ -259,6 +272,8 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
 
     fun roll(toss: LudoRenderer.Toss) {
         if (!canRoll) return
+        holdingDie = false
+        rollSeconds = 0
         pendingToss[0] = toss
         renderer?.holdDie(false)
         if (!table.roll(state.turn)) pendingToss[0] = null
@@ -268,6 +283,23 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 pendingToss[0] = null
                 renderer?.holdDie(false)
             }
+        }
+    }
+
+    // Countdown to throw: pauses while the die is held, then rolls a short toss.
+    LaunchedEffect(canRoll, state.turn, state.lastRoll, state.lastSeat) {
+        if (!canRoll) {
+            rollSeconds = 0
+            return@LaunchedEffect
+        }
+        rollSeconds = rollTotal
+        while (rollSeconds > 0) {
+            delay(1000L)
+            if (!canRollNow) return@LaunchedEffect
+            if (holdingNow) continue
+            val next = rollSeconds - 1
+            rollSeconds = next
+            if (next == 0 && canRollNow && !holdingNow) roll(LudoRenderer.Toss.Short)
         }
     }
 
@@ -410,7 +442,12 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 if (table.canEmote) Spacer(Modifier.height(10.dp))
                 val dieLabel = stringResource(R.string.ular_roll)
                 // Die above the status line (same as ular tangga), with its spot measured against
-                // the TextureView origin so the 3D die lines up with this hit target.
+                // the TextureView origin so the 3D die lines up with this hit target. A ring above
+                // counts down to an automatic short toss.
+                if (canRoll && rollSeconds > 0) {
+                    CountdownRing(rollSeconds, rollTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
+                    Spacer(Modifier.height(6.dp))
+                }
                 Box(
                     Modifier.size(104.dp).align(Alignment.CenterHorizontally).hud("die")
                         .onGloballyPositioned {
@@ -430,6 +467,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                             awaitEachGesture {
                                 val down = awaitFirstDown()
                                 down.consume()
+                                holdingDie = true
                                 renderer?.holdDie(true)
                                 var long = false
                                 val hold = scope.launch {
@@ -451,6 +489,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                                     } while (true)
                                 } finally {
                                     hold.cancel()
+                                    holdingDie = false
                                 }
                             }
                         },

@@ -273,7 +273,7 @@ class UlarTanggaSessionTest {
         assertEquals(3, ayu.color)
         assertEquals(3, budi.players[1].color)
 
-        // A held colour is refused; the guest keeps its own.
+        // A colour a person holds is refused; the guest keeps its own.
         var lobbies = 0
         budi.onLobby = { lobbies++ }
         budi.pickColor(3)
@@ -286,17 +286,23 @@ class UlarTanggaSessionTest {
         assertTrue(host.setColor(0, 1))
         assertFalse(host.setColor(1, 0))   // a guest's seat is the guest's to pick
 
-        // A computer takes the first free colour, and leaves it when removed.
+        // A computer takes the first free colour; a person can switch with it.
         val bot = host.addBot("Komputer", Platform.ANDROID, UlarTanggaBot)!!
         assertEquals(0, host.players[bot].color)
+        assertTrue(host.setColor(0, 0))
+        assertEquals(0, host.players[0].color)
+        assertEquals(1, host.players[bot].color)
+        ayu.pickColor(1)
+        assertEquals(1, ayu.color)
+        assertEquals(3, host.players[bot].color)
         assertTrue(host.removeBot(bot))
         assertFalse(host.removeBot(1))     // not a computer
         assertEquals(3, host.players.size)
 
         host.start()
-        assertEquals(listOf(1, 3, 2), ayu.state!!.colors)
-        ayu.pickColor(0)                    // too late
-        assertEquals(listOf(1, 3, 2), host.state!!.colors)
+        assertEquals(listOf(0, 1, 2), ayu.state!!.colors)
+        ayu.pickColor(3)                    // too late
+        assertEquals(listOf(0, 1, 2), host.state!!.colors)
     }
 
     @Test

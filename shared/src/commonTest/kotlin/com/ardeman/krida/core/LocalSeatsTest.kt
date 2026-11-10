@@ -57,4 +57,19 @@ class LocalSeatsTest {
         assertTrue(LocalSeats.isValid(listOf(COMPUTER, PERSON)))
         assertFalse(LocalSeats.isValid(listOf(PERSON, EMPTY)))
     }
+
+    @Test
+    fun coloursFollowSeatsOrSwitchWithAComputer() {
+        val vs = listOf(PERSON, COMPUTER, EMPTY, EMPTY)
+        assertEquals(listOf(0, 1, -1, -1), LocalSeats.colors(vs))
+        // Person takes yellow; the computer keeps blue (seat 1).
+        assertEquals(listOf(3, 1, -1, -1), LocalSeats.colors(vs, personColor = 3))
+        // Person takes the computer's blue; the computer moves to red.
+        assertEquals(listOf(1, 0, -1, -1), LocalSeats.colors(vs, personColor = 1))
+        // Two people keep seat colours; personColor is ignored.
+        assertEquals(
+            listOf(0, 1, 2, -1),
+            LocalSeats.colors(listOf(PERSON, COMPUTER, PERSON, EMPTY), personColor = 3),
+        )
+    }
 }

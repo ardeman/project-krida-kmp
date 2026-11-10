@@ -10,8 +10,9 @@ import kotlin.math.sin
  * is the 52-square track, each colour has a yard quadrant and a 6-step home stretch into the
  * centre. Pure geometry and meshes so Android and iOS place and draw tokens the same way.
  *
- * Colour order matches [LudoGame.STARTS]: 0 red (near), 1 blue (left/−x), 2 green (far),
- * 3 yellow (right/+x).
+ * Layout matches a classic board (row 0 = toward the camera / bottom of the screen): red
+ * bottom-left, blue top-left, yellow top-right, green bottom-right. Gameplay orbits the
+ * camera with [cameraEyeFor] so each player's own colour sits bottom-right next to the die.
  */
 object LudoBoard {
     const val GRID = 15
@@ -21,10 +22,33 @@ object LudoBoard {
     private const val FRAME = 0.45f
     private const val RIM = 0.5f
 
+    /** Colour whose yard sits bottom-right next to the die with no view yaw (green). */
+    const val VIEW_HOME_COLOR = 2
+
     /** Camera shared so both platforms frame the board the same way. */
     val cameraEye = floatArrayOf(0f, 28f, 18f)
     val cameraTarget = floatArrayOf(0f, 0f, 0f)
     const val CAMERA_VERTICAL_FOV_DEGREES = 40f
+
+    /** Yaw in degrees that puts [color]'s yard at the bottom-right (next to the die). */
+    fun viewYawDegrees(color: Int): Float {
+        val c = ((color % LudoGame.COLORS) + LudoGame.COLORS) % LudoGame.COLORS
+        return (c - VIEW_HOME_COLOR) * 90f
+    }
+
+    /** [cameraEye] orbited around Y so [color]'s yard sits bottom-right on screen. */
+    fun cameraEyeFor(color: Int): FloatArray = cameraEyeAtYaw(viewYawDegrees(color))
+
+    fun cameraEyeAtYaw(yawDegrees: Float): FloatArray {
+        val rad = yawDegrees * PI.toFloat() / 180f
+        val x0 = cameraEye[0]
+        val z0 = cameraEye[2]
+        return floatArrayOf(
+            x0 * cos(rad) + z0 * sin(rad),
+            cameraEye[1],
+            -x0 * sin(rad) + z0 * cos(rad),
+        )
+    }
 
     const val TOP = 0.5f
     private const val MARK = TOP + 0.02f
@@ -45,47 +69,56 @@ object LudoBoard {
 
     fun pieceColor(color: Int): FloatArray = PIECE_COLORS[color % PIECE_COLORS.size]
     /**
-     * Absolute ring square `0..51` → board cell (column, row) from the far-left corner
-     * (row 0 = far, row 14 = near). Square 0 is the red start; then clockwise. Matches
-     * [LudoGame.STARTS]: red 0, blue 13, green 26, yellow 39.
+     * Absolute ring square `0..51` → board cell (column, row). Row 0 is toward the camera
+     * (bottom of the screen), row 14 is far (top). Square 0 is the red start on the bottom
+     * arm; then clockwise: blue, yellow, green. Matches [LudoGame.STARTS].
      */
     private val TRACK_CELLS: Array<IntArray> = run {
         val cells = ArrayList<IntArray>(52)
         fun add(c: Int, r: Int) { cells += intArrayOf(c, r) }
-        add(6, 13) // 0 red start
-        for (r in 12 downTo 9) add(6, r) // 1..4
-        add(5, 8); add(4, 8); add(3, 8); add(2, 8); add(1, 8) // 5..9
-        add(0, 8); add(0, 7); add(0, 6) // 10..12
-        add(1, 6) // 13 blue start
-        for (c in 2..5) add(c, 6) // 14..17
-        for (r in 5 downTo 1) add(6, r) // 18..22
-        add(6, 0); add(7, 0); add(8, 0) // 23..25
-        add(8, 1) // 26 green start
-        for (r in 2..5) add(8, r) // 27..30
-        for (c in 9..13) add(c, 6) // 31..35
-        add(14, 6); add(14, 7); add(14, 8) // 36..38
-        add(13, 8) // 39 yellow start
-        for (c in 12 downTo 9) add(c, 8) // 40..43
-        for (r in 9..13) add(8, r) // 44..48
-        add(8, 14); add(7, 14); add(6, 14) // 49..51
+        // Bottom arm, up the left column from red's start.
+        add(6, 1) // 0 red start
+        for (r in 2..5) add(6, r) // 1..4
+        // Left arm, left along the bottom row, then up the outer edge.
+        add(5, 6); add(4, 6); add(3, 6); add(2, 6); add(1, 6) // 5..9
+        add(0, 6); add(0, 7); add(0, 8) // 10..12
+        add(1, 8) // 13 blue start (arrow right)
+        for (c in 2..5) add(c, 8) // 14..17
+        // Top arm, up the left column, across the far edge.
+        for (r in 9..13) add(6, r) // 18..22
+        add(6, 14); add(7, 14); add(8, 14) // 23..25
+        add(8, 13) // 26 yellow start (arrow down)
+        for (r in 12 downTo 9) add(8, r) // 27..30
+        // Right arm, right along the top row, then down the outer edge.
+        for (c in 9..13) add(c, 8) // 31..35
+        add(14, 8); add(14, 7); add(14, 6) // 36..38
+        add(13, 6) // 39 green start (arrow left)
+        for (c in 12 downTo 9) add(c, 6) // 40..43
+        // Bottom arm, down the right column, across the near edge back to red.
+        for (r in 5 downTo 1) add(8, r) // 44..48
+        add(8, 0); add(7, 0); add(6, 0) // 49..51
         check(cells.size == LudoGame.TRACK) { "track has ${cells.size} cells" }
         cells.toTypedArray()
     }
 
     /** Home-stretch cells for each colour, from entrance to the finish (6 cells). */
     private val HOME_CELLS = arrayOf(
-        arrayOf(intArrayOf(7, 13), intArrayOf(7, 12), intArrayOf(7, 11), intArrayOf(7, 10), intArrayOf(7, 9), intArrayOf(7, 8)),
-        arrayOf(intArrayOf(1, 7), intArrayOf(2, 7), intArrayOf(3, 7), intArrayOf(4, 7), intArrayOf(5, 7), intArrayOf(6, 7)),
+        // Red: up from the bottom arm into the centre.
         arrayOf(intArrayOf(7, 1), intArrayOf(7, 2), intArrayOf(7, 3), intArrayOf(7, 4), intArrayOf(7, 5), intArrayOf(7, 6)),
+        // Blue: right from the left arm into the centre.
+        arrayOf(intArrayOf(1, 7), intArrayOf(2, 7), intArrayOf(3, 7), intArrayOf(4, 7), intArrayOf(5, 7), intArrayOf(6, 7)),
+        // Green: left from the right arm into the centre.
         arrayOf(intArrayOf(13, 7), intArrayOf(12, 7), intArrayOf(11, 7), intArrayOf(10, 7), intArrayOf(9, 7), intArrayOf(8, 7)),
+        // Yellow: down from the top arm into the centre.
+        arrayOf(intArrayOf(7, 13), intArrayOf(7, 12), intArrayOf(7, 11), intArrayOf(7, 10), intArrayOf(7, 9), intArrayOf(7, 8)),
     )
 
     /** Yard slot cells for each colour's four tokens (2×2). */
     private val YARD_CELLS = arrayOf(
-        arrayOf(intArrayOf(2, 11), intArrayOf(3, 11), intArrayOf(2, 12), intArrayOf(3, 12)),
-        arrayOf(intArrayOf(2, 2), intArrayOf(3, 2), intArrayOf(2, 3), intArrayOf(3, 3)),
-        arrayOf(intArrayOf(11, 2), intArrayOf(12, 2), intArrayOf(11, 3), intArrayOf(12, 3)),
-        arrayOf(intArrayOf(11, 11), intArrayOf(12, 11), intArrayOf(11, 12), intArrayOf(12, 12)),
+        arrayOf(intArrayOf(2, 2), intArrayOf(3, 2), intArrayOf(2, 3), intArrayOf(3, 3)), // red bottom-left
+        arrayOf(intArrayOf(2, 11), intArrayOf(3, 11), intArrayOf(2, 12), intArrayOf(3, 12)), // blue top-left
+        arrayOf(intArrayOf(11, 2), intArrayOf(12, 2), intArrayOf(11, 3), intArrayOf(12, 3)), // green bottom-right
+        arrayOf(intArrayOf(11, 11), intArrayOf(12, 11), intArrayOf(11, 12), intArrayOf(12, 12)), // yellow top-right
     )
 
     /** World XZ of grid cell ([column], [row]). */
@@ -161,10 +194,10 @@ object LudoBoard {
         }
         // Coloured yard quadrants (6×6 corners), then a cream pad under the four slots.
         val yards = arrayOf(
-            intArrayOf(0, 5, 9, 14), // red near-left
-            intArrayOf(0, 5, 0, 5), // blue far-left
-            intArrayOf(9, 14, 0, 5), // green far-right
-            intArrayOf(9, 14, 9, 14), // yellow near-right
+            intArrayOf(0, 5, 0, 5), // red bottom-left
+            intArrayOf(0, 5, 9, 14), // blue top-left
+            intArrayOf(9, 14, 0, 5), // green bottom-right
+            intArrayOf(9, 14, 9, 14), // yellow top-right
         )
         for (color in 0 until LudoGame.COLORS) {
             val c0 = yards[color][0]; val c1 = yards[color][1]
@@ -200,19 +233,19 @@ object LudoBoard {
         val mid = cellCenter(7, 7)
         val half = CELL
         val y = TOP + 0.04f
-        val n = floatArrayOf(mid[0], y, mid[1] + half) // near (+z), red
-        val ePt = floatArrayOf(mid[0] + half, y, mid[1]) // +x, yellow
-        val s = floatArrayOf(mid[0], y, mid[1] - half) // far (−z), green
-        val w = floatArrayOf(mid[0] - half, y, mid[1]) // −x, blue
+        val bl = floatArrayOf(mid[0] - half, y, mid[1] + half) // bottom-left corner
+        val br = floatArrayOf(mid[0] + half, y, mid[1] + half) // bottom-right
+        val tr = floatArrayOf(mid[0] + half, y, mid[1] - half) // top-right
+        val tl = floatArrayOf(mid[0] - half, y, mid[1] - half) // top-left
         val c = floatArrayOf(mid[0], y, mid[1])
         // Each triangle as a degenerate quad (centre repeated) so VoxelMesh can draw it.
         fun tri(a: FloatArray, b: FloatArray, rgb: FloatArray) {
             mesh.quad(arrayOf(c, a, b, c), rgb)
         }
-        tri(n, w, pieceColor(0))
-        tri(w, s, pieceColor(1))
-        tri(s, ePt, pieceColor(2))
-        tri(ePt, n, pieceColor(3))
+        tri(bl, br, pieceColor(0)) // red → bottom
+        tri(tl, bl, pieceColor(1)) // blue → left
+        tri(br, tr, pieceColor(2)) // green → right
+        tri(tr, tl, pieceColor(3)) // yellow → top
         // Start arrows (travel direction) and starred safe squares.
         for (color in 0 until LudoGame.COLORS) {
             val start = LudoGame.STARTS[color]

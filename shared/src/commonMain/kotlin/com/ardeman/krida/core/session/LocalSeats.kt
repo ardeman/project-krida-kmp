@@ -56,4 +56,28 @@ object LocalSeats {
         }
         return if (isValid(seats)) seats else fallback
     }
+
+    /**
+     * Pawn colour per seat index (`-1` when empty). Colours stay on the seat index when free.
+     * With exactly one person and [personColor] in `0 until colorCount`, that person takes
+     * [personColor] (switching with a computer that held it, or a free colour).
+     */
+    fun colors(seats: List<LocalSeat>, personColor: Int = -1, colorCount: Int = 4): List<Int> {
+        val assigned = MutableList(seats.size) { -1 }
+        val used = mutableSetOf<Int>()
+        fun take(prefer: Int): Int {
+            val c = if (prefer in 0 until colorCount && prefer !in used) prefer
+            else (0 until colorCount).first { it !in used }
+            used += c
+            return c
+        }
+        val people = seats.indices.filter { seats[it] == LocalSeat.PERSON }
+        if (people.size == 1 && personColor in 0 until colorCount) {
+            assigned[people[0]] = take(personColor)
+        }
+        for (i in seats.indices) {
+            if (seats[i] != LocalSeat.EMPTY && assigned[i] < 0) assigned[i] = take(i)
+        }
+        return assigned
+    }
 }

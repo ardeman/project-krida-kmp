@@ -35,4 +35,9 @@ object Krida {
     const val RECONNECT_GRACE_MS: Long = 60_000L
     /** How long a game waits for a dropped player before the computer plays the seat. */
     const val HANDOFF_WAIT_MS: Long = 15_000L
+    /**
+     * How long a local player has to throw the die before the phone rolls for them.
+     * Holding the die pauses the countdown.
+     */
+    const val ROLL_TURN_MS: Long = 15_000L
 }

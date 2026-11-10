@@ -181,6 +181,22 @@
         }
       }
     },
+    "%@, switch with the computer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, switch with the computer"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, tukar dengan komputer"
+          }
+        }
+      }
+    },
     "%@, throw the die to set the playing order": {
       "localizations": {
         "en": {

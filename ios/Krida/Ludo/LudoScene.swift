@@ -25,6 +25,8 @@ final class LudoScene {
     private let pawnCount: Int
     private var byColor: [[ModelEntity]] = []
     private var seatColors: [Int] = []
+    /// Colour whose yard sits bottom-right next to the die (orbits the camera).
+    private var viewColor = Int(LudoBoard.shared.VIEW_HOME_COLOR)
     private var positions: [SIMD3<Float>]
     private var motions: [Motion?]
     private let die: ModelEntity
@@ -84,7 +86,7 @@ final class LudoScene {
         drawnRot = dieRot
 
         anchor.addChild(camera)
-        camera.look(at: Self.vec(board.cameraTarget), from: Self.vec(board.cameraEye), relativeTo: nil)
+        applyCamera()
         view.scene.addAnchor(anchor)
 
         die.isEnabled = false
@@ -126,6 +128,8 @@ final class LudoScene {
      */
     func watch(_ points: [SIMD3<Float>]?) {
         menuFocus = nil
+        // Already on (or easing to) the overview: a second nil must not restart the ease.
+        if points == nil && watchFocus == nil { return }
         watchFocus = points.map { Self.padded($0) }
         guard screen.width > 0 else { return }
         applyLayout(snap: false)
@@ -237,7 +241,8 @@ final class LudoScene {
     }
 
     private static let fitSteps = 24
-    private static let cameraTau: Float = 0.28
+    private static let cameraTau: Float = 0.38
+    private static let maxCameraDt: Float = 1 / 30
 
     private static func convexHull(_ points: [CGPoint]) -> [CGPoint] {
         let sorted = points.sorted { $0.x != $1.x ? $0.x < $1.x : $0.y < $1.y }
@@ -269,8 +274,8 @@ final class LudoScene {
     }
 
     private func project(_ p: SIMD3<Float>, tanV: Float, size: CGSize) -> CGPoint {
-        let (fwd, right, up) = Self.basis()
-        let eye = Self.vec(board.cameraEye)
+        let (fwd, right, up) = basis()
+        let eye = eyePosition()
         let d = p - eye
         let z = simd_dot(d, fwd)
         let aspect = Float(size.width / size.height)
@@ -279,12 +284,34 @@ final class LudoScene {
         return CGPoint(x: size.width / 2 * CGFloat(1 + x), y: size.height / 2 * CGFloat(1 - y))
     }
 
-    private static func basis() -> (SIMD3<Float>, SIMD3<Float>, SIMD3<Float>) {
-        let eye = vec(LudoBoard.shared.cameraEye)
-        let at = vec(LudoBoard.shared.cameraTarget)
+    private func eyePosition() -> SIMD3<Float> {
+        Self.vec(board.cameraEyeFor(color: Int32(viewColor)))
+    }
+
+    private func basis() -> (SIMD3<Float>, SIMD3<Float>, SIMD3<Float>) {
+        let eye = eyePosition()
+        let at = Self.vec(board.cameraTarget)
         let fwd = simd_normalize(at - eye)
         let right = simd_normalize(simd_cross(fwd, SIMD3(0, 1, 0)))
         return (fwd, right, simd_cross(right, fwd))
+    }
+
+    private func applyCamera() {
+        camera.look(at: Self.vec(board.cameraTarget), from: eyePosition(), relativeTo: nil)
+    }
+
+    /**
+     Puts `color`'s yard at the bottom-right of the view (next to the die). Each player can
+     see a different side; pass-and-play keeps seat 0's colour there.
+     */
+    func setViewColor(_ color: Int) {
+        let colors = Int(LudoGame.shared.COLORS)
+        let next = ((color % colors) + colors) % colors
+        guard next != viewColor else { return }
+        viewColor = next
+        applyCamera()
+        if screen.width > 0 { _ = applyLayout(snap: camSettled) }
+        updateHome()
     }
 
     // MARK: Tokens
@@ -456,7 +483,7 @@ final class LudoScene {
 
     private func diePosition(_ origin: CGPoint?) -> SIMD3<Float> {
         guard let origin, let spot = dieSpot else { return home }
-        let (_, right, up) = Self.basis()
+        let (_, right, up) = basis()
         let units = dice.DIE / Float(spot.size)
         return home + (right * Float(origin.x - spot.center.x) - up * Float(origin.y - spot.center.y)) * units
     }
@@ -545,7 +572,7 @@ final class LudoScene {
         var scale: Float = 1
         if dieMode == .home {
             if let spot = dieSpot {
-                let (_, right, up) = Self.basis()
+                let (_, right, up) = basis()
                 let units = dice.DIE / Float(spot.size)
                 pos += (right * Float(heldOffset.width) - up * Float(heldOffset.height)) * units
             }
@@ -574,8 +601,8 @@ final class LudoScene {
 
     private func updateHome() {
         guard let spot = dieSpot, viewFrame.width > 0, screen.height > 0 else { return }
-        let (fwd, right, up) = Self.basis()
-        let eye = Self.vec(board.cameraEye)
+        let (fwd, right, up) = basis()
+        let eye = eyePosition()
         let w = Float(viewFrame.width), h = Float(viewFrame.height)
         let tanV = tanHalf * h / Float(screen.height)
         let tanH = tanV * w / h
@@ -617,7 +644,7 @@ final class LudoScene {
 
     private func stepCamera(_ dt: Float) {
         guard !camSettled, screen.width > 0 else { return }
-        let k = 1 - exp(-dt / Self.cameraTau)
+        let k = 1 - exp(-min(dt, Self.maxCameraDt) / Self.cameraTau)
         let from = viewFrame
         let to = targetFrame
         let next = CGRect(

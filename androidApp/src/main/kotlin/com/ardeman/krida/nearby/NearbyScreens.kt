@@ -317,7 +317,7 @@ private fun PlayersHeader(room: NearbyRoom, onLeave: () -> Unit) {
 
 private fun Modifier.heightIn44() = this.then(Modifier.sizeIn(minHeight = 44.dp))
 
-/** "Warna pionmu": one swatch per colour; another player's colour shows their seat number. */
+/** "Warna pionmu": one swatch per colour; a person's colour shows their seat; a computer's is tappable to switch. */
 @Composable
 private fun ColorRow(room: NearbyRoom, names: List<String>) {
     val mine = room.players.firstOrNull { it.seat == room.mySeat }?.color
@@ -336,6 +336,9 @@ private fun ColorRow(room: NearbyRoom, names: List<String>) {
             when {
                 c == mine -> Swatch(color, stringResource(R.string.nearby_color_chosen, name), selected = true, onClick = null) {
                     Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = inkOn(color), modifier = Modifier.size(24.dp))
+                }
+                holder?.bot == true -> Swatch(color, stringResource(R.string.nearby_color_switch_computer, name), selected = false, onClick = { room.pickColor(c) }) {
+                    Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = inkOn(color), modifier = Modifier.size(20.dp))
                 }
                 holder != null -> Swatch(color, stringResource(R.string.nearby_color_taken, name, holder.seat + 1), selected = false, onClick = null, dim = true) {
                     Text("${holder.seat + 1}", style = Theme.font(15, FontWeight.Black, inkOn(color)))

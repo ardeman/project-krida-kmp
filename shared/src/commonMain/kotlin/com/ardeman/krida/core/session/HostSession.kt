@@ -122,8 +122,9 @@ class HostSession<S, M>(
 
     /**
      * Gives a seat at this device (a local player or a bot) another pawn colour before the
-     * game starts. Returns false when the game has no colours, [color] is out of range or
-     * another seat holds it. Guests pick their own with `GuestSession.pickColor`.
+     * game starts. Returns false when the game has no colours, [color] is out of range, or a
+     * person already holds it. A computer that holds [color] swaps with this seat. Guests pick
+     * their own with `GuestSession.pickColor` (same swap rule).
      */
     fun setColor(seat: Int, color: Int): Boolean {
         val s = seats.getOrNull(seat) ?: return false
@@ -298,11 +299,12 @@ class HostSession<S, M>(
 
     private fun changeColor(s: Seat, color: Int): Boolean {
         if (started || color !in 0 until colorCount) return false
-        if (seats.any { it !== s && it.color == color }) return false
-        if (s.color != color) {
-            s.color = color
-            lobbyChanged()
-        }
+        val holder = seats.firstOrNull { it !== s && it.color == color }
+        if (holder != null && holder.bot == null) return false
+        if (s.color == color) return true
+        if (holder != null) holder.color = s.color
+        s.color = color
+        lobbyChanged()
         return true
     }
 

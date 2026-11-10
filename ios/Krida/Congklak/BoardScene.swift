@@ -104,18 +104,20 @@ final class BoardScene {
     }
 
     /**
-     * Gameplay: ease the camera onto `points` (the pit being sown), or back to the whole board
-     * when nil.
+     * Gameplay: ease the camera onto `points` (a whole sow path), or back to the whole board
+     * when nil. Prefer one call per move — retargeting every pit feels dizzy at low FPS.
      */
     func watch(_ points: [SIMD3<Float>]?) {
         guard viewSize.width > 0, baseFov > 0 else { return }
+        if points == nil, camSettled, abs(targetFov - baseFov) < 0.05 { return }
         if let points, !points.isEmpty {
             let pad: Float = 1.1
             let x0 = points.map(\.x).min()! - pad, x1 = points.map(\.x).max()! + pad
             let z0 = points.map(\.z).min()! - pad, z1 = points.map(\.z).max()! + pad
             let y = points.map(\.y).reduce(0, +) / Float(points.count)
             targetLook = SIMD3((x0 + x1) / 2, y, (z0 + z1) / 2)
-            targetFov = max(baseFov * 0.55, 18)
+            // Soft zoom: a full sow path already spans much of the board.
+            targetFov = max(baseFov * 0.85, 18)
         } else {
             let flip: Float = viewSeat == 1 ? -1 : 1
             let target = Self.floats(CongklakBoard.shared.cameraTarget)
@@ -149,7 +151,7 @@ final class BoardScene {
 
     private func stepCamera(_ dt: Float) {
         guard !camSettled else { return }
-        let k = 1 - exp(-min(dt, 0.05) / Self.cameraTau)
+        let k = 1 - exp(-min(dt, Self.maxCameraDt) / Self.cameraTau)
         currentLook += (targetLook - currentLook) * k
         let fov = camera.camera.fieldOfViewInDegrees + (targetFov - camera.camera.fieldOfViewInDegrees) * k
         camera.camera.fieldOfViewInDegrees = fov
@@ -173,7 +175,8 @@ final class BoardScene {
         onPitsProjected?(pitPoints)
     }
 
-    private static let cameraTau: Float = 0.28
+    private static let cameraTau: Float = 0.5
+    private static let maxCameraDt: Float = 1 / 30
 
     /// Shows gold rings around exactly these holes.
     func showRings(_ pits: Set<Int>) {

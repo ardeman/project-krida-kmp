@@ -68,8 +68,9 @@ in the same commit as the code.
   set the whole play order. Played by hand (bots throw by themselves).
 - 3D die: tap for a short toss, hold to spin and release for a long throw. Both players see the
   same throw ([dice-animation.md](dice-animation.md)).
-- **Pawn colours** are picked in room lobbies only (a colour another player holds is disabled).
-  No colour picker for this-phone or vs-computer games.
+- **Pawn colours** are picked in room lobbies (a colour another person holds is disabled). A
+  computer's colour can be taken: you switch with that computer. On this phone, a lone person
+  vs computers gets the same picker; pass-and-play with only people keeps seat colours.
 
 ## Nearby and online rooms
 
@@ -127,7 +128,16 @@ in the same commit as the code.
   on capture, first to finish ends the game. Quick match will use the defaults
   (`StandardRules.ludo`).
 - Pawn colours are the same four as ular tangga (red, blue, green, yellow), picked in room
-  lobbies only.
+  lobbies and when a lone person plays computers on this phone (switch with a computer).
+- **Roll timer (2026-11-10):** when it is a local player's turn to throw, a 15 s countdown
+  (`Krida.ROLL_TURN_MS`) sits above the die (`CountdownRing`). Holding the die pauses it; at
+  0 the phone rolls a short toss. Same idea later for ular tangga if wanted.
+- **Board facing (2026-11-10):** each phone orbits the camera so that player's pawn colour
+  sits bottom-right next to the die (`LudoBoard.cameraEyeFor`). Pass-and-play keeps seat 0's
+  colour there; guests and the host each see their own side.
+- **Board layout (2026-11-10):** classic corners — red bottom-left, blue top-left, yellow
+  top-right, green bottom-right — with matching clockwise starts, home stretches, stars
+  (start+9) and centre triangles.
 - Shared rules and board path geometry first; UI mockup approved
   ([mockups/ludo.md](mockups/ludo.md)); Android done, then iOS.
 

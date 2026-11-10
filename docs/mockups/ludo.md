@@ -47,7 +47,7 @@ progress), **To menu** and **Play again** (host only in a room).
 ## Out of scope for v1 UI
 
 - Partner teams (2v2).
-- A colour picker on this-phone / vs-computer (room lobbies only, as ular tangga).
+- Partner colour locking beyond free-for-all (deferred with 2v2).
 - New room or matchmaking layouts.
 
 ## Implementation

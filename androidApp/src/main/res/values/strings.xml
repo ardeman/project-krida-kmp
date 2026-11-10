@@ -198,6 +198,7 @@
     <string name="nearby_your_color">Your pawn color</string>
     <string name="nearby_color_chosen">%1$s, chosen</string>
     <string name="nearby_color_taken">%1$s, taken by player %2$d</string>
+    <string name="nearby_color_switch_computer">%1$s, switch with the computer</string>
     <string name="nearby_you">%1$s (you)</string>
     <string name="nearby_seat_host_here">Host · this phone</string>
     <string name="nearby_seat_host_pawn">Host · %1$s pawn</string>

@@ -117,7 +117,8 @@ private struct EmotePicker: View {
             }
         }
         .padding(10 * s)
-        .frame(width: 220 * s)
+        // Fixed width so a trailing HUD column end-aligns it left onto the board.
+        .frame(width: 220 * s, alignment: .trailing)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16 * s, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16 * s, style: .continuous).stroke(Theme.line, lineWidth: 1.5))
     }

@@ -233,7 +233,8 @@ final class UlarTanggaScene {
 
     /// Places tried along each axis when fitting the board.
     private static let fitSteps = 24
-    private static let cameraTau: Float = 0.28
+    private static let cameraTau: Float = 0.38
+    private static let maxCameraDt: Float = 1 / 30
 
     /// Convex outline of `points`, counter-clockwise on screen (monotone chain).
     private static func convexHull(_ points: [CGPoint]) -> [CGPoint] {
@@ -629,7 +630,7 @@ final class UlarTanggaScene {
     /// Ease the view frame and FOV toward the watch target.
     private func stepCamera(_ dt: Float) {
         guard !camSettled, screen.width > 0 else { return }
-        let k = 1 - exp(-dt / Self.cameraTau)
+        let k = 1 - exp(-min(dt, Self.maxCameraDt) / Self.cameraTau)
         let from = viewFrame
         let to = targetFrame
         let next = CGRect(

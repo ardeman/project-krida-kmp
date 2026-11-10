@@ -249,7 +249,7 @@ struct RoomLobby: View {
         .frame(minHeight: 44 * s)
     }
 
-    /// "Your pawn color": one swatch per colour; another player's colour shows their seat number.
+    /// "Your pawn color": one swatch per colour; a person's colour shows their seat; a computer's is tappable to switch.
     private var colorRow: some View {
         let mine = room.players.first { Int($0.seat) == room.mySeat }?.color?.intValue
         return HStack(spacing: 12 * s) {
@@ -257,7 +257,7 @@ struct RoomLobby: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             ForEach(0..<room.colorCount, id: \.self) { c in
                 let holder = room.players.first { $0.color?.intValue == c && Int($0.seat) != room.mySeat }
-                swatch(c, mine: c == mine, holder: holder.map { Int($0.seat) })
+                swatch(c, mine: c == mine, holderSeat: holder.map { Int($0.seat) }, computer: holder?.bot == true)
             }
         }
         .padding(.leading, 12 * s)
@@ -267,10 +267,19 @@ struct RoomLobby: View {
         .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(Theme.line, lineWidth: 1))
     }
 
-    private func swatch(_ c: Int, mine: Bool, holder: Int?) -> some View {
+    private func swatch(_ c: Int, mine: Bool, holderSeat: Int?, computer: Bool) -> some View {
         let color = pawnColor(c)
         let name = colorName(c)
-        let label: Text = if mine { Text("\(name), dipilih") } else if let holder { Text("\(name), dipakai pemain \(holder + 1)") } else { Text(name) }
+        let personHeld = holderSeat != nil && !computer
+        let label: String = if mine {
+            String(localized: "\(name), chosen", bundle: .app)
+        } else if computer {
+            String(localized: "\(name), switch with the computer", bundle: .app)
+        } else if let holderSeat {
+            String(localized: "\(name), taken by player \(holderSeat + 1)", bundle: .app)
+        } else {
+            name
+        }
         return Button {
             Sounds.shared.play(.tap)
             room.pickColor(c)
@@ -280,15 +289,17 @@ struct RoomLobby: View {
                 if mine {
                     Circle().stroke(Theme.ink, lineWidth: 2)
                     Image(systemName: "checkmark").font(.system(size: 18 * s, weight: .black)).foregroundStyle(inkOn(color))
-                } else if let holder {
-                    Text("\(holder + 1)").font(Theme.font(15 * s, .black)).foregroundStyle(inkOn(color))
+                } else if computer {
+                    Image(systemName: "desktopcomputer").font(.system(size: 16 * s, weight: .bold)).foregroundStyle(inkOn(color))
+                } else if let holderSeat {
+                    Text("\(holderSeat + 1)").font(Theme.font(15 * s, .black)).foregroundStyle(inkOn(color))
                 }
             }
             .frame(width: 44 * s, height: 44 * s)
-            .opacity(holder != nil ? 0.4 : 1)
+            .opacity(personHeld ? 0.4 : 1)
         }
         .buttonStyle(.plain)
-        .disabled(mine || holder != nil)
+        .disabled(mine || personHeld)
         .accessibilityLabel(label)
         .accessibilityAddTraits(mine ? .isSelected : [])
     }

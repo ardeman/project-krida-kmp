@@ -109,8 +109,11 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
     const val FINISH = HOME_START + HOME_LEN - 1 // 56
     const val YARD = -1
 
-    /** Absolute ring index of each colour's start square (red, blue, green, yellow). */
-    val STARTS = intArrayOf(0, 13, 26, 39)
+    /**
+     * Absolute ring index of each colour's start square (red, blue, green, yellow).
+     * Clockwise from red at the bottom: blue, yellow, green — so green is 39 and yellow 26.
+     */
+    val STARTS = intArrayOf(0, 13, 39, 26)
 
     /**
      * Starred safe squares on the ring (nine steps past each colour start), matching a

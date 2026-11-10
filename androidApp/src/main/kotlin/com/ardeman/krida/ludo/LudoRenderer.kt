@@ -85,6 +85,8 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
      */
     fun watch(points: List<FloatArray>?) {
         focus = null
+        // Already on (or easing to) the overview: a second null must not restart the ease.
+        if (points == null && watchPoints == null) return
         watchPoints = points?.let { padded(it) }
         if (width > 1) {
             val view = computeView(watchPoints)
@@ -104,8 +106,26 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     private val position = Array(LudoGlb.TOKENS) { FloatArray(3) }
     private val motions = arrayOfNulls<Motion>(LudoGlb.TOKENS)
     private var seatColors: List<Int> = emptyList()
+    /** Colour whose yard sits bottom-right next to the die (orbits the camera). */
+    private var viewColor = LudoBoard.VIEW_HOME_COLOR
 
     private fun index(seat: Int, pawn: Int) = seat * LudoGame.PAWNS + pawn
+
+    private fun eye(): FloatArray = LudoBoard.cameraEyeFor(viewColor)
+
+    /**
+     * Puts [color]'s yard at the bottom-right of the view (next to the die). Each player can
+     * see a different side; pass-and-play keeps seat 0's colour there.
+     */
+    fun setViewColor(color: Int) {
+        val next = ((color % LudoGame.COLORS) + LudoGame.COLORS) % LudoGame.COLORS
+        if (next == viewColor) return
+        viewColor = next
+        if (width > 1) {
+            onResize()
+            invalidate()
+        }
+    }
 
     /** Shows tokens for [colors.size] seats; hides the rest of each colour's spare tokens. */
     fun setSeats(colors: List<Int>) {
@@ -297,7 +317,7 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     private fun diePosition(origin: FloatArray?): FloatArray {
         val spot = dieSpot
         if (origin == null || spot == null) return home.copyOf()
-        val eye = LudoBoard.cameraEye
+        val eye = eye()
         val at = LudoBoard.cameraTarget
         val fwd = norm(FloatArray(3) { at[it] - eye[it] })
         val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
@@ -407,7 +427,7 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         val pos = shown.copyOf()
         if (dieMode == DieMode.Home) {
             dieSpot?.let { spot ->
-                val eye = LudoBoard.cameraEye
+                val eye = eye()
                 val at = LudoBoard.cameraTarget
                 val fwd = norm(FloatArray(3) { at[it] - eye[it] })
                 val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
@@ -450,7 +470,7 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     private fun updateHome() {
         val spot = dieSpot ?: return
         if (width <= 1) return
-        val eye = LudoBoard.cameraEye
+        val eye = eye()
         val at = LudoBoard.cameraTarget
         val fwd = norm(FloatArray(3) { at[it] - eye[it] })
         val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
@@ -495,7 +515,8 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     /** Ease FOV and shift toward [targetFov] / [targetShiftX]/[targetShiftY]. */
     private fun stepCamera(dt: Float): Boolean {
         if (camSettled || width <= 1) return false
-        val k = 1f - exp(-dt / CAMERA_TAU)
+        // Cap so a hitch never snaps the camera most of the way in one frame.
+        val k = 1f - exp(-min(dt, MAX_CAMERA_DT) / CAMERA_TAU)
         fovDegrees += (targetFov - fovDegrees) * k
         shiftX += (targetShiftX - shiftX) * k
         shiftY += (targetShiftY - shiftY) * k
@@ -526,7 +547,7 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     }
 
     override fun onResize() {
-        val eye = LudoBoard.cameraEye
+        val eye = eye()
         val at = LudoBoard.cameraTarget
         camera.lookAt(
             eye[0].toDouble(), eye[1].toDouble(), eye[2].toDouble(),
@@ -596,15 +617,20 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         val dx: Float
         val dy: Float
         if (points != null && points.isNotEmpty()) {
+            // Same room as the whole-board fit, so zooming in and out share one centre.
             val shot = points.map { (x, y, z) -> project(x, y, z) }
             val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
             val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
             val spanX = (x1 - x0).coerceAtLeast(1f)
             val spanY = (y1 - y0).coerceAtLeast(1f)
-            val k = FRAME_FILL * min(width / spanX, height / spanY)
+            val roomW = (room[2] - room[0]).coerceAtLeast(1f)
+            val roomH = (room[3] - room[1]).coerceAtLeast(1f)
+            val k = FRAME_FILL * min(roomW / spanX, roomH / spanY)
             hi = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, MAX_FOV)
-            dx = cx - (cx + ((x0 + x1) / 2 - cx) * k)
-            dy = cy - (cy + ((y0 + y1) / 2 - cy) * k)
+            val midX = (x0 + x1) / 2
+            val midY = (y0 + y1) / 2
+            dx = (room[0] + room[2]) / 2 - (cx + (midX - cx) * k)
+            dy = (room[1] + room[3]) / 2 - (cy + (midY - cy) * k)
         } else {
             var lo = MIN_FOV
             var top = MAX_FOV
@@ -679,7 +705,8 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         /** Share of the view the framed points take, leaving room for what sits around them. */
         const val FRAME_FILL = 0.72f
         /** How quickly the camera eases onto a [watch] target (seconds). */
-        const val CAMERA_TAU = 0.28f
+        const val CAMERA_TAU = 0.38f
+        const val MAX_CAMERA_DT = 1f / 30f
 
         /** The die as it waits on screen: [value] up, turned to show two more faces. */
         fun homeRotation(value: Int): FloatArray =

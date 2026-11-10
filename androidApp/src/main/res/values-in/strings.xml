@@ -190,6 +190,7 @@
     <string name="nearby_your_color">Warna pionmu</string>
     <string name="nearby_color_chosen">%1$s, dipilih</string>
     <string name="nearby_color_taken">%1$s, dipakai pemain %2$d</string>
+    <string name="nearby_color_switch_computer">%1$s, tukar dengan komputer</string>
     <string name="nearby_you">%1$s (kamu)</string>
     <string name="nearby_seat_host_here">Host · HP ini</string>
     <string name="nearby_seat_host_pawn">Host · pion %1$s</string>

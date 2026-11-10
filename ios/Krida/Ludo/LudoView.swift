@@ -10,6 +10,8 @@ final class LudoGameModel: ObservableObject {
     @Published private(set) var state: LudoState
     @Published private(set) var animating = false
     @Published private(set) var viewFrame: CGRect = .zero
+    /// Seconds left to throw while it is the local player's roll; 0 when not counting.
+    @Published private(set) var rollSeconds = 0
 
     let table: LudoTable
     let scene = LudoScene()
@@ -23,6 +25,8 @@ final class LudoGameModel: ObservableObject {
     private var pendingToss: LudoScene.Toss?
     /// The loading screen still covers the board; computers wait for it.
     var loading = true
+    /// Total seconds for the roll countdown (`Krida.ROLL_TURN_MS`).
+    var rollTotal: Int { Int(Krida.shared.ROLL_TURN_MS / 1000) }
 
     private static let hop: Double = 0.2
     private static let botPause: Double = 0.7
@@ -68,6 +72,7 @@ final class LudoGameModel: ObservableObject {
         queue.removeAll()
         pressing = false
         pendingToss = nil
+        rollSeconds = 0
         table.leave()
         sounds.stopGameAudio()
     }
@@ -85,6 +90,10 @@ final class LudoGameModel: ObservableObject {
     }
 
     private func placeAll(_ s: LudoState) {
+        // Your colour (or seat 0 when passing the phone) sits bottom-right next to the die.
+        let viewSeat = table.mySeat ?? 0
+        let clamped = min(max(viewSeat, 0), s.tokens.count - 1)
+        scene.setViewColor(Int(s.color(seat: Int32(clamped))))
         scene.setSeats((0..<s.tokens.count).map { Int(s.color(seat: Int32($0))) })
         for seat in 0..<s.tokens.count {
             for pawn in 0..<Int(game.PAWNS) { scene.place(seat, pawn, spot(s, seat, pawn)) }
@@ -93,6 +102,8 @@ final class LudoGameModel: ObservableObject {
 
     func roll(_ toss: LudoScene.Toss) {
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
+        rollSeconds = 0
+        lifetime.cancel("rollTurn")
         pendingToss = toss
         scene.holdDie(true, shake: toss == .long)
         if !table.roll(seat: turn) {
@@ -105,6 +116,32 @@ final class LudoGameModel: ObservableObject {
             if pendingToss == toss && !animating {
                 pendingToss = nil
                 scene.holdDie(false)
+            }
+        }
+    }
+
+    /// Starts or clears the throw countdown whenever roll availability changes.
+    func syncRollTimer() {
+        lifetime.cancel("rollTurn")
+        guard canRoll else {
+            rollSeconds = 0
+            return
+        }
+        rollSeconds = rollTotal
+        lifetime.launch("rollTurn") { [self] in
+            while rollSeconds > 0 {
+                try await Task.sleep(for: .seconds(1))
+                guard lifetime.active, canRoll else {
+                    rollSeconds = 0
+                    return
+                }
+                if pressing { continue }
+                let next = rollSeconds - 1
+                rollSeconds = next
+                if next == 0, canRoll, !pressing {
+                    roll(.short)
+                    return
+                }
             }
         }
     }
@@ -176,10 +213,17 @@ final class LudoGameModel: ObservableObject {
         roll(long ? .long : .short)
     }
 
+    /// Call after state / animation changes that affect `canRoll`.
+    func afterReadyChange() {
+        updateReady()
+        syncRollTimer()
+        syncWatch()
+    }
+
     func restart() { if lifetime.active { table.restart() } }
 
     private func idle() {
-        updateReady()
+        afterReadyChange()
         lifetime.launch("bot") { [self] in
             while loading { try await Task.sleep(for: .milliseconds(100)) }
             try await Task.sleep(for: .seconds(Self.botPause))
@@ -211,7 +255,7 @@ final class LudoGameModel: ObservableObject {
         let update = queue.removeFirst()
         lifetime.cancel("bot")
         animating = true
-        updateReady()
+        afterReadyChange()
         lifetime.launch("animation") { [self] in
             defer {
                 // Always ease back out, even if the animation is cancelled mid-hop.
@@ -231,16 +275,17 @@ final class LudoGameModel: ObservableObject {
                     let path = game.walk(from: Int32(from), to: Int32(to)).map { pos in
                         LudoScene.vec(board.tokenAnchor(color: color, pawn: Int32(pawn), pos: pos.int32Value))
                     }
-                    var focus = path
-                    for cap in next.lastCaptures {
-                        focus.append(spot(state, Int(cap.seat), Int(cap.pawn)))
-                        focus.append(spot(next, Int(cap.seat), Int(cap.pawn)))
-                    }
-                    scene.watch(focus)
+                    // Frame only the mover (start + hops). Capture yards used to pull the
+                    // camera across the board away from the piece that moves.
+                    let start = LudoScene.vec(board.tokenAnchor(color: color, pawn: Int32(pawn), pos: Int32(from)))
+                    scene.watch([start] + path)
+                    try await Task.sleep(for: .seconds(0.18))
                     scene.move(seat, pawn, path, seconds: Float(Double(path.count) * Self.hop), hop: 0.35)
                     try await Task.sleep(for: .seconds(Double(path.count) * Self.hop + 0.08))
                     for cap in next.lastCaptures {
+                        let fromSpot = spot(state, Int(cap.seat), Int(cap.pawn))
                         let back = spot(next, Int(cap.seat), Int(cap.pawn))
+                        scene.watch([fromSpot, back])
                         scene.move(Int(cap.seat), Int(cap.pawn), [back], seconds: 0.35, hop: 0.5)
                     }
                     if !next.lastCaptures.isEmpty {
@@ -384,11 +429,13 @@ private struct LudoBoardView: View {
         }
         .onChange(of: loading) { _, now in
             model.loading = now
-            model.updateReady()
+            model.afterReadyChange()
         }
         .onChange(of: model.animating) { _, _ in
-            model.syncWatch()
-            model.updateReady()
+            model.afterReadyChange()
+        }
+        .onChange(of: model.canRoll) { _, _ in
+            model.syncRollTimer()
         }
         .sheet(isPresented: $showRules) { LudoRulesSheet(options: model.state.options) }
     }
@@ -400,6 +447,7 @@ private struct LudoBoardView: View {
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
         var keys = Self.hudKeys
+        if model.canRoll && model.rollSeconds > 0 { keys.append("rollTimer") }
         if table.waiting != nil || table.notice != nil { keys.append("notice") }
         if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
@@ -489,6 +537,11 @@ private struct LudoBoardView: View {
                 )
                 .modifier(hudBox("emote"))
                 if table.canEmote { Spacer().frame(height: 10 * s) }
+                if model.canRoll && model.rollSeconds > 0 {
+                    CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
+                        .modifier(hudBox("rollTimer"))
+                        .padding(.bottom, 6 * s)
+                }
                 Color.clear
                     .frame(width: 104 * s, height: 104 * s)
                     .contentShape(Rectangle())

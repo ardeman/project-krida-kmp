@@ -501,7 +501,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     /** Ease FOV and shift toward [targetFov] / [targetShiftX]/[targetShiftY]. */
     private fun stepCamera(dt: Float): Boolean {
         if (camSettled || width <= 1) return false
-        val k = 1f - exp(-dt / CAMERA_TAU)
+        // Cap so a hitch never snaps the camera most of the way in one frame.
+        val k = 1f - exp(-min(dt, MAX_CAMERA_DT) / CAMERA_TAU)
         fovDegrees += (targetFov - fovDegrees) * k
         shiftX += (targetShiftX - shiftX) * k
         shiftY += (targetShiftY - shiftY) * k
@@ -676,7 +677,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         /** Share of the view the framed points take, leaving room for what sits around them. */
         const val FRAME_FILL = 0.72f
         /** Seconds for the camera to close most of the gap toward its watch target. */
-        const val CAMERA_TAU = 0.28f
+        const val CAMERA_TAU = 0.38f
+        const val MAX_CAMERA_DT = 1f / 30f
 
         /** The die as it waits on screen: [value] up, turned to show two more faces. */
         fun homeRotation(value: Int): FloatArray =

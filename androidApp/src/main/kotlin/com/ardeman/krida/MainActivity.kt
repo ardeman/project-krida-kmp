@@ -511,6 +511,13 @@ class MainActivity : ComponentActivity() {
         }
         val computers = seats.count { it == LocalSeat.COMPUTER }
         val people = seats.count { it == LocalSeat.PERSON }
+        // Vs computer on this phone: the lone person can switch colour with a computer or take a free one.
+        var personColor by rememberSaveable { mutableStateOf(-1) }
+        val seatColors = if (multi) LocalSeats.colors(seats, if (people == 1) personColor else -1) else emptyList()
+        // Congklak has no seat colours; only index [seatColors] for ular/ludo.
+        val myColor = seats.indices.firstOrNull { seats[it] == LocalSeat.PERSON }
+            ?.takeIf { it < seatColors.size }
+            ?.let { seatColors[it].takeIf { c -> c >= 0 } }
         val colorNames = listOf(R.string.ular_player_red, R.string.ular_player_blue, R.string.ular_player_green, R.string.ular_player_yellow)
             .map { stringResource(it) }
         val computerN = (1..3).map { stringResource(R.string.ular_computer_n, it) }
@@ -539,7 +546,11 @@ class MainActivity : ComponentActivity() {
             if (!nearby) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
-                    colors = if (multi) seats.indices.map { pawnColor(it) } else listOf(Theme.wood, Theme.seed),
+                    colors = if (multi) {
+                        seats.indices.map { i -> seatColors[i].takeIf { it >= 0 }?.let(::pawnColor) ?: Theme.border }
+                    } else {
+                        listOf(Theme.wood, Theme.seed)
+                    },
                     // Congklak's first seat is always a person; the second is a person or the computer.
                     tappable = if (multi) seats.indices.toSet() else setOf(1),
                     onTap = { i ->
@@ -549,6 +560,16 @@ class MainActivity : ComponentActivity() {
                             else -> congklakSeats = LocalSeats.encode(LocalSeats.next(congklak, i, allowEmpty = false))
                         }
                     },
+                )
+            }
+            if (!nearby && multi && people == 1 && computers > 0) {
+                LocalColorRow(
+                    names = colorNames,
+                    mine = myColor,
+                    computerColors = seats.indices.mapNotNull { i ->
+                        seatColors[i].takeIf { it >= 0 && seats[i] == LocalSeat.COMPUTER }
+                    }.toSet(),
+                    onPick = { personColor = it },
                 )
             }
             // The action row: what this choice means (or the computer's level), then the
@@ -611,10 +632,15 @@ class MainActivity : ComponentActivity() {
                                     multi -> {
                                         var nextComputer = 0
                                         val players = seats.mapIndexedNotNull { i, kind ->
+                                            val color = seatColors[i].takeIf { it >= 0 } ?: return@mapIndexedNotNull null
                                             when (kind) {
                                                 LocalSeat.EMPTY -> null
-                                                LocalSeat.COMPUTER -> LocalPlayer(if (computers == 1) computer else computerN[nextComputer++], computer = true, color = i)
-                                                LocalSeat.PERSON -> LocalPlayer(if (people == 1) you else colorNames[i], computer = false, color = i)
+                                                LocalSeat.COMPUTER -> LocalPlayer(if (computers == 1) computer else computerN[nextComputer++], computer = true, color = color)
+                                                LocalSeat.PERSON -> LocalPlayer(
+                                                    if (people == 1) you else colorNames[color],
+                                                    computer = false,
+                                                    color = color,
+                                                )
                                             }
                                         }
                                         if (ludo) ludoTable = LudoHostTable.local(players)
@@ -770,6 +796,49 @@ private fun SeatTiles(seats: List<LocalSeat>, colors: List<Color>, tappable: Set
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
+        }
+    }
+}
+
+/**
+ * Pawn colours for a lone person vs computers on this phone: free colours and computer colours
+ * are tappable; the person's current colour shows a check.
+ */
+@Composable
+private fun LocalColorRow(names: List<String>, mine: Int?, computerColors: Set<Int>, onPick: (Int) -> Unit) {
+    val shape = RoundedCornerShape(14.dp)
+    Row(
+        Modifier.fillMaxWidth().clip(shape).background(Theme.surfaceSoft).border(1.dp, Theme.line, shape)
+            .padding(start = 12.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(stringResource(R.string.nearby_your_color), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted), modifier = Modifier.weight(1f))
+        for (c in 0 until 4) {
+            val color = pawnColor(c)
+            val name = names.getOrElse(c) { "${c + 1}" }
+            val ink = if (color.luminance() > 0.5f) Theme.inkOnLight else Color.White
+            val label = when {
+                c == mine -> stringResource(R.string.nearby_color_chosen, name)
+                c in computerColors -> stringResource(R.string.nearby_color_switch_computer, name)
+                else -> name
+            }
+            Box(
+                Modifier.size(44.dp)
+                    .then(if (c == mine) Modifier.border(2.dp, Theme.ink, CircleShape).padding(4.dp) else Modifier)
+                    .clip(CircleShape)
+                    .background(color)
+                    .clickable(enabled = c != mine, role = Role.Button, onClickLabel = label) {
+                        Sounds.play(Sounds.Effect.Tap)
+                        onPick(c)
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                when {
+                    c == mine -> Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = ink, modifier = Modifier.size(24.dp))
+                    c in computerColors -> Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = ink, modifier = Modifier.size(20.dp))
+                }
             }
         }
     }

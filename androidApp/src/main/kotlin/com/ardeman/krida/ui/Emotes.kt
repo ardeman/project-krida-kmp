@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -122,6 +124,7 @@ private fun EmoteBubble(name: String, id: String) {
     val glyph = Emotes.glyph(id) ?: return
     Column(
         Modifier
+            .widthIn(max = 220.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(Theme.surface)
             .border(1.5.dp, Theme.line, RoundedCornerShape(14.dp))
@@ -141,8 +144,11 @@ private fun EmoteBubble(name: String, id: String) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun EmotePicker(onPick: (String) -> Unit) {
+    // Fixed width so the right-hand HUD column (≈148 dp) end-aligns it and the panel
+    // opens left onto the board instead of spilling off the screen.
     FlowRow(
         Modifier
+            .requiredWidth(220.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Theme.surface)
             .border(1.5.dp, Theme.line, RoundedCornerShape(16.dp))
@@ -154,6 +160,7 @@ private fun EmotePicker(onPick: (String) -> Unit) {
         Emotes.ALL.forEach { item ->
             Column(
                 Modifier
+                    .widthIn(min = 60.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Theme.chip)
                     .clickable(role = Role.Button) {

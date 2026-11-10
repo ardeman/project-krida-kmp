@@ -31,6 +31,8 @@ struct ContentView: View {
     @State private var joinError: LocalizedStringKey?
     @State private var scanning = false
     @State private var place: Place = .phone
+    /// Lone person vs computers on this phone: preferred pawn colour (`-1` = seat colour).
+    @State private var personColor = -1
     /// The loading screen at app start, over the menu while its board snapshot renders.
     @State private var starting = true
     @State private var menuReady = false
@@ -340,6 +342,14 @@ struct ContentView: View {
         let seats = ludo ? ludoSeats : ular ? ularSeats : congklakSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
+        let seatColors: [Int] = multi
+            ? LocalSeats.shared.colors(seats: seats, personColor: Int32(people == 1 ? personColor : -1), colorCount: 4).map(\.intValue)
+            : []
+        // Congklak has no seat colours; only index seatColors for ular/ludo.
+        let myColor = seats.indices.first { seats[$0] == .person && $0 < seatColors.count }.map { seatColors[$0] }
+        let computerColors = Set(seats.indices.compactMap { i -> Int? in
+            i < seatColors.count && seatColors[i] >= 0 && seats[i] == .computer ? seatColors[i] : nil
+        })
         let places: [(Place, LocalizedStringKey, String?)] = [
             (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
             (.online, "Online", "globe"),
@@ -353,7 +363,9 @@ struct ContentView: View {
                 SettingRow(label: "Players") {
                     SeatTiles(
                         seats: seats,
-                        colors: multi ? seats.indices.map { pawnColor($0) } : [Theme.wood, Theme.seed],
+                        colors: multi
+                            ? seats.indices.map { seatColors[$0] >= 0 ? pawnColor(seatColors[$0]) : Theme.border }
+                            : [Theme.wood, Theme.seed],
                         tappable: multi ? Set(seats.indices) : [1]
                     ) { i in
                         if ludo {
@@ -365,6 +377,9 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+            if !nearby, multi, people == 1, computers > 0 {
+                LocalColorRow(mine: myColor, computerColors: computerColors) { personColor = $0 }
             }
             // The description above equally sized Join/Create buttons, as on Android. Online
             // rules move to the Create room screen.
@@ -488,18 +503,26 @@ struct ContentView: View {
     private func localPlayers(_ seats: [LocalSeat]) -> [LocalPlayer] {
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
-        let colors = [String(localized: "Red", bundle: .app), String(localized: "Blue", bundle: .app), String(localized: "Green", bundle: .app), String(localized: "Yellow", bundle: .app)]
+        let colorNames = [String(localized: "Red", bundle: .app), String(localized: "Blue", bundle: .app), String(localized: "Green", bundle: .app), String(localized: "Yellow", bundle: .app)]
+        let seatColors = LocalSeats.shared.colors(
+            seats: seats,
+            personColor: Int32(people == 1 ? personColor : -1),
+            colorCount: 4,
+        ).map(\.intValue)
         var nextComputer = 0
         var players: [LocalPlayer] = []
         for (i, kind) in seats.enumerated() {
+            let color = seatColors[i]
+            guard color >= 0 else { continue }
             switch kind {
             case .computer:
                 nextComputer += 1
                 let name = computers == 1 ? String(localized: "Computer", bundle: .app) : String(localized: "Computer \(nextComputer)", bundle: .app)
-                players.append(LocalPlayer(name: name, computer: true, color: i))
+                players.append(LocalPlayer(name: name, computer: true, color: color))
             case .person:
                 // A lone person is "You"; people passing the phone go by their pawn colour.
-                players.append(LocalPlayer(name: people == 1 ? String(localized: "You", bundle: .app) : colors[i], computer: false, color: i))
+                let name = people == 1 ? String(localized: "You", bundle: .app) : colorNames[color]
+                players.append(LocalPlayer(name: name, computer: false, color: color))
             default: break
             }
         }
@@ -567,6 +590,73 @@ private struct RemoveAdsButton: View {
 
 /// Where the game is played; the play card's first choice.
 private enum Place { case phone, nearby, online }
+
+/// Pawn colours for a lone person vs computers on this phone. Same as Android.
+private struct LocalColorRow: View {
+    let mine: Int?
+    let computerColors: Set<Int>
+    let onPick: (Int) -> Void
+    @Environment(\.uiScale) private var s
+
+    private let names = [
+        String(localized: "Red", bundle: .app),
+        String(localized: "Blue", bundle: .app),
+        String(localized: "Green", bundle: .app),
+        String(localized: "Yellow", bundle: .app),
+    ]
+
+    var body: some View {
+        HStack(spacing: 12 * s) {
+            Text("Your pawn color").font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(0..<4, id: \.self) { c in
+                let color = pawnColor(c)
+                let name = names[c]
+                let selected = c == mine
+                let computer = computerColors.contains(c)
+                let label: String = if selected {
+                    String(localized: "\(name), chosen", bundle: .app)
+                } else if computer {
+                    String(localized: "\(name), switch with the computer", bundle: .app)
+                } else {
+                    name
+                }
+                Button {
+                    Sounds.shared.play(.tap)
+                    onPick(c)
+                } label: {
+                    ZStack {
+                        Circle().fill(color).padding(selected ? 4 * s : 0)
+                        if selected {
+                            Circle().stroke(Theme.ink, lineWidth: 2)
+                            Image(systemName: "checkmark").font(.system(size: 18 * s, weight: .black))
+                                .foregroundStyle(inkOn(color))
+                        } else if computer {
+                            Image(systemName: "desktopcomputer").font(.system(size: 16 * s, weight: .bold))
+                                .foregroundStyle(inkOn(color))
+                        }
+                    }
+                    .frame(width: 44 * s, height: 44 * s)
+                }
+                .buttonStyle(.plain)
+                .disabled(selected)
+                .accessibilityLabel(label)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(.leading, 12 * s)
+        .padding(.trailing, 10 * s)
+        .padding(.vertical, 4 * s)
+        .background(Theme.surfaceSoft, in: RoundedRectangle(cornerRadius: 14 * s))
+        .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(Theme.line, lineWidth: 1))
+    }
+
+    private func inkOn(_ color: Color) -> Color {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+        return (0.3 * r + 0.59 * g + 0.11 * b) > 0.5 ? Theme.inkOnLight : .white
+    }
+}
 
 /// One tile per seat of a game on this phone: a person, a computer, or empty (dashed). A tap on
 /// a seat in `tappable` moves it on (see `LocalSeats.next`). Same as Android.

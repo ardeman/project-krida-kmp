@@ -56,10 +56,11 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     }
 
     /**
-     * Gameplay: ease the camera onto [points] (the pit being sown), or back to the whole board
-     * when null. Call before a sow step and again with null when the move has settled.
+     * Gameplay: ease the camera onto [points] (a whole sow path), or back to the whole board
+     * when null. Prefer one call per move — retargeting every pit feels dizzy at low FPS.
      */
     fun watch(points: List<FloatArray>?) {
+        if (points == null && watchPoints == null) return
         watchPoints = points?.let { padded(it) }
         if (width > 1) {
             val view = computeView(watchPoints)
@@ -120,7 +121,8 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     /** Ease FOV and shift toward the watch target. */
     private fun stepCamera(dt: Float): Boolean {
         if (camSettled || width <= 1) return false
-        val k = 1f - exp(-dt / CAMERA_TAU)
+        // Cap so a hitch never snaps the camera most of the way in one frame.
+        val k = 1f - exp(-min(dt, MAX_CAMERA_DT) / CAMERA_TAU)
         fovDegrees += (targetFov - fovDegrees) * k
         shiftX += (targetShiftX - shiftX) * k
         shiftY += (targetShiftY - shiftY) * k
@@ -239,7 +241,9 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     companion object {
         private const val EASE_PER_SECOND = 14f
         private const val MIN_FOV = 18f
-        private const val FRAME_FILL = 0.55f
-        private const val CAMERA_TAU = 0.28f
+        private const val FRAME_FILL = 0.72f
+        /** Slower ease so sowing stays comfortable when the phone drops frames. */
+        private const val CAMERA_TAU = 0.5f
+        private const val MAX_CAMERA_DT = 1f / 30f
     }
 }
