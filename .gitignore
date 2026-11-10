@@ -22,3 +22,6 @@ web/.astro/
 
 # OS
 .DS_Store
+
+# Cursor
+.cursor-tmp/

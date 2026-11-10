@@ -137,6 +137,9 @@ abstract class VoxelStage(textureView: TextureView, glb: ByteBuffer) : Choreogra
     /** Draws the scene again on the next frame, even if nothing changed. */
     fun invalidate() {
         dirty = true
+        // A watch/fit after animations stop must restart the choreographer, or the
+        // camera ease never advances (dirty alone does not call [resume]).
+        resume()
     }
 
     fun resume() {

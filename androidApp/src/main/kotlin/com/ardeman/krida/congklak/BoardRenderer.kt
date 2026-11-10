@@ -12,6 +12,7 @@ import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.math.tan
 
 /**
@@ -60,6 +61,7 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
      * when null. Prefer one call per move — retargeting every pit feels dizzy at low FPS.
      */
     fun watch(points: List<FloatArray>?) {
+        // Already on (or easing to) the overview: a second null must not restart the ease.
         if (points == null && watchPoints == null) return
         watchPoints = points?.let { padded(it) }
         if (width > 1) {
@@ -67,7 +69,15 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
             targetFov = view[0]
             targetShiftX = view[1].toDouble()
             targetShiftY = view[2].toDouble()
-            camSettled = false
+            if (points == null) {
+                fovDegrees = targetFov
+                shiftX = targetShiftX
+                shiftY = targetShiftY
+                applyProjection()
+                camSettled = true
+            } else {
+                camSettled = false
+            }
             invalidate()
         }
     }
@@ -192,6 +202,9 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     /**
      * Horizontal FOV and screen shift (NDC) that frames [points], or the whole board when null.
      * Returns floatArrayOf(fov, shiftX, shiftY).
+     *
+     * Projects at the opening FOV in code, never through Filament's live matrix — otherwise
+     * a zoomed-in camera bakes into the next fit.
      */
     private fun computeView(points: List<FloatArray>?): FloatArray {
         val base = CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES
@@ -201,7 +214,27 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
         val cx = width / 2f
         val cy = height / 2f
         val tanBase = tan(base * PI.toFloat() / 360f)
-        val shot = points.map { (x, y, z) -> project(x, y, z) }
+        val aspect = width.toFloat() / height
+        val flip = if (viewSeat == 1) -1f else 1f
+        val eye = CongklakBoard.cameraEye.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
+        val at = CongklakBoard.cameraTarget.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
+        fun norm(v: FloatArray): FloatArray {
+            val n = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+            return floatArrayOf(v[0] / n, v[1] / n, v[2] / n)
+        }
+        fun cross(a: FloatArray, b: FloatArray) =
+            floatArrayOf(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+        val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+        val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+        val up = cross(right, fwd)
+        fun screen(x: Float, y: Float, z: Float): FloatArray {
+            val dx = x - eye[0]; val dy = y - eye[1]; val dz = z - eye[2]
+            val depth = dx * fwd[0] + dy * fwd[1] + dz * fwd[2]
+            val nx = (dx * right[0] + dy * right[1] + dz * right[2]) / (depth * tanBase)
+            val ny = (dx * up[0] + dy * up[1] + dz * up[2]) / (depth * tanBase / aspect)
+            return floatArrayOf(cx * (1 + nx), cy * (1 - ny))
+        }
+        val shot = points.map { (x, y, z) -> screen(x, y, z) }
         val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
         val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
         val spanX = (x1 - x0).coerceAtLeast(1f)

@@ -89,13 +89,27 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
      */
     fun watch(points: List<FloatArray>?) {
         focus = null
+        // Already on (or easing to) the overview: a second null must not restart the ease.
+        if (points == null && watchPoints == null) return
         watchPoints = points?.let { padded(it) }
         if (width > 1) {
             val view = computeView(watchPoints)
             targetFov = view[0]
             targetShiftX = view[1].toDouble()
             targetShiftY = view[2].toDouble()
-            camSettled = false
+            if (points == null) {
+                // Snap the overview: after hops the die is still and the frame loop may not
+                // advance an ease, which left the board stuck cropped on Pixel.
+                fovDegrees = targetFov
+                shiftX = targetShiftX
+                shiftY = targetShiftY
+                camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+                camera.setShift(shiftX / 2, shiftY / 2)
+                updateHome()
+                camSettled = true
+            } else {
+                camSettled = false
+            }
             invalidate()
         }
     }
@@ -558,15 +572,32 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     /**
      * FOV and screen shift (NDC) that frames [points], or the whole board when null.
      * Returns floatArrayOf(fov, shiftX, shiftY).
+     *
+     * Projects at the opening FOV in code (same as iOS), never through Filament's live
+     * matrix — otherwise a zoomed-in camera bakes into the fit and [watch](null) cannot
+     * restore the opening frame.
      */
     private fun computeView(points: List<FloatArray>?): FloatArray {
         val base = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
         val cx = width / 2f
         val cy = height / 2f
-        // One convex outline per part (board, start pad), so the pad may sit beside a HUD box.
-        val hulls = UlarTanggaBoard.bounds().map { part -> convexHull(part.map { (x, y, z) -> project(x, y, z) }) }
-        val room = this.room ?: floatArrayOf(0f, 0f, width.toFloat(), height.toFloat())
         val tanBase = tan(base * PI.toFloat() / 360f)
+        val aspect = width.toFloat() / height
+        val eye = UlarTanggaBoard.cameraEye
+        val at = UlarTanggaBoard.cameraTarget
+        val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+        val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+        val up = cross(right, fwd)
+        fun screen(x: Float, y: Float, z: Float): FloatArray {
+            val dx = x - eye[0]; val dy = y - eye[1]; val dz = z - eye[2]
+            val depth = dx * fwd[0] + dy * fwd[1] + dz * fwd[2]
+            val nx = (dx * right[0] + dy * right[1] + dz * right[2]) / (depth * tanBase * aspect)
+            val ny = (dx * up[0] + dy * up[1] + dz * up[2]) / (depth * tanBase)
+            return floatArrayOf(cx * (1 + nx), cy * (1 - ny))
+        }
+        // One convex outline per part (board, start pad), so the pad may sit beside a HUD box.
+        val hulls = UlarTanggaBoard.bounds().map { part -> convexHull(part.map { (x, y, z) -> screen(x, y, z) }) }
+        val room = this.room ?: floatArrayOf(0f, 0f, width.toFloat(), height.toFloat())
         fun scaleFor(fov: Float) = tanBase / tan(fov * PI.toFloat() / 360f)
         fun place(k: Float): FloatArray? {
             val shapes = hulls.map { hull -> hull.map { floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k) } }
@@ -580,12 +611,12 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             var best: FloatArray? = null
             var bestDistance = Float.MAX_VALUE
             for (i in 0..FIT_STEPS) for (j in 0..FIT_STEPS) {
-                val dx = loX + (hiX - loX) * i / FIT_STEPS
-                val dy = loY + (hiY - loY) * j / FIT_STEPS
-                val distance = (dx - midX) * (dx - midX) + (dy - midY) * (dy - midY)
+                val sx = loX + (hiX - loX) * i / FIT_STEPS
+                val sy = loY + (hiY - loY) * j / FIT_STEPS
+                val distance = (sx - midX) * (sx - midX) + (sy - midY) * (sy - midY)
                 if (distance >= bestDistance) continue
-                if (obstacles.any { box -> shapes.any { overlaps(it, dx, dy, box) } }) continue
-                best = floatArrayOf(dx, dy)
+                if (obstacles.any { box -> shapes.any { overlaps(it, sx, sy, box) } }) continue
+                best = floatArrayOf(sx, sy)
                 bestDistance = distance
             }
             return best
@@ -594,15 +625,20 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         val dx: Float
         val dy: Float
         if (points != null && points.isNotEmpty()) {
-            val shot = points.map { (x, y, z) -> project(x, y, z) }
+            // Same room as the whole-board fit, so zooming in and out share one centre.
+            val shot = points.map { (x, y, z) -> screen(x, y, z) }
             val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
             val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
             val spanX = (x1 - x0).coerceAtLeast(1f)
             val spanY = (y1 - y0).coerceAtLeast(1f)
-            val k = FRAME_FILL * min(width / spanX, height / spanY)
+            val roomW = (room[2] - room[0]).coerceAtLeast(1f)
+            val roomH = (room[3] - room[1]).coerceAtLeast(1f)
+            val k = FRAME_FILL * min(roomW / spanX, roomH / spanY)
             hi = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, MAX_FOV)
-            dx = cx - (cx + ((x0 + x1) / 2 - cx) * k)
-            dy = cy - (cy + ((y0 + y1) / 2 - cy) * k)
+            val midX = (x0 + x1) / 2
+            val midY = (y0 + y1) / 2
+            dx = (room[0] + room[2]) / 2 - (cx + (midX - cx) * k)
+            dy = (room[1] + room[3]) / 2 - (cy + (midY - cy) * k)
         } else {
             var lo = MIN_FOV
             var top = MAX_FOV
