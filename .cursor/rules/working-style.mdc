@@ -62,6 +62,3 @@ how the owner likes to work. `docs/status.md` lists open work outside the online
   (key in `~/.appstoreconnect/private_keys/`, env vars in `~/.zshenv`). Use a build number
   higher than the last upload.
 - Don't upload to Play internal testing until several games are ready.
-- Google Play policy deadlines to remind the owner of: new app quality thresholds from
-  February 2027; precise location needs a declaration from 2027-01-27; target API 37+ apps
-  must use the location button/picker and declare Local Network use.
