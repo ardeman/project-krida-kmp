@@ -9,4 +9,5 @@ package com.ardeman.krida.core.games
 object StandardRules {
     val congklak: CongklakRules get() = CongklakRules(true, CongklakStarter.RANDOM)
     val ularTangga: UlarTanggaRules get() = UlarTanggaRules(UlarTanggaOptions())
+    val ludo: LudoRules get() = LudoRules(LudoOptions())
 }

@@ -14,6 +14,8 @@ object LobbyOptions {
 
     fun ularTangga(options: JsonElement?): UlarTanggaOptions? = decode(UlarTanggaOptions.serializer(), options)
 
+    fun ludo(options: JsonElement?): LudoOptions? = decode(LudoOptions.serializer(), options)
+
     private fun <T> decode(serializer: KSerializer<T>, options: JsonElement?): T? =
         options?.let { runCatching { Codec.json.decodeFromJsonElement(serializer, it) }.getOrNull() }
 }

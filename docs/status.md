@@ -5,6 +5,7 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
+- Ludo: UI mockup (then Android, then iOS). Shared rules, bot and board path geometry are in.
 - Online step 10: accounts, friends, invites (largest step; ask before Firebase/FCM).
 
 ## Device checks the owner hasn't done yet

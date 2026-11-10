@@ -112,6 +112,22 @@ in the same commit as the code.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 
+## Ludo
+
+- Free-for-all only for v1 (2–4 seats, four tokens each). Partner teams (2v2) are deferred.
+- Default rules match common Indonesian/app Ludo: a 6 leaves the yard onto the colour’s
+  start square; a 6 rolls again; three 6s in a row burn that third roll and end the turn;
+  landing exactly on the home stretch finish is required; capturing a lone opponent token
+  sends it to the yard and grants another roll. Colour start squares and the home stretch
+  are safe; two or more of the same colour on one square form a block (safe, and others
+  cannot land there).
+- Host options (same idea as ular tangga): no-6-to-enter, no extra roll on 6, no extra roll
+  on capture, first to finish ends the game. Quick match will use the defaults
+  (`StandardRules.ludo`).
+- Pawn colours are the same four as ular tangga (red, blue, green, yellow), picked in room
+  lobbies only.
+- Shared rules and board path geometry land first; UI mockup, then Android, then iOS.
+
 ## Release
 
 - Play internal testing waits until several games exist, not just congklak.
