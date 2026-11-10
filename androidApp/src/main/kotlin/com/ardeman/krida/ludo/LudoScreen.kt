@@ -140,6 +140,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     val lifetime = rememberGameLifetime(table) {
         table.onUpdate = null
         queue.clear()
+        renderer?.showPickRings(emptyList())
         renderer?.onDieBounce = null
         renderer?.holdDie(false)
         table.leave()
@@ -152,7 +153,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
 
     fun placeAll(s: LudoState) {
         val r = renderer ?: return
-        // Your colour (or seat 0 when passing the phone) sits bottom-right next to the die.
+        // Your colour (or seat 0 when passing the phone) sits bottom-left.
         val viewSeat = table.mySeat ?: 0
         r.setViewColor(s.color(viewSeat.coerceIn(0, s.tokens.lastIndex)))
         r.setSeats(List(s.tokens.size) { s.color(it) })
@@ -178,6 +179,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         pendingToss[0] = null
         val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
         try {
+            r.showPickRings(emptyList())
             // Ease in on the board centre while the die flies.
             val land = LudoBoard.dieLanding
             r.watch(
@@ -259,13 +261,16 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     val holdingNow by rememberUpdatedState(holdingDie)
     val canRollNow by rememberUpdatedState(canRoll)
 
-    // Zoom onto the tokens the player may tap; ease back out when pick ends.
-    LaunchedEffect(canPick, legal, renderer, animating, state.turn, state.roll) {
+    // Gold rings on the board under legal tokens; zoom onto them; ease back out when pick ends.
+    LaunchedEffect(canPick, legal, renderer, animating, state.turn, state.roll, state.tokens) {
         val r = renderer ?: return@LaunchedEffect
         if (animating) return@LaunchedEffect
         if (canPick && legal.isNotEmpty()) {
-            r.watch(legal.map { spot(state, state.turn, it) })
+            val spots = legal.map { spot(state, state.turn, it) }
+            r.showPickRings(spots)
+            r.watch(spots)
         } else {
+            r.showPickRings(emptyList())
             r.watch(null)
         }
     }
@@ -357,17 +362,18 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
 
         // Tap a legal token on the board (no side buttons). Under the HUD so chrome still works.
         if (canPick) {
-            val reach = with(LocalDensity.current) { 48.dp.toPx() }
+            val reach = with(LocalDensity.current) { 72.dp.toPx() }
+            val pickLegal = legal
+            val pickSeat = state.turn
             Box(
-                Modifier.fillMaxSize().pointerInput(legal, state.turn, state.roll, renderer) {
+                Modifier.fillMaxSize().pointerInput(pickLegal, pickSeat, state.roll, renderer) {
                     detectTapGestures { tap ->
                         val r = renderer ?: return@detectTapGestures
-                        val seat = state.turn
-                        val hit = legal.map { pawn -> pawn to r.tokenOnScreen(seat, pawn) }
+                        val hit = pickLegal.map { pawn -> pawn to r.tokenOnScreen(pickSeat, pawn) }
                             .minByOrNull { (_, xy) -> hypot(xy[0] - tap.x, xy[1] - tap.y) }
                             ?: return@detectTapGestures
                         if (hypot(hit.second[0] - tap.x, hit.second[1] - tap.y) <= reach) {
-                            table.movePawn(seat, hit.first)
+                            table.movePawn(pickSeat, hit.first)
                         }
                     }
                 },

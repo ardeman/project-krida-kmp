@@ -12,7 +12,7 @@ import kotlin.math.sin
  *
  * Layout matches a classic board (row 0 = toward the camera / bottom of the screen): red
  * bottom-left, blue top-left, yellow top-right, green bottom-right. Gameplay orbits the
- * camera with [cameraEyeFor] so each player's own colour sits bottom-right next to the die.
+ * camera with [cameraEyeFor] so each player's own colour sits bottom-left.
  */
 object LudoBoard {
     const val GRID = 15
@@ -22,21 +22,27 @@ object LudoBoard {
     private const val FRAME = 0.45f
     private const val RIM = 0.5f
 
-    /** Colour whose yard sits bottom-right next to the die with no view yaw (green). */
-    const val VIEW_HOME_COLOR = 2
+    /** Colour whose yard sits bottom-left with no view yaw (red). */
+    const val VIEW_HOME_COLOR = 0
+
+    /**
+     * Yaw steps (×90°) from the default red bottom-left seat, clockwise around the board:
+     * red → green → yellow → blue. Not colour-index order.
+     */
+    private val VIEW_YAW_STEPS = intArrayOf(0, 3, 1, 2) // red, blue, green, yellow
 
     /** Camera shared so both platforms frame the board the same way. */
     val cameraEye = floatArrayOf(0f, 28f, 18f)
     val cameraTarget = floatArrayOf(0f, 0f, 0f)
     const val CAMERA_VERTICAL_FOV_DEGREES = 40f
 
-    /** Yaw in degrees that puts [color]'s yard at the bottom-right (next to the die). */
+    /** Yaw in degrees that puts [color]'s yard at the bottom-left of the screen. */
     fun viewYawDegrees(color: Int): Float {
         val c = ((color % LudoGame.COLORS) + LudoGame.COLORS) % LudoGame.COLORS
-        return (c - VIEW_HOME_COLOR) * 90f
+        return VIEW_YAW_STEPS[c] * 90f
     }
 
-    /** [cameraEye] orbited around Y so [color]'s yard sits bottom-right on screen. */
+    /** [cameraEye] orbited around Y so [color]'s yard sits bottom-left on screen. */
     fun cameraEyeFor(color: Int): FloatArray = cameraEyeAtYaw(viewYawDegrees(color))
 
     fun cameraEyeAtYaw(yawDegrees: Float): FloatArray {
@@ -58,6 +64,8 @@ object LudoBoard {
     private val CREAM = floatArrayOf(0.99f, 0.95f, 0.85f)
     private val WHITE = floatArrayOf(1f, 1f, 1f)
     private val INK = floatArrayOf(0.18f, 0.12f, 0.08f)
+    private val GOLD = floatArrayOf(0.95f, 0.72f, 0.29f)
+    private const val RING_HEIGHT = 0.12f
 
     /** Pawn colours, sRGB: red, blue, green, yellow. */
     val PIECE_COLORS = arrayOf(
@@ -165,6 +173,21 @@ object LudoBoard {
         )
     }
 
+    /**
+     * Gold outline of one board cell, centered on the origin and sitting on y = 0. Place at
+     * a token's (x, [TOP], z) to mark a pawn the player may tap.
+     */
+    fun ringMesh(): VoxelMesh {
+        val half = CELL / 2 - GAP / 2
+        val t = CELL * 0.14f
+        return VoxelMesh().apply {
+            box(floatArrayOf(-half, 0f, -half), floatArrayOf(half, RING_HEIGHT, -half + t), GOLD)
+            box(floatArrayOf(-half, 0f, half - t), floatArrayOf(half, RING_HEIGHT, half), GOLD)
+            box(floatArrayOf(-half, 0f, -half + t), floatArrayOf(-half + t, RING_HEIGHT, half - t), GOLD)
+            box(floatArrayOf(half - t, 0f, -half + t), floatArrayOf(half, RING_HEIGHT, half - t), GOLD)
+        }
+    }
+
     /** Voxel pawn in [color] (0..3), standing on the origin. */
     fun pieceMesh(color: Int): VoxelMesh {
         val c = pieceColor(color)
@@ -246,27 +269,49 @@ object LudoBoard {
         tri(tl, bl, pieceColor(1)) // blue → left
         tri(br, tr, pieceColor(2)) // green → right
         tri(tr, tl, pieceColor(3)) // yellow → top
-        // Start arrows (travel direction) and starred safe squares.
+        // Home-entrance arrows (point into the coloured finish lane) and starred safe squares.
         for (color in 0 until LudoGame.COLORS) {
-            val start = LudoGame.STARTS[color]
-            val cell = TRACK_CELLS[start]
-            val next = TRACK_CELLS[(start + 1) % LudoGame.TRACK]
-            arrow(mesh, cellCenter(cell[0], cell[1]), cellCenter(next[0], next[1]), pieceColor(color))
+            val gate = HOME_GATE_CELLS[color]
+            val home = HOME_CELLS[color][0]
+            arrow(
+                mesh,
+                cellCenter(gate[0], gate[1]),
+                cellCenter(home[0], home[1]),
+                pieceColor(color),
+            )
         }
         for (square in LudoGame.STARS) {
             val cell = TRACK_CELLS[square]
-            star(mesh, cellCenter(cell[0], cell[1]), CELL * 0.32f, INK)
+            star(mesh, cellCenter(cell[0], cell[1]), CELL * 0.28f, INK)
         }
         return mesh
     }
 
-    /** Flat five-point star on the tile top, like the classic safe-square mark. */
+    /**
+     * Cream track cell just outside each home stretch, where the classic board draws an
+     * arrow into that colour's finish lane: red bottom, blue left, green right, yellow top.
+     */
+    private val HOME_GATE_CELLS = arrayOf(
+        intArrayOf(7, 0), // red → up into (7, 1)
+        intArrayOf(0, 7), // blue → right into (1, 7)
+        intArrayOf(14, 7), // green → left into (13, 7)
+        intArrayOf(7, 14), // yellow → down into (7, 13)
+    )
+
+    /**
+     * Flat five-point star on the tile top, like the classic safe-square mark. The tip
+     * reaches farther than the two lower points, so the draw centre is nudged toward the
+     * base to keep the mark visually centred in the cell.
+     */
     private fun star(mesh: VoxelMesh, at: FloatArray, radius: Float, rgb: FloatArray) {
         val y = MARK
-        val c = floatArrayOf(at[0], y, at[1])
+        // Tip is toward −z (angle −π/2); lower tips only reach ~0.81·radius toward +z.
+        val cx = at[0]
+        val cz = at[1] + radius * 0.095f
+        val c = floatArrayOf(cx, y, cz)
         fun tip(i: Int, r: Float): FloatArray {
             val a = (-PI / 2 + i * PI / 5).toFloat()
-            return floatArrayOf(at[0] + cos(a) * r, y, at[1] + sin(a) * r)
+            return floatArrayOf(cx + cos(a) * r, y, cz + sin(a) * r)
         }
         for (i in 0 until 5) {
             val outer = tip(i * 2, radius)
@@ -276,7 +321,10 @@ object LudoBoard {
         }
     }
 
-    /** Small triangle on a start square, pointing toward [toward]. */
+    /**
+     * Block arrow centred on [from], pointing toward [toward] (into the home stretch).
+     * Stem + triangular head, matching a classic Ludo board mark.
+     */
     private fun arrow(mesh: VoxelMesh, from: FloatArray, toward: FloatArray, rgb: FloatArray) {
         val dx = toward[0] - from[0]
         val dz = toward[1] - from[1]
@@ -286,10 +334,18 @@ object LudoBoard {
         val px = -fz
         val pz = fx
         val y = MARK
-        val tip = floatArrayOf(from[0] + fx * CELL * 0.28f, y, from[1] + fz * CELL * 0.28f)
-        val left = floatArrayOf(from[0] - fx * CELL * 0.18f + px * CELL * 0.2f, y, from[1] - fz * CELL * 0.18f + pz * CELL * 0.2f)
-        val right = floatArrayOf(from[0] - fx * CELL * 0.18f - px * CELL * 0.2f, y, from[1] - fz * CELL * 0.18f - pz * CELL * 0.2f)
-        mesh.quad(arrayOf(tip, left, right, tip), rgb)
+        val tip = floatArrayOf(from[0] + fx * CELL * 0.32f, y, from[1] + fz * CELL * 0.32f)
+        val headBase = floatArrayOf(from[0] + fx * CELL * 0.02f, y, from[1] + fz * CELL * 0.02f)
+        val headL = floatArrayOf(headBase[0] + px * CELL * 0.22f, y, headBase[2] + pz * CELL * 0.22f)
+        val headR = floatArrayOf(headBase[0] - px * CELL * 0.22f, y, headBase[2] - pz * CELL * 0.22f)
+        mesh.quad(arrayOf(tip, headL, headR, tip), rgb)
+        val stemBack = floatArrayOf(from[0] - fx * CELL * 0.28f, y, from[1] - fz * CELL * 0.28f)
+        val stemHalf = CELL * 0.08f
+        val s0 = floatArrayOf(stemBack[0] + px * stemHalf, y, stemBack[2] + pz * stemHalf)
+        val s1 = floatArrayOf(stemBack[0] - px * stemHalf, y, stemBack[2] - pz * stemHalf)
+        val s2 = floatArrayOf(headBase[0] - px * stemHalf, y, headBase[2] - pz * stemHalf)
+        val s3 = floatArrayOf(headBase[0] + px * stemHalf, y, headBase[2] + pz * stemHalf)
+        mesh.quad(arrayOf(s0, s1, s2, s3), rgb)
     }
 
     /** Low disc on a yard slot. */

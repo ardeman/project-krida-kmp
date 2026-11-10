@@ -122,8 +122,9 @@ in the same commit as the code.
   sends it to the yard and grants another roll. Colour start squares, the four starred
   safe squares (nine steps past each start) and the home stretch are safe; two or more of
   the same colour on one square form a block (safe, and others cannot land there). The
-  board mesh shows those stars, start arrows, coloured yard pads and a four-triangle
-  centre, matching a classic Ludo board.
+  board mesh shows those stars, home-entrance arrows (into each finish lane, not on the
+  start squares), coloured yard pads and a four-triangle centre, matching a classic
+  Ludo board.
 - Host options (same idea as ular tangga): no-6-to-enter, no extra roll on 6, no extra roll
   on capture, first to finish ends the game. Quick match will use the defaults
   (`StandardRules.ludo`).
@@ -133,8 +134,9 @@ in the same commit as the code.
   (`Krida.ROLL_TURN_MS`) sits above the die (`CountdownRing`). Holding the die pauses it; at
   0 the phone rolls a short toss. Same idea later for ular tangga if wanted.
 - **Board facing (2026-11-10):** each phone orbits the camera so that player's pawn colour
-  sits bottom-right next to the die (`LudoBoard.cameraEyeFor`). Pass-and-play keeps seat 0's
-  colour there; guests and the host each see their own side.
+  sits bottom-left (`LudoBoard.cameraEyeFor`; corners are red→green→yellow→blue clockwise,
+  not colour-index order). Pass-and-play keeps seat 0's colour there; guests and the host
+  each see their own side.
 - **Board layout (2026-11-10):** classic corners — red bottom-left, blue top-left, yellow
   top-right, green bottom-right — with matching clockwise starts, home stretches, stars
   (start+9) and centre triangles.

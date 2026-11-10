@@ -41,15 +41,17 @@ class LudoBoardTest {
     }
 
     @Test
-    fun viewYawPutsEachColourYardTowardTheCameraRight() {
-        assertEquals(0f, LudoBoard.viewYawDegrees(LudoBoard.VIEW_HOME_COLOR))
-        assertTrue(LudoBoard.cameraEyeFor(LudoBoard.VIEW_HOME_COLOR).contentEquals(LudoBoard.cameraEye))
-        // Red (0) needs a half turn from the default green bottom-right seat.
-        assertEquals(-180f, LudoBoard.viewYawDegrees(0))
-        val redEye = LudoBoard.cameraEyeFor(0)
-        assertEquals(0f, redEye[0], absoluteTolerance = 0.01f)
-        assertEquals(LudoBoard.cameraEye[1], redEye[1], absoluteTolerance = 0.01f)
-        assertEquals(-LudoBoard.cameraEye[2], redEye[2], absoluteTolerance = 0.01f)
+    fun viewYawPutsEachColourYardAtBottomLeft() {
+        assertEquals(0, LudoBoard.VIEW_HOME_COLOR)
+        assertEquals(0f, LudoBoard.viewYawDegrees(0)) // red
+        assertEquals(270f, LudoBoard.viewYawDegrees(1)) // blue
+        assertEquals(90f, LudoBoard.viewYawDegrees(2)) // green
+        assertEquals(180f, LudoBoard.viewYawDegrees(3)) // yellow
+        assertTrue(LudoBoard.cameraEyeFor(0).contentEquals(LudoBoard.cameraEye))
+        val blueEye = LudoBoard.cameraEyeFor(1)
+        assertEquals(-LudoBoard.cameraEye[2], blueEye[0], absoluteTolerance = 0.01f)
+        assertEquals(LudoBoard.cameraEye[1], blueEye[1], absoluteTolerance = 0.01f)
+        assertEquals(0f, blueEye[2], absoluteTolerance = 0.01f)
     }
 
     @Test
@@ -59,6 +61,21 @@ class LudoBoardTest {
         assertEquals(listOf(6, 13), LudoBoard.trackCell(22).toList())
         assertEquals(listOf(13, 8), LudoBoard.trackCell(35).toList())
         assertEquals(listOf(8, 1), LudoBoard.trackCell(48).toList())
+        assertTrue(LudoBoard.boardMesh().vertexCount > 0)
+    }
+
+    @Test
+    fun pickRingMeshIsBuilt() {
+        assertTrue(LudoBoard.ringMesh().vertexCount > 0)
+    }
+
+    @Test
+    fun homeGateCellsSitOnTheOuterArmEnds() {
+        // Cream cells just outside each finish lane (classic arrow marks).
+        assertEquals(listOf(7, 0), LudoBoard.trackCell(50).toList()) // red gate
+        assertEquals(listOf(0, 7), LudoBoard.trackCell(11).toList()) // blue gate
+        assertEquals(listOf(14, 7), LudoBoard.trackCell(37).toList()) // green gate
+        assertEquals(listOf(7, 14), LudoBoard.trackCell(24).toList()) // yellow gate
         assertTrue(LudoBoard.boardMesh().vertexCount > 0)
     }
 }

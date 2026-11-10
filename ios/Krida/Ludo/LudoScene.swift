@@ -24,8 +24,9 @@ final class LudoScene {
     private let dice = UlarTanggaBoard.shared
     private let pawnCount: Int
     private var byColor: [[ModelEntity]] = []
+    private var rings: [ModelEntity] = []
     private var seatColors: [Int] = []
-    /// Colour whose yard sits bottom-right next to the die (orbits the camera).
+    /// Colour whose yard sits bottom-left (orbits the camera).
     private var viewColor = Int(LudoBoard.shared.VIEW_HOME_COLOR)
     private var positions: [SIMD3<Float>]
     private var motions: [Motion?]
@@ -58,6 +59,7 @@ final class LudoScene {
         for color in 0..<colors {
             for _ in 0..<pawns { palette.add(board.pieceMesh(color: Int32(color))) }
         }
+        palette.add(board.ringMesh())
         palette.add(dice.dieShadowMesh())
         palette.add(dice.dieMesh())
         let (descriptors, material) = palette.finish()
@@ -74,7 +76,14 @@ final class LudoScene {
             }
             byColor.append(row)
         }
-        let shadowIndex = 1 + colors * pawns
+        let ringIndex = 1 + colors * pawns
+        for _ in 0..<pawns {
+            let ring = ModelEntity(mesh: resources[ringIndex], materials: [material])
+            ring.isEnabled = false
+            rings.append(ring)
+            anchor.addChild(ring)
+        }
+        let shadowIndex = ringIndex + 1
         dieShadow = ModelEntity(mesh: resources[shadowIndex], materials: [material])
         die = ModelEntity(mesh: resources[shadowIndex + 1], materials: [material])
         anchor.addChild(dieShadow)
@@ -301,8 +310,8 @@ final class LudoScene {
     }
 
     /**
-     Puts `color`'s yard at the bottom-right of the view (next to the die). Each player can
-     see a different side; pass-and-play keeps seat 0's colour there.
+     Puts `color`'s yard at the bottom-left of the view. Each player can see a different
+     side; pass-and-play keeps seat 0's colour there.
      */
     func setViewColor(_ color: Int) {
         let colors = Int(LudoGame.shared.COLORS)
@@ -359,6 +368,19 @@ final class LudoScene {
         guard viewFrame.width > 0, tanHalf > 0 else { return .zero }
         let inView = project(positions[index(seat, pawn)], tanV: tanHalf, size: viewFrame.size)
         return CGPoint(x: viewFrame.minX + inView.x, y: viewFrame.minY + inView.y)
+    }
+
+    /// Gold rings on the board under `spots` (token world positions). Empty hides them all.
+    func showPickRings(_ spots: [SIMD3<Float>]) {
+        for (i, ring) in rings.enumerated() {
+            if i < spots.count {
+                let p = spots[i]
+                ring.position = SIMD3(p.x, board.TOP, p.z)
+                ring.isEnabled = true
+            } else {
+                ring.isEnabled = false
+            }
+        }
     }
 
     /// Moves `seat`'s `pawn` from where it is along `path` in `seconds`, at an even speed,

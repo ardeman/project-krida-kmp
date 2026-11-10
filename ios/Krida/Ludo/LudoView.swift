@@ -67,6 +67,7 @@ final class LudoGameModel: ObservableObject {
         lifetime.stop()
         table.onUpdate = nil
         scene.onDieBounce = nil
+        scene.showPickRings([])
         scene.holdDie(false)
         scene.dieReady = false
         queue.removeAll()
@@ -90,7 +91,7 @@ final class LudoGameModel: ObservableObject {
     }
 
     private func placeAll(_ s: LudoState) {
-        // Your colour (or seat 0 when passing the phone) sits bottom-right next to the die.
+        // Your colour (or seat 0 when passing the phone) sits bottom-left.
         let viewSeat = table.mySeat ?? 0
         let clamped = min(max(viewSeat, 0), s.tokens.count - 1)
         scene.setViewColor(Int(s.color(seat: Int32(clamped))))
@@ -151,12 +152,15 @@ final class LudoGameModel: ObservableObject {
         _ = table.movePawn(seat: turn, pawn: pawn)
     }
 
-    /// Zoom onto the tokens the player may tap; ease back out when pick ends.
+    /// Gold rings under legal tokens; zoom onto them; ease back out when pick ends.
     func syncWatch() {
         guard !animating else { return }
         if canPick, !legal.isEmpty {
-            scene.watch(legal.map { spot(state, turn, $0) })
+            let spots = legal.map { spot(state, turn, $0) }
+            scene.showPickRings(spots)
+            scene.watch(spots)
         } else {
+            scene.showPickRings([])
             scene.watch(nil)
         }
     }
@@ -169,7 +173,7 @@ final class LudoGameModel: ObservableObject {
     /// Pick the nearest legal token under `point` (screen / named space coords).
     func tapToken(at point: CGPoint) {
         guard canPick else { return }
-        let reach: CGFloat = 48
+        let reach: CGFloat = 72
         let hit = legal
             .map { pawn in (pawn, scene.tokenOnScreen(turn, pawn)) }
             .min { a, b in
@@ -265,6 +269,7 @@ final class LudoGameModel: ObservableObject {
             }
             let next = update.state
             if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
+                scene.showPickRings([])
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
                 watchDie()
                 let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)

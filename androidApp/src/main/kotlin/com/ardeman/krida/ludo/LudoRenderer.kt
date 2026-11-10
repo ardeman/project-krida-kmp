@@ -21,12 +21,15 @@ import kotlin.math.atan
 import kotlin.math.min
 import kotlin.math.tan
 
-/** Board plus four tokens per colour and a die; tokens are [pieceName]. */
+/** Board plus four tokens per colour, pick rings and a die; tokens are [pieceName]. */
 object LudoGlb {
     fun pieceName(color: Int, pawn: Int) = "piece${color}_$pawn"
+    fun ringName(i: Int) = "ring$i"
     const val DIE = "die"
     const val DIE_SHADOW = "dieShadow"
     const val TOKENS = LudoGame.COLORS * LudoGame.PAWNS
+    /** One ring per pawn a seat may need to pick among. */
+    const val RINGS = LudoGame.PAWNS
 
     fun build(): ByteBuffer {
         val glb = GlbWriter()
@@ -34,6 +37,8 @@ object LudoGlb {
         for (color in 0 until LudoGame.COLORS) for (pawn in 0 until LudoGame.PAWNS) {
             glb.node(pieceName(color, pawn), glb.mesh(LudoBoard.pieceMesh(color)))
         }
+        val ring = glb.mesh(LudoBoard.ringMesh())
+        for (i in 0 until RINGS) glb.node(ringName(i), ring)
         // Same dadu as ular tangga so both games match the brand die.
         glb.node(DIE_SHADOW, glb.mesh(UlarTanggaBoard.dieShadowMesh()))
         glb.node(DIE, glb.mesh(UlarTanggaBoard.dieMesh()))
@@ -114,19 +119,25 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     private val entities = Array(LudoGame.COLORS) { color ->
         IntArray(LudoGame.PAWNS) { pawn -> entity(LudoGlb.pieceName(color, pawn)) }
     }
+    private val ringEntities = IntArray(LudoGlb.RINGS) { entity(LudoGlb.ringName(it)) }
+    private var shownRings = 0
     private val position = Array(LudoGlb.TOKENS) { FloatArray(3) }
     private val motions = arrayOfNulls<Motion>(LudoGlb.TOKENS)
     private var seatColors: List<Int> = emptyList()
-    /** Colour whose yard sits bottom-right next to the die (orbits the camera). */
+    /** Colour whose yard sits bottom-left (orbits the camera). */
     private var viewColor = LudoBoard.VIEW_HOME_COLOR
+
+    init {
+        ringEntities.forEach { show(it, false) }
+    }
 
     private fun index(seat: Int, pawn: Int) = seat * LudoGame.PAWNS + pawn
 
     private fun eye(): FloatArray = LudoBoard.cameraEyeFor(viewColor)
 
     /**
-     * Puts [color]'s yard at the bottom-right of the view (next to the die). Each player can
-     * see a different side; pass-and-play keeps seat 0's colour there.
+     * Puts [color]'s yard at the bottom-left of the view. Each player can see a different
+     * side; pass-and-play keeps seat 0's colour there.
      */
     fun setViewColor(color: Int) {
         val next = ((color % LudoGame.COLORS) + LudoGame.COLORS) % LudoGame.COLORS
@@ -159,10 +170,38 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         invalidate()
     }
 
-    /** Screen pixel of [seat]'s [pawn] (origin top-left of the view). */
+    /**
+     * Screen pixel of [seat]'s [pawn] (origin top-left of the view). Uses the same eye / FOV /
+     * shift math as [computeView], so taps stay lined up while the camera is zoomed in.
+     */
     fun tokenOnScreen(seat: Int, pawn: Int): FloatArray {
         val p = position[index(seat, pawn)]
-        return project(p[0], p[1], p[2])
+        return worldToScreen(p[0], p[1], p[2])
+    }
+
+    /**
+     * Gold rings on the board under [spots] (token world positions). Empty hides them all.
+     * At most [LudoGlb.RINGS] rings are shown.
+     */
+    fun showPickRings(spots: List<FloatArray>) {
+        val n = min(spots.size, ringEntities.size)
+        for (i in ringEntities.indices) {
+            if (i < n) {
+                val p = spots[i]
+                setTransform(
+                    ringEntities[i],
+                    floatArrayOf(
+                        1f, 0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f, 0f,
+                        p[0], LudoBoard.TOP, p[2], 1f,
+                    ),
+                )
+                if (i >= shownRings) show(ringEntities[i], true)
+            } else if (i < shownRings) {
+                show(ringEntities[i], false)
+            }
+        }
+        shownRings = n
+        invalidate()
     }
 
     fun move(seat: Int, pawn: Int, path: List<FloatArray>, seconds: Float, hop: Float = 0f) {
@@ -588,6 +627,35 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         // shiftX/shiftY are in NDC (2 across the view); Filament's shift is in whole views.
         camera.setShift(shiftX / 2, shiftY / 2)
         updateHome()
+    }
+
+    /**
+     * World point → screen pixels with the live FOV and shift (same basis as [computeView]).
+     */
+    private fun worldToScreen(x: Float, y: Float, z: Float): FloatArray {
+        if (width <= 1 || height <= 1) return floatArrayOf(0f, 0f)
+        val base = LudoBoard.CAMERA_VERTICAL_FOV_DEGREES
+        val tanBase = tan(base * PI.toFloat() / 360f)
+        val aspect = width.toFloat() / height
+        val eye = eye()
+        val at = LudoBoard.cameraTarget
+        val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+        val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+        val up = cross(right, fwd)
+        val dx = x - eye[0]; val dy = y - eye[1]; val dz = z - eye[2]
+        val depth = dx * fwd[0] + dy * fwd[1] + dz * fwd[2]
+        if (depth <= 0.001f) return floatArrayOf(0f, 0f)
+        val nx = (dx * right[0] + dy * right[1] + dz * right[2]) / (depth * tanBase * aspect)
+        val ny = (dx * up[0] + dy * up[1] + dz * up[2]) / (depth * tanBase)
+        val cx = width / 2f
+        val cy = height / 2f
+        val px = cx * (1 + nx)
+        val py = cy * (1 - ny)
+        val k = tanBase / tan(fovDegrees * PI.toFloat() / 360f)
+        // shiftX/Y match [computeView]'s NDC return (dx*2/width, -dy*2/height).
+        val sx = shiftX.toFloat() * width / 2f
+        val sy = -shiftY.toFloat() * height / 2f
+        return floatArrayOf(cx + (px - cx) * k + sx, cy + (py - cy) * k + sy)
     }
 
     /**
