@@ -1,0 +1,415 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1812" height="1900" viewBox="0 0 1812 1900">
+<rect width="1812" height="1900" fill="#191512"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Ludo / Light</text>
+<defs><radialGradient id="h00" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,52)"><rect width="874" height="402" rx="12" fill="url(#h00)"/>
+<rect x="24" y="70" width="300" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="44" y="90" width="260" height="150" rx="16" fill="#3D6EB5"/>
+<rect x="74" y="118" width="40" height="40" rx="8" fill="#D6453D"/>
+<rect x="122" y="118" width="40" height="40" rx="8" fill="#2F6FD1"/>
+<rect x="74" y="166" width="40" height="40" rx="8" fill="#3E9A4F"/>
+<rect x="122" y="166" width="40" height="40" rx="8" fill="#F0B429"/>
+<text x="174" y="268" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Ludo</text>
+<text x="174" y="293" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">2–4 players</text>
+<text x="174" y="316" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Race your four tokens home.</text>
+<circle cx="54" cy="220" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="54" y="228" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<circle cx="294" cy="220" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="294" y="228" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">›</text>
+<rect x="340" y="70" width="510" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="358" y="100" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Play on</text>
+<rect x="358" y="110" width="150" height="40" rx="12" fill="#A65A26"/>
+<text x="433" y="136" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">This phone</text>
+<rect x="516" y="110" width="150" height="40" rx="12" fill="#F6E6D3"/>
+<text x="591" y="136" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Nearby</text>
+<rect x="674" y="110" width="150" height="40" rx="12" fill="#F6E6D3"/>
+<text x="749" y="136" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Online</text>
+<text x="358" y="175" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Players</text>
+<rect x="358" y="186" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="386" cy="208" r="10" fill="#D6453D"/>
+<text x="386" y="234" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">You</text>
+<rect x="424" y="186" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#2F6FD1" stroke-width="2"/>
+<circle cx="452" cy="208" r="10" fill="#2F6FD1"/>
+<text x="452" y="234" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">P</text>
+<rect x="490" y="186" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#3E9A4F" stroke-width="2"/>
+<circle cx="518" cy="208" r="10" fill="#3E9A4F"/>
+<text x="518" y="234" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="556" y="186" width="56" height="56" rx="12" fill="none" stroke="#8A7464" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="584" y="220" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle">+</text>
+<text x="358" y="268" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Rules</text>
+<rect x="358" y="278" width="112" height="36" rx="12" fill="#F6E6D3" stroke="#A65A26" stroke-width="1.5"/>
+<text x="414" y="302" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">6 to enter</text>
+<rect x="478" y="278" width="112" height="36" rx="12" fill="#F6E6D3" stroke="#A65A26" stroke-width="1.5"/>
+<text x="534" y="302" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">6 again</text>
+<rect x="598" y="278" width="112" height="36" rx="12" fill="#F6E6D3" stroke="#A65A26" stroke-width="1.5"/>
+<text x="654" y="302" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Capture again</text>
+<rect x="718" y="278" width="112" height="36" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="774" y="302" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">First wins</text>
+<text x="358" y="340" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">You, a friend and a computer</text>
+<rect x="700" y="312" width="130" height="44" rx="14" fill="#A65A26"/>
+<text x="765" y="340" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Start</text>
+</g>
+<text x="922" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Ludo / Dark</text>
+<defs><radialGradient id="h01" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(922,52)"><rect width="874" height="402" rx="12" fill="url(#h01)"/>
+<rect x="24" y="70" width="300" height="300" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="44" y="90" width="260" height="150" rx="16" fill="#3D6EB5"/>
+<rect x="74" y="118" width="40" height="40" rx="8" fill="#D6453D"/>
+<rect x="122" y="118" width="40" height="40" rx="8" fill="#2F6FD1"/>
+<rect x="74" y="166" width="40" height="40" rx="8" fill="#3E9A4F"/>
+<rect x="122" y="166" width="40" height="40" rx="8" fill="#F0B429"/>
+<text x="174" y="268" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Ludo</text>
+<text x="174" y="293" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">2–4 players</text>
+<text x="174" y="316" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Race your four tokens home.</text>
+<circle cx="54" cy="220" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="54" y="228" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<circle cx="294" cy="220" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="294" y="228" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">›</text>
+<rect x="340" y="70" width="510" height="300" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="358" y="100" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Play on</text>
+<rect x="358" y="110" width="150" height="40" rx="12" fill="#C9783A"/>
+<text x="433" y="136" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">This phone</text>
+<rect x="516" y="110" width="150" height="40" rx="12" fill="#3A2C20"/>
+<text x="591" y="136" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Nearby</text>
+<rect x="674" y="110" width="150" height="40" rx="12" fill="#3A2C20"/>
+<text x="749" y="136" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Online</text>
+<text x="358" y="175" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Players</text>
+<rect x="358" y="186" width="56" height="56" rx="12" fill="#3A2C20" stroke="#D6453D" stroke-width="2"/>
+<circle cx="386" cy="208" r="10" fill="#D6453D"/>
+<text x="386" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">You</text>
+<rect x="424" y="186" width="56" height="56" rx="12" fill="#3A2C20" stroke="#2F6FD1" stroke-width="2"/>
+<circle cx="452" cy="208" r="10" fill="#2F6FD1"/>
+<text x="452" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">P</text>
+<rect x="490" y="186" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3E9A4F" stroke-width="2"/>
+<circle cx="518" cy="208" r="10" fill="#3E9A4F"/>
+<text x="518" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="556" y="186" width="56" height="56" rx="12" fill="none" stroke="#6A5A4C" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="584" y="220" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle">+</text>
+<text x="358" y="268" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Rules</text>
+<rect x="358" y="278" width="112" height="36" rx="12" fill="#3A2C20" stroke="#C9783A" stroke-width="1.5"/>
+<text x="414" y="302" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">6 to enter</text>
+<rect x="478" y="278" width="112" height="36" rx="12" fill="#3A2C20" stroke="#C9783A" stroke-width="1.5"/>
+<text x="534" y="302" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">6 again</text>
+<rect x="598" y="278" width="112" height="36" rx="12" fill="#3A2C20" stroke="#C9783A" stroke-width="1.5"/>
+<text x="654" y="302" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Capture again</text>
+<rect x="718" y="278" width="112" height="36" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="774" y="302" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">First wins</text>
+<text x="358" y="340" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">You, a friend and a computer</text>
+<rect x="700" y="312" width="130" height="44" rx="14" fill="#C9783A"/>
+<text x="765" y="340" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Start</text>
+</g>
+<text x="16" y="500" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Game · Your turn · roll / Light</text>
+<defs><radialGradient id="g10roll" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,514)"><rect width="874" height="402" rx="12" fill="url(#g10roll)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ludo</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Ayu</text>
+<rect x="24" y="150" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="56" cy="174" r="12" fill="#3E9A4F"/>
+<text x="56" y="202" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="304.0" y="178.0" width="252.0" height="84.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="388.0" y="94.0" width="84.0" height="252.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="315.76" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="335.08" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="509.8" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="509.8" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="315.76" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="335.08" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="409.84" y="199.84" width="40.32" height="40.32" rx="5.04" fill="#8F552A"/>
+<circle cx="421.6" cy="324.16" r="8.064" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="463.6" cy="324.16" r="8.064" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="349.36" cy="304.0" r="7.056" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<circle cx="790" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="790" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="734" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<rect x="760" y="150" width="72" height="72" rx="14" fill="#FFF7EC" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="778" cy="168" r="5" fill="#8F552A"/>
+<circle cx="814" cy="168" r="5" fill="#8F552A"/>
+<circle cx="778" cy="186" r="5" fill="#8F552A"/>
+<circle cx="814" cy="186" r="5" fill="#8F552A"/>
+<circle cx="778" cy="204" r="5" fill="#8F552A"/>
+<circle cx="814" cy="204" r="5" fill="#8F552A"/>
+<text x="796" y="250" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Your turn</text>
+<text x="796" y="272" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Tap the die</text>
+</g>
+<text x="922" y="500" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Game · Your turn · roll / Dark</text>
+<defs><radialGradient id="g11roll" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(922,514)"><rect width="874" height="402" rx="12" fill="url(#g11roll)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ludo</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#3A2C20" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Ayu</text>
+<rect x="24" y="150" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="56" cy="174" r="12" fill="#3E9A4F"/>
+<text x="56" y="202" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="304.0" y="178.0" width="252.0" height="84.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="388.0" y="94.0" width="84.0" height="252.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="315.76" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="335.08" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="509.8" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="509.8" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="315.76" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="335.08" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="409.84" y="199.84" width="40.32" height="40.32" rx="5.04" fill="#8F552A"/>
+<circle cx="421.6" cy="324.16" r="8.064" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="463.6" cy="324.16" r="8.064" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="349.36" cy="304.0" r="7.056" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<circle cx="790" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="790" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="734" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<rect x="760" y="150" width="72" height="72" rx="14" fill="#FFF7EC" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="778" cy="168" r="5" fill="#8F552A"/>
+<circle cx="814" cy="168" r="5" fill="#8F552A"/>
+<circle cx="778" cy="186" r="5" fill="#8F552A"/>
+<circle cx="814" cy="186" r="5" fill="#8F552A"/>
+<circle cx="778" cy="204" r="5" fill="#8F552A"/>
+<circle cx="814" cy="204" r="5" fill="#8F552A"/>
+<text x="796" y="250" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Your turn</text>
+<text x="796" y="272" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Tap the die</text>
+</g>
+<text x="16" y="962" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Game · Pick a token / Light</text>
+<defs><radialGradient id="g20pick" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,976)"><rect width="874" height="402" rx="12" fill="url(#g20pick)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ludo</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Ayu</text>
+<rect x="24" y="150" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="56" cy="174" r="12" fill="#3E9A4F"/>
+<text x="56" y="202" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="304.0" y="178.0" width="252.0" height="84.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="388.0" y="94.0" width="84.0" height="252.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="315.76" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="335.08" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="509.8" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="509.8" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="315.76" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="335.08" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="409.84" y="199.84" width="40.32" height="40.32" rx="5.04" fill="#8F552A"/>
+<circle cx="421.6" cy="324.16" r="8.064" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="463.6" cy="324.16" r="8.064" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="349.36" cy="304.0" r="7.056" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<circle cx="421.6" cy="324.16" r="13.104000000000001" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<circle cx="349.36" cy="304.0" r="12.096" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<circle cx="790" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="790" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="734" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<rect x="760" y="150" width="72" height="72" rx="14" fill="#FFF7EC" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="778" cy="168" r="5" fill="#8F552A"/>
+<circle cx="814" cy="168" r="5" fill="#8F552A"/>
+<circle cx="778" cy="186" r="5" fill="#8F552A"/>
+<circle cx="814" cy="186" r="5" fill="#8F552A"/>
+<circle cx="778" cy="204" r="5" fill="#8F552A"/>
+<circle cx="814" cy="204" r="5" fill="#8F552A"/>
+<rect x="730" y="248" width="132" height="34" rx="12" fill="#F6E6D3"/>
+<text x="796" y="271" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Rolled 6</text>
+<text x="796" y="306" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="middle">Tap a glowing token</text>
+</g>
+<text x="922" y="962" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Game · Pick a token / Dark</text>
+<defs><radialGradient id="g21pick" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(922,976)"><rect width="874" height="402" rx="12" fill="url(#g21pick)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900" text-anchor="start">Ludo</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#3A2C20" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Ayu</text>
+<rect x="24" y="150" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="56" cy="174" r="12" fill="#3E9A4F"/>
+<text x="56" y="202" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="304.0" y="178.0" width="252.0" height="84.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="388.0" y="94.0" width="84.0" height="252.0" rx="6.720000000000001" fill="#F3E2C8"/>
+<rect x="315.76" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="335.08" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="280.48" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="509.8" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="299.8" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="314.92" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="490.48" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="509.8" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="509.8" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="524.9200000000001" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="315.76" y="105.75999999999998" width="53.760000000000005" height="53.760000000000005" rx="8.4" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="335.08" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="125.07999999999998" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="335.08" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="350.2" cy="140.2" r="5.376" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="409.84" y="199.84" width="40.32" height="40.32" rx="5.04" fill="#8F552A"/>
+<circle cx="421.6" cy="324.16" r="8.064" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="463.6" cy="324.16" r="8.064" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="349.36" cy="304.0" r="7.056" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<circle cx="421.6" cy="324.16" r="13.104000000000001" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<circle cx="349.36" cy="304.0" r="12.096" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<circle cx="790" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="790" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="734" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<rect x="760" y="150" width="72" height="72" rx="14" fill="#FFF7EC" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="778" cy="168" r="5" fill="#8F552A"/>
+<circle cx="814" cy="168" r="5" fill="#8F552A"/>
+<circle cx="778" cy="186" r="5" fill="#8F552A"/>
+<circle cx="814" cy="186" r="5" fill="#8F552A"/>
+<circle cx="778" cy="204" r="5" fill="#8F552A"/>
+<circle cx="814" cy="204" r="5" fill="#8F552A"/>
+<rect x="730" y="248" width="132" height="34" rx="12" fill="#3A2C20"/>
+<text x="796" y="271" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Rolled 6</text>
+<text x="796" y="306" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="middle">Tap a glowing token</text>
+</g>
+<text x="16" y="1424" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Result / Light</text>
+<defs><radialGradient id="r30" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<g transform="translate(16,1438)"><rect width="874" height="402" rx="12" fill="url(#r30)"/>
+<rect x="342.5" y="168.5" width="189.0" height="63.0" rx="5.04" fill="#F3E2C8"/>
+<rect x="405.5" y="105.5" width="63.0" height="189.0" rx="5.04" fill="#F3E2C8"/>
+<rect x="351.32" y="245.36" width="40.32" height="40.32" rx="6.3" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="365.81" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="365.81" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="482.36" y="245.36" width="40.32" height="40.32" rx="6.3" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="496.85" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="496.85" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="482.36" y="114.32" width="40.32" height="40.32" rx="6.3" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="496.85" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="496.85" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="351.32" y="114.32" width="40.32" height="40.32" rx="6.3" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="365.81" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="365.81" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="421.88" y="184.88" width="30.24" height="30.24" rx="3.78" fill="#8F552A"/>
+<circle cx="430.7" cy="278.12" r="6.048" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="462.2" cy="278.12" r="6.048" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="376.52" cy="263.0" r="5.292" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<rect x="0" y="0" width="874" height="402" fill="#000000" fill-opacity="0.28"/>
+<rect x="197" y="70" width="480" height="270" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="437" y="115" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">You win!</text>
+<text x="437" y="145" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">All four tokens home.</text>
+<circle cx="280" cy="175" r="12" fill="#D6453D"/>
+<text x="305" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">1. You</text>
+<circle cx="280" cy="213" r="12" fill="#2F6FD1"/>
+<text x="305" y="218" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">2. Ayu</text>
+<circle cx="280" cy="251" r="12" fill="#3E9A4F"/>
+<text x="305" y="256" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">3. Bot</text>
+<rect x="221" y="285" width="200" height="44" rx="14" fill="#FFFFFF" stroke="#5A4537" stroke-width="1.5"/>
+<text x="321" y="313" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">To menu</text>
+<rect x="453" y="285" width="200" height="44" rx="14" fill="#A65A26"/>
+<text x="553" y="313" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play again</text>
+</g>
+<text x="922" y="1424" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Result / Dark</text>
+<defs><radialGradient id="r31" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<g transform="translate(922,1438)"><rect width="874" height="402" rx="12" fill="url(#r31)"/>
+<rect x="342.5" y="168.5" width="189.0" height="63.0" rx="5.04" fill="#F3E2C8"/>
+<rect x="405.5" y="105.5" width="63.0" height="189.0" rx="5.04" fill="#F3E2C8"/>
+<rect x="351.32" y="245.36" width="40.32" height="40.32" rx="6.3" fill="#D6453D" fill-opacity="0.88"/>
+<circle cx="365.81" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="365.81" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="482.36" y="245.36" width="40.32" height="40.32" rx="6.3" fill="#2F6FD1" fill-opacity="0.88"/>
+<circle cx="496.85" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="259.85" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="496.85" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="271.19" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="482.36" y="114.32" width="40.32" height="40.32" rx="6.3" fill="#3E9A4F" fill-opacity="0.88"/>
+<circle cx="496.85" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="496.85" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="508.19" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="351.32" y="114.32" width="40.32" height="40.32" rx="6.3" fill="#F0B429" fill-opacity="0.88"/>
+<circle cx="365.81" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="128.81" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="365.81" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<circle cx="377.15" cy="140.15" r="4.032" fill="#FFFFFF" fill-opacity="0.92"/>
+<rect x="421.88" y="184.88" width="30.24" height="30.24" rx="3.78" fill="#8F552A"/>
+<circle cx="430.7" cy="278.12" r="6.048" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="462.2" cy="278.12" r="6.048" fill="#2F6FD1" stroke="#FFFFFF" stroke-width="1.5"/>
+<circle cx="376.52" cy="263.0" r="5.292" fill="#D6453D" stroke="#FFFFFF" stroke-width="1.2"/>
+<rect x="0" y="0" width="874" height="402" fill="#000000" fill-opacity="0.28"/>
+<rect x="197" y="70" width="480" height="270" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="437" y="115" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">You win!</text>
+<text x="437" y="145" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">All four tokens home.</text>
+<circle cx="280" cy="175" r="12" fill="#D6453D"/>
+<text x="305" y="180" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">1. You</text>
+<circle cx="280" cy="213" r="12" fill="#2F6FD1"/>
+<text x="305" y="218" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">2. Ayu</text>
+<circle cx="280" cy="251" r="12" fill="#3E9A4F"/>
+<text x="305" y="256" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">3. Bot</text>
+<rect x="221" y="285" width="200" height="44" rx="14" fill="#2A221C" stroke="#B7A593" stroke-width="1.5"/>
+<text x="321" y="313" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">To menu</text>
+<rect x="453" y="285" width="200" height="44" rx="14" fill="#C9783A"/>
+<text x="553" y="313" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play again</text>
+</g>
+</svg>

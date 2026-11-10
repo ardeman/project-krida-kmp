@@ -34,6 +34,9 @@ A change to one side usually needs the same change in the file on the same row.
 | Ular tangga screen | `ulartangga/UlarTanggaScreen.kt` | `UlarTangga/UlarTanggaView.swift` |
 | Ular tangga 3D | `ulartangga/UlarTanggaRenderer.kt` | `UlarTangga/UlarTanggaScene.swift`, `UlarTanggaPreview.swift` |
 | Ular tangga table + settings | `ulartangga/UlarTanggaTable.kt`, `UlarTanggaSettings.kt` | `UlarTangga/UlarTanggaTable.swift` |
+| Ludo screen | `ludo/LudoScreen.kt` | `Ludo/LudoView.swift` |
+| Ludo 3D | `ludo/LudoRenderer.kt` | `Ludo/LudoScene.swift`, `LudoPreview.swift` |
+| Ludo table + settings | `ludo/LudoTable.kt`, `LudoSettings.kt` | `Ludo/LudoTable.swift` |
 | Room state (nearby and online) | `nearby/NearbyRoom.kt` | `Nearby/NearbyRoom.swift` |
 | Lobby, join, QR, connecting screens | `nearby/NearbyScreens.kt` | `Nearby/NearbyScreens.swift` |
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |

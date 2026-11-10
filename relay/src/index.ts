@@ -57,7 +57,7 @@ export default {
       const game = matchRoomsMatch[1];
       const playerCount = parseInt(matchRoomsMatch[2], 10);
       if (url.searchParams.get("flow") === "group") {
-        if (!(game === "congklak" && playerCount === 2 || game === "ular_tangga" && playerCount >= 2 && playerCount <= 4)) {
+        if (!(game === "congklak" && playerCount === 2 || (game === "ular_tangga" || game === "ludo") && playerCount >= 2 && playerCount <= 4)) {
           return new Response("invalid game or player count\n", { status: 400 });
         }
         return env.GROUP_MATCHMAKERS.get(env.GROUP_MATCHMAKERS.idFromName(`${game}/${playerCount}`)).fetch(request);
@@ -153,7 +153,7 @@ export class Room implements DurableObject {
     if (stored === undefined) {
       const game = url.searchParams.get("game");
       const seats = Number(url.searchParams.get("seats"));
-      if (game !== null && !(game === "congklak" && seats === 2 || game === "ular_tangga" && seats >= 2 && seats <= 4 && Number.isInteger(seats))) {
+      if (game !== null && !(game === "congklak" && seats === 2 || (game === "ular_tangga" || game === "ludo") && seats >= 2 && seats <= 4 && Number.isInteger(seats))) {
         return rejectSocket(CLOSE.badRequest, "bad room setup");
       }
       await this.ctx.storage.put("hostKey", key);

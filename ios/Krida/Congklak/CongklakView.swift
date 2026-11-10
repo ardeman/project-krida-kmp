@@ -40,6 +40,7 @@ final class CongklakGameModel: ObservableObject {
         seeds = CongklakSeeds(pits: start.pits)
         board.viewSeat = table.mySeat ?? 0
         board.setSeedTargets(seeds.targets())
+        board.onPitsProjected = { [weak self] points in self?.pitPoints = points }
         table.onUpdate = { [weak self] update in
             guard let self, self.lifetime.active else { return }
             self.waiting = false
@@ -145,6 +146,12 @@ final class CongklakGameModel: ObservableObject {
         animating = true
         board.showRings([])
         lifetime.launch("animation") { [self] in
+            defer {
+                // Always ease back out after a sow, even if the animation was cancelled.
+                board.watch(nil)
+                animating = false
+                if lifetime.active { drain() }
+            }
             var sowed = false
             var shot = false
             if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
@@ -152,6 +159,8 @@ final class CongklakGameModel: ObservableObject {
                 let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
                 for step in steps {
                     guard lifetime.active, !Task.isCancelled else { return }
+                    let a = CongklakBoard.shared.pitAnchor(pit: step.pit)
+                    board.watch([SIMD3(a.get(index: 0), a.get(index: 1), a.get(index: 2))])
                     seeds.apply(step: step)
                     push()
                     if !step.pickUp { sounds.play(game.isStore(pit: step.pit) ? .store : .sow) }
@@ -176,11 +185,14 @@ final class CongklakGameModel: ObservableObject {
                 push()
             }
             guard lifetime.active, !Task.isCancelled else { return }
-            if sowed { announce(before: state, after: update.state) }
+            if sowed {
+                announce(before: state, after: update.state)
+                board.watch(nil)
+                do { try await Task.sleep(for: .seconds(0.28)) }
+                catch { return }
+            }
             state = update.state
             hint = nil
-            animating = false
-            drain()
         }
     }
 

@@ -3956,6 +3956,186 @@
           }
         }
       }
+    },
+    "%@ wins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "%@ wins" } },
+        "id": { "stringUnit": { "state": "translated", "value": "%@ menang" } }
+      }
+    },
+    "6 again": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 again" } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 lagi" } }
+      }
+    },
+    "6 again off: a 6 ends your turn like any roll.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 again off: a 6 ends your turn like any roll." } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 lagi mati: dapat 6, giliran tetap pindah." } }
+      }
+    },
+    "6 again: roll a 6 and you roll once more.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 again: roll a 6 and you roll once more." } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 lagi: dapat 6, lempar dadu sekali lagi." } }
+      }
+    },
+    "6 to enter": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 to enter" } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk" } }
+      }
+    },
+    "6 to enter off: any roll can leave the yard and walk.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 to enter off: any roll can leave the yard and walk." } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk mati: dadu berapa pun bisa keluar dan jalan." } }
+      }
+    },
+    "6 to enter: a token leaves the yard only with a 6.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "6 to enter: a token leaves the yard only with a 6." } },
+        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk: bidak keluar dari rumah hanya dengan dadu 6." } }
+      }
+    },
+    "A 6 leaves the yard onto your colour's start square.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "A 6 leaves the yard onto your colour's start square." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Dadu 6 mengeluarkan bidak ke kotak start warnamu." } }
+      }
+    },
+    "A capture rolls again.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "A capture rolls again." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Setelah menangkap, lempar lagi." } }
+      }
+    },
+    "All four tokens home.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "All four tokens home." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Keempat bidak sudah di rumah." } }
+      }
+    },
+    "Any roll can leave the yard and walk that many steps.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Any roll can leave the yard and walk that many steps." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Dadu berapa pun bisa keluar dari rumah dan jalan sejauh itu." } }
+      }
+    },
+    "Capture · roll again": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Capture · roll again" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tangkap · lempar lagi" } }
+      }
+    },
+    "Capture again": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Capture again" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi" } }
+      }
+    },
+    "Capture again off: a capture ends your turn.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Capture again off: a capture ends your turn." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi mati: setelah menangkap, giliran pindah." } }
+      }
+    },
+    "Capture again: sending an opponent home grants another roll.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Capture again: sending an opponent home grants another roll." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi: mengirim lawan ke rumah memberi lemparan lagi." } }
+      }
+    },
+    "First wins": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "First wins" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai" } }
+      }
+    },
+    "First wins off: play goes on until one player is left.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "First wins off: play goes on until one player is left." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai mati: main terus sampai tinggal satu pemain." } }
+      }
+    },
+    "First wins: the game ends when the first player gets all four home.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "First wins: the game ends when the first player gets all four home." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai: permainan berakhir saat pemain pertama membawa semua bidak pulang." } }
+      }
+    },
+    "Landing on a lone opponent sends it to the yard.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Landing on a lone opponent sends it to the yard." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Mendarat di bidak lawan sendirian mengirimnya ke rumah." } }
+      }
+    },
+    "Ludo": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Ludo" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Ludo" } }
+      }
+    },
+    "Players who finish leave the board in order; play goes on until one is left.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Players who finish leave the board in order; play goes on until one is left." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Yang selesai keluar berurutan; permainan lanjut sampai tersisa satu pemain." } }
+      }
+    },
+    "Race your four tokens home.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Race your four tokens home." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Pacu empat bidakmu ke rumah." } }
+      }
+    },
+    "Tap a token to move": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Tap a token to move" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Ketuk bidak yang mau jalan" } }
+      }
+    },
+    "The first player to get all four home wins and the game ends.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "The first player to get all four home wins and the game ends." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Yang pertama membawa keempat bidak pulang menang dan permainan selesai." } }
+      }
+    },
+    "Three 6s in a row burn the third roll and end the turn.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Three 6s in a row burn the third roll and end the turn." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tiga kali 6 beruntun membatalkan lemparan ketiga dan mengakhiri giliran." } }
+      }
+    },
+    "Three sixes · turn ends": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Three sixes · turn ends" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tiga kali 6 · giliran habis" } }
+      }
+    },
+    "Token %1$d": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Token %1$d" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Bidak %1$d" } }
+      }
+    },
+    "Tokens walk clockwise around the board, then up your home stretch.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Tokens walk clockwise around the board, then up your home stretch." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Bidak jalan searah jarum jam, lalu naik jalur rumahmu." } }
+      }
+    },
+    "Two of your tokens on one square are safe; others cannot land there.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Two of your tokens on one square are safe; others cannot land there." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Dua bidakmu di kotak yang sama aman; lawan tidak bisa mendarat di situ." } }
+      }
+    },
+    "You must finish exactly; a roll that goes past stays put.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "You must finish exactly; a roll that goes past stays put." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Harus pas sampai finish; lemparan yang lewat membuat bidak diam." } }
+      }
     }
   },
   "version": "1.0"

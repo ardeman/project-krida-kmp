@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberUpdatedState
@@ -18,6 +19,9 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.util.lerp
+import kotlin.math.absoluteValue
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.rememberCoroutineScope
@@ -101,6 +105,12 @@ import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.ulartangga.UlarTanggaRenderer
 import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
+import com.ardeman.krida.core.games.LudoGame
+import com.ardeman.krida.ludo.LudoHostTable
+import com.ardeman.krida.ludo.LudoPreview
+import com.ardeman.krida.ludo.LudoScreen
+import com.ardeman.krida.ludo.LudoSettings
+import com.ardeman.krida.ludo.LudoTable
 import com.ardeman.krida.ulartangga.UlarTanggaHostTable
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
@@ -156,6 +166,7 @@ class MainActivity : ComponentActivity() {
     private var room by mutableStateOf<NearbyRoom?>(null)
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
+    private var ludoTable by mutableStateOf<LudoTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     /** A string resource under the join screen's code: the scanner failed or read another QR. */
     private var joinError by mutableStateOf<Int?>(null)
@@ -203,6 +214,7 @@ class MainActivity : ComponentActivity() {
         Sounds.english = Language.current(this) == Language.Lang.EN
         CongklakSettings.init(this)
         UlarTanggaSettings.init(this)
+        LudoSettings.init(this)
         LastRoom.init(this)
         // Language and theme changes recreate this activity with its original launch intent.
         // Apply a room link only on the initial launch so leaving it is not undone later.
@@ -224,7 +236,9 @@ class MainActivity : ComponentActivity() {
                 val r = room
                 val table = passAndPlay ?: r?.congklak
                 val ular = ularTable ?: r?.ular
+                val ludo = ludoTable ?: r?.ludo
                 when {
+                    ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null; joining = false })
                     r != null -> Lobby(r)
@@ -233,11 +247,11 @@ class MainActivity : ComponentActivity() {
                         onBack = { creatingOnlineRoom = false },
                         onCreate = { public, seats ->
                             room = NearbyRoom.host(this@MainActivity, myName,
-                                if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
+                                when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
                                 online = true, publicRoom = public, seats = seats)
                             creatingOnlineRoom = false
                         },
-                        options = { GameRoomOptions(quickMatchGame == UlarTanggaGame.id) },
+                        options = { GameRoomOptions(quickMatchGame) },
                     )
                     playingQuickMatch -> PlayOnlineScreen(
                         game = quickMatchGame,
@@ -245,7 +259,7 @@ class MainActivity : ComponentActivity() {
                         onCancel = { playingQuickMatch = false },
                         createHost = { code, humans, bots, onReady ->
                             NearbyRoom.host(this@MainActivity, myName,
-                                if (quickMatchGame == UlarTanggaGame.id) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK,
+                                when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
                                 online = true, code = code, onOnlineReady = onReady, standardRules = true,
                             ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
                         },
@@ -257,11 +271,15 @@ class MainActivity : ComponentActivity() {
                         onComputer = { count ->
                             val you = getString(R.string.bot_you)
                             val computer = getString(R.string.bot_name)
-                            if (quickMatchGame == UlarTanggaGame.id) {
-                                ularTable = UlarTanggaHostTable.local(List(count) { seat ->
+                            when (quickMatchGame) {
+                                UlarTanggaGame.id -> ularTable = UlarTanggaHostTable.local(List(count) { seat ->
                                     LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
                                 })
-                            } else passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
+                                LudoGame.id -> ludoTable = LudoHostTable.local(List(count) { seat ->
+                                    LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
+                                })
+                                else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
+                            }
                             playingQuickMatch = false
                         },
                     )
@@ -478,13 +496,19 @@ class MainActivity : ComponentActivity() {
     private fun PlayCard(game: Game) {
         var place by rememberSaveable { mutableStateOf(Place.PHONE) }
         val ular = game == Game.ULAR_TANGGA
+        val ludo = game == Game.LUDO
+        val multi = ular || ludo
         // A room with other phones, over Bluetooth or the internet.
         val nearby = place != Place.PHONE
         val online = place == Place.ONLINE
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
         val congklak = LocalSeats.decode(congklakSeats, 2, listOf(LocalSeat.PERSON, LocalSeat.PERSON))
-        val seats = if (ular) UlarTanggaSettings.seats else congklak
+        val seats = when {
+            ular -> UlarTanggaSettings.seats
+            ludo -> LudoSettings.seats
+            else -> congklak
+        }
         val computers = seats.count { it == LocalSeat.COMPUTER }
         val people = seats.count { it == LocalSeat.PERSON }
         val colorNames = listOf(R.string.ular_player_red, R.string.ular_player_blue, R.string.ular_player_green, R.string.ular_player_yellow)
@@ -515,28 +539,32 @@ class MainActivity : ComponentActivity() {
             if (!nearby) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
-                    colors = if (ular) seats.indices.map { pawnColor(it) } else listOf(Theme.wood, Theme.seed),
+                    colors = if (multi) seats.indices.map { pawnColor(it) } else listOf(Theme.wood, Theme.seed),
                     // Congklak's first seat is always a person; the second is a person or the computer.
-                    tappable = if (ular) seats.indices.toSet() else setOf(1),
+                    tappable = if (multi) seats.indices.toSet() else setOf(1),
                     onTap = { i ->
-                        if (ular) UlarTanggaSettings.tapSeat(i) else congklakSeats = LocalSeats.encode(LocalSeats.next(congklak, i, allowEmpty = false))
+                        when {
+                            ular -> UlarTanggaSettings.tapSeat(i)
+                            ludo -> LudoSettings.tapSeat(i)
+                            else -> congklakSeats = LocalSeats.encode(LocalSeats.next(congklak, i, allowEmpty = false))
+                        }
                     },
                 )
             }
             // The action row: what this choice means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(if (!ular && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
+            SettingRow(if (!multi && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
-                            online -> Detail(stringResource(if (ular) R.string.ular_detail_online else R.string.online_detail))
-                            nearby -> Detail(stringResource(if (ular) R.string.ular_detail_nearby else R.string.nearby_detail))
-                            !ular && computers > 0 -> LevelPicker(level) { level = it }
-                            !ular -> Detail(stringResource(R.string.mode_pass_detail))
-                            computers == 0 -> Detail(stringResource(R.string.ular_detail_phone))
-                            people == 1 -> Detail(stringResource(R.string.ular_detail_computer))
-                            else -> Detail(stringResource(R.string.ular_detail_mixed))
+                            online -> Detail(stringResource(when { ular -> R.string.ular_detail_online; ludo -> R.string.ludo_detail_online; else -> R.string.online_detail }))
+                            nearby -> Detail(stringResource(when { ular -> R.string.ular_detail_nearby; ludo -> R.string.ludo_detail_nearby; else -> R.string.nearby_detail }))
+                            !multi && computers > 0 -> LevelPicker(level) { level = it }
+                            !multi -> Detail(stringResource(R.string.mode_pass_detail))
+                            computers == 0 -> Detail(stringResource(if (ludo) R.string.ludo_detail_phone else R.string.ular_detail_phone))
+                            people == 1 -> Detail(stringResource(if (ludo) R.string.ludo_detail_computer else R.string.ular_detail_computer))
+                            else -> Detail(stringResource(if (ludo) R.string.ludo_detail_mixed else R.string.ular_detail_mixed))
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -546,7 +574,11 @@ class MainActivity : ComponentActivity() {
                                 onClick = {
                                     if (joinOnline != online) roomCode = ""
                                     joinOnline = online
-                                    quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
+                                    quickMatchGame = when {
+                                        ular -> UlarTanggaGame.id
+                                        ludo -> LudoGame.id
+                                        else -> CongklakGame.id
+                                    }
                                     joining = true
                                 },
                                 modifier = Modifier.weight(1f),
@@ -559,23 +591,34 @@ class MainActivity : ComponentActivity() {
                             onClick = {
                                 when {
                                     online -> {
-                                        quickMatchGame = if (ular) UlarTanggaGame.id else CongklakGame.id
+                                        quickMatchGame = when {
+                                            ular -> UlarTanggaGame.id
+                                            ludo -> LudoGame.id
+                                            else -> CongklakGame.id
+                                        }
                                         creatingOnlineRoom = true
                                     }
                                     nearby -> withBlePermissions {
-                                        room = NearbyRoom.host(this@MainActivity, myName, if (ular) NearbyRoom.Game.ULAR_TANGGA else NearbyRoom.Game.CONGKLAK)
+                                        room = NearbyRoom.host(
+                                            this@MainActivity, myName,
+                                            when {
+                                                ular -> NearbyRoom.Game.ULAR_TANGGA
+                                                ludo -> NearbyRoom.Game.LUDO
+                                                else -> NearbyRoom.Game.CONGKLAK
+                                            },
+                                        )
                                     }
-                                    ular -> {
+                                    multi -> {
                                         var nextComputer = 0
                                         val players = seats.mapIndexedNotNull { i, kind ->
                                             when (kind) {
                                                 LocalSeat.EMPTY -> null
                                                 LocalSeat.COMPUTER -> LocalPlayer(if (computers == 1) computer else computerN[nextComputer++], computer = true, color = i)
-                                                // A lone person is "Kamu"; people passing the phone go by their pawn colour.
                                                 LocalSeat.PERSON -> LocalPlayer(if (people == 1) you else colorNames[i], computer = false, color = i)
                                             }
                                         }
-                                        ularTable = UlarTanggaHostTable.local(players)
+                                        if (ludo) ludoTable = LudoHostTable.local(players)
+                                        else ularTable = UlarTanggaHostTable.local(players)
                                     }
                                     computers > 0 -> passAndPlay = HostTable.vsComputer(you, computer, level, levelName)
                                     else -> passAndPlay = HostTable.passAndPlay(names)
@@ -585,7 +628,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            if (!online) GameRoomOptions(ular)
+            if (!online) GameRoomOptions(game)
             if (permissionDenied && !online) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
@@ -736,36 +779,84 @@ private fun SeatTiles(seats: List<LocalSeat>, colors: List<Color>, tappable: Set
 private enum class Game(val title: Int, val players: Int, val tagline: Int, val face: Color, val edge: Color) {
     CONGKLAK(R.string.congklak_title, R.string.congklak_card_players, R.string.congklak_card_tagline, Theme.wood, Theme.woodShadow),
     ULAR_TANGGA(R.string.ular_title, R.string.ular_card_players, R.string.ular_card_tagline, Color(0xFF4F8A3B), Color(0xFF3B6A2B)),
+    LUDO(R.string.ludo_title, R.string.ludo_card_players, R.string.ludo_card_tagline, Color(0xFF3D6EB5), Color(0xFF2A5085)),
 }
 
 @Composable
-private fun GameRoomOptions(ular: Boolean) {
-    if (ular) SettingRow(stringResource(R.string.play_rules)) {
-        UlarTanggaOptionChips()
-    } else SettingRow(stringResource(R.string.play_capture)) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Segmented(
-                options = listOf(true to stringResource(R.string.capture_after_store), false to stringResource(R.string.capture_anytime)),
-                current = CongklakSettings.tembakAfterStore,
-                label = stringResource(R.string.capture_title),
-                onChange = CongklakSettings::chooseTembakAfterStore,
-                fill = true,
-            )
-            Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.capture_hint_after_store else R.string.capture_hint_anytime))
+private fun GameRoomOptions(game: Any) {
+    val ular = game == Game.ULAR_TANGGA || game == UlarTanggaGame.id
+    val ludo = game == Game.LUDO || game == LudoGame.id
+    when {
+        ular -> SettingRow(stringResource(R.string.play_rules)) { UlarTanggaOptionChips() }
+        ludo -> SettingRow(stringResource(R.string.play_rules)) { LudoOptionChips() }
+        else -> {
+            SettingRow(stringResource(R.string.play_capture)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Segmented(
+                        options = listOf(true to stringResource(R.string.capture_after_store), false to stringResource(R.string.capture_anytime)),
+                        current = CongklakSettings.tembakAfterStore,
+                        label = stringResource(R.string.capture_title),
+                        onChange = CongklakSettings::chooseTembakAfterStore,
+                        fill = true,
+                    )
+                    Hint(stringResource(if (CongklakSettings.tembakAfterStore) R.string.capture_hint_after_store else R.string.capture_hint_anytime))
+                }
+            }
+            SettingRow(stringResource(R.string.play_starter)) {
+                Segmented(
+                    options = listOf(
+                        CongklakStarter.ME to stringResource(R.string.starter_me),
+                        CongklakStarter.OPPONENT to stringResource(R.string.starter_opponent),
+                        CongklakStarter.RANDOM to stringResource(R.string.starter_random),
+                    ),
+                    current = CongklakSettings.starter,
+                    label = stringResource(R.string.starter_title),
+                    onChange = CongklakSettings::chooseStarter,
+                    fill = true,
+                )
+            }
         }
     }
-    if (!ular) SettingRow(stringResource(R.string.play_starter)) {
-        Segmented(
-            options = listOf(
-                CongklakStarter.ME to stringResource(R.string.starter_me),
-                CongklakStarter.OPPONENT to stringResource(R.string.starter_opponent),
-                CongklakStarter.RANDOM to stringResource(R.string.starter_random),
-            ),
-            current = CongklakSettings.starter,
-            label = stringResource(R.string.starter_title),
-            onChange = CongklakSettings::chooseStarter,
-            fill = true,
-        )
+}
+
+/** Ludo's rule options as toggle chips, saved as they change. */
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun LudoOptionChips() {
+    val o = LudoSettings.options
+    val chips = listOf(
+        Triple(R.string.ludo_option_six_enter, o.sixToEnter) { v: Boolean -> o.copy(sixToEnter = v) },
+        Triple(R.string.ludo_option_six_again, o.sixRollsAgain) { v: Boolean -> o.copy(sixRollsAgain = v) },
+        Triple(R.string.ludo_option_capture_again, o.captureRollsAgain) { v: Boolean -> o.copy(captureRollsAgain = v) },
+        Triple(R.string.ludo_option_first_ends, o.firstFinishEnds) { v: Boolean -> o.copy(firstFinishEnds = v) },
+    )
+    val hints = listOf(
+        R.string.ludo_hint_six_enter_on to R.string.ludo_hint_six_enter_off,
+        R.string.ludo_hint_six_again_on to R.string.ludo_hint_six_again_off,
+        R.string.ludo_hint_capture_again_on to R.string.ludo_hint_capture_again_off,
+        R.string.ludo_hint_first_ends_on to R.string.ludo_hint_first_ends_off,
+    )
+    var last by rememberSaveable { mutableStateOf(-1) }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            chips.forEach { (label, on, change) ->
+                val shape = RoundedCornerShape(10.dp)
+                Box(
+                    Modifier.height(34.dp).clip(shape)
+                        .background(if (on) Theme.chip else Theme.surface)
+                        .border(1.5.dp, if (on) Theme.accent else Theme.line, shape)
+                        .toggleable(value = on, role = Role.Checkbox) {
+                            last = chips.indexOfFirst { c -> c.first == label }
+                            LudoSettings.chooseOptions(change(it))
+                        }
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(stringResource(label), style = Theme.font(13, color = if (on) Theme.accent else Theme.muted), maxLines = 1)
+                }
+            }
+        }
+        Hint(stringResource(hints.getOrNull(last)?.let { if (chips[last].second) it.first else it.second } ?: R.string.ludo_hint_tap))
     }
 }
 
@@ -838,8 +929,8 @@ private fun LevelPicker(level: CongklakBot.Level, onChange: (CongklakBot.Level) 
 )
 
 /**
- * The game tile on the home screen, with a snapshot of the real board; the arrows switch to
- * the other game (the play card on the right follows).
+ * The game tile on the home screen, with a snapshot of the real board; the arrows or a swipe
+ * slide to the next game (the play card on the right follows).
  */
 @Composable
 private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onReady: () -> Unit) {
@@ -850,18 +941,36 @@ private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onR
     val pager = rememberPagerState(initialPage = n * 500 + game.ordinal) { n * 1000 }
     val scope = rememberCoroutineScope()
     val pick by rememberUpdatedState(onGame)
+    val slide = tween<Float>(420, easing = FastOutSlowInEasing)
     LaunchedEffect(pager) { snapshotFlow { pager.settledPage }.collect { pick(games[it % n]) } }
-    // Keeps the pager on [game] if it changes from outside.
+    // Keeps the pager on [game] if it changes from outside (smooth, same as a swipe).
     LaunchedEffect(game) {
         val shown = games[pager.settledPage % n]
-        if (shown != game) pager.scrollToPage(pager.settledPage + game.ordinal - shown.ordinal)
+        if (shown != game) {
+            pager.animateScrollToPage(pager.settledPage + game.ordinal - shown.ordinal, animationSpec = slide)
+        }
     }
     fun step(d: Int) {
-        scope.launch { pager.animateScrollToPage(pager.targetPage + d, animationSpec = tween(380, easing = FastOutSlowInEasing)) }
+        scope.launch { pager.animateScrollToPage(pager.targetPage + d, animationSpec = slide) }
     }
     Box(modifier.fillMaxWidth()) {
-        HorizontalPager(pager, Modifier.fillMaxSize(), pageSpacing = 12.dp, beyondViewportPageCount = 1, key = { it }) { page ->
-            GameCardFace(games[page % n], onReady)
+        HorizontalPager(
+            state = pager,
+            modifier = Modifier.fillMaxSize(),
+            pageSpacing = 14.dp,
+            beyondViewportPageCount = 1,
+            flingBehavior = PagerDefaults.flingBehavior(state = pager, snapAnimationSpec = slide),
+            key = { it },
+        ) { page ->
+            val offset = ((pager.currentPage - page) + pager.currentPageOffsetFraction).absoluteValue
+            GameCardFace(games[page % n], onReady, Modifier.graphicsLayer {
+                // Neighbours ease smaller and fade a little while the finger drags.
+                val t = offset.coerceIn(0f, 1f)
+                alpha = lerp(1f, 0.72f, t)
+                val scale = lerp(1f, 0.94f, t)
+                scaleX = scale
+                scaleY = scale
+            })
         }
         // The arrows stay put above the sliding cards, so they're always in the same spot.
         Row(Modifier.align(Alignment.TopEnd).padding(top = 12.dp, end = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -872,10 +981,10 @@ private fun GameCard(game: Game, onGame: (Game) -> Unit, modifier: Modifier, onR
 }
 
 @Composable
-private fun GameCardFace(game: Game, onReady: () -> Unit) {
+private fun GameCardFace(game: Game, onReady: () -> Unit, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(22.dp)
     val cream = Color(0xFFF3DDBE)
-    Box(Modifier.fillMaxSize().background(game.edge, shape)) {
+    Box(modifier.fillMaxSize().background(game.edge, shape)) {
         Column(
             Modifier.fillMaxSize().padding(bottom = 6.dp).background(game.face, shape).padding(start = 16.dp, end = 10.dp, top = 12.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -898,6 +1007,7 @@ private fun GameCardFace(game: Game, onReady: () -> Unit) {
                         frame(pawns + listOf(1, 4, 5, 25, 27).map { UlarTanggaBoard.squareAnchor(it) })
                     }
                 }
+                Game.LUDO -> LudoPreview(preview, onReady = onReady)
             }
             Text(stringResource(game.tagline), style = Theme.font(13, FontWeight.SemiBold, cream), modifier = Modifier.padding(end = 6.dp))
         }

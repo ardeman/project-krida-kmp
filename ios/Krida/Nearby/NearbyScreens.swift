@@ -61,6 +61,7 @@ func placeLine(_ online: Bool) -> Text {
 func gameTitle(_ game: String?) -> Text {
     switch game {
     case UlarTanggaGame.shared.id: Text("Snakes & ladders")
+    case LudoGame.shared.id: Text("Ludo")
     case CongklakGame.shared.id: Text("Congklak")
     default: Text("Join a room")
     }
@@ -200,7 +201,7 @@ struct RoomLobby: View {
             .multilineTextAlignment(.center)
             // "How to play" with the host's options, so a guest knows the rules before the start.
             // Older hosts send none; the game's own Rules button has them then.
-            if room.congklakOptions != nil || room.ularOptions != nil {
+            if room.congklakOptions != nil || room.ularOptions != nil || room.ludoOptions != nil {
                 Button { showRules = true } label: { Text("How to play") }
                     .buttonStyle(SecondaryButtonStyle())
             }
@@ -210,6 +211,8 @@ struct RoomLobby: View {
                 CongklakRulesSheet(tembakAfterStore: options.tembakAfterStore)
             } else if let options = room.ularOptions {
                 UlarTanggaRulesSheet(options: options)
+            } else if let options = room.ludoOptions {
+                LudoRulesSheet(options: options)
             }
         }
     }

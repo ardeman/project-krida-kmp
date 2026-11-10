@@ -162,6 +162,17 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         renderer?.recallDie(if (table.isLocal(next.turn)) null else playerOrigins[next.turn])
     }
 
+    /** Ease in on the board centre while the die flies. */
+    fun watchDie() {
+        val land = UlarTanggaBoard.dieLanding
+        renderer?.watch(
+            listOf(
+                floatArrayOf(land[0], UlarTanggaBoard.TOP, land[1]),
+                floatArrayOf(land[2], UlarTanggaBoard.TOP, land[3]),
+            ),
+        )
+    }
+
     fun spot(s: UlarTanggaState, seat: Int): FloatArray {
         val square = s.positions[seat]
         return UlarTanggaBoard.pieceSpot(square, seat, s.positions.count { it == square } > 1)
@@ -186,68 +197,81 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         val update = queue.removeFirstOrNull() ?: return idle()
         animating = true
         scope.launch {
-            val next = update.state
-            val seat = next.lastSeat
-            val roll = next.lastRoll
-            val offThrow = if (update.fresh) UlarTanggaGame.diceOffThrowBetween(state, next) else null
-            if (offThrow != null) {
-                // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
-                val (thrower, value) = offThrow
-                val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
-                pendingToss[0] = null
-                val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
-                val seconds = renderer?.throwDie(value, toss, origin, thrower) ?: 0f
-                delay((seconds * 1000).toLong() + 150)
-                die = value
-                state = next
-                delay(450)
-                recallDie(next)
-                if (!next.opening) {
-                    // The order is set: show every throw a moment, then the tiles line up in order.
-                    offHold = true
-                    delay(1800)
-                    offHold = false
-                    announceTurn(table, next.turn)
+            try {
+                val next = update.state
+                val seat = next.lastSeat
+                val roll = next.lastRoll
+                val offThrow = if (update.fresh) UlarTanggaGame.diceOffThrowBetween(state, next) else null
+                if (offThrow != null) {
+                    // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
+                    val (thrower, value) = offThrow
+                    val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
+                    pendingToss[0] = null
+                    val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
+                    watchDie()
+                    val seconds = renderer?.throwDie(value, toss, origin, thrower) ?: 0f
+                    delay((seconds * 1000).toLong() + 150)
+                    die = value
+                    state = next
+                    delay(450)
+                    recallDie(next)
+                    renderer?.watch(null)
+                    if (!next.opening) {
+                        // The order is set: show every throw a moment, then the tiles line up in order.
+                        offHold = true
+                        delay(1800)
+                        offHold = false
+                        announceTurn(table, next.turn)
+                    }
+                } else if (update.fresh && seat != null && roll != null) {
+                    // Bots and remote players toss; the local player's tap or throw is replayed.
+                    val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
+                    pendingToss[0] = null
+                    val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
+                    watchDie()
+                    val seconds = renderer?.throwDie(roll, toss, origin, seat) ?: 0f
+                    delay((seconds * 1000).toLong() + 200)
+                    die = roll
+                    val play = UlarTanggaGame.play(state, seat, roll)
+                    val r = renderer
+                    for (square in play.steps) {
+                        val at = UlarTanggaBoard.pieceSpot(square, seat, false)
+                        r?.watch(listOf(at))
+                        r?.move(seat, listOf(at), HOP_MS / 1000f * 0.9f, hop = 0.7f)
+                        Sounds.play(Sounds.Effect.Step)
+                        delay(HOP_MS)
+                    }
+                    val landed = play.steps.lastOrNull()
+                    if (landed != null && play.jumpTo != null) {
+                        delay(160)
+                        val ladder = landed in UlarTanggaGame.LADDERS
+                        val path = if (ladder) UlarTanggaBoard.ladderPath(landed) else UlarTanggaBoard.snakePath(landed)
+                        val seconds = pathLength(path) / JUMP_UNITS_PER_SECOND + 0.2f
+                        Sounds.play(if (ladder) Sounds.Effect.Store else Sounds.Effect.Capture)
+                        r?.watch(path)
+                        r?.move(seat, path.drop(1), seconds)
+                        delay((seconds * 1000).toLong() + 80)
+                    }
+                    repeat(next.positions.size) { renderer?.move(it, listOf(spot(next, it)), SETTLE_MS / 1000f) }
+                    delay(SETTLE_MS)
+                    recallDie(next)
+                    r?.watch(null)
+                    delay(280L)
+                    state = next
+                    announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
+                } else {
+                    // A new game (or the screen's first state): pawns to the start; the dice-off
+                    // waits for the players' throws.
+                    die = null
+                    state = next
+                    placeAll(next)
+                    recallDie(next)
                 }
-            } else if (update.fresh && seat != null && roll != null) {
-                // Bots and remote players toss; the local player's tap or throw is replayed.
-                val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
-                pendingToss[0] = null
-                val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
-                val seconds = renderer?.throwDie(roll, toss, origin, seat) ?: 0f
-                delay((seconds * 1000).toLong() + 200)
-                die = roll
-                val play = UlarTanggaGame.play(state, seat, roll)
-                val r = renderer
-                for (square in play.steps) {
-                    r?.move(seat, listOf(UlarTanggaBoard.pieceSpot(square, seat, false)), HOP_MS / 1000f * 0.9f, hop = 0.7f)
-                    Sounds.play(Sounds.Effect.Step)
-                    delay(HOP_MS)
-                }
-                val landed = play.steps.lastOrNull()
-                if (landed != null && play.jumpTo != null) {
-                    delay(160)
-                    val ladder = landed in UlarTanggaGame.LADDERS
-                    val path = if (ladder) UlarTanggaBoard.ladderPath(landed) else UlarTanggaBoard.snakePath(landed)
-                    val seconds = pathLength(path) / JUMP_UNITS_PER_SECOND + 0.2f
-                    Sounds.play(if (ladder) Sounds.Effect.Store else Sounds.Effect.Capture)
-                    r?.move(seat, path.drop(1), seconds)
-                    delay((seconds * 1000).toLong() + 80)
-                }
-                repeat(next.positions.size) { renderer?.move(it, listOf(spot(next, it)), SETTLE_MS / 1000f) }
-                delay(SETTLE_MS)
-                recallDie(next)
-                state = next
-                announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
-            } else {
-                // A new game (or the screen's first state): pawns to the start; the dice-off
-                // waits for the players' throws.
-                die = null
-                state = next
-                placeAll(next)
-                recallDie(next)
+            } finally {
+                // Always ease back out after a throw or hop, even if cancelled mid-move.
+                renderer?.watch(null)
+                animating = false
             }
-            animating = false
             drain()
         }
     }

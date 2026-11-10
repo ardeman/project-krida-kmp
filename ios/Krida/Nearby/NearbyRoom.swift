@@ -3,11 +3,11 @@ import Shared
 import UIKit
 
 /// A room over BLE ("Nearby" on the play card) or through the online relay ("Online"),
-/// from hosting or joining until the game starts. Then `congklak` or `ular` takes over the session and that game's screen shows it.
+/// from hosting or joining until the game starts. Then `congklak`, `ular` or `ludo` takes over the session and that game's screen shows it.
 /// A guest joins by code and learns the game from the host's Welcome. Same as Android.
 @MainActor
 final class NearbyRoom: ObservableObject {
-    enum Game { case congklak, ularTangga }
+    enum Game { case congklak, ularTangga, ludo }
     /// Where the room stands; a guest goes searching → connecting → lobby, or stops at a
     /// failure. offline: the relay couldn't be reached (online only, host or guest).
     enum Stage { case searching, connecting, lobby, full, started, version, notFound, lost, unknownGame, refused, offline }
@@ -31,12 +31,14 @@ final class NearbyRoom: ObservableObject {
     /// The host's rule options, for a guest's lobby; nil from older hosts (and the other game).
     @Published private(set) var congklakOptions: CongklakOptions?
     @Published private(set) var ularOptions: UlarTanggaOptions?
+    @Published private(set) var ludoOptions: LudoOptions?
     /// Pawn colours to pick from in the lobby (ular tangga); 0 when the game has none.
     @Published private(set) var colorCount = 0
-    /// The host can fill empty seats with computers (ular tangga only).
+    /// The host can fill empty seats with computers (ular tangga and ludo).
     @Published private(set) var canAddBots = false
     @Published private(set) var congklak: CongklakTable?
     @Published private(set) var ular: UlarTanggaTable?
+    @Published private(set) var ludo: LudoTable?
 
     private let transport: Transport
     private var begin: (() -> Void)?
@@ -109,9 +111,10 @@ final class NearbyRoom: ObservableObject {
         notFoundTask?.cancel()
         // A guest leaving the lobby gives up its seat; leaving a running game (the tables
         // handle that) or a search keeps it to come back to. Same as Android.
-        if !isHost, congklak == nil, ular == nil, stage == .lobby { LastRoom.shared.clear(code) }
+        if !isHost, congklak == nil, ular == nil, ludo == nil, stage == .lobby { LastRoom.shared.clear(code) }
         if let congklak { congklak.leave() }
         else if let ular { ular.leave() }
+        else if let ludo { ludo.leave() }
         else if let guestLeave { guestLeave() }
         else if let join { join.leave() }
         else { transport.close() }
@@ -156,6 +159,7 @@ final class NearbyRoom: ObservableObject {
                 self.maxPlayers = Int(session.lobbyCapacity)
                 self.congklakOptions = self.game == CongklakGame.shared.id ? LobbyOptions.shared.congklak(options: session.lobbyOptions) : nil
                 self.ularOptions = self.game == UlarTanggaGame.shared.id ? LobbyOptions.shared.ularTangga(options: session.lobbyOptions) : nil
+                self.ludoOptions = self.game == LudoGame.shared.id ? LobbyOptions.shared.ludo(options: session.lobbyOptions) : nil
             }
             self.players = list
             self.mySeat = session?.seat.map { $0.intValue }
@@ -183,7 +187,7 @@ final class NearbyRoom: ObservableObject {
     /// The relay closed a guest's socket for good; the game's table shows drops once it runs.
     private func relayClosed(_ closeCode: Int) {
         notFoundTask?.cancel()
-        if failed || congklak != nil || ular != nil { return }
+        if failed || congklak != nil || ular != nil || ludo != nil { return }
         if closeCode != OnlineTransport.gaveUp { LastRoom.shared.clear(code) }
         stage = switch closeCode {
         case OnlineTransport.noRoom: .notFound
@@ -202,7 +206,11 @@ final class NearbyRoom: ObservableObject {
     static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil,
                      publicRoom: Bool = false, seats: Int? = nil, standardRules: Bool = false) -> NearbyRoom {
         let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
-        let gameId = game == .ularTangga ? UlarTanggaGame.shared.id : CongklakGame.shared.id
+        let gameId = switch game {
+        case .ularTangga: UlarTanggaGame.shared.id
+        case .ludo: LudoGame.shared.id
+        case .congklak: CongklakGame.shared.id
+        }
         let total = game == .congklak ? 2 : min(max(seats ?? 4, 2), 4)
         let relay = online ? OnlineHostTransport(code: roomCode, game: gameId, seats: total, publicRoom: publicRoom) : nil
         let ble = online ? nil : BleHostTransport(roomCode: roomCode)
@@ -228,11 +236,21 @@ final class NearbyRoom: ObservableObject {
             room.canAddBots = true
             room.addBotAction = { [weak session] name in _ = session?.addBot(name: name, platform: .ios, bot: UlarTanggaBot.shared) }
             room.removeBotAction = { [weak session] seat in _ = session?.removeBot(seat: Int32(seat)) }
+        case .ludo:
+            let session: HostSession<LudoState, LudoMove> = room.hostSession(standardRules ? StandardRules.shared.ludo : LudoSettings.rules, transport: transport)
+            room.begin = { [weak room] in
+                guard let room, session.canStart() else { return }
+                session.start()
+                room.ludo = LudoHostTable(session: session, mySeat: 0, transport: transport)
+            }
+            room.canAddBots = true
+            room.addBotAction = { [weak session] name in _ = session?.addBot(name: name, platform: .ios, bot: LudoBot(level: .normal)) }
+            room.removeBotAction = { [weak session] seat in _ = session?.removeBot(seat: Int32(seat)) }
         }
         if let relay {
             // Only before the game: once it runs, the table shows the drop.
             relay.onClosed = { [weak room] _ in
-                guard let room, room.congklak == nil, room.ular == nil else { return }
+                guard let room, room.congklak == nil, room.ular == nil, room.ludo == nil else { return }
                 room.stage = .offline
             }
             relay.onReady = onOnlineReady
@@ -272,6 +290,13 @@ final class NearbyRoom: ObservableObject {
                 s.onState = { [weak room, weak s] _ in
                     guard let room, let s, room.ular == nil else { return }
                     room.ular = UlarTanggaGuestTable(session: s)
+                }
+                s.replay()
+            case LudoGame.shared.id:
+                let s: GuestSession<LudoState, LudoMove> = room.guestSession(LudoGame.shared, join: join)
+                s.onState = { [weak room, weak s] _ in
+                    guard let room, let s, room.ludo == nil else { return }
+                    room.ludo = LudoGuestTable(session: s)
                 }
                 s.replay()
             default:

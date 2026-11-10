@@ -133,6 +133,24 @@ class LudoTest {
     }
 
     @Test
+    fun starSquareIsSafe() {
+        // Red on star square 9 (relative 9); blue walks onto it from relative 47 → absolute 8, +1 → 9.
+        assertTrue(LudoGame.isSafeAbsolute(9))
+        assertEquals(listOf(9, 22, 35, 48), LudoGame.STARS.toList())
+        val s = at(
+            listOf(9, -1, -1, -1),
+            listOf(47, -1, -1, -1),
+            colors = listOf(0, 1),
+        )
+        assertEquals(8, game.absolute(s, 1, 47))
+        val play = game.movePawn(s.copy(roll = 1), 1, 0, 1)
+        assertTrue(play.captures.isEmpty())
+        assertEquals(9, play.state.tokens[0][0])
+        assertEquals(48, play.state.tokens[1][0])
+        assertEquals(9, game.absolute(play.state, 1, 48))
+    }
+
+    @Test
     fun blockStopsLanding() {
         // Red at 8 + 6 → 14; blue relative 1 → absolute (13+1)%52 = 14.
         val open = at(

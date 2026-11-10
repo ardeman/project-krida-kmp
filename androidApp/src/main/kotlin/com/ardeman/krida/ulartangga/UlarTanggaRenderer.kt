@@ -13,7 +13,9 @@ import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.abs
 import kotlin.math.atan
+import kotlin.math.exp
 import kotlin.math.min
 import kotlin.math.tan
 
@@ -65,6 +67,11 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
 
     private var room: FloatArray? = null
     private var focus: List<FloatArray>? = null
+    private var watchPoints: List<FloatArray>? = null
+    private var targetFov = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
+    private var targetShiftX = 0.0
+    private var targetShiftY = 0.0
+    private var camSettled = true
 
     /**
      * For the menu preview: zooms in on [points] (x, y, z), framing them as large as fits with
@@ -72,8 +79,27 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
      */
     fun frame(points: List<FloatArray>) {
         focus = points
+        watchPoints = null
         if (width > 1) { onResize(); invalidate() }
     }
+
+    /**
+     * Gameplay: ease the camera onto [points] (die landing, pawn hops), or back to the whole
+     * board when null. Call before a move and again with null when it has settled.
+     */
+    fun watch(points: List<FloatArray>?) {
+        focus = null
+        watchPoints = points?.let { padded(it) }
+        if (width > 1) {
+            val view = computeView(watchPoints)
+            targetFov = view[0]
+            targetShiftX = view[1].toDouble()
+            targetShiftY = view[2].toDouble()
+            camSettled = false
+            invalidate()
+        }
+    }
+
     private var obstacles: List<FloatArray> = emptyList()
 
     /** Pawn entities by color, and the one each seat moves (seat order until [setSeats]). */
@@ -445,7 +471,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     }
 
     override fun step(dt: Float): Boolean {
-        var moving = stepDie(dt)
+        var moving = stepDie(dt) || stepCamera(dt)
         for (seat in motions.indices) {
             val m = motions[seat] ?: continue
             m.elapsed += dt
@@ -464,12 +490,35 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             apply(seat)
             if (t >= 1f) motions[seat] = null else moving = true
         }
-        return moving || motions.any { it != null }
+        return moving || motions.any { it != null } || !camSettled
     }
 
     private fun apply(seat: Int) {
         val p = position[seat]
         setTransform(pieces[seat], floatArrayOf(1f, 0f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f, 0f, p[0], p[1], p[2], 1f))
+    }
+
+    /** Ease FOV and shift toward [targetFov] / [targetShiftX]/[targetShiftY]. */
+    private fun stepCamera(dt: Float): Boolean {
+        if (camSettled || width <= 1) return false
+        val k = 1f - exp(-dt / CAMERA_TAU)
+        fovDegrees += (targetFov - fovDegrees) * k
+        shiftX += (targetShiftX - shiftX) * k
+        shiftY += (targetShiftY - shiftY) * k
+        camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+        camera.setShift(shiftX / 2, shiftY / 2)
+        updateHome()
+        val done = abs(targetFov - fovDegrees) < 0.05f &&
+            abs(targetShiftX - shiftX) < 0.002 && abs(targetShiftY - shiftY) < 0.002
+        if (done) {
+            fovDegrees = targetFov
+            shiftX = targetShiftX
+            shiftY = targetShiftY
+            camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+            camera.setShift(shiftX / 2, shiftY / 2)
+            camSettled = true
+        }
+        return !done
     }
 
     override fun onResize() {
@@ -480,13 +529,37 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             at[0].toDouble(), at[1].toDouble(), at[2].toDouble(),
             0.0, 1.0, 0.0,
         )
-        // A narrower view scales the image about the view's center and a shift moves it, so the
-        // board's outline is projected once and then scaled and moved in screen space: find the
-        // largest scale that has some place in the room clear of the HUD, then take the place
-        // nearest the room's middle.
         camera.setShift(0.0, 0.0)
         val base = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
         camera.setProjection(base.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+        // Menu [frame] snaps; gameplay [watch] keeps easing toward its target.
+        val points = focus ?: watchPoints
+        val view = computeView(points)
+        if (focus != null || camSettled) {
+            fovDegrees = view[0]
+            shiftX = view[1].toDouble()
+            shiftY = view[2].toDouble()
+            targetFov = fovDegrees
+            targetShiftX = shiftX
+            targetShiftY = shiftY
+            camSettled = true
+        } else {
+            targetFov = view[0]
+            targetShiftX = view[1].toDouble()
+            targetShiftY = view[2].toDouble()
+        }
+        camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
+        // shiftX/shiftY are in NDC (2 across the view); Filament's shift is in whole views.
+        camera.setShift(shiftX / 2, shiftY / 2)
+        updateHome()
+    }
+
+    /**
+     * FOV and screen shift (NDC) that frames [points], or the whole board when null.
+     * Returns floatArrayOf(fov, shiftX, shiftY).
+     */
+    private fun computeView(points: List<FloatArray>?): FloatArray {
+        val base = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
         val cx = width / 2f
         val cy = height / 2f
         // One convex outline per part (board, start pad), so the pad may sit beside a HUD box.
@@ -516,16 +589,17 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             }
             return best
         }
-        val points = focus
         val hi: Float
         val dx: Float
         val dy: Float
-        if (points != null) {
+        if (points != null && points.isNotEmpty()) {
             val shot = points.map { (x, y, z) -> project(x, y, z) }
             val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
             val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
-            val k = FRAME_FILL * min(width / (x1 - x0), height / (y1 - y0))
-            hi = atan(tanBase / k) * 360f / PI.toFloat()
+            val spanX = (x1 - x0).coerceAtLeast(1f)
+            val spanY = (y1 - y0).coerceAtLeast(1f)
+            val k = FRAME_FILL * min(width / spanX, height / spanY)
+            hi = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, MAX_FOV)
             dx = cx - (cx + ((x0 + x1) / 2 - cx) * k)
             dy = cy - (cy + ((y0 + y1) / 2 - cy) * k)
         } else {
@@ -540,13 +614,22 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             dx = best[0]
             dy = best[1]
         }
-        fovDegrees = hi
-        camera.setProjection(hi.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
-        shiftX = dx * 2.0 / width
-        shiftY = -dy * 2.0 / height
-        // shiftX/shiftY are in NDC (2 across the view); Filament's shift is in whole views.
-        camera.setShift(shiftX / 2, shiftY / 2)
-        updateHome()
+        return floatArrayOf(hi, dx * 2f / width, -dy * 2f / height)
+    }
+
+    /** Corners around [points] so a short hop still has air to breathe. */
+    private fun padded(points: List<FloatArray>): List<FloatArray> {
+        if (points.isEmpty()) return points
+        val pad = 2.2f
+        val x0 = points.minOf { it[0] } - pad
+        val x1 = points.maxOf { it[0] } + pad
+        val z0 = points.minOf { it[2] } - pad
+        val z1 = points.maxOf { it[2] } + pad
+        val y = points.map { it[1] }.average().toFloat()
+        return listOf(
+            floatArrayOf(x0, y, z0), floatArrayOf(x1, y, z0),
+            floatArrayOf(x0, y, z1), floatArrayOf(x1, y, z1),
+        )
     }
 
     /** Convex outline of [points], counter-clockwise on screen (monotone chain). */
@@ -591,7 +674,9 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         /** Places tried along each axis when fitting the board. */
         const val FIT_STEPS = 24
         /** Share of the view the framed points take, leaving room for what sits around them. */
-        const val FRAME_FILL = 0.8f
+        const val FRAME_FILL = 0.72f
+        /** Seconds for the camera to close most of the gap toward its watch target. */
+        const val CAMERA_TAU = 0.28f
 
         /** The die as it waits on screen: [value] up, turned to show two more faces. */
         fun homeRotation(value: Int): FloatArray =

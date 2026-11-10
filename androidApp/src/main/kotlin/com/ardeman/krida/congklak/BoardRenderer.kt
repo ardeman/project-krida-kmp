@@ -5,10 +5,14 @@ import com.ardeman.krida.core.games.CongklakBoard
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.atan
 import kotlin.math.cos
+import kotlin.math.exp
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.tan
 
 /**
  * Draws the voxel congklak board with Filament on a transparent [TextureView] (the game, or the
@@ -38,8 +42,33 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     private val target = Array(CongklakBoard.SEED_COUNT) { FloatArray(3) }
     private var placed = false
 
+    private var watchPoints: List<FloatArray>? = null
+    private var fovDegrees = CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES
+    private var shiftX = 0.0
+    private var shiftY = 0.0
+    private var targetFov = CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES
+    private var targetShiftX = 0.0
+    private var targetShiftY = 0.0
+    private var camSettled = true
+
     init {
         ringEntities.values.forEach { show(it, false) }
+    }
+
+    /**
+     * Gameplay: ease the camera onto [points] (the pit being sown), or back to the whole board
+     * when null. Call before a sow step and again with null when the move has settled.
+     */
+    fun watch(points: List<FloatArray>?) {
+        watchPoints = points?.let { padded(it) }
+        if (width > 1) {
+            val view = computeView(watchPoints)
+            targetFov = view[0]
+            targetShiftX = view[1].toDouble()
+            targetShiftY = view[2].toDouble()
+            camSettled = false
+            invalidate()
+        }
     }
 
     /**
@@ -67,9 +96,9 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
 
     /** Eases seeds toward their targets. Returns true while any seed is still moving. */
     override fun step(dt: Float): Boolean {
-        if (!placed) return false
+        var moving = stepCamera(dt)
+        if (!placed) return moving
         val t = min(1f, dt * EASE_PER_SECOND)
-        var moving = false
         val m = FloatArray(16)
         for (i in current.indices) {
             val c = current[i]
@@ -85,22 +114,116 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
                 setTransform(seedEntities[i], m)
             }
         }
-        return moving
+        return moving || !camSettled
+    }
+
+    /** Ease FOV and shift toward the watch target. */
+    private fun stepCamera(dt: Float): Boolean {
+        if (camSettled || width <= 1) return false
+        val k = 1f - exp(-dt / CAMERA_TAU)
+        fovDegrees += (targetFov - fovDegrees) * k
+        shiftX += (targetShiftX - shiftX) * k
+        shiftY += (targetShiftY - shiftY) * k
+        applyProjection()
+        val done = abs(targetFov - fovDegrees) < 0.05f &&
+            abs(targetShiftX - shiftX) < 0.002 && abs(targetShiftY - shiftY) < 0.002
+        if (done) {
+            fovDegrees = targetFov
+            shiftX = targetShiftX
+            shiftY = targetShiftY
+            applyProjection()
+            camSettled = true
+            projectPits()
+        }
+        return !done
     }
 
     override fun onResize() {
-        val aspect = width.toDouble() / height
+        aimCamera()
+        camera.setShift(0.0, 0.0)
+        camera.setProjection(
+            CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES.toDouble(),
+            width.toDouble() / height,
+            0.5,
+            100.0,
+            Camera.Fov.HORIZONTAL,
+        )
+        val view = computeView(watchPoints)
+        if (camSettled) {
+            fovDegrees = view[0]
+            shiftX = view[1].toDouble()
+            shiftY = view[2].toDouble()
+            targetFov = fovDegrees
+            targetShiftX = shiftX
+            targetShiftY = shiftY
+        } else {
+            targetFov = view[0]
+            targetShiftX = view[1].toDouble()
+            targetShiftY = view[2].toDouble()
+        }
+        applyProjection()
+        projectPits()
+    }
+
+    private fun aimCamera() {
         // Seat 1 looks from the other long side: turn the camera 180 degrees around the y axis.
         val flip = if (viewSeat == 1) -1f else 1f
         val eye = CongklakBoard.cameraEye.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
         val at = CongklakBoard.cameraTarget.let { floatArrayOf(it[0] * flip, it[1], it[2] * flip) }
-        camera.setProjection(CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES.toDouble(), aspect, 0.5, 100.0, Camera.Fov.HORIZONTAL)
         camera.lookAt(
             eye[0].toDouble(), eye[1].toDouble(), eye[2].toDouble(),
             at[0].toDouble(), at[1].toDouble(), at[2].toDouble(),
             0.0, 1.0, 0.0,
         )
+    }
+
+    private fun applyProjection() {
+        camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 100.0, Camera.Fov.HORIZONTAL)
+        // shiftX/shiftY are in NDC (2 across the view); Filament's shift is in whole views.
+        camera.setShift(shiftX / 2, shiftY / 2)
+    }
+
+    private fun projectPits() {
         onPitsProjected?.invoke(List(CongklakGame.PITS) { CongklakBoard.pitAnchor(it).let { (x, y, z) -> project(x, y, z) } })
+    }
+
+    /**
+     * Horizontal FOV and screen shift (NDC) that frames [points], or the whole board when null.
+     * Returns floatArrayOf(fov, shiftX, shiftY).
+     */
+    private fun computeView(points: List<FloatArray>?): FloatArray {
+        val base = CongklakBoard.CAMERA_HORIZONTAL_FOV_DEGREES
+        if (points == null || points.isEmpty() || width <= 1) {
+            return floatArrayOf(base, 0f, 0f)
+        }
+        val cx = width / 2f
+        val cy = height / 2f
+        val tanBase = tan(base * PI.toFloat() / 360f)
+        val shot = points.map { (x, y, z) -> project(x, y, z) }
+        val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
+        val y0 = shot.minOf { it[1] }; val y1 = shot.maxOf { it[1] }
+        val spanX = (x1 - x0).coerceAtLeast(1f)
+        val spanY = (y1 - y0).coerceAtLeast(1f)
+        val k = FRAME_FILL * min(width / spanX, height / spanY)
+        val hi = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, base)
+        val dx = cx - (cx + ((x0 + x1) / 2 - cx) * k)
+        val dy = cy - (cy + ((y0 + y1) / 2 - cy) * k)
+        return floatArrayOf(hi, dx * 2f / width, -dy * 2f / height)
+    }
+
+    /** Corners around [points] so a single pit still has air to breathe. */
+    private fun padded(points: List<FloatArray>): List<FloatArray> {
+        if (points.isEmpty()) return points
+        val pad = 1.1f
+        val x0 = points.minOf { it[0] } - pad
+        val x1 = points.maxOf { it[0] } + pad
+        val z0 = points.minOf { it[2] } - pad
+        val z1 = points.maxOf { it[2] } + pad
+        val y = points.map { it[1] }.average().toFloat()
+        return listOf(
+            floatArrayOf(x0, y, z0), floatArrayOf(x1, y, z0),
+            floatArrayOf(x0, y, z1), floatArrayOf(x1, y, z1),
+        )
     }
 
     private fun yawMatrix(yaw: Float, pos: FloatArray, out: FloatArray) {
@@ -115,5 +238,8 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
 
     companion object {
         private const val EASE_PER_SECOND = 14f
+        private const val MIN_FOV = 18f
+        private const val FRAME_FILL = 0.55f
+        private const val CAMERA_TAU = 0.28f
     }
 }

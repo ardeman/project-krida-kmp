@@ -71,6 +71,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ardeman.krida.R
 import com.ardeman.krida.ads.Ads
+import com.ardeman.krida.core.games.CongklakBoard
 import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakMove
@@ -173,32 +174,42 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         val update = queue.removeFirstOrNull() ?: return idle()
         animating = true
         scope.launch {
-            val seat = update.seat
-            val move = update.move
-            var sowed = false
-            var shot = false
-            if (seat != null && move != null && CongklakGame.validate(state, seat, move) == null) {
-                val sowing = CongklakGame.play(state, seat, move)
-                for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, move.hole), sowing.path)) {
-                    seeds.apply(step); push()
-                    if (!step.pickUp) Sounds.play(if (CongklakGame.isStore(step.pit)) Sounds.Effect.Store else Sounds.Effect.Sow)
-                    delay(if (step.pickUp) PICKUP_MS else SOW_MS)
+            try {
+                val seat = update.seat
+                val move = update.move
+                var sowed = false
+                var shot = false
+                if (seat != null && move != null && CongklakGame.validate(state, seat, move) == null) {
+                    val sowing = CongklakGame.play(state, seat, move)
+                    for (step in CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, move.hole), sowing.path)) {
+                        renderer?.watch(listOf(CongklakBoard.pitAnchor(step.pit)))
+                        seeds.apply(step); push()
+                        if (!step.pickUp) Sounds.play(if (CongklakGame.isStore(step.pit)) Sounds.Effect.Store else Sounds.Effect.Sow)
+                        delay(if (step.pickUp) PICKUP_MS else SOW_MS)
+                    }
+                    sowed = true
+                    shot = sowing.capturedFrom != null
                 }
-                sowed = true
-                shot = sowing.capturedFrom != null
-            }
-            if (seeds.counts() != update.state.pits) {
-                if (sowed) delay(SETTLE_MS)
-                if (shot) {
-                    Sounds.play(Sounds.Effect.Capture)
-                    Sounds.say(Sounds.Line.Shoot)
+                if (seeds.counts() != update.state.pits) {
+                    if (sowed) delay(SETTLE_MS)
+                    if (shot) {
+                        Sounds.play(Sounds.Effect.Capture)
+                        Sounds.say(Sounds.Line.Shoot)
+                    }
+                    seeds.settle(update.state.pits); push()
                 }
-                seeds.settle(update.state.pits); push()
+                if (sowed) {
+                    announce(state, update.state, table.mySeat)
+                    renderer?.watch(null)
+                    delay(280L)
+                }
+                state = update.state
+            } finally {
+                // Always ease back out after a sow, even if the animation was cancelled.
+                renderer?.watch(null)
+                animating = false
+                drain()
             }
-            if (sowed) announce(state, update.state, table.mySeat)
-            state = update.state
-            animating = false
-            drain()
         }
     }
 

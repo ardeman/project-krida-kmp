@@ -37,4 +37,14 @@ class LudoBoardTest {
             assertTrue(fromToken.contentEquals(fromTrack))
         }
     }
+
+    @Test
+    fun starCellsMatchClassicBoard() {
+        // Nine steps past each start: left/far/right/near arms of the cross.
+        assertEquals(listOf(1, 8), LudoBoard.trackCell(9).toList())
+        assertEquals(listOf(6, 1), LudoBoard.trackCell(22).toList())
+        assertEquals(listOf(13, 6), LudoBoard.trackCell(35).toList())
+        assertEquals(listOf(8, 13), LudoBoard.trackCell(48).toList())
+        assertTrue(LudoBoard.boardMesh().vertexCount > 0)
+    }
 }

@@ -13,6 +13,12 @@ import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.GuestTable
 import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.LudoBot
+import com.ardeman.krida.core.games.LudoGame
+import com.ardeman.krida.ludo.LudoGuestTable
+import com.ardeman.krida.ludo.LudoHostTable
+import com.ardeman.krida.ludo.LudoSettings
+import com.ardeman.krida.ludo.LudoTable
 import com.ardeman.krida.core.games.StandardRules
 import com.ardeman.krida.core.games.UlarTanggaBot
 import com.ardeman.krida.core.games.UlarTanggaGame
@@ -38,7 +44,7 @@ import com.ardeman.krida.ulartangga.UlarTanggaTable
 
 /**
  * A room over BLE ("Nearby") or through the online relay ("Online"), from hosting or joining
- * until the game starts. Then [congklak] or [ular] takes over the session and that game's
+ * until the game starts. Then [congklak], [ular] or [ludo] takes over the session and that game's
  * screen shows it. A guest joins by code and learns the game from the host's Welcome.
  */
 class NearbyRoom private constructor(
@@ -87,6 +93,8 @@ class NearbyRoom private constructor(
     var congklak by mutableStateOf<CongklakTable?>(null)
         private set
     var ular by mutableStateOf<UlarTanggaTable?>(null)
+        private set
+    var ludo by mutableStateOf<LudoTable?>(null)
         private set
 
     val failed: Boolean get() = stage !in listOf(Stage.SEARCHING, Stage.CONNECTING, Stage.LOBBY)
@@ -159,10 +167,11 @@ class NearbyRoom private constructor(
         main.removeCallbacks(notFound)
         // A guest leaving the lobby gives up its seat; leaving a running game (the tables
         // handle that) or a search keeps it to come back to.
-        if (!isHost && congklak == null && ular == null && stage == Stage.LOBBY) LastRoom.clear(code)
+        if (!isHost && congklak == null && ular == null && ludo == null && stage == Stage.LOBBY) LastRoom.clear(code)
         when {
             congklak != null -> congklak?.leave()
             ular != null -> ular?.leave()
+            ludo != null -> ludo?.leave()
             guest != null -> guest?.leave()
             join != null -> join?.leave()
             else -> transport.close()
@@ -226,7 +235,7 @@ class NearbyRoom private constructor(
     /** The relay closed a guest's socket for good; the game's table shows drops once it runs. */
     private fun relayClosed(closeCode: Int) {
         main.removeCallbacks(notFound)
-        if (failed || congklak != null || ular != null) return
+        if (failed || congklak != null || ular != null || ludo != null) return // table owns the drop once the game runs
         if (closeCode != OnlineTransport.GAVE_UP) LastRoom.clear(code)
         stage = when (closeCode) {
             OnlineTransport.NO_ROOM -> Stage.NOT_FOUND
@@ -242,7 +251,7 @@ class NearbyRoom private constructor(
         if (!failed) stage = Stage.LOST
     }
 
-    enum class Game { CONGKLAK, ULAR_TANGGA }
+    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO }
 
     companion object {
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
@@ -250,7 +259,11 @@ class NearbyRoom private constructor(
 
         fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
-            val gameId = if (game == Game.ULAR_TANGGA) UlarTanggaGame.id else CongklakGame.id
+            val gameId = when (game) {
+                Game.ULAR_TANGGA -> UlarTanggaGame.id
+                Game.LUDO -> LudoGame.id
+                Game.CONGKLAK -> CongklakGame.id
+            }
             val total = if (game == Game.CONGKLAK) 2 else seats?.coerceIn(2, 4) ?: 4
             val transport: Transport = if (online) OnlineHostTransport(roomCode, game = gameId, seats = total, publicRoom = publicRoom) else BleHostTransport(context, roomCode)
             val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport, publicRoom = online && publicRoom, hostSeats = if (online) total else null)
@@ -277,13 +290,25 @@ class NearbyRoom private constructor(
                         }
                     }
                 }
+                Game.LUDO -> {
+                    val session = room.hostSession(if (standardRules) StandardRules.ludo else LudoSettings.rules, name, transport)
+                    room.canAddBots = true
+                    room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, LudoBot()) }
+                    room.removeBot = { seat -> session.removeBot(seat) }
+                    room.begin = {
+                        if (session.canStart()) {
+                            session.start()
+                            room.ludo = LudoHostTable(session, mySeat = 0, transport = transport)
+                        }
+                    }
+                }
             }
             when (transport) {
                 is BleHostTransport -> transport.start()
                 is OnlineHostTransport -> {
                     // Only before the game: once it runs, the table shows the drop.
                     transport.onReady = onOnlineReady
-                    transport.onClosed = { if (room.congklak == null && room.ular == null) room.stage = Stage.OFFLINE }
+                    transport.onClosed = { if (room.congklak == null && room.ular == null && room.ludo == null) room.stage = Stage.OFFLINE }
                     transport.start()
                 }
             }
@@ -308,6 +333,10 @@ class NearbyRoom private constructor(
                     }
                     UlarTanggaGame.id -> room.guestSession(UlarTanggaGame, join).also { s ->
                         s.onState = { _ -> room.ular = UlarTanggaGuestTable(s) }
+                        s.replay()
+                    }
+                    LudoGame.id -> room.guestSession(LudoGame, join).also { s ->
+                        s.onState = { _ -> room.ludo = LudoGuestTable(s) }
                         s.replay()
                     }
                     else -> room.stage = Stage.UNKNOWN_GAME

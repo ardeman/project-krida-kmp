@@ -197,7 +197,7 @@ Players that cancel during the wait (close the WebSocket) are removed from the q
 
 Android and iOS clients add `?flow=group` to the same match URL. It uses a separate
 `GroupMatchmaker` Durable Object namespace so legacy clients keep their existing flow.
-Valid selections are `congklak/2` and `ular_tangga/2`, `/3`, `/4`, using the shared game IDs. All group events are JSON text WebSocket frames, independent of game-session
+Valid selections are `congklak/2`, `ular_tangga/2`–`/4`, and `ludo/2`–`/4`, using the shared game IDs. All group events are JSON text WebSocket frames, independent of game-session
 messages and binary room framing. Clients close the socket to cancel.
 
 Relay events:
@@ -259,7 +259,7 @@ group never admits new queued players.
 ## Public online rooms (optional discovery extension)
 
 A new host may add `game=<GAME>&seats=<TOTAL>&public=1` to its existing authenticated
-room WebSocket query. Valid combinations are congklak/2 and ular_tangga/2–4. Omitting
+room WebSocket query. Valid combinations are congklak/2, ular_tangga/2–4 and ludo/2–4. Omitting
 `public=1` keeps the room private; omitting all metadata retains legacy room behavior.
 Metadata is fixed on the first authenticated host connection; another key cannot publish
 or change the room. Public/private controls discovery, not access by code or QR.

@@ -164,4 +164,5 @@ button.
   both platforms, with matching EN/ID copy, retry, cleanup, player counts and unanimous
   agreement. Cross-phone checks of the group flow remain pending; see
   [the implementation notes](mockups/matchmaking.md).
-- Android's game card is a carousel (`HorizontalPager`); iOS switches games without one.
+- The home game card is a carousel on both platforms (`HorizontalPager` / page `TabView`),
+  with a finger-follow swipe and matching ease on the arrows.

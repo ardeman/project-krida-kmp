@@ -12,6 +12,8 @@ type Ticket = {
   seats?: number;
   host?: boolean;
   discover?: boolean;
+  /** Game id from the match URL (`congklak`, `ular_tangga`, `ludo`). */
+  game?: string;
   /** End of the vote once the offer is open to two or more humans; absent means no limit. */
   voteDeadline?: number;
 };
@@ -35,20 +37,22 @@ export class GroupMatchmaker implements DurableObject {
     }
     if (request.headers.get("Upgrade") !== "websocket") return new Response("expected websocket", { status: 426 });
     const discover = new URL(request.url).searchParams.get("public") === "1";
-    const target = Number(new URL(request.url).pathname.split("/").pop());
+    const parts = new URL(request.url).pathname.split("/");
+    const target = Number(parts.pop());
+    const game = parts.pop() ?? "ular_tangga";
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
     await this.expire();
     const waiting = this.members().find(ws => {
       const t = this.ticket(ws);
-      return t.discover === discover && t.target === target && (t.phase === "searching" || t.phase === "offer") && this.group(t.group).length < target;
+      return t.discover === discover && t.target === target && t.game === game && (t.phase === "searching" || t.phase === "offer") && this.group(t.group).length < target;
     });
     const first = waiting && this.ticket(waiting);
     server.serializeAttachment({
-      discover, group: first?.group ?? this.code(), target,
+      discover, group: first?.group ?? this.code(), target, game,
       deadline: first?.deadline ?? Date.now() + 20_000,
       phase: first?.phase ?? "searching", consent: false, revision: first?.revision ?? 0,
-      maxPlayers: new URL(request.url).pathname.includes("/congklak/") ? 2 : 4,
+      maxPlayers: game === "congklak" ? 2 : 4,
     } satisfies Ticket);
     // Membership changes invalidate prior consent: everyone sees the new composition.
     this.resetConsent(this.ticket(server).group);
@@ -140,7 +144,7 @@ export class GroupMatchmaker implements DurableObject {
         for (const key of listings.keys()) {
           const code = key.slice(7);
           const room = this.env.ROOMS.get(this.env.ROOMS.idFromName(code));
-          const game = t.maxPlayers === 2 ? "congklak" : "ular_tangga";
+          const game = t.game ?? (t.maxPlayers === 2 ? "congklak" : "ular_tangga");
           const response = await room.fetch(new Request("https://internal/reserve", { method: "POST",
             body: JSON.stringify({ game, seats: t.target, count: group.length }) }));
           const { tokens } = await response.json() as { tokens: string[] };

@@ -5,7 +5,6 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
-- Ludo: UI mockup (then Android, then iOS). Shared rules, bot and board path geometry are in.
 - Online step 10: accounts, friends, invites (largest step; ask before Firebase/FCM).
 
 ## Device checks the owner hasn't done yet
@@ -16,6 +15,7 @@ Real users will try online play first; don't push for these, ask whether feedbac
   phones, emotes in a running game.
 - Nearby: iPhone ↔ Pixel room for ular tangga. Last try: the Pixel joining the iPhone's room
   showed only "Kode room" (no code, status or Back) and never connected. Not investigated.
+- Ludo: iPhone and Pixel (menu, this phone, nearby, online). Android and iOS are wired; not checked on a device.
 - iPhone: seat tiles and rule hint lines, loading screen, play card, ular tangga board.
 - Audio: SFX, voice-over and music not yet listened to by the owner.
 - Bilingual: check both languages on the devices.

@@ -22,7 +22,7 @@ struct CreateOnlineRoomView<Options: View>: View {
         self.onBack = onBack
         self.onCreate = onCreate
         self.options = options()
-        _seats = State(initialValue: game == UlarTanggaGame.shared.id ? 4 : 2)
+        _seats = State(initialValue: game == UlarTanggaGame.shared.id || game == LudoGame.shared.id ? 4 : 2)
     }
 
     var body: some View {
@@ -82,7 +82,7 @@ struct JoinOnlineRoomView: View {
         self.onJoin = onJoin
         self.onSearch = onSearch
         self.onBack = onBack
-        _seats = State(initialValue: game == UlarTanggaGame.shared.id ? 4 : 2)
+        _seats = State(initialValue: game == UlarTanggaGame.shared.id || game == LudoGame.shared.id ? 4 : 2)
     }
 
     private var valid: Bool { RoomCode.shared.isValidOnline(code: code) }
@@ -131,14 +131,14 @@ struct JoinOnlineRoomView: View {
     }
 }
 
-/// Total seats: 2–4 for ular tangga, always two for congklak.
+/// Total seats: 2–4 for ular tangga and ludo, always two for congklak.
 private struct RoomPlayerCount: View {
     let game: String
     @Binding var seats: Int
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if game == UlarTanggaGame.shared.id {
+        if game == UlarTanggaGame.shared.id || game == LudoGame.shared.id {
             RoomDetail(text: "Players")
             Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
                       selection: $seats, label: "Players")

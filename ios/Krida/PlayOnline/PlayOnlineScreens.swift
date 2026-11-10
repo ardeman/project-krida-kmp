@@ -128,7 +128,7 @@ private struct MatchSearch: View {
                 .multilineTextAlignment(.center)
             
             // Solo seat selector
-            if offer && !preparing && !failed && humans == 1 && game == UlarTanggaGame.shared.id {
+            if offer && !preparing && !failed && humans == 1 && (game == UlarTanggaGame.shared.id || game == LudoGame.shared.id) {
                 Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
                           selection: $soloSeats, label: "Players")
             }

@@ -93,8 +93,8 @@ data class LudoPlay(
  * - A 6 leaves the yard onto the colour start; that 6 does not walk further.
  * - Tokens walk clockwise around a 52-square ring, then up a 6-step home stretch; the
  *   finish must be exact.
- * - Colour starts and the home stretch are safe; two of the same colour on one ring square
- *   form a block (safe, and others cannot land there).
+ * - Colour starts, the starred safe squares and the home stretch are safe; two of the same
+ *   colour on one ring square form a block (safe, and others cannot land there).
  * - Capturing a lone opponent sends it to the yard and rolls again; a 6 also rolls again.
  * - Three 6s in a row burn the third roll and end the turn.
  * - Play continues until one player is left unfinished, unless [LudoOptions.firstFinishEnds].
@@ -111,6 +111,12 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
 
     /** Absolute ring index of each colour's start square (red, blue, green, yellow). */
     val STARTS = intArrayOf(0, 13, 26, 39)
+
+    /**
+     * Starred safe squares on the ring (nine steps past each colour start), matching a
+     * classic Ludo board. Tokens here cannot be captured.
+     */
+    val STARS = intArrayOf(9, 22, 35, 48)
 
     const val COLORS = 4
 
@@ -173,7 +179,7 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
         return (STARTS[state.color(seat)] + pos) % TRACK
     }
 
-    fun isSafeAbsolute(square: Int): Boolean = square in STARTS
+    fun isSafeAbsolute(square: Int): Boolean = square in STARTS || square in STARS
 
     fun isFinishedSeat(state: LudoState, seat: Int): Boolean =
         state.tokens[seat].all { it == FINISH }

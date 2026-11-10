@@ -97,27 +97,64 @@ final class UlarTanggaScene {
     // MARK: Fitting the board
 
     private var screen: CGSize = .zero
+    private var room: CGRect = .zero
+    private var obstacles: [CGRect] = []
+    private var menuFocus: [SIMD3<Float>]? = nil
+    private var watchFocus: [SIMD3<Float>]? = nil
+    private var targetFrame: CGRect = .zero
+    private var targetFov: Float = 0
+    private var camSettled = true
+    /// Notified whenever [viewFrame] changes during a watch ease (SwiftUI offsets the view).
+    var onViewFrame: ((CGRect) -> Void)?
     /// Vertical field of view of the screen-sized picture, before the view is enlarged.
     private var tanHalf: Float = 0
 
+    /**
+     * Gameplay: ease the camera onto `points` (die landing, pawn hops), or back to the whole
+     * board when nil. Call before a move and again with nil when it has settled.
+     */
+    func watch(_ points: [SIMD3<Float>]?) {
+        menuFocus = nil
+        watchFocus = points.map { Self.padded($0) }
+        guard screen.width > 0 else { return }
+        applyLayout(snap: false)
+    }
+
     /// Fits the whole board into `room` (in the screen's coordinates) as large as it goes
     /// without covering any of `obstacles` (HUD boxes), as near the room's middle as it can,
-    /// or, with `focus`, frames those points (x, y, z) to fill most of `room`.
+    /// or, with `focus`, frames those points (x, y, z) to fill most of `room` (menu preview snaps).
     /// Returns the frame the view must take.
     @discardableResult
     func layout(size: CGSize, room: CGRect, obstacles: [CGRect] = [], focus: [SIMD3<Float>]? = nil) -> CGRect {
         guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         screen = size
+        self.room = room
+        self.obstacles = obstacles
+        if let focus {
+            menuFocus = focus
+            watchFocus = nil
+        }
+        return applyLayout(snap: menuFocus != nil || camSettled)
+    }
+
+    @discardableResult
+    private func applyLayout(snap: Bool) -> CGRect {
+        let size = screen
+        let room = self.room
+        let focus = menuFocus ?? watchFocus
+        guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         let base = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
         let k: CGFloat
         let dx: CGFloat
         let dy: CGFloat
-        if let focus {
+        if let focus, !focus.isEmpty {
             let shot = focus.map { project($0, tanV: base, size: size) }
             let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
             let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
-            k = 0.8 * min(room.width / (x1 - x0), room.height / (y1 - y0))
+            let spanX = max(x1 - x0, 1)
+            let spanY = max(y1 - y0, 1)
+            k = 0.72 * min(room.width / spanX, room.height / spanY)
             // Scaling is about the screen's center; then shift the picture's middle to the room's.
             dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
             dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
@@ -162,17 +199,41 @@ final class UlarTanggaScene {
             dx = best.x
             dy = best.y
         }
-        tanHalf = base / Float(k)
+        let nextTan = base / Float(k)
         let w = size.width + 2 * abs(dx), h = size.height + 2 * abs(dy)
-        viewFrame = CGRect(x: c.x + dx - w / 2, y: c.y + dy - h / 2, width: w, height: h)
-        // RealityKit's field of view is vertical and spans the whole (enlarged) view.
-        camera.camera.fieldOfViewInDegrees = 2 * atan(tanHalf * Float(h / size.height)) * 180 / .pi
-        updateHome()
+        let nextFrame = CGRect(x: c.x + dx - w / 2, y: c.y + dy - h / 2, width: w, height: h)
+        let nextFov = 2 * atan(nextTan * Float(h / size.height)) * 180 / .pi
+        targetFrame = nextFrame
+        targetFov = nextFov
+        if snap {
+            tanHalf = nextTan
+            viewFrame = nextFrame
+            camera.camera.fieldOfViewInDegrees = nextFov
+            camSettled = true
+            updateHome()
+            onViewFrame?(viewFrame)
+        } else {
+            camSettled = false
+        }
         return viewFrame
+    }
+
+    /// Corners around `points` so a short hop still has air to breathe.
+    private static func padded(_ points: [SIMD3<Float>]) -> [SIMD3<Float>] {
+        guard !points.isEmpty else { return points }
+        let pad: Float = 2.2
+        let x0 = points.map(\.x).min()! - pad, x1 = points.map(\.x).max()! + pad
+        let z0 = points.map(\.z).min()! - pad, z1 = points.map(\.z).max()! + pad
+        let y = points.map(\.y).reduce(0, +) / Float(points.count)
+        return [
+            SIMD3(x0, y, z0), SIMD3(x1, y, z0),
+            SIMD3(x0, y, z1), SIMD3(x1, y, z1),
+        ]
     }
 
     /// Places tried along each axis when fitting the board.
     private static let fitSteps = 24
+    private static let cameraTau: Float = 0.28
 
     /// Convex outline of `points`, counter-clockwise on screen (monotone chain).
     private static func convexHull(_ points: [CGPoint]) -> [CGPoint] {
@@ -544,6 +605,7 @@ final class UlarTanggaScene {
 
     private func step(_ dt: Float) {
         let dt = min(dt, 0.05)
+        stepCamera(dt)
         stepDie(dt)
         for seat in motions.indices {
             guard var m = motions[seat] else { continue }
@@ -561,6 +623,36 @@ final class UlarTanggaScene {
             positions[seat] = p
             apply(seat)
             motions[seat] = t >= 1 ? nil : m
+        }
+    }
+
+    /// Ease the view frame and FOV toward the watch target.
+    private func stepCamera(_ dt: Float) {
+        guard !camSettled, screen.width > 0 else { return }
+        let k = 1 - exp(-dt / Self.cameraTau)
+        let from = viewFrame
+        let to = targetFrame
+        let next = CGRect(
+            x: from.minX + (to.minX - from.minX) * CGFloat(k),
+            y: from.minY + (to.minY - from.minY) * CGFloat(k),
+            width: from.width + (to.width - from.width) * CGFloat(k),
+            height: from.height + (to.height - from.height) * CGFloat(k)
+        )
+        let fov = camera.camera.fieldOfViewInDegrees + (targetFov - camera.camera.fieldOfViewInDegrees) * k
+        viewFrame = next
+        camera.camera.fieldOfViewInDegrees = fov
+        tanHalf = tan(fov * .pi / 360) * Float(screen.height / max(next.height, 1))
+        updateHome()
+        onViewFrame?(viewFrame)
+        let done = abs(to.minX - next.minX) < 0.5 && abs(to.minY - next.minY) < 0.5
+            && abs(to.width - next.width) < 0.5 && abs(targetFov - fov) < 0.05
+        if done {
+            viewFrame = to
+            camera.camera.fieldOfViewInDegrees = targetFov
+            tanHalf = tan(targetFov * .pi / 360) * Float(screen.height / max(to.height, 1))
+            camSettled = true
+            updateHome()
+            onViewFrame?(viewFrame)
         }
     }
 
