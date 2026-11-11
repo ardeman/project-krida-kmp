@@ -332,9 +332,8 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
         dieValue = value
         val long = toss == Toss.Long
 
-        // Compute deterministic landing position and rotation from seat and roll value.
-        // This ensures all clients show the same animation without protocol changes.
-        val animation = UlarTanggaDiceAnimation.compute(seat, value, long)
+        // Land inside Ludo's own pad (not ular tangga's larger board), matching [watch] framing.
+        val animation = UlarTanggaDiceAnimation.compute(seat, value, long, LudoBoard.dieLanding)
         val tx = animation.landX
         val tz = animation.landZ
         val yaw = animation.spinYaw
@@ -729,8 +728,11 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
             val spanY = (y1 - y0).coerceAtLeast(1f)
             val roomW = (room[2] - room[0]).coerceAtLeast(1f)
             val roomH = (room[3] - room[1]).coerceAtLeast(1f)
-            val k = FRAME_FILL * min(roomW / spanX, roomH / spanY)
-            hi = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, MAX_FOV)
+            // Clamp scale first so FOV and the shift use the same k (a FOV-only clamp
+            // used to keep the old k and push the framed die/tokens off-screen).
+            val k = (FRAME_FILL * min(roomW / spanX, roomH / spanY))
+                .coerceIn(scaleFor(MAX_FOV), scaleFor(MIN_FOV))
+            hi = (atan(tanBase / k) * 360f / PI.toFloat())
             val midX = (x0 + x1) / 2
             val midY = (y0 + y1) / 2
             dx = (room[0] + room[2]) / 2 - (cx + (midX - cx) * k)
@@ -753,15 +755,19 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     /** Corners around [points] so a short hop still has air to breathe. */
     private fun padded(points: List<FloatArray>): List<FloatArray> {
         if (points.isEmpty()) return points
-        val pad = LudoBoard.CELL * 2.2f
+        // Wide enough that a yard of four tokens + gold rings stays inside the zoom.
+        val pad = LudoBoard.CELL * 2.8f
         val x0 = points.minOf { it[0] } - pad
         val x1 = points.maxOf { it[0] } + pad
         val z0 = points.minOf { it[2] } - pad
         val z1 = points.maxOf { it[2] } + pad
-        val y = points.map { it[1] }.average().toFloat()
+        val y0 = points.minOf { it[1] }
+        val y1 = points.maxOf { it[1] } + LudoBoard.CELL
         return listOf(
-            floatArrayOf(x0, y, z0), floatArrayOf(x1, y, z0),
-            floatArrayOf(x0, y, z1), floatArrayOf(x1, y, z1),
+            floatArrayOf(x0, y0, z0), floatArrayOf(x1, y0, z0),
+            floatArrayOf(x0, y0, z1), floatArrayOf(x1, y0, z1),
+            floatArrayOf(x0, y1, z0), floatArrayOf(x1, y1, z0),
+            floatArrayOf(x0, y1, z1), floatArrayOf(x1, y1, z1),
         )
     }
 
@@ -802,12 +808,13 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     }
 
     private companion object {
-        const val MIN_FOV = 5f
+        /** Tightest gameplay zoom; matches iOS max-K (~12° vertical). */
+        const val MIN_FOV = 12f
         const val MAX_FOV = 90f
         /** Places tried along each axis when fitting the board. */
         const val FIT_STEPS = 24
         /** Share of the view the framed points take, leaving room for what sits around them. */
-        const val FRAME_FILL = 0.72f
+        const val FRAME_FILL = 0.62f
         /** How quickly the camera eases onto a [watch] target (seconds). */
         const val CAMERA_TAU = 0.38f
         const val MAX_CAMERA_DT = 1f / 30f

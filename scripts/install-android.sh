@@ -1,9 +1,9 @@
 #!/bin/bash
 # Build the debug app and install + launch it on every connected Android device.
-# Usage: ./install-android.sh [--no-build]
+# Usage: ./scripts/install-android.sh [--no-build]
 set -euo pipefail
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 APP_ID="com.ardeman.krida"
 APK="androidApp/build/outputs/apk/debug/androidApp-debug.apk"
 

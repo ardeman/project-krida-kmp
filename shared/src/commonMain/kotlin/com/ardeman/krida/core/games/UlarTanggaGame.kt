@@ -108,12 +108,19 @@ data class UlarTanggaDiceAnimation(
          * All clients produce the same parameters from these inputs alone, so the dice animation
          * is consistent across players without any protocol changes.
          */
-        fun compute(seat: Int, value: Int, isLongToss: Boolean): UlarTanggaDiceAnimation {
+        fun compute(seat: Int, value: Int, isLongToss: Boolean): UlarTanggaDiceAnimation =
+            compute(seat, value, isLongToss, UlarTanggaBoard.dieLanding)
+
+        /**
+         * Same as [compute], but lands inside [landing] (min x, min z, max x, max z).
+         * Ludo passes [LudoBoard.dieLanding] so the die stays inside the pad the camera frames.
+         */
+        fun compute(seat: Int, value: Int, isLongToss: Boolean, landing: FloatArray): UlarTanggaDiceAnimation {
             // Seed the RNG with seat and roll value to get consistent randomness across all clients
             val seed = (seat.toLong() shl 32) or (value.toLong() and 0xFFFFFFFFL)
             val rng = Random(seed)
 
-            val area = UlarTanggaBoard.dieLanding
+            val area = landing
             val long = isLongToss
             val midX = (area[0] + area[2]) / 2
 

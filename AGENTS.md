@@ -8,6 +8,7 @@ Also read:
 - `docs/design.md` before any UI work: tokens, the components to reuse, screen patterns and a checklist. New screens are built from existing components, the same on both platforms.
 - `docs/decisions.md`: product and rule decisions already made with the owner. Don't reverse one without asking; record new ones there.
 - `docs/status.md`: open work outside the online plan (device checks, release setup, deferred ideas). Update it when an item is done.
+- `docs/install.md`: put a debug build on the plugged-in Pixel or iPhone (`scripts/install-android.sh`, `scripts/install-ios.sh`).
 - `.cursor/rules/working-style.mdc`: how the owner likes to work (usage, devices, replies). It applies to every agent, not only Cursor.
 
 Docs go in `docs/` with lowercase names, never in the repo root (only `README.md`, `AGENTS.md` and `CLAUDE.md` live there).

@@ -1,9 +1,9 @@
 #!/bin/bash
 # Build the debug app and install + launch it on a connected iPhone.
-# Usage: ./install-ios.sh [--no-build]
+# Usage: ./scripts/install-ios.sh [--no-build]
 set -euo pipefail
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 BUNDLE_ID="com.ardeman.krida"
 DERIVED="ios/build/device"
 APP="$DERIVED/Build/Products/Debug-iphoneos/Krida.app"

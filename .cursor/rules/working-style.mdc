@@ -37,8 +37,8 @@ how the owner likes to work. `docs/status.md` lists open work outside the online
 - Game rules only in `shared/`; congklak must match the traditional game (clockwise sowing,
   each player's store on their left).
 - No simulator or emulator: the Mac is small. Build for the connected iPhone 17 or Pixel XL
-  (`xcodebuild -destination 'id=<device>'`, `adb install`). If none is connected, just build
-  and ask the owner to check on the device.
+  with `./scripts/install-ios.sh` / `./scripts/install-android.sh` (see `docs/install.md`).
+  If none is connected, just build and ask the owner to check on the device.
 - iOS builds need JDK 21 for the shared framework: `JAVA_HOME=$(/usr/libexec/java_home -v 21)`
   (or Homebrew `openjdk@21`). Gradle needs JDK 17–21, not Android Studio's JDK 25.
 - Run the checks from `AGENTS.md` for every part you touched. Report results honestly: if a

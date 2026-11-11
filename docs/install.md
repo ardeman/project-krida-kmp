@@ -1,12 +1,15 @@
 # Installing debug builds on phones
 
-Two scripts build Krida and put it on phones plugged into this Mac. Both use JDK 21 from `/opt/homebrew/opt/openjdk@21` when it is there (Gradle needs JDK 17–21, see `README.md`).
+`scripts/install-android.sh` and `scripts/install-ios.sh` build Krida and put it on phones
+plugged into this Mac. Prefer these over raw `adb` / `xcodebuild` when a device is connected.
+Both use JDK 21 from `/opt/homebrew/opt/openjdk@21` when it is there (Gradle needs JDK 17–21,
+see `README.md`).
 
 ## Android
 
 ```bash
-./install-android.sh            # build, install and open on every connected device
-./install-android.sh --no-build # reinstall the last build
+./scripts/install-android.sh            # build, install and open on every connected device
+./scripts/install-android.sh --no-build # reinstall the last build
 ```
 
 Needs `adb` (`brew install android-platform-tools`) and USB debugging turned on, with the phone's "Allow USB debugging" prompt accepted. Devices that show as `unauthorized` or `offline` in `adb devices` are skipped.
@@ -16,8 +19,8 @@ The APK it installs is `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
 ## iOS
 
 ```bash
-./install-ios.sh            # build, install and open on the paired iPhone
-./install-ios.sh --no-build # reinstall the last build
+./scripts/install-ios.sh            # build, install and open on the paired iPhone
+./scripts/install-ios.sh --no-build # reinstall the last build
 ```
 
 Needs Xcode, `xcodegen` and `jq`, and an iPhone that has trusted this Mac (plugged in, or on the same Wi-Fi after pairing). The script picks the first paired physical iPhone that `xcrun devicectl list devices` reports and ignores simulators.

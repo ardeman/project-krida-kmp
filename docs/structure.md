@@ -58,6 +58,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Online relay (Cloudflare Worker, Durable Object per room, matchmaker) | `relay/src/` |
 | Website and privacy page | `web/src/` |
 | Brand generator | `scripts/brand.swift` → outputs listed in [brand.md](brand.md) |
+| Device install | `scripts/install-android.sh`, `scripts/install-ios.sh` (see [install.md](install.md)) |
 | Commit-message hook | `scripts/git-hooks/commit-msg` |
 | CI and deploys | `.github/workflows/` |
 

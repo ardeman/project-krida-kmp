@@ -6,6 +6,7 @@ import com.ardeman.krida.core.games.UlarTanggaMove
 import com.ardeman.krida.core.games.UlarTanggaOptions
 import com.ardeman.krida.core.games.UlarTanggaRules
 import com.ardeman.krida.core.games.UlarTanggaState
+import com.ardeman.krida.core.games.LudoBoard
 import com.ardeman.krida.core.games.UlarTanggaDiceAnimation
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.session.HostSession
@@ -282,5 +283,13 @@ class UlarTanggaTest {
         // Long toss and short toss should produce different animations
         val anim5 = UlarTanggaDiceAnimation.compute(seat = 0, value = 3, isLongToss = true)
         assertFalse(anim1.landX == anim5.landX && anim1.landZ == anim5.landZ && anim1.spinYaw == anim5.spinYaw)
+
+        // Ludo uses its own landing pad so the die stays inside the camera's die frame.
+        val area = LudoBoard.dieLanding
+        for (seat in 0..3) for (value in 1..6) for (long in listOf(false, true)) {
+            val anim = UlarTanggaDiceAnimation.compute(seat, value, long, area)
+            assertTrue(anim.landX in area[0]..area[2], "landX ${anim.landX} outside $area")
+            assertTrue(anim.landZ in area[1]..area[3], "landZ ${anim.landZ} outside $area")
+        }
     }
 }

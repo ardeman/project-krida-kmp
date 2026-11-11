@@ -12,8 +12,9 @@ in the same commit as the code.
 - **Both platforms the same.** Every screen and feature ships on Android and iOS with the same
   layout and copy; see [design.md](design.md).
 - **Test on the physical devices** (an iPhone and a Pixel XL), not simulators or emulators: the
-  build Mac has little memory. If no device is connected, build only and say what still needs
-  a look on a device.
+  build Mac has little memory. Install with `./scripts/install-ios.sh` /
+  `./scripts/install-android.sh` ([install.md](install.md)). If no device is connected, build
+  only and say what still needs a look on a device.
 - **iOS builds need JDK 21:** set `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`,
   or the shared-framework build phase fails with "Unable to locate a Java Runtime".
 - Time Android startup with a release build (`assembleRelease`); debug Compose is ~5× slower.

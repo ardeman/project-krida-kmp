@@ -19,7 +19,7 @@ krida/
 ├── web/          Landing page for krida.ardeman.com (Astro, zero-JS static HTML, GitHub Pages)
 ├── docs/         architecture.md, structure.md, design.md (UI guide), decisions.md, protocol.md, online.md,
 │                 brand.md, store.md, install.md (install scripts), dice-animation.md
-├── scripts/      brand.swift: generates every icon and the wordmark
+├── scripts/      brand.swift; install-android.sh / install-ios.sh; other helpers
 └── bitbucket-pipelines.yml
 ```
 
@@ -47,10 +47,15 @@ git config core.hooksPath scripts/git-hooks
 
 # Android: open the repo root in Android Studio, run "androidApp"
 ./gradlew :androidApp:assembleDebug
+./scripts/install-android.sh            # build + install + launch on every connected device
+# ./scripts/install-android.sh --no-build
 
 # iOS: generate the Xcode project, then open it
 cd ios && xcodegen && open Krida.xcodeproj
 # The "Build Shared framework" phase runs Gradle and links shared/ automatically.
+./scripts/install-ios.sh                # build + install + launch on the paired iPhone
+# ./scripts/install-ios.sh --no-build
+# Device install details: docs/install.md
 
 # Web landing
 cd web && npm install && npm run dev     # http://localhost:4321

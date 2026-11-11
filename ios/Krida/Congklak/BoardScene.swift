@@ -237,13 +237,15 @@ final class Palette {
             }
         }
 
-        // Both windings: the voxel faces aren't consistently wound and iOS 17's unlit
-        // material can't turn off culling.
+        // One winding only. Duplicating the reverse face (to fake double-sided unlit) put two
+        // coplanar triangles in the same spot; RealityKit then z-fights and the clear backdrop
+        // flashes through — worst on the curved congklak store ends. Shared VoxelMesh quads are
+        // already counter-clockwise from the outside.
         var triangles = [UInt32]()
-        triangles.reserveCapacity(Int(idx.size) * 2)
+        triangles.reserveCapacity(Int(idx.size))
         for t in stride(from: 0, to: Int(idx.size), by: 3) {
             let a = UInt32(idx.get(index: Int32(t))), b = UInt32(idx.get(index: Int32(t + 1))), c = UInt32(idx.get(index: Int32(t + 2)))
-            triangles += [a, b, c, a, c, b]
+            triangles += [a, b, c]
         }
 
         var d = MeshDescriptor()

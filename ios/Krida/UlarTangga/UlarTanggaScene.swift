@@ -154,7 +154,10 @@ final class UlarTanggaScene {
             let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
             let spanX = max(x1 - x0, 1)
             let spanY = max(y1 - y0, 1)
-            k = 0.72 * min(room.width / spanX, room.height / spanY)
+            // Soft fill + a max zoom so a tight die pad cannot crop the landing off-screen.
+            let raw = 0.62 * min(room.width / spanX, room.height / spanY)
+            let maxK = CGFloat(base / tan(12 * Float.pi / 360))
+            k = min(raw, maxK)
             // Scaling is about the screen's center; then shift the picture's middle to the room's.
             dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
             dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
@@ -221,13 +224,16 @@ final class UlarTanggaScene {
     /// Corners around `points` so a short hop still has air to breathe.
     private static func padded(_ points: [SIMD3<Float>]) -> [SIMD3<Float>] {
         guard !points.isEmpty else { return points }
-        let pad: Float = 2.2
+        let pad: Float = 2.8
         let x0 = points.map(\.x).min()! - pad, x1 = points.map(\.x).max()! + pad
         let z0 = points.map(\.z).min()! - pad, z1 = points.map(\.z).max()! + pad
-        let y = points.map(\.y).reduce(0, +) / Float(points.count)
+        let y0 = points.map(\.y).min()!
+        let y1 = points.map(\.y).max()! + 1.5
         return [
-            SIMD3(x0, y, z0), SIMD3(x1, y, z0),
-            SIMD3(x0, y, z1), SIMD3(x1, y, z1),
+            SIMD3(x0, y0, z0), SIMD3(x1, y0, z0),
+            SIMD3(x0, y0, z1), SIMD3(x1, y0, z1),
+            SIMD3(x0, y1, z0), SIMD3(x1, y1, z0),
+            SIMD3(x0, y1, z1), SIMD3(x1, y1, z1),
         ]
     }
 
