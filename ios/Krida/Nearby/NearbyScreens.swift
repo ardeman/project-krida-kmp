@@ -96,10 +96,12 @@ struct RoomLobby: View {
     @State private var showRules = false
 
     var body: some View {
-        let hostName = room.players.first { $0.seat == 0 }?.name ?? ""
+        // Text("… \(x)") can print Optional(Optional("…")); resolve to a plain string first.
+        let hostName = room.players.first { Int($0.seat) == 0 }?.name ?? ""
+        let guestSubtitle = String(localized: "Room \(room.code) · host \(hostName)", bundle: .app)
         NearbyFrame(
             title: gameTitle(room.game),
-            subtitle: room.isHost ? placeLine(room.online) : Text("Room \(room.code) · host \(hostName)"),
+            subtitle: room.isHost ? placeLine(room.online) : Text(verbatim: guestSubtitle),
             online: room.online,
             backLabel: room.isHost ? "Back" : "Leave room",
             onBack: onLeave
