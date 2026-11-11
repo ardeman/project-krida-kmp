@@ -14,6 +14,12 @@ func emoteLabel(_ id: String) -> String {
     }
 }
 
+/// One reaction event; Equatable so `onChange` can pass seat+id without a stale View capture.
+private struct EmoteEvent: Equatable {
+    let seat: Int
+    let id: String
+}
+
 /// HUD control for nearby/online games: smile button, picker, and a floating reaction bubble.
 struct EmoteHud: View {
     let canEmote: Bool
@@ -24,6 +30,8 @@ struct EmoteHud: View {
 
     @State private var open = false
     @State private var shown: (seat: Int, id: String)?
+
+    private var event: EmoteEvent? { emote.map { EmoteEvent(seat: $0.seat, id: $0.id) } }
 
     var body: some View {
         if canEmote {
@@ -54,13 +62,15 @@ struct EmoteHud: View {
             }
             .animation(.easeOut(duration: 0.2), value: open)
             .animation(.easeOut(duration: 0.2), value: shown?.id)
-            .onChange(of: emote?.id) { _, _ in
-                guard let emote else { return }
-                shown = emote
+            // Use the onChange *new* value — capturing `emote` from the View is stale (often nil)
+            // and the toast never appeared on receive or after a local send.
+            .onChange(of: event) { _, new in
+                guard let new else { return }
+                shown = (new.seat, new.id)
                 open = false
                 Task {
                     try? await Task.sleep(nanoseconds: 2_500_000_000)
-                    if shown?.id == emote.id, shown?.seat == emote.seat { shown = nil }
+                    if shown?.id == new.id, shown?.seat == new.seat { shown = nil }
                 }
             }
         }
