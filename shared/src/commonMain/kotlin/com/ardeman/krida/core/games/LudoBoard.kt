@@ -58,6 +58,9 @@ object LudoBoard {
 
     const val TOP = 0.5f
     private const val MARK = TOP + 0.02f
+    /** Yard cream pad and slot tops sit above [TOP] so they read over the continuous yard colour. */
+    private const val YARD_CREAM_TOP = TOP + 0.02f
+    const val YARD_SLOT_TOP = TOP + 0.04f
     private const val PIECE_SCALE = 0.95f
 
     private val WOOD = floatArrayOf(0.64f, 0.42f, 0.24f)
@@ -143,7 +146,8 @@ object LudoBoard {
             else -> TRACK_CELLS[(LudoGame.STARTS[color] + pos) % LudoGame.TRACK]
         }
         val xz = cellCenter(cell[0], cell[1])
-        return floatArrayOf(xz[0], TOP, xz[1])
+        val y = if (pos == LudoGame.YARD) YARD_SLOT_TOP else TOP
+        return floatArrayOf(xz[0], y, xz[1])
     }
 
     /** World position of absolute ring [square]. */
@@ -207,15 +211,28 @@ object LudoBoard {
         val e = HALF + RIM
         mesh.box(floatArrayOf(-e, 0f, -e), floatArrayOf(e, FRAME, e), WOOD)
         val h = CELL / 2 - GAP / 2
-        fun tile(column: Int, row: Int, rgb: FloatArray) {
+        // Yard slot pads leave a wider cream gap so the four starts don't look jammed.
+        val slotH = CELL / 2 - GAP * 2.5f
+        fun tile(column: Int, row: Int, rgb: FloatArray, half: Float = h, top: Float = TOP) {
             val c = cellCenter(column, row)
             mesh.box(
-                floatArrayOf(c[0] - h, FRAME, c[1] - h),
-                floatArrayOf(c[0] + h, TOP, c[1] + h),
+                floatArrayOf(c[0] - half, FRAME, c[1] - half),
+                floatArrayOf(c[0] + half, top, c[1] + half),
                 rgb,
             )
         }
-        // Coloured yard quadrants (6×6 corners), then a cream pad under the four slots.
+        /** Continuous floor over [c0..c1] × [r0..r1] (no wood seams — non-play areas). */
+        fun slab(
+            c0: Int, c1: Int, r0: Int, r1: Int, rgb: FloatArray,
+            inset: Float = GAP / 2, top: Float = TOP,
+        ) {
+            val x0 = c0 * CELL - HALF + inset
+            val x1 = (c1 + 1) * CELL - HALF - inset
+            val zFar = (GRID - 1 - r1) * CELL - HALF + inset
+            val zNear = (GRID - r0) * CELL - HALF - inset
+            mesh.box(floatArrayOf(x0, FRAME, zFar), floatArrayOf(x1, top, zNear), rgb)
+        }
+        // Coloured yard floors and cream pads are solid slabs (tokens only sit on the four slots).
         val yards = arrayOf(
             intArrayOf(0, 5, 0, 5), // red bottom-left
             intArrayOf(0, 5, 9, 14), // blue top-left
@@ -225,10 +242,9 @@ object LudoBoard {
         for (color in 0 until LudoGame.COLORS) {
             val c0 = yards[color][0]; val c1 = yards[color][1]
             val r0 = yards[color][2]; val r1 = yards[color][3]
-            val rgb = pieceColor(color)
-            for (column in c0..c1) for (row in r0..r1) tile(column, row, rgb)
+            slab(c0, c1, r0, r1, pieceColor(color))
             // Inner cream square behind the four slot tiles.
-            for (column in c0 + 1..c1 - 1) for (row in r0 + 1..r1 - 1) tile(column, row, CREAM)
+            slab(c0 + 1, c1 - 1, r0 + 1, r1 - 1, CREAM, top = YARD_CREAM_TOP)
         }
         // Cross arms as cream filler, then coloured specials on top of the same cells.
         for (column in 0 until GRID) for (row in 0 until GRID) {
@@ -243,9 +259,9 @@ object LudoBoard {
         for (color in 0 until LudoGame.COLORS) {
             for (pawn in 0 until LudoGame.PAWNS) {
                 val cell = YARD_CELLS[color][pawn]
-                tile(cell[0], cell[1], pieceColor(color))
+                tile(cell[0], cell[1], pieceColor(color), slotH, YARD_SLOT_TOP)
                 // Raised disc so the yard slots read as classic circles.
-                disc(mesh, cellCenter(cell[0], cell[1]), CELL * 0.28f, MARK, pieceColor(color))
+                disc(mesh, cellCenter(cell[0], cell[1]), CELL * 0.24f, YARD_SLOT_TOP + 0.02f, pieceColor(color))
             }
             for (step in 0 until LudoGame.HOME_LEN) {
                 val cell = HOME_CELLS[color][step]

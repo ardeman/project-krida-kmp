@@ -23,7 +23,7 @@ class LudoBoardTest {
     fun tokenAnchorsSitOnTheBoardTop() {
         for (color in 0 until LudoGame.COLORS) {
             val yard = LudoBoard.tokenAnchor(color, 0, LudoGame.YARD)
-            assertEquals(LudoBoard.TOP, yard[1])
+            assertEquals(LudoBoard.YARD_SLOT_TOP, yard[1])
             val start = LudoBoard.tokenAnchor(color, 0, 0)
             assertEquals(LudoBoard.TOP, start[1])
             val home = LudoBoard.tokenAnchor(color, 0, LudoGame.FINISH)

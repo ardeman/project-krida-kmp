@@ -124,7 +124,8 @@ in the same commit as the code.
   the same colour on one square form a block (safe, and others cannot land there). The
   board mesh shows those stars, home-entrance arrows (into each finish lane, not on the
   start squares), coloured yard pads and a four-triangle centre, matching a classic
-  Ludo board.
+  Ludo board. Non-play yard colour and inner cream are continuous slabs (not gapped
+  tiles); only the four yard slot pads keep spacing, with cream padding between them.
 - Host options (same idea as ular tangga): no-6-to-enter, no extra roll on 6, no extra roll
   on capture, first to finish ends the game. Quick match will use the defaults
   (`StandardRules.ludo`).
