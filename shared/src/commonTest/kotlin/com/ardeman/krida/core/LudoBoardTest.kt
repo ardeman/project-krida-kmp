@@ -56,11 +56,11 @@ class LudoBoardTest {
 
     @Test
     fun starCellsMatchClassicBoard() {
-        // Nine steps past each start, on the outer ring of each arm.
-        assertEquals(listOf(1, 6), LudoBoard.trackCell(9).toList())
-        assertEquals(listOf(6, 13), LudoBoard.trackCell(22).toList())
-        assertEquals(listOf(13, 8), LudoBoard.trackCell(35).toList())
-        assertEquals(listOf(8, 1), LudoBoard.trackCell(48).toList())
+        // Eight steps past each start, on the outer ring of each arm.
+        assertEquals(listOf(2, 6), LudoBoard.trackCell(8).toList())
+        assertEquals(listOf(6, 12), LudoBoard.trackCell(21).toList())
+        assertEquals(listOf(12, 8), LudoBoard.trackCell(34).toList())
+        assertEquals(listOf(8, 2), LudoBoard.trackCell(47).toList())
         assertTrue(LudoBoard.boardMesh().vertexCount > 0)
     }
 

@@ -116,10 +116,10 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
     val STARTS = intArrayOf(0, 13, 39, 26)
 
     /**
-     * Starred safe squares on the ring (nine steps past each colour start), matching a
+     * Starred safe squares on the ring (eight steps past each colour start), matching a
      * classic Ludo board. Tokens here cannot be captured.
      */
-    val STARS = intArrayOf(9, 22, 35, 48)
+    val STARS = intArrayOf(8, 21, 34, 47)
 
     const val COLORS = 4
 

@@ -120,7 +120,7 @@ in the same commit as the code.
   start square; a 6 rolls again; three 6s in a row burn that third roll and end the turn;
   landing exactly on the home stretch finish is required; capturing a lone opponent token
   sends it to the yard and grants another roll. Colour start squares, the four starred
-  safe squares (nine steps past each start) and the home stretch are safe; two or more of
+  safe squares (eight steps past each start) and the home stretch are safe; two or more of
   the same colour on one square form a block (safe, and others cannot land there). The
   board mesh shows those stars, home-entrance arrows (into each finish lane, not on the
   start squares), coloured yard pads and a four-triangle centre, matching a classic
@@ -141,7 +141,7 @@ in the same commit as the code.
   each see their own side.
 - **Board layout (2026-11-10):** classic corners — red bottom-left, blue top-left, yellow
   top-right, green bottom-right — with matching clockwise starts, home stretches, stars
-  (start+9) and centre triangles.
+  (start+8) and centre triangles.
 - Shared rules and board path geometry first; UI mockup approved
   ([mockups/ludo.md](mockups/ludo.md)); Android done, then iOS.
 
