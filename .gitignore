@@ -20,6 +20,9 @@ web/node_modules/
 web/dist/
 web/.astro/
 
+# Logs
+*.log
+
 # OS
 .DS_Store
 
