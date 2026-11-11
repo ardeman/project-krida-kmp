@@ -7,11 +7,11 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 - Online step 10b, friends list: relay, web, Android and iOS are built
   (`docs/mockups/friends.md`); deploying the relay and web and the phone checks are open.
-- Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay and Android are
-  built. Next: iOS (inbox client, lobby button and picker, invite card), then deploy the
-  relay and check on two signed-in phones. After that 10c-2, iPhone notifications.
+- Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay, Android and
+  iOS are built and the relay is deployed. Next: check on two signed-in phones (invite from
+  each side, Not now, Join, the 2-minute expiry). After that 10c-2, iPhone notifications.
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
-  check, and D1 edit rights on the GitHub deploy token (the first deploy was run by hand).
+  check.
 
 ## Device checks the owner hasn't done yet
 

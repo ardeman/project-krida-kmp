@@ -125,14 +125,14 @@ and the Pixel on different networks (one on mobile data).
     - [ ] **10c Invites.** iOS via APNs. Android without Firebase (owner, 2026-11-11):
       invites show while the app is open, over the relay, or arrive as a share link.
       Approved [mockup](mockups/invites.md) (2026-11-12). 10c-1, in-app invites: the
-      relay (inbox, `POST /v1/invites`) and Android are built (2026-11-12); iOS, deploying
-      the relay and the phone checks are open. 10c-2, iPhone notifications, comes after
+      relay (inbox, `POST /v1/invites`, deployed), Android and iOS are built (2026-11-12);
+      the phone checks are open. 10c-2, iPhone notifications, comes after
       (needs an APNs key).
 
-    Owner setup for 10a (1 done; 2 and the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
+    Owner setup for 10a (1 and 2 done; the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
     redirect URI `https://krida-relay.ardeman.com/v1/auth/google/callback`, then
     `wrangler secret put GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `relay/`. (2) The
-    relay's Cloudflare API token (GitHub secret) needs D1 edit rights; the first deploy
+    relay's Cloudflare API token (GitHub secret) needs D1 edit rights (added 2026-11-12); the first deploy
     creates the `krida` database. (3) Apple Developer: enable Sign in with Apple on the
     `com.ardeman.krida` App ID; optionally create a Sign in with Apple key and set
     `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` so deletion revokes access at

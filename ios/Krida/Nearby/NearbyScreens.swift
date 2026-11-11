@@ -94,6 +94,11 @@ struct RoomLobby: View {
     let onLeave: () -> Void
     @Environment(\.uiScale) private var s
     @State private var showRules = false
+    @State private var inviting = false
+    @ObservedObject private var account = Account.shared
+
+    /// Invites need an account and an open seat.
+    private var canInvite: Bool { room.canInvite && account.user != nil && room.players.count < room.maxPlayers }
 
     var body: some View {
         // Text("… \(x)") can print Optional(Optional("…")); resolve to a plain string first.
@@ -124,10 +129,19 @@ struct RoomLobby: View {
                     .frame(maxHeight: .infinity)
                     .nearbyCard(s)
                     VStack(alignment: .leading, spacing: 10 * s) {
-                        playersHeader
-                        if room.colorCount > 0 { colorRow }
-                        seats
-                        Spacer(minLength: 0)
+                        if inviting && canInvite {
+                            InvitePicker(room: room, onBack: { inviting = false })
+                        } else {
+                            playersHeader
+                            if room.colorCount > 0 { colorRow }
+                            seats
+                            if room.canInvite { WaitingInvites(room: room) }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                    // The picker closes by itself once the last seat is taken.
+                    .onChange(of: canInvite, initial: true) { _, can in
+                        if can { account.loadFriends() } else { inviting = false }
                     }
                     .padding(.horizontal, 16 * s)
                     .padding(.top, 12 * s)
@@ -239,6 +253,10 @@ struct RoomLobby: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if room.isHost {
+                if canInvite {
+                    Button { inviting = true } label: { Text("Invite friends") }
+                        .buttonStyle(SecondaryButtonStyle())
+                }
                 Button(action: room.start) { Text("Start").frame(minWidth: 94 * s) }
                     .buttonStyle(PrimaryButtonStyle())
                     .opacity(room.canStart ? 1 : 0.5)

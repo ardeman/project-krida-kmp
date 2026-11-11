@@ -52,7 +52,7 @@ final class Account: NSObject, ObservableObject {
 
     private static let userKey = "account.user"
     private static let keychainService = "com.ardeman.krida.account"
-    private static let api = Krida.shared.RELAY_URL.replacingOccurrences(of: "wss://", with: "https://")
+    static let api = Krida.shared.RELAY_URL.replacingOccurrences(of: "wss://", with: "https://")
 
     /// The signed-in player; nil when signed out.
     @Published private(set) var user: User?
@@ -71,6 +71,8 @@ final class Account: NSObject, ObservableObject {
     @Published var friendError: FriendError?
 
     private var token: String?
+    /// The session token, for `Invites`; nil when signed out.
+    var sessionToken: String? { token }
     private var webSession: ASWebAuthenticationSession?
 
     private override init() {
@@ -275,7 +277,7 @@ final class Account: NSObject, ObservableObject {
     }
 
     /// The status and body, or nil when the relay wasn't reached.
-    private func send(_ method: String, _ path: String, token: String? = nil, body: [String: String]? = nil) async -> (Int, Data)? {
+    func send(_ method: String, _ path: String, token: String? = nil, body: [String: String]? = nil) async -> (Int, Data)? {
         guard let url = URL(string: Self.api + path) else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = method

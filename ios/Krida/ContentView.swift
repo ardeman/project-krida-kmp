@@ -189,6 +189,8 @@ struct ContentView: View {
                 onClose: { scanning = false }
             )
         }
+        // Friend invites, over any menu screen.
+        .overlay { InviteLayer(onMenus: !keepAwake && !playingQuickMatch, onJoin: joinInvite) }
         .overlay { if starting { LoadingScreen().transition(.opacity) } }
         // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
         // comes (a join link straight into a room, a slow GPU). Same as Android.
@@ -217,6 +219,15 @@ struct ContentView: View {
     }
 
     /// VisionKit's scanner, after asking for the camera if needed.
+    /// Join on a friend's invite: straight into the room, as a room link would after Join.
+    private func joinInvite(_ invite: Invites.Invite) {
+        Invites.shared.dismiss(invite.id)
+        joining = false
+        creatingOnlineRoom = false
+        joinError = nil
+        room = NearbyRoom.join(code: invite.code, online: true, invite: invite.id)
+    }
+
     private func scanRoomQr() {
         joinError = nil
         Task {

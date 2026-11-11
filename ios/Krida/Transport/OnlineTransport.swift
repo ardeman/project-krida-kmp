@@ -201,7 +201,8 @@ class OnlineTransport: NSObject, Transport, URLSessionWebSocketDelegate {
 /// decimal string. When this phone's own socket drops, every guest is reported gone, and the
 /// relay reports them back once the socket is up again.
 final class OnlineHostTransport: OnlineTransport {
-    private let key = OnlineTransport.newHostKey()
+    /// The room's secret; also proves to the relay that an invite comes from the host.
+    let key = OnlineTransport.newHostKey()
     private var guests: [Int] = []
     /// Room metadata for the relay's public-room discovery; nil keeps legacy behaviour.
     private let game: String?

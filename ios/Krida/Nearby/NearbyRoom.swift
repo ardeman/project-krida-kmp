@@ -40,6 +40,15 @@ final class NearbyRoom: ObservableObject {
     @Published private(set) var ular: UlarTanggaTable?
     @Published private(set) var ludo: LudoTable?
 
+    /// Ids of the friend invites whose guests hold a seat now (host only).
+    @Published private(set) var joinedInvites: [String] = []
+
+    /// The online room's host key, which sending a friend invite needs; nil otherwise.
+    var hostKey: String? { (transport as? OnlineHostTransport)?.key }
+
+    /// The host of an online room may invite friends; a quick match fills its own seats.
+    var canInvite: Bool { isHost && online && hostKey != nil && quickMatchTarget == 0 }
+
     private let transport: Transport
     private var begin: (() -> Void)?
     private var guest: AnyObject?
@@ -137,6 +146,7 @@ final class NearbyRoom: ObservableObject {
         session.onPlayersChanged = { [weak self, weak session] list in
             guard let self, let session else { return }
             self.players = list
+            self.joinedInvites = session.joinedInvites
             (transport as? OnlineHostTransport)?.updateLobby(bots: list.filter { $0.bot }.count)
             self.fillQuickMatchSeats()
             self.canStart = session.canStart() && (self.quickMatchTarget == 0 ||
@@ -262,7 +272,8 @@ final class NearbyRoom: ObservableObject {
         return room
     }
 
-    static func join(code: String, online: Bool = false, reservation: String? = nil) -> NearbyRoom {
+    /// `invite`: the id of the friend invite this join answers, so the host sees "Joined".
+    static func join(code: String, online: Bool = false, reservation: String? = nil, invite: String? = nil) -> NearbyRoom {
         let relay = online ? OnlineGuestTransport(code: code, reservation: reservation) : nil
         let ble = online ? nil : BleGuestTransport(roomCode: code)
         let transport: Transport = (relay as Transport?) ?? ble!
@@ -271,6 +282,7 @@ final class NearbyRoom: ObservableObject {
         let join = GuestJoin(transport: transport, name: deviceName, platform: .ios,
                              rejoinToken: LastRoom.shared.token(for: code, online: online))
         room.join = join
+        join.invite = invite
         join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }
         join.onRejected = { [weak room] in room?.rejected($0) }
         join.onDisconnected = { [weak room] in room?.lost() }
