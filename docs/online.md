@@ -131,7 +131,7 @@ and the Pixel on different networks (one on mobile data).
       each invite through APNs; iOS (`Account/Push.swift`) asks for notifications when a
       signed-in player opens Invite friends or adds a friend, and a tapped notification
       joins the room from the menus. `npm run smoke:accounts` covers it against a mocked
-      APNs. Open: the owner setup below, then an iPhone check (app closed and in the
+      APNs. Open: deploying the relay (push to `main`), then an iPhone check (app closed and in the
       background); nothing has been sent through the real APNs yet.
 
     Owner setup for 10a (1 and 2 done; the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
@@ -143,12 +143,11 @@ and the Pixel on different networks (one on mobile data).
     `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` so deletion revokes access at
     Apple. (4) Update the store privacy answers from `docs/store.md`.
 
-    Owner setup for 10c-2: (1) Apple Developer › Keys: create a key with Apple Push
-    Notifications service (APNs) enabled and download the `.p8`. (2) In `relay/`:
-    `wrangler secret put APNS_KEY_ID` (the key's id), `wrangler secret put APNS_PRIVATE_KEY`
-    (the `.p8` contents) and, if not set yet, `wrangler secret put APPLE_TEAM_ID`
-    (`B36A8H9S8E`). (3) Push Notifications on the `com.ardeman.krida` App ID; Xcode's
-    automatic signing adds it on the next device build.
+    Owner setup for 10c-2: (1) and (2) done 2026-11-12. (1) Apple Developer › Keys: the
+    team's APNs key (Sandbox & Production, team scoped, shared by all the owner's apps; the
+    `.p8` is kept on the owner's Mac). (2) Relay secrets `APNS_KEY_ID`, `APNS_PRIVATE_KEY`
+    and `APPLE_TEAM_ID` are set. (3) Push Notifications on the `com.ardeman.krida` App ID;
+    Xcode's automatic signing adds it on the next device build.
 
 ## Public rooms and combined joining (2026-11-10)
 
