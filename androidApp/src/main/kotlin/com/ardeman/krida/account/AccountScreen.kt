@@ -51,6 +51,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import android.content.Intent
@@ -206,11 +207,13 @@ private fun OwnCode(code: String?) {
 private fun FriendsCard(modifier: Modifier) {
     var removing by remember { mutableStateOf<String?>(null) }
     val ready = Account.friendDraft.length == Krida.FRIEND_CODE_LENGTH && !Account.addingFriend
+    // Add and the keyboard's Done put the keyboard away, so the list and Back show again.
+    val focus = LocalFocusManager.current
     Column(modifier.card().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.account_friends), style = Theme.font(20, FontWeight.Black, Theme.ink))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            FriendCodeField(Modifier.weight(1f), onDone = { if (ready) Account.addFriend() })
-            PrimaryButton(stringResource(R.string.account_friend_add), onClick = Account::addFriend, enabled = ready)
+            FriendCodeField(Modifier.weight(1f), onDone = { focus.clearFocus(); if (ready) Account.addFriend() })
+            PrimaryButton(stringResource(R.string.account_friend_add), onClick = { focus.clearFocus(); Account.addFriend() }, enabled = ready)
         }
         Account.friendError?.let { error ->
             val message = when (error) {
