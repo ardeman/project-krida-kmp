@@ -45,6 +45,11 @@ struct ContentView: View {
     @ObservedObject private var ads = Ads.shared
     @ObservedObject private var lastRoom = LastRoom.shared
 
+    /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
+    private var keepAwake: Bool {
+        passAndPlay != nil || ularTable != nil || ludoTable != nil || room != nil
+    }
+
     var body: some View {
         Group {
             if let table = passAndPlay {
@@ -128,6 +133,9 @@ struct ContentView: View {
                 menu
             }
         }
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = keepAwake }
+        .onChange(of: keepAwake) { _, on in UIApplication.shared.isIdleTimerDisabled = on }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }

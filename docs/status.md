@@ -13,8 +13,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
 
 - Online: iOS ↔ Android room, rejoin (steps 4–5), public Create/Join and quick match,
   tapping a share link on both phones, emotes in a running game.
-- Nearby: iPhone ↔ Pixel room for ular tangga. Fix landed (guest connects and reads the
-  BLE `room` characteristic when the iOS ADV drops the local name); needs a device check.
+- Nearby: iPhone ↔ Pixel ular tangga room checked 2026-11-11 (Pixel joined iPhone host
+  lobby over BLE after the `room` characteristic fix).
 - Ludo: iPhone and Pixel (menu, this phone, nearby, online). Android and iOS are wired; not checked on a device.
 - iPhone: seat tiles and rule hint lines, loading screen, play card, ular tangga board.
 - Audio: SFX, voice-over and music not yet listened to by the owner.

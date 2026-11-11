@@ -12,13 +12,21 @@ trap 'rm -rf "$TMP"' EXIT
 
 command -v jq >/dev/null || { echo "jq not found (brew install jq)"; exit 1; }
 
-# First paired physical iOS device (devicectl also lists simulators).
+# First paired physical iPhone (devicectl also lists simulators). Newer Xcode may leave
+# reality null on a real phone; treat anything that isn't "simulated" as physical, and
+# prefer a wired / connected one when several are paired.
 xcrun devicectl list devices --json-output "$TMP/devices.json" >/dev/null
-DEVICE=$(jq -r '[.result.devices[]
-    | select(.hardwareProperties.reality == "physical"
+DEVICE=$(jq -r '
+  [.result.devices[]
+    | select((.hardwareProperties.reality // "physical") != "simulated"
              and .hardwareProperties.platform == "iOS"
-             and .connectionProperties.pairingState == "paired")][0]
-    | .hardwareProperties.udid // empty' "$TMP/devices.json")
+             and .connectionProperties.pairingState == "paired")]
+  | sort_by(
+      (if .connectionProperties.transportType == "wired" then 0 else 1 end),
+      (if (.connectionProperties.tunnelState // "") == "connected" then 0 else 1 end)
+    )
+  | .[0].hardwareProperties.udid // empty
+' "$TMP/devices.json")
 if [ -z "$DEVICE" ]; then
     echo "No paired iPhone found. Plug it in (or put it on the same Wi-Fi) and trust this Mac."
     exit 1

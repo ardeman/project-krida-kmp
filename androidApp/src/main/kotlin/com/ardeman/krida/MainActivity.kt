@@ -66,6 +66,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +74,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import android.view.WindowManager
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -237,6 +239,14 @@ class MainActivity : ComponentActivity() {
                 val table = passAndPlay ?: r?.congklak
                 val ular = ularTable ?: r?.ular
                 val ludo = ludoTable ?: r?.ludo
+                // Games and rooms can sit idle between turns / while waiting for a friend;
+                // keep the screen awake so the phone doesn't sleep mid-session.
+                val keepAwake = ludo != null || ular != null || table != null || r != null
+                DisposableEffect(keepAwake) {
+                    val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    if (keepAwake) window.addFlags(flag) else window.clearFlags(flag)
+                    onDispose { window.clearFlags(flag) }
+                }
                 when {
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
