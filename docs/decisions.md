@@ -121,6 +121,10 @@ in the same commit as the code.
   [mockup](mockups/friends.md).
 - **No Firebase** (2026-11-11): Android gets no FCM push. Invites on Android show while the
   app is open (over the relay) or come as a share link; iOS may use APNs.
+- **Invites** (2026-11-12): only the host of an online room invites, and only friends. An
+  invite is delivered over a per-account inbox WebSocket while the friend's app shows a
+  menu, and lasts 2 minutes. No switch to turn invites off yet. Approved
+  [mockup](mockups/invites.md).
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 

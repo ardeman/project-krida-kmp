@@ -121,6 +121,18 @@ class SessionTest {
     }
 
     @Test
+    fun invitedGuestShowsAsJoinedWhileSeated() {
+        host.addLocalPlayer("Redo", Platform.ANDROID)
+        guest("a")
+        val join = GuestJoin(net.guest("budi"), "budi", Platform.ANDROID)
+        join.invite = "invite-1"
+        net.connect("budi")
+        assertEquals(listOf("invite-1"), host.joinedInvites)
+        net.drop("budi")
+        assertEquals(emptyList(), host.joinedInvites)
+    }
+
+    @Test
     fun guestJoinRejoinsWithSavedToken() {
         host.addLocalPlayer("Redo", Platform.ANDROID)
         val first = guest("ayu-1")

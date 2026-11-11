@@ -124,6 +124,10 @@ and the Pixel on different networks (one on mobile data).
       iPhone checks.
     - [ ] **10c Invites.** iOS via APNs. Android without Firebase (owner, 2026-11-11):
       invites show while the app is open, over the relay, or arrive as a share link.
+      Approved [mockup](mockups/invites.md) (2026-11-12). 10c-1, in-app invites: the
+      relay (inbox, `POST /v1/invites`) and Android are built (2026-11-12); iOS, deploying
+      the relay and the phone checks are open. 10c-2, iPhone notifications, comes after
+      (needs an APNs key).
 
     Owner setup for 10a (1 done; 2 and the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
     redirect URI `https://krida-relay.ardeman.com/v1/auth/google/callback`, then

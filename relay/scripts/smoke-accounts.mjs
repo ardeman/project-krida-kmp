@@ -3,7 +3,7 @@
 // Usage: node scripts/smoke-accounts.mjs   (from relay/; needs no network or credentials)
 import { spawn } from "node:child_process";
 import { createHash, generateKeyPairSync, randomBytes, sign } from "node:crypto";
-import { createServer } from "node:http";
+import { createServer, request } from "node:http";
 import assert from "node:assert/strict";
 
 const RELAY_PORT = 8791;
@@ -158,6 +158,7 @@ async function run() {
   assert.deepEqual((await call("GET", "/v1/friends", { token: ayu })).data.friends, []);
   // Deleting an account takes it out of its friends' lists and frees nothing for reuse.
   assert.equal((await call("POST", "/v1/friends", { token: budi, json: { code: mine.data.code } })).status, 200);
+  await invites(ayu, budi, apple.data.user.id, reborn.data.user.id);
   assert.equal((await call("DELETE", "/v1/me", { token: budi })).status, 204);
   assert.deepEqual((await call("GET", "/v1/friends", { token: ayu })).data.friends, []);
   assert.equal((await call("POST", "/v1/friends", { token: ayu, json: { code: theirs } })).data.error, "code_not_found");
@@ -168,6 +169,103 @@ async function run() {
   // Rooms still answer next to the account routes.
   assert.equal((await call("GET", "/v1/rooms/ABC234")).status, 426);
   console.log("accounts smoke ok");
+}
+
+/** A room socket (no headers needed), open. */
+function roomSocket(query) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(`ws://localhost:${RELAY_PORT}/v1/rooms/${query}`);
+    ws.onopen = () => resolve(ws);
+    ws.onerror = reject;
+  });
+}
+
+/** The inbox socket by hand, since Node's WebSocket cannot send an Authorization header. */
+function inboxSocket(token) {
+  return new Promise((resolve, reject) => {
+    const req = request(`${relay}/v1/inbox`, {
+      headers: {
+        Connection: "Upgrade", Upgrade: "websocket", "Sec-WebSocket-Version": "13",
+        "Sec-WebSocket-Key": randomBytes(16).toString("base64"), ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    req.on("response", (res) => resolve({ status: res.statusCode }));
+    req.on("error", reject);
+    req.on("upgrade", (_res, socket, head) => {
+      const messages = [];
+      let waiting = null;
+      let buffer = head;
+      const read = (chunk) => {
+        buffer = Buffer.concat([buffer, chunk]);
+        // Server text frames are unmasked and short enough here for the 7-bit or 16-bit length.
+        while (buffer.length >= 2) {
+          const long = (buffer[1] & 0x7f) === 126;
+          const start = long ? 4 : 2;
+          const length = long ? buffer.readUInt16BE(2) : buffer[1] & 0x7f;
+          if (buffer.length < start + length) break;
+          if ((buffer[0] & 0x0f) === 1) messages.push(JSON.parse(buffer.subarray(start, start + length).toString()));
+          buffer = buffer.subarray(start + length);
+        }
+        if (waiting && messages.length) waiting(messages.shift());
+      };
+      socket.on("data", read);
+      read(Buffer.alloc(0));
+      resolve({
+        status: 101,
+        next: () => new Promise((done, fail) => {
+          if (messages.length) return done(messages.shift());
+          const timer = setTimeout(() => fail(new Error("no inbox message")), 5000);
+          waiting = (m) => { clearTimeout(timer); waiting = null; done(m); };
+        }),
+        send: (value) => {
+          const payload = Buffer.from(JSON.stringify(value));
+          const mask = randomBytes(4);
+          socket.write(Buffer.concat([Buffer.from([0x81, 0x80 | payload.length]), mask, payload.map((b, i) => b ^ mask[i % 4])]));
+        },
+        close: () => socket.destroy(),
+      });
+    });
+    req.end();
+  });
+}
+
+/** Invites: only the host of an open room invites, only friends, one live invite each. */
+async function invites(ayu, budi, ayuId, budiId) {
+  const key = "host-key-0123456789";
+  const host = await roomSocket(`ABC234?role=host&key=${key}&game=ludo&seats=3`);
+  const invite = (token, json) => call("POST", "/v1/invites", { token, json });
+  assert.equal((await inboxSocket()).status, 401);
+  assert.equal((await invite(undefined, { friendId: budiId, code: "ABC234", key })).status, 401);
+  assert.equal((await invite(ayu, { friendId: budiId, code: "abc", key })).data.error, "bad_request");
+  assert.equal((await invite(ayu, { friendId: "nobody", code: "ABC234", key })).data.error, "not_friends");
+  assert.equal((await invite(ayu, { friendId: budiId, code: "ABC234", key: "another-key-0123456789" })).data.error, "not_host");
+  assert.equal((await invite(ayu, { friendId: budiId, code: "ABC239", key })).data.error, "room_closed");
+
+  const phone = await inboxSocket(budi);
+  assert.equal(phone.status, 101);
+  const sent = await invite(ayu, { friendId: budiId, code: "ABC234", key });
+  assert.equal(sent.status, 200);
+  const got = await phone.next();
+  assert.ok(got.ttlMs > 100_000 && got.ttlMs <= 120_000);
+  delete got.ttlMs;
+  assert.deepEqual(got, { type: "invite", id: sent.data.id, from: { id: ayuId, name: "Ayu" }, code: "ABC234", game: "ludo", seats: 3, players: 1 });
+  assert.equal((await invite(ayu, { friendId: budiId, code: "ABC234", key })).data.error, "already_invited");
+  // A second device gets the waiting invite on connect; answering on one ends it on the other.
+  const tablet = await inboxSocket(budi);
+  assert.equal((await tablet.next()).id, sent.data.id);
+  phone.send({ type: "dismiss", id: sent.data.id });
+  assert.deepEqual(await tablet.next(), { type: "invite_end", id: sent.data.id });
+  tablet.close();
+
+  // A room that fills ends its invites, and takes no new ones.
+  const full = await roomSocket(`ABC235?role=host&key=${key}&game=congklak&seats=2`);
+  const second = await invite(ayu, { friendId: budiId, code: "ABC235", key });
+  assert.equal((await phone.next()).id, second.data.id);
+  const guest = await roomSocket("ABC235?role=guest");
+  assert.deepEqual(await phone.next(), { type: "invite_end", id: second.data.id });
+  assert.equal((await invite(ayu, { friendId: budiId, code: "ABC235", key })).data.error, "room_closed");
+  for (const socket of [host, full, guest]) socket.close(1000);
+  phone.close();
 }
 
 let failed = false;

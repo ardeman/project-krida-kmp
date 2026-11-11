@@ -28,6 +28,14 @@ class_name = "GroupMatchmaker"
 tag = "v3"
 new_sqlite_classes = ["GroupMatchmaker"]
 
+[[durable_objects.bindings]]
+name = "INBOXES"
+class_name = "Inbox"
+
+[[migrations]]
+tag = "v4"
+new_sqlite_classes = ["Inbox"]
+
 # Accounts (src/accounts.ts). Without a database_id, wrangler creates the database on the
 # first deploy; the tables are created by the Worker itself. Secrets, set once with
 # `wrangler secret put`: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and for revoking Apple

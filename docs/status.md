@@ -1,13 +1,15 @@
 # Status and open work
 
 What is still open outside the online plan (`docs/online.md` has its own steps). Update this
-file in the same commit when an item is done or a new one comes up. Last updated 2026-11-11.
+file in the same commit when an item is done or a new one comes up. Last updated 2026-11-12.
 
 ## Next
 
 - Online step 10b, friends list: relay, web, Android and iOS are built
   (`docs/mockups/friends.md`); deploying the relay and web and the phone checks are open.
-  Next is 10c: invites (no Firebase on Android).
+- Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay and Android are
+  built. Next: iOS (inbox client, lobby button and picker, invite card), then deploy the
+  relay and check on two signed-in phones. After that 10c-2, iPhone notifications.
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
   check, and D1 edit rights on the GitHub deploy token (the first deploy was run by hand).
 

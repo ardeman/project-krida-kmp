@@ -44,6 +44,8 @@ sealed class Message {
         val name: String,
         val platform: Platform,
         val rejoinToken: String? = null,
+        /** The id of the friend invite this join answers, so the host's picker shows "Joined". */
+        val invite: String? = null,
     ) : Message()
 
     /** host -> guest: you got a seat. Keep [rejoinToken] to reconnect. */

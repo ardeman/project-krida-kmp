@@ -43,6 +43,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Dropped-player countdown | `online/Waiting.kt` | `Nearby/Waiting.swift` |
 | Preset reactions (emotes) | `ui/Emotes.kt` (+ `core/protocol/Emotes.kt`) | `Support/Emotes.swift` |
 | Account (sign-in, sign out, delete, friends) | `account/Account.kt`, `AccountScreen.kt` | `Account/Account.swift`, `AccountScreen.swift` |
+| Friend invites (inbox, invite card, lobby picker) | `account/Invites.kt`, `account/InviteCard.kt`, `nearby/InvitePicker.kt` | not built yet (10c-1) |
 | Online create/join setup | `playonline/OnlineRoomScreens.kt` | `PlayOnline/OnlineRoomScreens.swift` |
 | Quick match | `playonline/PlayOnlineScreens.kt`, `QuickMatchClient.kt` | `PlayOnline/PlayOnlineScreens.swift`, `QuickMatchClient.swift` |
 | BLE | `ble/BleHostTransport.kt`, `BleGuestTransport.kt` | `Transport/BleHostTransport.swift`, `BleGuestTransport.swift` |

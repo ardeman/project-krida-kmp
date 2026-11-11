@@ -348,4 +348,18 @@
     <string name="account_friend_already">You\'re already friends.</string>
     <string name="account_friend_full">The friends list is full.</string>
     <string name="account_friend_too_many">Too many tries. Wait a few minutes.</string>
+    <string name="invite_friends">Invite friends</string>
+    <string name="invite_action">Invite</string>
+    <string name="invite_sent">Invite sent</string>
+    <string name="invite_joined">Joined</string>
+    <string name="invite_waiting">%1$s · invite sent</string>
+    <string name="invite_failed">The invite could not be sent.</string>
+    <string name="invite_no_friends">Add friends from your account first.</string>
+    <plurals name="invite_open_seats">
+        <item quantity="one">%d open seat</item>
+        <item quantity="other">%d open seats</item>
+    </plurals>
+    <string name="invite_card_title">%1$s invites you</string>
+    <string name="invite_card_detail">%1$s · room %2$s · %3$d of %4$d players</string>
+    <string name="invite_not_now">Not now</string>
 </resources>

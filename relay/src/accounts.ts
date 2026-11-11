@@ -1,7 +1,7 @@
 /**
  * Accounts (online steps 10a and 10b): sign in with Apple or Google, a session token, sign
- * out, account deletion and the friends list. Users, sessions and friends live in D1. Only the provider's user id and a display
- * name are stored; no email. Endpoints are documented under "Accounts" in docs/protocol.md.
+ * out, account deletion, the friends list and (10c) invites. Users, sessions and friends
+ * live in D1. Only the provider's user id and a display name are stored; no email. Endpoints are documented under "Accounts" in docs/protocol.md.
  *
  * Google runs as a browser flow through the relay (the client secret stays here), bound to
  * the app with a PKCE-style challenge so another app catching the krida:// redirect cannot
@@ -9,6 +9,7 @@
  * Apple's keys.
  */
 import type { Env } from "./index";
+import { INVITE_MS, type Invite } from "./inbox";
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 const STATE_MS = 10 * 60_000;
@@ -30,6 +31,12 @@ const FRIENDS_MAX = 100;
 /** Adds by code per account in one window, so codes cannot be guessed in bulk. */
 const ADD_TRIES = 20;
 const ADD_WINDOW_MS = 10 * 60_000;
+/** Invites per account in one window. */
+const INVITE_TRIES = 30;
+const INVITE_WINDOW_MS = 10 * 60_000;
+/** Same shapes as the room router in src/index.ts. */
+const ROOM_CODE_RE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/;
+const HOST_KEY_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -47,6 +54,7 @@ const SCHEMA = [
      a TEXT NOT NULL, b TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (a, b))`,
   `CREATE INDEX IF NOT EXISTS friends_b ON friends (b)`,
   `CREATE TABLE IF NOT EXISTS friend_tries (user_id TEXT PRIMARY KEY, started INTEGER NOT NULL, count INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS invite_tries (user_id TEXT PRIMARY KEY, started INTEGER NOT NULL, count INTEGER NOT NULL)`,
 ];
 
 interface User {
@@ -62,7 +70,8 @@ let appleKeys: { at: number; url: string; keys: JsonWebKey[] } | undefined;
 export async function handleAccounts(request: Request, env: Env, url: URL): Promise<Response | null> {
   const path = url.pathname;
   const friends = path === "/v1/friends" || path.startsWith("/v1/friends/");
-  if (path !== "/v1/me" && !path.startsWith("/v1/auth/") && !friends) return null;
+  const invites = path === "/v1/inbox" || path === "/v1/invites";
+  if (path !== "/v1/me" && !path.startsWith("/v1/auth/") && !friends && !invites) return null;
   const db = env.DB;
   if (!db) return fail(503, "accounts_unavailable");
   try {
@@ -91,6 +100,15 @@ export async function handleAccounts(request: Request, env: Env, url: URL): Prom
     if (path === "/v1/friends" && method === "POST") return addFriend(db, user, await body(request));
     const id = path.slice("/v1/friends/".length);
     if (path !== "/v1/friends" && method === "DELETE") return removeFriend(db, user, id);
+  }
+  if (invites) {
+    const user = await authed(db, request);
+    if (!user) return fail(401, "unauthorized");
+    if (path === "/v1/invites" && method === "POST") return sendInvite(env, db, user, await body(request));
+    if (path === "/v1/inbox" && method === "GET") {
+      if (request.headers.get("Upgrade") !== "websocket") return fail(426, "expected_websocket");
+      return inbox(env, user.id).fetch(request);
+    }
   }
   return fail(404, "not_found");
 }
@@ -297,8 +315,10 @@ async function deleteAccount(env: Env, db: D1Database, request: Request): Promis
     db.prepare("DELETE FROM friends WHERE a = ? OR b = ?").bind(user.id, user.id),
     db.prepare("DELETE FROM friend_codes WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM friend_tries WHERE user_id = ?").bind(user.id),
+    db.prepare("DELETE FROM invite_tries WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
   ]);
+  await inbox(env, user.id).fetch(new Request("https://internal/clear", { method: "POST" })).catch(() => undefined);
   return new Response(null, { status: 204 });
 }
 
@@ -403,6 +423,48 @@ async function friendCode(db: D1Database, userId: string): Promise<string> {
     if (row) return row.code;
   }
   throw new Error("no free friend code");
+}
+
+// Invites
+
+function inbox(env: Env, userId: string): DurableObjectStub {
+  return env.INBOXES.get(env.INBOXES.idFromName(userId));
+}
+
+/**
+ * The host of an open online room invites a friend. The room checks the host key and the
+ * open seat, and allows one live invite per friend; the invite then goes to the friend's
+ * inbox for two minutes.
+ */
+async function sendInvite(env: Env, db: D1Database, user: User, input: Record<string, unknown>): Promise<Response> {
+  const friendId = typeof input.friendId === "string" ? input.friendId : "";
+  const code = typeof input.code === "string" ? input.code : "";
+  const key = typeof input.key === "string" ? input.key : "";
+  if (!friendId || !ROOM_CODE_RE.test(code) || !HOST_KEY_RE.test(key)) return fail(400, "bad_request");
+  const now = Date.now();
+  const tries = await db.prepare(
+    `INSERT INTO invite_tries (user_id, started, count) VALUES (?1, ?2, 1)
+     ON CONFLICT (user_id) DO UPDATE SET
+       count = CASE WHEN started < ?3 THEN 1 ELSE count + 1 END,
+       started = CASE WHEN started < ?3 THEN ?2 ELSE started END
+     RETURNING count`,
+  ).bind(user.id, now, now - INVITE_WINDOW_MS).first<{ count: number }>();
+  if ((tries?.count ?? 0) > INVITE_TRIES) return fail(429, "too_many_invites");
+  const [a, b] = user.id < friendId ? [user.id, friendId] : [friendId, user.id];
+  if (!(await db.prepare("SELECT 1 FROM friends WHERE a = ? AND b = ?").bind(a, b).first())) return fail(403, "not_friends");
+
+  const id = randomToken(16);
+  const reply = await env.ROOMS.get(env.ROOMS.idFromName(code)).fetch(new Request("https://internal/invite", {
+    method: "POST", body: JSON.stringify({ key, id, to: friendId }),
+  }));
+  const room = (await reply.json()) as { error?: string; game: string; seats: number; players: number };
+  if (room.error) return fail(room.error === "not_host" ? 403 : 409, room.error);
+  const invite: Invite = {
+    id, from: { id: user.id, name: user.name }, code,
+    game: room.game, seats: room.seats, players: room.players, expires: now + INVITE_MS,
+  };
+  await inbox(env, friendId).fetch(new Request("https://internal/deliver", { method: "POST", body: JSON.stringify(invite) }));
+  return json({ id, ttlMs: INVITE_MS });
 }
 
 // Helpers

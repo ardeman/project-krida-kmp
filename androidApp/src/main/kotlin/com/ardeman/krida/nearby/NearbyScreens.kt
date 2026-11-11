@@ -70,6 +70,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ardeman.krida.R
+import androidx.compose.runtime.LaunchedEffect
+import com.ardeman.krida.account.Account
 import com.ardeman.krida.congklak.CongklakRulesDialog
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.LobbyOptions
@@ -153,6 +155,10 @@ private fun inkOn(color: Color) = if (color.luminance() > 0.5f) Theme.inkOnLight
 fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
     val names = colorNames()
     val title = gameTitle(room.game)
+    // Invites need an account; the picker closes by itself once the last seat is taken.
+    val canInvite = room.canInvite && Account.user != null && room.players.size < room.maxPlayers
+    var inviting by remember { mutableStateOf(false) }
+    LaunchedEffect(canInvite) { if (canInvite) Account.loadFriends() else inviting = false }
     val subtitle = if (room.isHost) {
         subtitle(room.online)
     } else {
@@ -186,9 +192,14 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
             Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            PlayersHeader(room, onLeave)
-            if (room.colorCount > 0) ColorRow(room, names)
-            Seats(room, names)
+            if (inviting && canInvite) {
+                InvitePicker(room, onBack = { inviting = false })
+            } else {
+                PlayersHeader(room, onLeave, onInvite = if (canInvite) ({ inviting = true }) else null)
+                if (room.colorCount > 0) ColorRow(room, names)
+                Seats(room, names)
+                if (room.canInvite) WaitingInvites(room)
+            }
         }
     }
 }
@@ -303,7 +314,7 @@ private fun LobbyRules(room: NearbyRoom) {
 }
 
 @Composable
-private fun PlayersHeader(room: NearbyRoom, onLeave: () -> Unit) {
+private fun PlayersHeader(room: NearbyRoom, onLeave: () -> Unit, onInvite: (() -> Unit)? = null) {
     val count = room.players.size
     val hint = when {
         !room.isHost -> R.string.nearby_hint_guest
@@ -318,6 +329,7 @@ private fun PlayersHeader(room: NearbyRoom, onLeave: () -> Unit) {
             Text(stringResource(hint), style = Theme.font(12, FontWeight.Bold, Theme.muted), maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         if (room.isHost) {
+            if (onInvite != null) SecondaryButton(stringResource(R.string.invite_friends), onClick = onInvite)
             PrimaryButton(stringResource(R.string.nearby_start), onClick = room::start, enabled = room.canStart, modifier = Modifier.widthIn(min = 130.dp))
         } else {
             SecondaryButton(stringResource(R.string.nearby_leave_room), onClick = onLeave, tint = Theme.muted, modifier = Modifier.widthIn(min = 130.dp))

@@ -53,6 +53,7 @@ class HostSession<S, M>(
         var connected: Boolean = true,
         var disconnectedAt: Long = 0,
         var color: Int = -1,        // -1 = the game has no colours
+        var invite: String? = null, // the friend invite this guest answered, if any
     )
 
     private val seats = mutableListOf<Seat>()
@@ -95,6 +96,9 @@ class HostSession<S, M>(
                 local = s.peer == null && s.bot == null, bot = s.bot != null,
                 color = s.color.takeIf { it >= 0 })
         }
+
+    /** Ids of the friend invites whose guests hold a seat now. Read it in [onPlayersChanged]. */
+    val joinedInvites: List<String> get() = seats.mapNotNull { it.invite }
 
     /** Adds a player sitting at this device. Returns the seat, or null if full/started. */
     fun addLocalPlayer(name: String, platform: Platform): Int? {
@@ -284,7 +288,7 @@ class HostSession<S, M>(
         if (started) return reject(peer, RejectReason.STARTED)
         if (seats.size >= capacity()) return reject(peer, RejectReason.FULL)
 
-        val seat = seat(Seat(hello.name.take(24), hello.platform, peer, newToken()))
+        val seat = seat(Seat(hello.name.take(24), hello.platform, peer, newToken(), invite = hello.invite?.take(64)))
         send(peer, Message.Welcome(seats.lastIndex, roomCode, rules.id, seat.token))
         lobbyChanged()
     }

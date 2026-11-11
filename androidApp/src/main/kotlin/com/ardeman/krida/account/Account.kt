@@ -46,13 +46,16 @@ object Account {
     private const val KEY_TOKEN = "account.token"
     private const val KEY_USER = "account.user"
     private const val KEY_VERIFIER = "account.verifier"
-    private val API = Krida.RELAY_URL.replaceFirst("ws", "http")
-    private val JSON_TYPE = "application/json".toMediaType()
+    internal val API = Krida.RELAY_URL.replaceFirst("ws", "http")
+    internal val JSON_TYPE = "application/json".toMediaType()
 
     private lateinit var app: Context
     private val main = Handler(Looper.getMainLooper())
     private val http by lazy { OkHttpClient() }
     private var token: String? = null
+
+    /** The session token, for [Invites]; null when signed out. */
+    internal val sessionToken: String? get() = token
 
     /** The signed-in player; null when signed out. */
     var user by mutableStateOf<User?>(null)
@@ -249,7 +252,7 @@ object Account {
     }
 
     /** Runs [request]; [done] gets the status (0 when the relay wasn't reached) and JSON body on the main thread. */
-    private fun send(request: Request, done: (Int, JsonObject?) -> Unit) {
+    internal fun send(request: Request, done: (Int, JsonObject?) -> Unit) {
         http.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 main.post { done(0, null) }

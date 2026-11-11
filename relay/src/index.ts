@@ -1,4 +1,5 @@
 export { GroupMatchmaker } from "./group-matchmaker";
+export { Inbox } from "./inbox";
 import { handleAccounts } from "./accounts";
 /**
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
@@ -13,6 +14,8 @@ export interface Env {
   ROOMS: DurableObjectNamespace;
   MATCHMAKERS: DurableObjectNamespace;
   GROUP_MATCHMAKERS: DurableObjectNamespace;
+  /** One invites inbox per account (src/inbox.ts). */
+  INBOXES: DurableObjectNamespace;
   /** Accounts (src/accounts.ts). Optional so the relay still serves rooms without them. */
   DB?: D1Database;
   GOOGLE_CLIENT_ID?: string;
@@ -103,6 +106,10 @@ export default {
 type Attachment = { role: "host" } | { role: "guest"; id: number };
 type RoomListing = { code: string; game: string; seats: number; public: boolean; started: boolean; bots: number };
 type Reservation = { token: string; expires: number };
+/** An invite the host sent from this room: [to] is the invited account. */
+type RoomInvite = { id: string; to: string; expires: number };
+/** Same as INVITE_MS in src/inbox.ts. */
+const INVITE_MS = 2 * 60_000;
 
 
 interface Bucket {
@@ -130,6 +137,7 @@ export class Room implements DurableObject {
         await this.ctx.storage.put("reservations", reservations.filter(r => !tokens.includes(r.token)));
         return Response.json({ ok: true });
       }
+      if (url.pathname === "/invite") return this.invite(await request.json());
       return url.searchParams.get("role") === "host"
         ? this.acceptHost(url.searchParams.get("key")!, url)
         : this.acceptGuest(url.searchParams.get("reservation"));
@@ -151,6 +159,44 @@ export class Room implements DurableObject {
     const added = Array.from({ length: count }, () => ({ token: crypto.randomUUID(), expires: Date.now() + 15_000 }));
     await this.ctx.storage.put("reservations", [...reservations, ...added]);
     return Response.json({ tokens: added.map(r => r.token) });
+  }
+
+  /**
+   * The host invites a friend (POST /v1/invites): checks the caller holds the host key and a
+   * seat is open, and remembers the invite so it can be ended when the room shuts.
+   */
+  private async invite(body: unknown): Promise<Response> {
+    const { key, id, to } = body as { key: string; id: string; to: string };
+    const stored = await this.ctx.storage.get<string>("hostKey");
+    const room = await this.ctx.storage.get<RoomListing>("listing");
+    if (stored === undefined || !room) return Response.json({ error: "room_closed" });
+    if (stored !== key) return Response.json({ error: "not_host" });
+    const players = 1 + room.bots + this.guests().length;
+    if (room.started || !this.hosts().length || players + (await this.reservations()).length >= room.seats) {
+      return Response.json({ error: "room_closed" });
+    }
+    const now = Date.now();
+    const invites = ((await this.ctx.storage.get<RoomInvite[]>("invites")) ?? []).filter(i => i.expires > now);
+    if (invites.some(i => i.to === to)) return Response.json({ error: "already_invited" });
+    await this.ctx.storage.put("invites", [...invites, { id, to, expires: now + INVITE_MS }]);
+    return Response.json({ game: room.game, seats: room.seats, players });
+  }
+
+  /** Ends the room's open invites once it started or filled, or ([force]) when it closes. */
+  private async endInvites(force = false): Promise<void> {
+    const invites = await this.ctx.storage.get<RoomInvite[]>("invites");
+    if (!invites?.length) return;
+    if (!force) {
+      const room = await this.ctx.storage.get<RoomListing>("listing");
+      if (room && !room.started && 1 + room.bots + this.guests().length < room.seats) return;
+    }
+    await this.ctx.storage.delete("invites");
+    const now = Date.now();
+    await Promise.all(invites.filter(i => i.expires > now).map(i =>
+      this.env.INBOXES.get(this.env.INBOXES.idFromName(i.to)).fetch(new Request("https://internal/end", {
+        method: "POST", body: JSON.stringify({ id: i.id }),
+      })).catch(() => undefined),
+    ));
   }
 
   private async publish(): Promise<void> {
@@ -218,6 +264,7 @@ export class Room implements DurableObject {
     const hosts = this.hosts();
     for (const host of hosts) sendQuietly(host, frame(KIND_CONNECTED, id));
     if (hosts.length > 0) sendQuietly(server, frame(KIND_CONNECTED, HOST_PEER));
+    await this.endInvites();
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -261,6 +308,7 @@ export class Room implements DurableObject {
         await this.ctx.storage.put("listing", room);
         if (room.started) await this.ctx.storage.delete("reservations");
         await this.publish();
+        await this.endInvites();
       } catch { closeQuietly(ws, CLOSE.badRequest, "bad lobby status"); }
       return;
     }
@@ -275,9 +323,11 @@ export class Room implements DurableObject {
             await this.ctx.storage.put("listing", room);
             await this.ctx.storage.delete("reservations");
             await this.publish();
+            await this.endInvites();
           } else if (message.type === "lobby" && Array.isArray(message.players)) {
             room.bots = message.players.filter((p: { bot?: boolean }) => p.bot).length;
             await this.ctx.storage.put("listing", room);
+            await this.endInvites();
           }
         } catch { /* Game payloads remain opaque unless they carry lobby lifecycle metadata. */ }
       }
@@ -328,6 +378,7 @@ export class Room implements DurableObject {
     if (this.hosts().length > 0) return;
     for (const guest of this.guests()) closeQuietly(guest, CLOSE.hostGone, "host gone");
     await this.publish();
+    await this.endInvites(true);
     await this.ctx.storage.deleteAll();
   }
 

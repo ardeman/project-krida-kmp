@@ -6,6 +6,7 @@ import ts from 'typescript';
 async function load(file) {
   const source = (await readFile(new URL(`../src/${file}.ts`, import.meta.url), 'utf8'))
     .replace('export { GroupMatchmaker } from "./group-matchmaker";', '')
+    .replace('export { Inbox } from "./inbox";', '')
     // A data: module cannot resolve relative imports; these tests don't touch the account routes.
     .replace('import { handleAccounts } from "./accounts";', 'const handleAccounts = async () => null;');
   const code = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;

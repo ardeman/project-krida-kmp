@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1796" height="1386" viewBox="0 0 1796 1386">
+<rect x="0" y="0" width="1796" height="1386" rx="0" fill="#191512" stroke="none" stroke-width="1.5"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Host lobby, signed in / Light</text>
+<defs><radialGradient id="bg0" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg0)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="290" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="44" y="112" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">CODE</text>
+<text x="294" y="112" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="end">Private</text>
+<rect x="44" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="72" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">K</text>
+<rect x="108" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="136" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">7</text>
+<rect x="172" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="200" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">M</text>
+<rect x="236" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="264" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">2</text>
+<rect x="44" y="194" width="110" height="110" rx="10" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="52" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="166" y="194" width="128" height="40" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="230.0" y="220.0" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Share</text>
+<text x="166" y="258" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Friends join with</text>
+<text x="166" y="276" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">this code or QR.</text>
+<rect x="328" y="82" width="522" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="344" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Players · 2 of 4</text>
+<rect x="578" y="94" width="150" height="40" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="653.0" y="120.0" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite friends</text>
+<rect x="738" y="94" width="96" height="40" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="786.0" y="120.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Start</text>
+<rect x="344" y="150" width="247" height="64" rx="14" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="374" cy="182" r="18" fill="#D9483B"/>
+<text x="402" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Ardeman</text>
+<text x="402" y="198" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">Host</text>
+<rect x="601" y="150" width="247" height="64" rx="14" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="631" cy="182" r="18" fill="#3F8FD9"/>
+<text x="659" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Sari</text>
+<rect x="344" y="224" width="247" height="64" rx="14" fill="none" stroke="#E2CFB7" stroke-width="1.5" stroke-dasharray="6 5"/>
+<circle cx="374" cy="256" r="18" fill="none" stroke="#E2CFB7" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="374" y="262" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">3</text>
+<rect x="465" y="234" width="116" height="44" rx="22.0" fill="#F6E6D3" stroke="none" stroke-width="1.5"/>
+<text x="523.0" y="261.0" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">+ Computer</text>
+<rect x="601" y="224" width="247" height="64" rx="14" fill="none" stroke="#E2CFB7" stroke-width="1.5" stroke-dasharray="6 5"/>
+<circle cx="631" cy="256" r="18" fill="none" stroke="#E2CFB7" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="631" y="262" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">4</text>
+<rect x="722" y="234" width="116" height="44" rx="22.0" fill="#F6E6D3" stroke="none" stroke-width="1.5"/>
+<text x="780.0" y="261.0" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">+ Computer</text>
+<text x="344" y="318" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Budi · invite sent</text>
+</g>
+<text x="906" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Host lobby, signed in / Dark</text>
+<defs><radialGradient id="bg1" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg1)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="290" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="44" y="112" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">CODE</text>
+<text x="294" y="112" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="end">Private</text>
+<rect x="44" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="72" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">K</text>
+<rect x="108" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="136" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">7</text>
+<rect x="172" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="200" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">M</text>
+<rect x="236" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="264" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">2</text>
+<rect x="44" y="194" width="110" height="110" rx="10" fill="#FFFFFF" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="52" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="166" y="194" width="128" height="40" rx="14" fill="#2A221C" stroke="#C9783A" stroke-width="1.5"/>
+<text x="230.0" y="220.0" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Share</text>
+<text x="166" y="258" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Friends join with</text>
+<text x="166" y="276" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">this code or QR.</text>
+<rect x="328" y="82" width="522" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="344" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Players · 2 of 4</text>
+<rect x="578" y="94" width="150" height="40" rx="14" fill="#2A221C" stroke="#C9783A" stroke-width="1.5"/>
+<text x="653.0" y="120.0" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite friends</text>
+<rect x="738" y="94" width="96" height="40" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="786.0" y="120.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Start</text>
+<rect x="344" y="150" width="247" height="64" rx="14" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="374" cy="182" r="18" fill="#D9483B"/>
+<text x="402" y="180" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Ardeman</text>
+<text x="402" y="198" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">Host</text>
+<rect x="601" y="150" width="247" height="64" rx="14" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="631" cy="182" r="18" fill="#3F8FD9"/>
+<text x="659" y="180" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Sari</text>
+<rect x="344" y="224" width="247" height="64" rx="14" fill="none" stroke="#3A3027" stroke-width="1.5" stroke-dasharray="6 5"/>
+<circle cx="374" cy="256" r="18" fill="none" stroke="#3A3027" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="374" y="262" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">3</text>
+<rect x="465" y="234" width="116" height="44" rx="22.0" fill="#3A2C20" stroke="none" stroke-width="1.5"/>
+<text x="523.0" y="261.0" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">+ Computer</text>
+<rect x="601" y="224" width="247" height="64" rx="14" fill="none" stroke="#3A3027" stroke-width="1.5" stroke-dasharray="6 5"/>
+<circle cx="631" cy="256" r="18" fill="none" stroke="#3A3027" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="631" y="262" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">4</text>
+<rect x="722" y="234" width="116" height="44" rx="22.0" fill="#3A2C20" stroke="none" stroke-width="1.5"/>
+<text x="780.0" y="261.0" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">+ Computer</text>
+<text x="344" y="318" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Budi · invite sent</text>
+</g>
+<text x="16" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Invite friends / Light</text>
+<defs><radialGradient id="bg2" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,510)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg2)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="290" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="44" y="112" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">CODE</text>
+<text x="294" y="112" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="end">Private</text>
+<rect x="44" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="72" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">K</text>
+<rect x="108" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="136" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">7</text>
+<rect x="172" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="200" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">M</text>
+<rect x="236" y="124" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="264" y="162" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">2</text>
+<rect x="44" y="194" width="110" height="110" rx="10" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="52" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="166" y="194" width="128" height="40" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="230.0" y="220.0" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Share</text>
+<text x="166" y="258" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Friends join with</text>
+<text x="166" y="276" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">this code or QR.</text>
+<rect x="328" y="82" width="522" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="344" y="94" width="40" height="40" rx="20" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="364" y="121" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="24" font-weight="700" text-anchor="middle">‹</text>
+<text x="396" y="121" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Invite friends</text>
+<text x="834" y="121" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="end">2 open seats</text>
+<circle cx="364" cy="170" r="16" fill="#F6E6D3"/>
+<text x="392" y="176" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Sari</text>
+<text x="834" y="176" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="end">Joined</text>
+<line x1="344" y1="197" x2="834" y2="197" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="364" cy="224" r="16" fill="#F6E6D3"/>
+<text x="392" y="230" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Budi</text>
+<text x="834" y="230" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="end">Invite sent</text>
+<line x1="344" y1="251" x2="834" y2="251" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="364" cy="278" r="16" fill="#F6E6D3"/>
+<text x="392" y="284" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Dewi</text>
+<rect x="738" y="258" width="96" height="40" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="786.0" y="284.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite</text>
+<line x1="344" y1="305" x2="834" y2="305" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="364" cy="332" r="16" fill="#F6E6D3"/>
+<text x="392" y="338" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Player</text>
+<rect x="738" y="312" width="96" height="40" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="786.0" y="338.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite</text>
+</g>
+<text x="906" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Invite friends / Dark</text>
+<defs><radialGradient id="bg3" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,510)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg3)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="290" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="44" y="112" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">CODE</text>
+<text x="294" y="112" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="end">Private</text>
+<rect x="44" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="72" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">K</text>
+<rect x="108" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="136" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">7</text>
+<rect x="172" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="200" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">M</text>
+<rect x="236" y="124" width="56" height="56" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="264" y="162" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">2</text>
+<rect x="44" y="194" width="110" height="110" rx="10" fill="#FFFFFF" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="52" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="52" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="71" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="90" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="240" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="109" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="202" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="221" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="259" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="128" y="278" width="17" height="17" rx="2" fill="#2B1D14" stroke="none" stroke-width="1.5"/>
+<rect x="166" y="194" width="128" height="40" rx="14" fill="#2A221C" stroke="#C9783A" stroke-width="1.5"/>
+<text x="230.0" y="220.0" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Share</text>
+<text x="166" y="258" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Friends join with</text>
+<text x="166" y="276" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">this code or QR.</text>
+<rect x="328" y="82" width="522" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="344" y="94" width="40" height="40" rx="20" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="364" y="121" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="24" font-weight="700" text-anchor="middle">‹</text>
+<text x="396" y="121" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Invite friends</text>
+<text x="834" y="121" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="end">2 open seats</text>
+<circle cx="364" cy="170" r="16" fill="#3A2C20"/>
+<text x="392" y="176" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Sari</text>
+<text x="834" y="176" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="end">Joined</text>
+<line x1="344" y1="197" x2="834" y2="197" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="364" cy="224" r="16" fill="#3A2C20"/>
+<text x="392" y="230" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Budi</text>
+<text x="834" y="230" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="end">Invite sent</text>
+<line x1="344" y1="251" x2="834" y2="251" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="364" cy="278" r="16" fill="#3A2C20"/>
+<text x="392" y="284" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Dewi</text>
+<rect x="738" y="258" width="96" height="40" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="786.0" y="284.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite</text>
+<line x1="344" y1="305" x2="834" y2="305" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="364" cy="332" r="16" fill="#3A2C20"/>
+<text x="392" y="338" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="start">Player</text>
+<rect x="738" y="312" width="96" height="40" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="786.0" y="338.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Invite</text>
+</g>
+<text x="16" y="954" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Invite received, app open on a menu / Light</text>
+<defs><radialGradient id="bg4" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,968)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg4)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Ular tangga</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="0" y="0" width="874" height="402" rx="12" fill="#000000" opacity="0.35"/>
+<rect x="197" y="76" width="480" height="250" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="437" cy="124" r="28" fill="#F6E6D3"/>
+<text x="437" y="132" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="24" font-weight="700" text-anchor="middle">✉</text>
+<text x="437" y="186" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman invites you</text>
+<text x="437" y="212" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Ular tangga · room K7M2 · 2 of 4 players</text>
+<rect x="221" y="258" width="210" height="48" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="326.0" y="288.0" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Not now</text>
+<rect x="443" y="258" width="210" height="48" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="548.0" y="288.0" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Join</text>
+</g>
+<text x="906" y="954" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">iPhone notification, app closed / Dark</text>
+<defs><radialGradient id="bg5" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,968)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg5)" stroke="none" stroke-width="1.5"/>
+<rect x="157" y="40" width="560" height="84" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="175" y="58" width="48" height="48" rx="12" fill="#C9783A" stroke="none" stroke-width="1.5"/>
+<text x="199" y="91" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="26" font-weight="800" text-anchor="middle">K</text>
+<text x="237" y="76" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="800" text-anchor="start">Krida</text>
+<text x="699" y="76" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="end">now</text>
+<text x="237" y="98" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="start">Ardeman invites you to play Ular tangga</text>
+<text x="437" y="180" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">iPhone only, with the app closed or in the background.</text>
+<text x="437" y="204" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Tapping it opens the room, like a room link.</text>
+<text x="437" y="252" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Android: no push. The host uses Share to send the room link.</text>
+</g>
+</svg>

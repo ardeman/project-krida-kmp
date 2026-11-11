@@ -338,4 +338,17 @@
     <string name="account_friend_already">Kalian sudah berteman.</string>
     <string name="account_friend_full">Daftar teman sudah penuh.</string>
     <string name="account_friend_too_many">Terlalu banyak percobaan. Tunggu beberapa menit.</string>
+    <string name="invite_friends">Undang teman</string>
+    <string name="invite_action">Undang</string>
+    <string name="invite_sent">Undangan terkirim</string>
+    <string name="invite_joined">Sudah masuk</string>
+    <string name="invite_waiting">%1$s · undangan terkirim</string>
+    <string name="invite_failed">Undangan tidak terkirim.</string>
+    <string name="invite_no_friends">Tambah teman dulu dari akunmu.</string>
+    <plurals name="invite_open_seats">
+        <item quantity="other">%d kursi kosong</item>
+    </plurals>
+    <string name="invite_card_title">%1$s mengundangmu</string>
+    <string name="invite_card_detail">%1$s · room %2$s · %3$d dari %4$d pemain</string>
+    <string name="invite_not_now">Nanti saja</string>
 </resources>

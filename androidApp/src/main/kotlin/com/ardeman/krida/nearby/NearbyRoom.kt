@@ -97,6 +97,16 @@ class NearbyRoom private constructor(
     var ludo by mutableStateOf<LudoTable?>(null)
         private set
 
+    /** Ids of the friend invites whose guests hold a seat now (host only). */
+    var joinedInvites by mutableStateOf<List<String>>(emptyList())
+        private set
+
+    /** The online room's host key, which sending a friend invite needs; null otherwise. */
+    val hostKey: String? get() = (transport as? OnlineHostTransport)?.key
+
+    /** The host of an online room may invite friends; a quick match fills its own seats. */
+    val canInvite: Boolean get() = isHost && online && hostKey != null && quickMatchTarget == 0
+
     val failed: Boolean get() = stage !in listOf(Stage.SEARCHING, Stage.CONNECTING, Stage.LOBBY)
 
     /** What the host chose, for [retry]. */
@@ -192,6 +202,7 @@ class NearbyRoom private constructor(
         colorCount = session.colorCount
         session.onPlayersChanged = { list ->
             players = list
+            joinedInvites = session.joinedInvites
             (transport as? OnlineHostTransport)?.updateLobby(list.count { it.bot })
             fillQuickMatchSeats()
             canStart = session.canStart() && (quickMatchTarget == 0 ||
@@ -317,12 +328,14 @@ class NearbyRoom private constructor(
             return room
         }
 
-        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null): NearbyRoom {
+        /** [invite]: the id of the friend invite this join answers, so the host sees "Joined". */
+        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null, invite: String? = null): NearbyRoom {
             val transport: Transport = if (online) OnlineGuestTransport(code, reservation) else BleGuestTransport(context, code)
             val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
             // Joining a room this device has a seat in asks for that seat back.
             val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online))
             room.join = join
+            join.invite = invite
             join.onConnected = { if (room.stage == Stage.SEARCHING) room.stage = Stage.CONNECTING }
             join.onRejected = room::rejected
             join.onDisconnected = room::lost

@@ -33,6 +33,9 @@ class GuestJoin(
     var rejoinToken: String? = rejoinToken
         private set
 
+    /** Set before the host connects when the join answers a friend invite: its id, sent in Hello. */
+    var invite: String? = null
+
     /** The host answered (a BLE link is up); Welcome or Reject follows. */
     var onConnected: (() -> Unit)? = null
     /**
@@ -63,7 +66,7 @@ class GuestJoin(
     }
 
     override fun onPeerConnected(peer: String) {
-        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, rejoinToken)))
+        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, rejoinToken, invite)))
         onConnected?.invoke()
     }
 

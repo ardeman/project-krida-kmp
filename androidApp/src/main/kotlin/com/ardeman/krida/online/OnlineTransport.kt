@@ -160,7 +160,8 @@ abstract class OnlineTransport(protected val code: String) : Transport {
  */
 class OnlineHostTransport(
     code: String,
-    private val key: String = newHostKey(),
+    /** The room's secret; also proves to the relay that an invite comes from the host. */
+    val key: String = newHostKey(),
     private val game: String? = null,
     private val seats: Int = 4,
     private val publicRoom: Boolean = false,

@@ -31,7 +31,7 @@ opaque JSON value owned by each game's `GameRules`.
 
 | type | Direction | Fields |
 |---|---|---|
-| `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?` |
+| `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?`, `invite?` |
 | `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
 | `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves), `capacity?` (selected lobby size; absent = game maximum), `options?` (the host's rule options; see below) |
@@ -317,6 +317,8 @@ accounts. Users and sessions live in Cloudflare D1: the provider's user id, a di
 | `GET /v1/friends` | Bearer | `{code, friends}`: the account's friend code and its friends |
 | `POST /v1/friends` | Bearer, `{code}` | `{friend}`; or `code_not_found` (404), `own_code` (400), `already_friends` or `friends_full` (409), `too_many_tries` (429) |
 | `DELETE /v1/friends/{id}` | Bearer | 204; ends the friendship for both players |
+| `POST /v1/invites` | Bearer, `{friendId, code, key}` | `{id, ttlMs}`; or `not_friends` or `not_host` (403), `room_closed` or `already_invited` (409), `too_many_invites` (429) |
+| `GET /v1/inbox` | Bearer, WebSocket upgrade | the account's invites inbox (below) |
 
 `user` is `{id, name, provider}` with `provider` `"apple"` or `"google"`; `name` may be empty
 (the apps then show "Player"). `token` is 32 random bytes, base64url; the relay stores only
@@ -333,6 +335,27 @@ player in the other's list, and either can remove it. `friend` and each entry of
 `{id, name}`; the list is sorted by name. An account has at most 100 friends, and may send 20
 well-formed codes per ten minutes. The share link is `https://krida.ardeman.com/f/CODE`; the
 web page behind it opens `krida://friend?code=CODE`.
+
+Invites (step 10c, `relay/src/inbox.ts`): the host of an online room invites a friend with
+`POST /v1/invites`: `code` is the room, `key` the room's host key (so only the host can
+invite). The room must be waiting with a seat open and a `game` in its listing, else
+`room_closed`. An invite lasts 2 minutes (`ttlMs`); a friend has one live invite per room,
+and an account may send 30 per ten minutes. The relay ends an invite early when its room
+starts, fills or closes.
+
+The invited app keeps the inbox WebSocket open while it is signed in and shows a menu. It
+carries JSON text frames. Relay → app:
+
+| Message | Fields | Meaning |
+|---|---|---|
+| `invite` | `id`, `from` (`{id, name}`), `code`, `game`, `seats`, `players`, `ttlMs` | a friend invites this account to room `code`; `players` of `seats` are taken; valid for `ttlMs` more milliseconds. Invites still open are sent again on every connect |
+| `invite_end` | `id` | the invite is over (answered on another device, or its room started, filled or closed) |
+
+App → relay: `{"type":"dismiss","id":…}` when the player answers (Not now or Join); the
+invite is dropped and the account's other devices get `invite_end`. A join that answers an
+invite sends its `id` as `invite` in `hello`, so the host can show that friend as joined
+(`HostSession.joinedInvites`); rooms themselves still know nothing about accounts.
+Account deletion closes the inbox and drops its invites.
 
 ## Compatibility rule
 

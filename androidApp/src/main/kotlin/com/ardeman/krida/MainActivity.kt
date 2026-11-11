@@ -99,6 +99,8 @@ import androidx.compose.ui.unit.sp
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
 import com.ardeman.krida.account.Account
+import com.ardeman.krida.account.InviteCard
+import com.ardeman.krida.account.Invites
 import com.ardeman.krida.account.AccountScreen
 import com.ardeman.krida.congklak.CongklakSettings
 import com.ardeman.krida.congklak.BoardPreview
@@ -180,6 +182,8 @@ class MainActivity : ComponentActivity() {
 
     /** The menu card's board snapshot is on screen; ends the startup loading screen. */
     private var menuReady by mutableStateOf(false)
+    /** Between onStart and onStop: the invites inbox is only open then. */
+    private var foreground by mutableStateOf(false)
 
     private val myName: String get() = Build.MODEL ?: "Android"
 
@@ -253,6 +257,14 @@ class MainActivity : ComponentActivity() {
                     if (keepAwake) window.addFlags(flag) else window.clearFlags(flag)
                     onDispose { window.clearFlags(flag) }
                 }
+                // Friend invites arrive while the app is signed in and shows a menu, never
+                // over a game, a lobby or a match search (same rule as room links).
+                val onMenus = !keepAwake && !playingQuickMatch
+                val listening = onMenus && foreground && Account.user != null
+                DisposableEffect(listening) {
+                    if (listening) Invites.listen()
+                    onDispose { Invites.stop() }
+                }
                 when {
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
@@ -321,6 +333,9 @@ class MainActivity : ComponentActivity() {
                     showingAccount -> AccountScreen(onBack = { showingAccount = false })
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
                 }
+                if (onMenus) Invites.current?.let { invite ->
+                    InviteCard(invite, onNotNow = { Invites.dismiss(invite.id) }, onJoin = { joinInvite(invite) })
+                }
                 StartupCover()
             }
         }
@@ -334,10 +349,19 @@ class MainActivity : ComponentActivity() {
         // on the account screen once the menus are back.
         if (Account.handleLink(intent.data)) { showingAccount = true; return }
         // A running game or lobby stays; the link only applies from the menus.
-        if (room == null && passAndPlay == null && ularTable == null) {
+        if (room == null && passAndPlay == null && ularTable == null && ludoTable == null) {
             if (Account.handleFriendLink(intent.data)) { joining = false; showingAccount = true; return }
             intent.data?.toString()?.let(::openRoomLink)
         }
+    }
+
+    /** Join on a friend's invite: straight into the room, as a room link would after Join. */
+    private fun joinInvite(invite: Invites.Invite) {
+        Invites.dismiss(invite.id)
+        joining = false
+        creatingOnlineRoom = false
+        joinError = null
+        room = NearbyRoom.join(this, invite.code, myName, online = true, invite = invite.id)
     }
 
     /** Opens the join screen for "krida://join?room=ABCD" or "https://krida.ardeman.com/r/ABC234". */
@@ -348,11 +372,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        foreground = true
         Sounds.setActive(true)
         Ads.refresh()
     }
 
     override fun onStop() {
+        foreground = false
         Sounds.setActive(false)
         super.onStop()
     }
