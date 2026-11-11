@@ -162,7 +162,9 @@ when the room ends or after a short idle period — not a lasting player profile
 With an **optional account** (step 10a) add, as collected, not shared, **Optional**, for App
 functionality and Account management: Personal info → Name (the display name from Apple or
 Google) and Personal info → User IDs (the provider's account id). Stored in Cloudflare D1
-until the player deletes the account.
+until the player deletes the account. The friends list (step 10b: a friend code and which
+accounts are friends) is kept with the account and deleted with it; it uses the same name and
+user id, so it adds no new data type (agent's reading of the forms, not checked with a store).
 
 Not collected by us: personal info other than the optional account's name and id (no email, phone), financial info (Play Billing handles
 payment; the app keeps only an on-device "ads removed" flag), messages/chat, contacts, photos,

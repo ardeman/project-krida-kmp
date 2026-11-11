@@ -226,7 +226,7 @@ class MainActivity : ComponentActivity() {
         // Language and theme changes recreate this activity with its original launch intent.
         // Apply a room link only on the initial launch so leaving it is not undone later.
         if (savedInstanceState == null) {
-            if (Account.handleLink(intent?.data)) showingAccount = true
+            if (Account.handleLink(intent?.data) || Account.handleFriendLink(intent?.data)) showingAccount = true
             else intent?.data?.toString()?.let(::openRoomLink)
         }
         setContent {
@@ -335,6 +335,7 @@ class MainActivity : ComponentActivity() {
         if (Account.handleLink(intent.data)) { showingAccount = true; return }
         // A running game or lobby stays; the link only applies from the menus.
         if (room == null && passAndPlay == null && ularTable == null) {
+            if (Account.handleFriendLink(intent.data)) { joining = false; showingAccount = true; return }
             intent.data?.toString()?.let(::openRoomLink)
         }
     }

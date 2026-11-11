@@ -1,6 +1,6 @@
 /**
- * Accounts (online step 10a): sign in with Apple or Google, a session token, sign out and
- * account deletion. Users and sessions live in D1. Only the provider's user id and a display
+ * Accounts (online steps 10a and 10b): sign in with Apple or Google, a session token, sign
+ * out, account deletion and the friends list. Users, sessions and friends live in D1. Only the provider's user id and a display
  * name are stored; no email. Endpoints are documented under "Accounts" in docs/protocol.md.
  *
  * Google runs as a browser flow through the relay (the client secret stays here), bound to
@@ -23,6 +23,13 @@ const APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys";
 const APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token";
 const APPLE_REVOKE_URL = "https://appleid.apple.com/auth/revoke";
 const JWKS_TTL_MS = 60 * 60_000;
+/** Same alphabet as RoomCode in shared/; friend codes are 8 chars. */
+const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const FRIEND_CODE_RE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{8}$/;
+const FRIENDS_MAX = 100;
+/** Adds by code per account in one window, so codes cannot be guessed in bulk. */
+const ADD_TRIES = 20;
+const ADD_WINDOW_MS = 10 * 60_000;
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -34,6 +41,12 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS auth_pending (
      id TEXT PRIMARY KEY, kind TEXT NOT NULL, challenge TEXT NOT NULL, user_id TEXT,
      expires INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS friend_codes (code TEXT PRIMARY KEY, user_id TEXT NOT NULL UNIQUE)`,
+  // One row per pair, a < b.
+  `CREATE TABLE IF NOT EXISTS friends (
+     a TEXT NOT NULL, b TEXT NOT NULL, created_at INTEGER NOT NULL, PRIMARY KEY (a, b))`,
+  `CREATE INDEX IF NOT EXISTS friends_b ON friends (b)`,
+  `CREATE TABLE IF NOT EXISTS friend_tries (user_id TEXT PRIMARY KEY, started INTEGER NOT NULL, count INTEGER NOT NULL)`,
 ];
 
 interface User {
@@ -48,7 +61,8 @@ let appleKeys: { at: number; url: string; keys: JsonWebKey[] } | undefined;
 /** Handles the account routes; null when the path is not one of them. */
 export async function handleAccounts(request: Request, env: Env, url: URL): Promise<Response | null> {
   const path = url.pathname;
-  if (path !== "/v1/me" && !path.startsWith("/v1/auth/")) return null;
+  const friends = path === "/v1/friends" || path.startsWith("/v1/friends/");
+  if (path !== "/v1/me" && !path.startsWith("/v1/auth/") && !friends) return null;
   const db = env.DB;
   if (!db) return fail(503, "accounts_unavailable");
   try {
@@ -70,6 +84,14 @@ export async function handleAccounts(request: Request, env: Env, url: URL): Prom
     return user ? json({ user }) : fail(401, "unauthorized");
   }
   if (path === "/v1/me" && method === "DELETE") return deleteAccount(env, db, request);
+  if (friends) {
+    const user = await authed(db, request);
+    if (!user) return fail(401, "unauthorized");
+    if (path === "/v1/friends" && method === "GET") return listFriends(db, user);
+    if (path === "/v1/friends" && method === "POST") return addFriend(db, user, await body(request));
+    const id = path.slice("/v1/friends/".length);
+    if (path !== "/v1/friends" && method === "DELETE") return removeFriend(db, user, id);
+  }
   return fail(404, "not_found");
 }
 
@@ -272,6 +294,9 @@ async function deleteAccount(env: Env, db: D1Database, request: Request): Promis
   await db.batch([
     db.prepare("DELETE FROM sessions WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM auth_pending WHERE user_id = ?").bind(user.id),
+    db.prepare("DELETE FROM friends WHERE a = ? OR b = ?").bind(user.id, user.id),
+    db.prepare("DELETE FROM friend_codes WHERE user_id = ?").bind(user.id),
+    db.prepare("DELETE FROM friend_tries WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
   ]);
   return new Response(null, { status: 204 });
@@ -314,6 +339,70 @@ async function takePending(db: D1Database, id: string, kind: string): Promise<{ 
   const row = await db.prepare("DELETE FROM auth_pending WHERE id = ? AND kind = ? RETURNING challenge, user_id, expires")
     .bind(id, kind).first<{ challenge: string; user_id: string | null; expires: number }>();
   return row && row.expires >= Date.now() ? row : null;
+}
+
+// Friends
+
+interface Friend {
+  id: string;
+  name: string;
+}
+
+async function listFriends(db: D1Database, user: User): Promise<Response> {
+  const rows = await db.prepare(
+    `SELECT u.id, u.name FROM friends f JOIN users u ON u.id = CASE WHEN f.a = ?1 THEN f.b ELSE f.a END
+     WHERE f.a = ?1 OR f.b = ?1 ORDER BY u.name COLLATE NOCASE, u.id`,
+  ).bind(user.id).all<Friend>();
+  return json({ code: await friendCode(db, user.id), friends: rows.results });
+}
+
+/** Adding is instant and mutual: one row makes each player the other's friend. */
+async function addFriend(db: D1Database, user: User, input: Record<string, unknown>): Promise<Response> {
+  const code = typeof input.code === "string" ? input.code.toUpperCase().replace(/[\s-]/g, "") : "";
+  if (!FRIEND_CODE_RE.test(code)) return fail(404, "code_not_found");
+  const now = Date.now();
+  const tries = await db.prepare(
+    `INSERT INTO friend_tries (user_id, started, count) VALUES (?1, ?2, 1)
+     ON CONFLICT (user_id) DO UPDATE SET
+       count = CASE WHEN started < ?3 THEN 1 ELSE count + 1 END,
+       started = CASE WHEN started < ?3 THEN ?2 ELSE started END
+     RETURNING count`,
+  ).bind(user.id, now, now - ADD_WINDOW_MS).first<{ count: number }>();
+  if ((tries?.count ?? 0) > ADD_TRIES) return fail(429, "too_many_tries");
+
+  const friend = await db.prepare(
+    "SELECT u.id, u.name FROM friend_codes c JOIN users u ON u.id = c.user_id WHERE c.code = ?",
+  ).bind(code).first<Friend>();
+  if (!friend) return fail(404, "code_not_found");
+  if (friend.id === user.id) return fail(400, "own_code");
+  const [a, b] = user.id < friend.id ? [user.id, friend.id] : [friend.id, user.id];
+  if (await db.prepare("SELECT 1 FROM friends WHERE a = ? AND b = ?").bind(a, b).first()) return fail(409, "already_friends");
+  const counts = await db.prepare(
+    `SELECT (SELECT COUNT(*) FROM friends WHERE a = ?1 OR b = ?1) AS mine,
+            (SELECT COUNT(*) FROM friends WHERE a = ?2 OR b = ?2) AS theirs`,
+  ).bind(user.id, friend.id).first<{ mine: number; theirs: number }>();
+  if (!counts || counts.mine >= FRIENDS_MAX || counts.theirs >= FRIENDS_MAX) return fail(409, "friends_full");
+  await db.prepare("INSERT OR IGNORE INTO friends (a, b, created_at) VALUES (?, ?, ?)").bind(a, b, now).run();
+  return json({ friend });
+}
+
+/** Removes the pair for both players; removing someone who is not a friend also answers 204. */
+async function removeFriend(db: D1Database, user: User, id: string): Promise<Response> {
+  const [a, b] = user.id < id ? [user.id, id] : [id, user.id];
+  await db.prepare("DELETE FROM friends WHERE a = ? AND b = ?").bind(a, b).run();
+  return new Response(null, { status: 204 });
+}
+
+/** The account's friend code, made on first use and never changed. */
+async function friendCode(db: D1Database, userId: string): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = Array.from(crypto.getRandomValues(new Uint8Array(8)), (n) => CODE_ALPHABET[n % CODE_ALPHABET.length]).join("");
+    // A taken code leaves nothing inserted and the read finds no row; an existing row wins.
+    await db.prepare("INSERT OR IGNORE INTO friend_codes (code, user_id) VALUES (?, ?)").bind(code, userId).run();
+    const row = await db.prepare("SELECT code FROM friend_codes WHERE user_id = ?").bind(userId).first<{ code: string }>();
+    if (row) return row.code;
+  }
+  throw new Error("no free friend code");
 }
 
 // Helpers

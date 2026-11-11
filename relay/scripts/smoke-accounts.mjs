@@ -136,6 +136,35 @@ async function run() {
   assert.notEqual(reborn.data.user.id, google.data.user.id);
   assert.equal((await call("GET", "/v1/me", { token: appleAgain.data.token })).status, 200, "other accounts are untouched");
 
+  // Friends: a code per account; adding is instant and mutual, removing ends it for both.
+  const ayu = appleAgain.data.token;
+  const budi = reborn.data.token;
+  assert.equal((await call("GET", "/v1/friends")).status, 401);
+  const mine = await call("GET", "/v1/friends", { token: ayu });
+  assert.match(mine.data.code, /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{8}$/);
+  assert.deepEqual(mine.data.friends, []);
+  assert.equal((await call("GET", "/v1/friends", { token: ayu })).data.code, mine.data.code, "the code does not change");
+  const theirs = (await call("GET", "/v1/friends", { token: budi })).data.code;
+  assert.notEqual(theirs, mine.data.code);
+  assert.equal((await call("POST", "/v1/friends", { token: ayu, json: { code: "junk" } })).data.error, "code_not_found");
+  assert.equal((await call("POST", "/v1/friends", { token: ayu, json: { code: mine.data.code } })).data.error, "own_code");
+  const spaced = `${theirs.slice(0, 4).toLowerCase()} ${theirs.slice(4)}`;
+  const added = await call("POST", "/v1/friends", { token: ayu, json: { code: spaced } });
+  assert.equal(added.status, 200);
+  assert.deepEqual(added.data.friend, { id: reborn.data.user.id, name: "Budi" });
+  assert.equal((await call("POST", "/v1/friends", { token: budi, json: { code: mine.data.code } })).data.error, "already_friends");
+  assert.deepEqual((await call("GET", "/v1/friends", { token: budi })).data.friends, [{ id: apple.data.user.id, name: "Ayu" }]);
+  assert.equal((await call("DELETE", `/v1/friends/${apple.data.user.id}`, { token: budi })).status, 204);
+  assert.deepEqual((await call("GET", "/v1/friends", { token: ayu })).data.friends, []);
+  // Deleting an account takes it out of its friends' lists and frees nothing for reuse.
+  assert.equal((await call("POST", "/v1/friends", { token: budi, json: { code: mine.data.code } })).status, 200);
+  assert.equal((await call("DELETE", "/v1/me", { token: budi })).status, 204);
+  assert.deepEqual((await call("GET", "/v1/friends", { token: ayu })).data.friends, []);
+  assert.equal((await call("POST", "/v1/friends", { token: ayu, json: { code: theirs } })).data.error, "code_not_found");
+  // Guessing codes stops after 20 well-formed tries in ten minutes (Ayu used three above).
+  for (let i = 0; i < 17; i++) await call("POST", "/v1/friends", { token: ayu, json: { code: "AAAAAAAA" } });
+  assert.equal((await call("POST", "/v1/friends", { token: ayu, json: { code: "AAAAAAAA" } })).status, 429);
+
   // Rooms still answer next to the account routes.
   assert.equal((await call("GET", "/v1/rooms/ABC234")).status, 426);
   console.log("accounts smoke ok");

@@ -323,7 +323,7 @@
     <string name="emote_ready">Ready!</string>
     <string name="account_title">Account</string>
     <string name="account_sign_in_title">Sign in to Krida</string>
-    <string name="account_sign_in_detail">Sign in to add friends and invite them to play. Friends are coming soon.</string>
+    <string name="account_sign_in_detail">Sign in to add friends. Playing never needs an account.</string>
     <string name="account_google">Sign in with Google</string>
     <string name="account_with_google">Signed in with Google</string>
     <string name="account_with_apple">Signed in with Apple</string>
@@ -333,4 +333,19 @@
     <string name="account_delete_title">Delete your account?</string>
     <string name="account_delete_detail">Your account and name are removed from Krida. This can\'t be undone.</string>
     <string name="account_failed">That didn\'t work. Check your connection and try again.</string>
+    <string name="account_friends">Friends</string>
+    <string name="account_friend_code">Your friend code</string>
+    <string name="account_friend_share_text">Add me as a friend on Krida: %1$s</string>
+    <string name="account_friend_hint">Friend\'s code</string>
+    <string name="account_friend_add">Add</string>
+    <string name="account_friends_empty_title">No friends yet</string>
+    <string name="account_friends_empty_detail">Share your code, or type a friend\'s code.</string>
+    <string name="account_friend_remove">Remove</string>
+    <string name="account_friend_remove_named">Remove %1$s</string>
+    <string name="account_friend_remove_title">Remove %1$s?</string>
+    <string name="account_friend_not_found">No player has that code.</string>
+    <string name="account_friend_own">That\'s your own code.</string>
+    <string name="account_friend_already">You\'re already friends.</string>
+    <string name="account_friend_full">The friends list is full.</string>
+    <string name="account_friend_too_many">Too many tries. Wait a few minutes.</string>
 </resources>

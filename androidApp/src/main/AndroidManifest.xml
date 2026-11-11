@@ -61,13 +61,21 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="krida" android:host="auth" />
             </intent-filter>
-            <!-- Online share links: https://krida.ardeman.com/r/ABC234, verified through
-                 web/public/.well-known/assetlinks.json -->
+            <!-- Friend links from the web page: krida://friend?code=K7M2XQ4D -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="krida" android:host="friend" />
+            </intent-filter>
+            <!-- Online share links (https://krida.ardeman.com/r/ABC234) and friend links
+                 (/f/K7M2XQ4D), verified through web/public/.well-known/assetlinks.json -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="krida.ardeman.com" android:pathPrefix="/r/" />
+                <data android:scheme="https" android:host="krida.ardeman.com" android:pathPrefix="/f/" />
             </intent-filter>
         </activity>
         <!-- Has Play services fetch the QR scanner at install, not on the first scan. -->

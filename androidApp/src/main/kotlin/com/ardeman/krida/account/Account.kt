@@ -14,6 +14,7 @@ import com.ardeman.krida.core.protocol.Krida
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -30,11 +31,16 @@ import java.security.SecureRandom
 
 /**
  * The signed-in Krida account ("Accounts" in docs/protocol.md): Google sign-in through the
- * browser and the relay, the session token, sign out and account deletion. Same endpoints
+ * browser and the relay, the session token, sign out, account deletion and the friends list. Same endpoints
  * and stored fields as iOS (`Account/Account.swift`).
  */
 object Account {
     data class User(val id: String, val name: String, val provider: String)
+
+    data class Friend(val id: String, val name: String)
+
+    /** Why the last add was refused; [Failed] also covers an unreachable relay. */
+    enum class FriendError { NotFound, Own, Already, Full, TooMany, Failed }
 
     private const val PREFS = "account"
     private const val KEY_TOKEN = "account.token"
@@ -59,6 +65,22 @@ object Account {
     /** The last sign-in, sign-out or deletion failed; cleared by the next attempt. */
     var failed by mutableStateOf(false)
         private set
+
+    /** This account's friend code; null until the list has loaded. */
+    var friendCode by mutableStateOf<String?>(null)
+        private set
+
+    var friends by mutableStateOf<List<Friend>>(emptyList())
+        private set
+
+    /** The code being typed on the account screen; a friend link fills it in. */
+    var friendDraft by mutableStateOf("")
+
+    /** An add is running. */
+    var addingFriend by mutableStateOf(false)
+        private set
+
+    var friendError by mutableStateOf<FriendError?>(null)
 
     fun init(context: Context) {
         app = context.applicationContext
@@ -108,6 +130,80 @@ object Account {
         return true
     }
 
+    /**
+     * Fills in the code from "https://krida.ardeman.com/f/K7M2XQ4D" or
+     * "krida://friend?code=K7M2XQ4D". True when [link] was a friend link.
+     */
+    fun handleFriendLink(link: Uri?): Boolean {
+        val raw = when {
+            link?.scheme == "krida" && link.host == "friend" -> link.getQueryParameter("code")
+            link?.scheme == "https" && link.host == "krida.ardeman.com" && link.pathSegments.firstOrNull() == "f" -> link.pathSegments.getOrNull(1)
+            else -> return false
+        }
+        friendDraft = cleanFriendCode(raw ?: "")
+        friendError = null
+        return true
+    }
+
+    /** Upper-case letters and digits only, at most the code's length. */
+    fun cleanFriendCode(text: String) = text.uppercase().filter(Char::isLetterOrDigit).take(Krida.FRIEND_CODE_LENGTH)
+
+    /** Fetches the friend code and the list; the screen calls it when it opens. */
+    fun loadFriends() {
+        val saved = token ?: return
+        send(Request.Builder().url("$API/v1/friends").header("Authorization", "Bearer $saved").build()) { status, body ->
+            if (token != saved || status != 200 || body == null) return@send
+            try {
+                friendCode = body.getValue("code").jsonPrimitive.content
+                friends = body.getValue("friends").jsonArray.map { friend(it.jsonObject) }
+            } catch (e: Exception) {
+                // An answer this build can't read leaves the list as it was.
+            }
+        }
+    }
+
+    /** Adds the player with [friendDraft] as a friend; instant and mutual. */
+    fun addFriend() {
+        val saved = token ?: return
+        if (addingFriend || friendDraft.length != Krida.FRIEND_CODE_LENGTH) return
+        friendError = null
+        addingFriend = true
+        val payload = buildJsonObject { put("code", friendDraft) }.toString()
+        send(Request.Builder().url("$API/v1/friends").header("Authorization", "Bearer $saved").post(payload.toRequestBody(JSON_TYPE)).build()) { status, body ->
+            if (token != saved) return@send
+            addingFriend = false
+            val added = try { body?.get("friend")?.jsonObject?.let(::friend) } catch (e: Exception) { null }
+            if (status == 200 && added != null) {
+                friends = (friends.filter { it.id != added.id } + added).sortedBy { it.name.lowercase() }
+                friendDraft = ""
+            } else {
+                friendError = when (body?.get("error")?.jsonPrimitive?.content) {
+                    "code_not_found" -> FriendError.NotFound
+                    "own_code" -> FriendError.Own
+                    "already_friends" -> FriendError.Already
+                    "friends_full" -> FriendError.Full
+                    "too_many_tries" -> FriendError.TooMany
+                    else -> FriendError.Failed
+                }
+            }
+        }
+    }
+
+    /** Ends the friendship for both players. */
+    fun removeFriend(id: String) {
+        val saved = token ?: return
+        val before = friends
+        friendError = null
+        friends = friends.filter { it.id != id }
+        send(Request.Builder().url("$API/v1/friends/$id").header("Authorization", "Bearer $saved").delete().build()) { status, _ ->
+            if (token != saved || status == 204) return@send
+            friends = before
+            friendError = FriendError.Failed
+        }
+    }
+
+    private fun friend(o: JsonObject) = Friend(o.getValue("id").jsonPrimitive.content, o.getValue("name").jsonPrimitive.content)
+
     fun signOut() {
         val saved = token ?: return
         failed = false
@@ -138,6 +234,10 @@ object Account {
     private fun clear() {
         token = null
         user = null
+        friendCode = null
+        friends = emptyList()
+        addingFriend = false
+        friendError = null
         prefs().edit().remove(KEY_TOKEN).remove(KEY_USER).apply()
     }
 

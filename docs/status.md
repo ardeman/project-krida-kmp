@@ -5,7 +5,8 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
-- Online step 10b: friends list. Then 10c: invites (no Firebase on Android).
+- Online step 10b, friends list: relay, web and Android are built; iOS is next
+  (`docs/mockups/friends.md`). Then 10c: invites (no Firebase on Android).
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
   check, and D1 edit rights on the GitHub deploy token (the first deploy was run by hand).
 
@@ -23,6 +24,7 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - Bilingual: check both languages on the devices.
 - Account: iPhone checked 2026-11-11 (Google sign-in and sign out, Apple sign-in and delete
   account). Pixel: sign in with Google, sign out, delete account still open.
+- Friends (Android): add by code and by link, remove, the errors, both themes and languages.
 
 ## Release setup
 

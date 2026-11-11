@@ -38,7 +38,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextOverflow
+import android.content.Intent
 import com.ardeman.krida.R
+import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.nearby.NearbyFrame
 import com.ardeman.krida.nearby.card
 import com.ardeman.krida.nearby.subtitle
@@ -75,7 +92,10 @@ private fun GoogleButton(onClick: () -> Unit, enabled: Boolean) {
     }
 }
 
-/** Sign in, or see the signed-in account with sign out and delete: one status card. */
+/**
+ * Sign in, or see the signed-in account with sign out and delete: one status card. Signed in,
+ * the Friends card sits beside it (docs/mockups/friends.md).
+ */
 @Composable
 fun AccountScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -85,15 +105,20 @@ fun AccountScreen(onBack: () -> Unit) {
     val confirming = confirmingDelete && user != null && !Account.busy
     val back = stringResource(R.string.congklak_back)
     val leave = { if (confirming) confirmingDelete = false else onBack() }
+    // The friends card shows while signed in, except over the delete question.
+    val withFriends = user != null && !confirming
+    LaunchedEffect(user?.id) { Account.loadFriends() }
     NearbyFrame(stringResource(R.string.account_title), subtitle(true), true, back, leave) {
         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
-                Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = 22.dp),
+                (if (withFriends) Modifier.fillMaxSize().card().verticalScroll(rememberScrollState()) else Modifier.width(480.dp).card())
+                    .padding(horizontal = 20.dp, vertical = if (withFriends) 16.dp else 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(if (withFriends) 8.dp else 12.dp, Alignment.CenterVertically),
             ) {
+                val avatar = if (withFriends) 48.dp else 64.dp
                 Box(
-                    Modifier.size(64.dp).background(
+                    Modifier.size(avatar).background(
                         when {
                             Account.busy -> Color.Transparent
                             confirming -> Theme.error.copy(alpha = 0.14f)
@@ -106,7 +131,7 @@ fun AccountScreen(onBack: () -> Unit) {
                     when {
                         Account.busy -> LoadingIndicator()
                         confirming -> Icon(painterResource(R.drawable.ic_error), contentDescription = null, tint = Theme.error, modifier = Modifier.size(34.dp))
-                        else -> Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(34.dp))
+                        else -> Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(avatar * 0.53f))
                     }
                 }
                 val title = when {
@@ -124,6 +149,7 @@ fun AccountScreen(onBack: () -> Unit) {
                 if (Account.failed) {
                     Text(stringResource(R.string.account_failed), style = Theme.font(14, FontWeight.Bold, Theme.error), textAlign = TextAlign.Center)
                 }
+                if (withFriends) OwnCode(Account.friendCode)
                 Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     val wide = Modifier.widthIn(min = 130.dp)
                     when {
@@ -143,5 +169,152 @@ fun AccountScreen(onBack: () -> Unit) {
                 }
             }
         }
+        if (withFriends) FriendsCard(Modifier.weight(1f).fillMaxHeight())
+    }
+}
+
+/** The player's own friend code in two groups of four, with a Share pill for its link. */
+@Composable
+private fun OwnCode(code: String?) {
+    val context = LocalContext.current
+    val title = stringResource(R.string.online_share)
+    val text = stringResource(R.string.account_friend_share_text, Krida.FRIEND_URL_PREFIX + (code ?: ""))
+    Text(stringResource(R.string.account_friend_code), style = Theme.font(13, FontWeight.Bold, Theme.muted))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        val shape = RoundedCornerShape(12.dp)
+        Box(
+            Modifier.height(44.dp).widthIn(min = 170.dp).clip(shape).background(Theme.chip).border(1.5.dp, Theme.line, shape).padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                code?.chunked(4)?.joinToString(" ") ?: "…",
+                style = Theme.font(18, FontWeight.Black, Theme.ink).copy(fontFamily = FontFamily.Monospace),
+                maxLines = 1,
+            )
+        }
+        if (code != null) {
+            SecondaryButton(title, onClick = {
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                context.startActivity(Intent.createChooser(send, title))
+            })
+        }
+    }
+}
+
+/** Add a friend by code, then the list; a row's × asks before removing. */
+@Composable
+private fun FriendsCard(modifier: Modifier) {
+    var removing by remember { mutableStateOf<String?>(null) }
+    val ready = Account.friendDraft.length == Krida.FRIEND_CODE_LENGTH && !Account.addingFriend
+    Column(modifier.card().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(R.string.account_friends), style = Theme.font(20, FontWeight.Black, Theme.ink))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            FriendCodeField(Modifier.weight(1f), onDone = { if (ready) Account.addFriend() })
+            PrimaryButton(stringResource(R.string.account_friend_add), onClick = Account::addFriend, enabled = ready)
+        }
+        Account.friendError?.let { error ->
+            val message = when (error) {
+                Account.FriendError.NotFound -> R.string.account_friend_not_found
+                Account.FriendError.Own -> R.string.account_friend_own
+                Account.FriendError.Already -> R.string.account_friend_already
+                Account.FriendError.Full -> R.string.account_friend_full
+                Account.FriendError.TooMany -> R.string.account_friend_too_many
+                Account.FriendError.Failed -> R.string.account_failed
+            }
+            Text(stringResource(message), style = Theme.font(13, FontWeight.Bold, Theme.error))
+        }
+        val friends = Account.friends
+        if (friends.isEmpty()) {
+            Column(
+                Modifier.weight(1f).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+            ) {
+                // Until the first answer arrives the list is unknown, not empty.
+                if (Account.friendCode == null) LoadingIndicator() else {
+                    Text(stringResource(R.string.account_friends_empty_title), style = Theme.font(16, FontWeight.Black, Theme.ink), textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.account_friends_empty_detail), style = Theme.font(14, FontWeight.Bold, Theme.muted), textAlign = TextAlign.Center)
+                }
+            }
+        } else {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                friends.forEach { friend ->
+                    FriendRow(
+                        friend,
+                        asking = removing == friend.id,
+                        onAsk = { removing = friend.id },
+                        onCancel = { removing = null },
+                        onRemove = { removing = null; Account.removeFriend(friend.id) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FriendCodeField(modifier: Modifier, onDone: () -> Unit) {
+    val hint = stringResource(R.string.account_friend_hint)
+    val shape = RoundedCornerShape(12.dp)
+    BasicTextField(
+        value = Account.friendDraft,
+        onValueChange = { Account.friendDraft = Account.cleanFriendCode(it); Account.friendError = null },
+        singleLine = true,
+        textStyle = Theme.font(18, FontWeight.Black, Theme.ink).copy(fontFamily = FontFamily.Monospace),
+        cursorBrush = SolidColor(Theme.accent),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, autoCorrectEnabled = false, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        modifier = modifier.semantics { contentDescription = hint },
+        decorationBox = { field ->
+            Box(
+                Modifier.height(44.dp).clip(shape).background(Theme.chip).border(1.5.dp, Theme.line, shape).padding(horizontal = 14.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                if (Account.friendDraft.isEmpty()) Text(hint, style = Theme.font(16, FontWeight.Bold, Theme.muted), maxLines = 1)
+                field()
+            }
+        },
+    )
+}
+
+@Composable
+private fun FriendRow(friend: Account.Friend, asking: Boolean, onAsk: () -> Unit, onCancel: () -> Unit, onRemove: () -> Unit) {
+    val name = friend.name.ifEmpty { stringResource(R.string.account_player) }
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        Modifier.fillMaxWidth().height(44.dp).clip(shape).background(Theme.chip).border(1.5.dp, Theme.line, shape).padding(start = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (asking) {
+            Text(
+                stringResource(R.string.account_friend_remove_title, name),
+                style = Theme.font(15, FontWeight.Bold, Theme.ink), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            RowAction(stringResource(R.string.nearby_cancel), Theme.muted, onCancel)
+            RowAction(stringResource(R.string.account_friend_remove), Theme.error, onRemove)
+        } else {
+            Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(20.dp))
+            Text(name, style = Theme.font(16, FontWeight.Bold, Theme.ink), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+            val label = stringResource(R.string.account_friend_remove_named, name)
+            Box(
+                Modifier.size(44.dp).clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onAsk() }.semantics { contentDescription = label },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
+
+/** A text action inside a friend row, as tall as the row. */
+@Composable
+private fun RowAction(text: String, color: Color, onClick: () -> Unit) {
+    Box(
+        Modifier.fillMaxHeight().clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() }.padding(horizontal = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, style = Theme.font(14, FontWeight.ExtraBold, color), maxLines = 1)
     }
 }

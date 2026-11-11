@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1796" height="948" viewBox="0 0 1796 948">
+<rect x="0" y="0" width="1796" height="948" rx="0" fill="#191512" stroke="none" stroke-width="1.5"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Signed in, with friends / Light</text>
+<defs><radialGradient id="bg0" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg0)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="227" cy="128" r="26" fill="#F6E6D3"/>
+<text x="227" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman</text>
+<text x="227" y="202" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Signed in with Google</text>
+<text x="44" y="236" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Your friend code</text>
+<rect x="44" y="246" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="170" y="275" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="2">K7M2 XQ4D</text>
+<rect x="306" y="246" width="104" height="44" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="358" y="274" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Share</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="133" y="342" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Delete account</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Sign out</text>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Friends</text>
+<rect x="464" y="132" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="480" y="160" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Friend's code</text>
+<rect x="726" y="132" width="104" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="778" y="160" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Add</text>
+<rect x="464" y="190" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="486" cy="210" r="11" fill="#E2CFB7"/>
+<text x="506" y="215" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Sari</text>
+<text x="812" y="216" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="236" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="486" cy="256" r="11" fill="#E2CFB7"/>
+<text x="506" y="261" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Budi Santoso</text>
+<text x="812" y="262" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="282" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="486" cy="302" r="11" fill="#E2CFB7"/>
+<text x="506" y="307" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Player</text>
+<text x="812" y="308" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+</g>
+<text x="906" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Signed in, with friends / Dark</text>
+<defs><radialGradient id="bg1" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,52)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg1)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="227" cy="128" r="26" fill="#3A2C20"/>
+<text x="227" y="180" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman</text>
+<text x="227" y="202" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Signed in with Google</text>
+<text x="44" y="236" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Your friend code</text>
+<rect x="44" y="246" width="252" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="170" y="275" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="2">K7M2 XQ4D</text>
+<rect x="306" y="246" width="104" height="44" rx="14" fill="#2A221C" stroke="#C9783A" stroke-width="1.5"/>
+<text x="358" y="274" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Share</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="133" y="342" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Delete account</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Sign out</text>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Friends</text>
+<rect x="464" y="132" width="252" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="480" y="160" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Friend's code</text>
+<rect x="726" y="132" width="104" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="778" y="160" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Add</text>
+<rect x="464" y="190" width="366" height="40" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="486" cy="210" r="11" fill="#3A3027"/>
+<text x="506" y="215" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Sari</text>
+<text x="812" y="216" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="236" width="366" height="40" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="486" cy="256" r="11" fill="#3A3027"/>
+<text x="506" y="261" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Budi Santoso</text>
+<text x="812" y="262" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="282" width="366" height="40" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="486" cy="302" r="11" fill="#3A3027"/>
+<text x="506" y="307" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Player</text>
+<text x="812" y="308" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+</g>
+<text x="16" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">No friends yet / Light</text>
+<defs><radialGradient id="bg2" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs><g transform="translate(16,510)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg2)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="227" cy="128" r="26" fill="#F6E6D3"/>
+<text x="227" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman</text>
+<text x="227" y="202" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Signed in with Google</text>
+<text x="44" y="236" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Your friend code</text>
+<rect x="44" y="246" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="170" y="275" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="2">K7M2 XQ4D</text>
+<rect x="306" y="246" width="104" height="44" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="358" y="274" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Share</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="133" y="342" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Delete account</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Sign out</text>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Friends</text>
+<rect x="464" y="132" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="480" y="160" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Friend's code</text>
+<rect x="726" y="132" width="104" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="778" y="160" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Add</text>
+<text x="647" y="256" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">No friends yet</text>
+<text x="647" y="280" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Share your code, or type a friend's code.</text>
+</g>
+<text x="906" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">No friends yet / Dark</text>
+<defs><radialGradient id="bg3" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs><g transform="translate(906,510)">
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg3)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="227" cy="128" r="26" fill="#3A2C20"/>
+<text x="227" y="180" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman</text>
+<text x="227" y="202" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Signed in with Google</text>
+<text x="44" y="236" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Your friend code</text>
+<rect x="44" y="246" width="252" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="170" y="275" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="2">K7M2 XQ4D</text>
+<rect x="306" y="246" width="104" height="44" rx="14" fill="#2A221C" stroke="#C9783A" stroke-width="1.5"/>
+<text x="358" y="274" fill="#C9783A" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Share</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="133" y="342" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Delete account</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Sign out</text>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Friends</text>
+<rect x="464" y="132" width="252" height="44" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="480" y="160" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Friend's code</text>
+<rect x="726" y="132" width="104" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="778" y="160" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Add</text>
+<text x="647" y="256" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">No friends yet</text>
+<text x="647" y="280" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Share your code, or type a friend's code.</text>
+</g>
+</svg>

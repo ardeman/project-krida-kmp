@@ -313,7 +313,7 @@
     <string name="emote_ready">Siap!</string>
     <string name="account_title">Akun</string>
     <string name="account_sign_in_title">Masuk ke Krida</string>
-    <string name="account_sign_in_detail">Masuk untuk menambah teman dan mengajak mereka main. Fitur teman segera hadir.</string>
+    <string name="account_sign_in_detail">Masuk untuk menambah teman. Main tidak pernah butuh akun.</string>
     <string name="account_google">Masuk dengan Google</string>
     <string name="account_with_google">Masuk dengan Google</string>
     <string name="account_with_apple">Masuk dengan Apple</string>
@@ -323,4 +323,19 @@
     <string name="account_delete_title">Hapus akunmu?</string>
     <string name="account_delete_detail">Akun dan namamu dihapus dari Krida. Ini tidak bisa dibatalkan.</string>
     <string name="account_failed">Belum berhasil. Cek koneksimu lalu coba lagi.</string>
+    <string name="account_friends">Teman</string>
+    <string name="account_friend_code">Kode temanmu</string>
+    <string name="account_friend_share_text">Tambahkan aku jadi teman di Krida: %1$s</string>
+    <string name="account_friend_hint">Kode teman</string>
+    <string name="account_friend_add">Tambah</string>
+    <string name="account_friends_empty_title">Belum ada teman</string>
+    <string name="account_friends_empty_detail">Bagikan kodemu, atau ketik kode teman.</string>
+    <string name="account_friend_remove">Hapus</string>
+    <string name="account_friend_remove_named">Hapus %1$s</string>
+    <string name="account_friend_remove_title">Hapus %1$s?</string>
+    <string name="account_friend_not_found">Tidak ada pemain dengan kode itu.</string>
+    <string name="account_friend_own">Itu kodemu sendiri.</string>
+    <string name="account_friend_already">Kalian sudah berteman.</string>
+    <string name="account_friend_full">Daftar teman sudah penuh.</string>
+    <string name="account_friend_too_many">Terlalu banyak percobaan. Tunggu beberapa menit.</string>
 </resources>

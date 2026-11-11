@@ -25,6 +25,17 @@ const home = import.meta.env.BASE_URL;
     <a class="store" id="room-open" href="#">Buka di Krida · Open in Krida</a>
     <a class="store" href={home}>Belum punya Krida? · Get Krida</a>
   </main>
+  <!-- Friend links (/f/K7M2XQ4D), same idea. -->
+  <main class="notfound" id="friend" hidden>
+    <Voxel color="#c9783a" size={72} />
+    <h1>Ayo berteman di Krida!</h1>
+    <p class="lead" lang="en">Add me as a friend on Krida!</p>
+    <p class="room-code friend-code" id="friend-code"></p>
+    <p class="lead">Buka Krida › Akun, lalu ketik kode ini di Teman.</p>
+    <p class="lead" lang="en">Open Krida › Account and type this code under Friends.</p>
+    <a class="store" id="friend-open" href="#">Buka di Krida · Open in Krida</a>
+    <a class="store" href={home}>Belum punya Krida? · Get Krida</a>
+  </main>
   <script is:inline>
     // Same rule as RoomCode.parseOnline in shared/: six letters from the room alphabet.
     const match = location.pathname.match(/\/r\/([A-Za-z0-9]{6})\/?$/);
@@ -36,6 +47,16 @@ const home = import.meta.env.BASE_URL;
       document.getElementById("room-open").href = `krida://join?room=${code}`;
       document.title = `Room ${code} — Krida`;
     }
+    // Friend codes are eight letters from the same alphabet.
+    const friend = location.pathname.match(/\/f\/([A-Za-z0-9]{8})\/?$/);
+    if (friend) {
+      const code = friend[1].toUpperCase();
+      document.getElementById("missing").hidden = true;
+      document.getElementById("friend").hidden = false;
+      document.getElementById("friend-code").textContent = `${code.slice(0, 4)} ${code.slice(4)}`;
+      document.getElementById("friend-open").href = `krida://friend?code=${code}`;
+      document.title = "Teman · Friend — Krida";
+    }
   </script>
 </Base>
 
@@ -46,4 +67,5 @@ const home = import.meta.env.BASE_URL;
     letter-spacing: 0.18em;
     margin: 12px 0;
   }
+  .friend-code { font-size: clamp(28px, 7vw, 44px); letter-spacing: 0.12em; }
 </style>

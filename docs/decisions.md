@@ -115,6 +115,10 @@ in the same commit as the code.
   and Google (both) from an account button on the menu; the relay keeps only the provider's
   user id and a display name in D1, no email. Google runs as a browser flow through the
   relay, so no sign-in SDK is added. Deleting the account is in the app.
+- **Friends** (2026-11-11): every account has one fixed friend code. Adding by code or
+  `/f/CODE` link is instant and mutual, with no request to accept; either player can remove
+  the other. A friend row shows only the display name. Approved
+  [mockup](mockups/friends.md).
 - **No Firebase** (2026-11-11): Android gets no FCM push. Invites on Android show while the
   app is open (over the relay) or come as a share link; iOS may use APNs.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play

@@ -313,7 +313,10 @@ accounts. Users and sessions live in Cloudflare D1: the provider's user id, a di
 | `POST /v1/auth/exchange` | `{code, verifier}` | `{token, user}` |
 | `GET /v1/me` | `Authorization: Bearer <token>` | `{user}`, or 401 |
 | `POST /v1/auth/signout` | Bearer | 204; ends that session |
-| `DELETE /v1/me` | Bearer | 204; deletes the account and all its sessions |
+| `DELETE /v1/me` | Bearer | 204; deletes the account, its sessions, friend code and friendships |
+| `GET /v1/friends` | Bearer | `{code, friends}`: the account's friend code and its friends |
+| `POST /v1/friends` | Bearer, `{code}` | `{friend}`; or `code_not_found` (404), `own_code` (400), `already_friends` or `friends_full` (409), `too_many_tries` (429) |
+| `DELETE /v1/friends/{id}` | Bearer | 204; ends the friendship for both players |
 
 `user` is `{id, name, provider}` with `provider` `"apple"` or `"google"`; `name` may be empty
 (the apps then show "Player"). `token` is 32 random bytes, base64url; the relay stores only
@@ -322,6 +325,14 @@ bundle id, expiry). The Google flow runs in the browser with the relay as the OA
 the app's code works once, for two minutes, and only together with the verifier, so another
 app receiving the `krida://auth` redirect cannot use it. With the Sign in with Apple key
 configured, deletion also revokes the app's access at Apple.
+
+Friends (step 10b): every account has one friend code, 8 chars from the `RoomCode` alphabet,
+made on the first `GET /v1/friends` and never changed. `POST /v1/friends` accepts the code in
+any case, with spaces or hyphens. Adding is instant and mutual: one stored pair puts each
+player in the other's list, and either can remove it. `friend` and each entry of `friends` is
+`{id, name}`; the list is sorted by name. An account has at most 100 friends, and may send 20
+well-formed codes per ten minutes. The share link is `https://krida.ardeman.com/f/CODE`; the
+web page behind it opens `krida://friend?code=CODE`.
 
 ## Compatibility rule
 
