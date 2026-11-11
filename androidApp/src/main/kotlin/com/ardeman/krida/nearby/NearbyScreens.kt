@@ -27,11 +27,13 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ardeman.krida.R
 import com.ardeman.krida.congklak.CongklakRulesDialog
 import com.ardeman.krida.core.games.CongklakGame
@@ -162,16 +165,22 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
         stringResource(if (room.isHost) R.string.congklak_back else R.string.nearby_leave_room),
         onLeave,
     ) {
-        Column(
-            // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
-            Modifier.weight(0.37f).widthIn(max = 290.dp).fillMaxHeight().card().padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
-        ) {
-            if (room.isHost) {
-                if (room.online) Text(stringResource(if (room.publicRoom) R.string.room_public else R.string.room_private), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
-                HostCode(room.code, room.online)
-            } else JoinedNote(room, names)
+        // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
+        // Inner column scrolls when code + QR + hint are taller than the landscape card —
+        // otherwise the card's rounded clip chops the bottom of the hint line.
+        Box(Modifier.weight(0.37f).widthIn(max = 290.dp).fillMaxHeight().card()) {
+            Column(
+                // Bottom padding ≥ card corner radius so the hint isn't shaved by the clip.
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                    .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+            ) {
+                if (room.isHost) {
+                    if (room.online) Text(stringResource(if (room.publicRoom) R.string.room_public else R.string.room_private), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
+                    HostCode(room.code, room.online)
+                } else JoinedNote(room, names)
+            }
         }
         Column(
             Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
@@ -208,7 +217,7 @@ private fun ColumnScope.HostCode(code: String, online: Boolean) {
     RoomQr(if (online) RoomCode.shareUrl(code) else RoomCode.joinUrl(code))
     Text(
         stringResource(if (online) R.string.online_host_hint else R.string.nearby_host_hint),
-        style = Theme.font(12, FontWeight.Bold, Theme.muted),
+        style = Theme.font(12, FontWeight.Bold, Theme.muted).copy(lineHeight = 18.sp),
         textAlign = TextAlign.Center,
     )
 }
@@ -244,8 +253,9 @@ private fun RoomQr(link: String) {
     val qr = remember(link) { QrCode.encode(link) }
     val label = stringResource(R.string.nearby_qr_label)
     val shape = RoundedCornerShape(12.dp)
+    // A touch under 132.dp so the host hint below still fits on short landscape cards.
     Canvas(
-        Modifier.size(132.dp).clip(shape).background(Color.White).border(1.dp, Theme.line, shape).padding(10.dp)
+        Modifier.size(120.dp).clip(shape).background(Color.White).border(1.dp, Theme.line, shape).padding(10.dp)
             .semantics { contentDescription = label },
     ) {
         val cell = size.minDimension / qr.size
