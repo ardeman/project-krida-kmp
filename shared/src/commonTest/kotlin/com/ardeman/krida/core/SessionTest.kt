@@ -132,7 +132,7 @@ class SessionTest {
         val back = SavedRoom.decode(saved.encode())!!
         val join = GuestJoin(net.guest("ayu-2"), "ayu", Platform.IOS, back.token)
         var game: String? = null
-        join.onGame = { game = it }
+        join.onGame = { g, _ -> game = g }
         net.connect("ayu-2")
         assertEquals(CounterGame.id, game)
         assertEquals(saved.token, join.rejoinToken)

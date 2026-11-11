@@ -21,7 +21,9 @@ final class LastRoom: ObservableObject {
     func save(code: String, online: Bool, game: String, token: String) {
         let room = SavedRoom(code: code, online: online, game: game, token: token, savedAt: Self.now)
         current = room
+        // Synchronize so a force-quit still leaves the seat on disk for Rejoin.
         UserDefaults.standard.set(room.encode(), forKey: Self.key)
+        UserDefaults.standard.synchronize()
     }
 
     /// The saved token for `code`, to send when joining it.

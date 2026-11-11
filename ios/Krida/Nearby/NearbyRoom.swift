@@ -175,7 +175,9 @@ final class NearbyRoom: ObservableObject {
 
     private func rejected(_ reason: String) {
         notFoundTask?.cancel()
-        LastRoom.shared.clear(code)
+        // STARTED means the room is mid-game; keep the saved seat so Rejoin still works
+        // (a join without the token hits this screen — clearing would strand the player).
+        if reason != RejectReason.shared.STARTED { LastRoom.shared.clear(code) }
         stage = switch reason {
         case RejectReason.shared.VERSION: .version
         case RejectReason.shared.FULL: .full
@@ -272,11 +274,10 @@ final class NearbyRoom: ObservableObject {
         join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }
         join.onRejected = { [weak room] in room?.rejected($0) }
         join.onDisconnected = { [weak room] in room?.lost() }
-        join.onGame = { [weak room, weak join] game in
-            guard let room, let join else { return }
-            if let token = join.rejoinToken {
-                LastRoom.shared.save(code: code, online: online, game: game, token: token)
-            }
+        join.onGame = { [weak room] game, token in
+            guard let room, let join = room.join else { return }
+            // Token comes from Welcome via the callback (don't read join.rejoinToken from Swift).
+            LastRoom.shared.save(code: code, online: online, game: game, token: token)
             switch game {
             case CongklakGame.shared.id:
                 let s: GuestSession<CongklakState, CongklakMove> = room.guestSession(CongklakGame.shared, join: join)

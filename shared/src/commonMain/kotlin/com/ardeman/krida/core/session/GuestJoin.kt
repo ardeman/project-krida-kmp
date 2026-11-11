@@ -35,7 +35,12 @@ class GuestJoin(
 
     /** The host answered (a BLE link is up); Welcome or Reject follows. */
     var onConnected: (() -> Unit)? = null
-    var onGame: ((String) -> Unit)? = null
+    /**
+     * Welcome arrived: room game id and the seat token to persist for rejoin.
+     * The token is passed here (not only via [rejoinToken]) so Swift always sees it:
+     * reading a Kotlin `private set` property from Swift can still show the Hello-time value.
+     */
+    var onGame: ((game: String, rejoinToken: String) -> Unit)? = null
     var onRejected: ((String) -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
 
@@ -73,7 +78,7 @@ class GuestJoin(
             is Message.Welcome -> if (game == null) {
                 rejoinToken = msg.rejoinToken
                 game = msg.game
-                onGame?.invoke(msg.game)
+                onGame?.invoke(msg.game, msg.rejoinToken)
             }
             is Message.Reject -> onRejected?.invoke(msg.reason)
             is Message.Ping -> transport.send(null, Codec.encode(Message.Pong(msg.t)))

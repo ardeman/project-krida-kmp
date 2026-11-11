@@ -31,8 +31,9 @@ class GuestJoinTest {
         var lobby = 0
         var connected = false
         join.onConnected = { connected = true }
-        join.onGame = { game ->
+        join.onGame = { game, token ->
             assertEquals(UlarTanggaGame.id, game)
+            assertEquals(join.rejoinToken, token)
             session = GuestSession(UlarTanggaGame, join).also { s ->
                 s.onLobby = { lobby = it.size }
                 s.replay()

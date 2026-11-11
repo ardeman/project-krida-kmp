@@ -223,7 +223,9 @@ class NearbyRoom private constructor(
 
     private fun rejected(reason: String) {
         main.removeCallbacks(notFound)
-        LastRoom.clear(code)
+        // STARTED means the room is mid-game; keep the saved seat so Rejoin still works
+        // (a join without the token hits this screen — clearing would strand the player).
+        if (reason != RejectReason.STARTED) LastRoom.clear(code)
         stage = when (reason) {
             RejectReason.VERSION -> Stage.VERSION
             RejectReason.FULL -> Stage.FULL
@@ -324,8 +326,8 @@ class NearbyRoom private constructor(
             join.onConnected = { if (room.stage == Stage.SEARCHING) room.stage = Stage.CONNECTING }
             join.onRejected = room::rejected
             join.onDisconnected = room::lost
-            join.onGame = { game ->
-                join.rejoinToken?.let { LastRoom.save(SavedRoom(code, online, game, it, System.currentTimeMillis())) }
+            join.onGame = { game, token ->
+                LastRoom.save(SavedRoom(code, online, game, token, System.currentTimeMillis()))
                 when (game) {
                     CongklakGame.id -> room.guestSession(CongklakGame, join).also { s ->
                         s.onState = { _ -> room.congklak = GuestTable(s) }
