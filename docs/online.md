@@ -131,8 +131,11 @@ and the Pixel on different networks (one on mobile data).
       each invite through APNs; iOS (`Account/Push.swift`) asks for notifications when a
       signed-in player opens Invite friends or adds a friend, and a tapped notification
       joins the room from the menus. `npm run smoke:accounts` covers it against a mocked
-      APNs. Open: deploying the relay (push to `main`), then an iPhone check (app closed and in the
-      background); nothing has been sent through the real APNs yet.
+      APNs, and `node scripts/test-ios-invite-push.mjs` runs it end to end on a simulator
+      against the live relay with real (sandbox) APNs: the app's card and the iOS question,
+      an in-app invite, then a notification with the app in the background and closed,
+      each tapped into its room (passed 2026-11-12). Open: a check on the real iPhone, and
+      production APNs, which only a TestFlight or App Store build uses.
 
     Owner setup for 10a (1 and 2 done; the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
     redirect URI `https://krida-relay.ardeman.com/v1/auth/google/callback`, then

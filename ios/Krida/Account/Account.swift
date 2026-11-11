@@ -317,6 +317,11 @@ final class Account: NSObject, ObservableObject {
     }
 
     private static func loadToken() -> String? {
+        #if DEBUG
+        // UI tests sign in with a session made for them: `-testSession <token>`
+        // (scripts/test-ios-invite-push.mjs).
+        if let test = UserDefaults.standard.string(forKey: "testSession") { return test }
+        #endif
         var query = keychainQuery
         query[kSecReturnData as String] = true
         var item: CFTypeRef?

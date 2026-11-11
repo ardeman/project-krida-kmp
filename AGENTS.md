@@ -21,6 +21,9 @@ A change is done only when the checks for the parts you touched pass. If you can
 - `androidApp/`: `./gradlew :androidApp:assembleDebug`.
 - `ios/`: `cd ios && xcodegen && xcodebuild -scheme Krida -destination 'generic/platform=iOS Simulator' build`.
 - `web/`: `cd web && npm run build`.
+- iOS friend invites or notifications (`ios/Krida/Account/`): `node
+  scripts/test-ios-invite-push.mjs`, an end-to-end UI test on a simulator against the live
+  relay (makes and deletes two test accounts in its D1; needs `wrangler` signed in).
 - Native game task lifetime changes: `./scripts/test-ios-game-lifetime.sh` for the iOS
   cancellation helper, plus the build for each changed platform.
 

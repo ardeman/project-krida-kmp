@@ -49,7 +49,8 @@ English copy.
    first ("Get invites from friends", Not now / Allow) and the system question only after
    Allow. After a Not now it asks again when the player adds a friend or opens Invite
    friends. Players signed in before this also get the card when a friend shows in their
-   list or an invite arrives. Never at launch. Privacy page and `docs/store.md` get the push token row.
+   list or after they answer an in-app invite with Not now (never over the invite itself).
+   Never at launch, and never over a game. Privacy page and `docs/store.md` get the push token row.
 
 ## Decided (2026-11-12)
 

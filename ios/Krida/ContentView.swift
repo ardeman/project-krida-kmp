@@ -45,6 +45,7 @@ struct ContentView: View {
     @Environment(\.punchHole) private var hole
     @ObservedObject private var ads = Ads.shared
     @ObservedObject private var lastRoom = LastRoom.shared
+    @ObservedObject private var push = Push.shared
 
     /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
     private var keepAwake: Bool {
@@ -190,9 +191,10 @@ struct ContentView: View {
         // Friend invites, over any menu screen.
         .overlay { InviteLayer(onMenus: !keepAwake && !playingQuickMatch, onJoin: { joinInvite($0.id, code: $0.code) }) }
         // A tapped invite notification joins its room, from the menus only (as links do).
-        .onReceive(Push.shared.$opened) { opened in
+        // `initial` covers a tap that launched the app.
+        .onChange(of: push.opened, initial: true) { _, opened in
             guard let opened else { return }
-            Push.shared.opened = nil
+            push.opened = nil
             guard onMenus, Account.shared.sessionToken != nil, RoomCode.shared.isValidOnline(code: opened.code) else { return }
             showingAccount = false
             joinInvite(opened.invite, code: opened.code)
@@ -760,7 +762,7 @@ private struct SeatTiles: View {
         }
         .buttonStyle(.plain)
         .disabled(!tappable.contains(i))
-        .accessibilityLabel(Text("Kursi \(i + 1)"))
+        .accessibilityLabel(Text("Seat \(i + 1)"))
         .accessibilityValue(Text(label))
         .accessibilityHint(tappable.contains(i) ? Text("Change") : Text(""))
     }

@@ -40,7 +40,7 @@ final class Push: NSObject, ObservableObject {
 
     /// Offers notifications to a signed-in player who was never asked by iOS: the app's own
     /// card first, then the system question. Called right after sign-in, when a friend shows
-    /// in the list and when an invite arrives; after a Not now only `byPlayer` asks again
+    /// in the list and after an invite was answered Not now; after a Not now only `byPlayer` asks again
     /// (the player added a friend or opened Invite friends). Never at launch.
     func ask(byPlayer: Bool = false) {
         guard Account.shared.sessionToken != nil, !asking else { return }

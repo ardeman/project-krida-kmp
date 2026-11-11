@@ -134,3 +134,31 @@ targets:
           - CFBundleURLName: com.ardeman.krida.join
             CFBundleURLSchemes:
               - krida
+
+  # End-to-end UI tests on a simulator, run by scripts/test-ios-invite-push.mjs. Not part
+  # of the app or its scheme.
+  KridaUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: KridaUITests
+    dependencies:
+      - target: Krida
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ardeman.krida.uitests
+        DEVELOPMENT_TEAM: B36A8H9S8E
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+        TEST_TARGET_NAME: Krida
+
+schemes:
+  KridaUITests:
+    build:
+      targets:
+        Krida: all
+        KridaUITests: [test]
+    test:
+      targets:
+        - KridaUITests

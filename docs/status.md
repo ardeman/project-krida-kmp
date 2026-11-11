@@ -11,10 +11,12 @@ file in the same commit when an item is done or a new one comes up. Last updated
   iOS are built and the relay is deployed. Next: check on two signed-in phones (invite from
   each side, Not now, Join, the 2-minute expiry).
 - Online step 10c-2, iPhone invite notifications: code done (relay `src/push.ts`, iOS
-  `Account/Push.swift`), never sent through the real APNs. The APNs key is set as
-  relay secrets (2026-11-12). Needs a relay deploy (push to `main`), then an
-  iPhone check: allow notifications, get invited with the app closed and in the background,
-  tap to join; sign out and confirm no notification comes.
+  `Account/Push.swift`), deployed, and passing end to end on a simulator with real sandbox
+  APNs (`node scripts/test-ios-invite-push.mjs`, 2026-11-12). Still open: the same on the
+  real iPhone (allow notifications, get invited with the app closed and in the background,
+  tap to join; sign out and confirm no notification comes), and production APNs with a
+  TestFlight build. Android's in-app invite card has not been checked on a phone; iOS had
+  a bug there (the inbox closed after the Account screen was opened), fixed 2026-11-12.
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
   check.
 

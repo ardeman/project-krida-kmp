@@ -16,14 +16,26 @@ struct InviteLayer: View {
     var body: some View {
         ZStack {
             if onMenus, let invite = invites.current {
-                InviteCard(invite: invite, onNotNow: { invites.dismiss(invite.id) }, onJoin: { onJoin(invite) })
+                InviteCard(
+                    invite: invite,
+                    onNotNow: {
+                        invites.dismiss(invite.id)
+                        // The next invite should also arrive while the app is closed. Asked
+                        // only now, so the question never covers the invite itself.
+                        Push.shared.ask()
+                    },
+                    onJoin: { onJoin(invite) }
+                )
                     .id(invite.id)
             }
         }
+        // No stop on disappear: SwiftUI rebuilds this layer when a menu screen changes (the
+        // Account screen opening or closing), and the old copy's disappear comes after the
+        // new copy's first `listen`, which would close the inbox for good. The layer lives
+        // as long as the app, and `listening` already closes it off the menus.
         .onChange(of: listening, initial: true) { _, on in
             if on { invites.listen() } else { invites.stop() }
         }
-        .onDisappear { invites.stop() }
     }
 }
 
