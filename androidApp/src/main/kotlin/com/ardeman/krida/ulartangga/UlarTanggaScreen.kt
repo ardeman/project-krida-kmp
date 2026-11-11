@@ -40,9 +40,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -79,6 +81,7 @@ import com.ardeman.krida.core.games.UlarTanggaState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
+import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
@@ -289,11 +292,20 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     }
 
     fun canRoll() = lifetime.active && !animating && queue.isEmpty() && !state.finished && table.isLocal(state.turn)
+    /** Same gate as [ready]: no auto-roll during the post–dice-off hold or under the loading screen. */
+    fun throwReady() = canRoll() && !offHold && !loading()
+    var holdingDie by remember { mutableStateOf(false) }
+    var rollSeconds by remember { mutableIntStateOf(0) }
+    val rollTotal = (Krida.ROLL_TURN_MS / 1000L).toInt()
+    val holdingNow by rememberUpdatedState(holdingDie)
+    val throwReadyNow by rememberUpdatedState(throwReady())
 
     /** Throws the die for the local player whose turn it is; it shakes until the roll comes back. */
     fun roll(toss: UlarTanggaRenderer.Toss) {
         val r = renderer
         if (!canRoll() || pendingToss[0] != null) { r?.holdDie(false); return }
+        holdingDie = false
+        rollSeconds = 0
         pendingToss[0] = toss
         r?.holdDie(true, shake = toss == UlarTanggaRenderer.Toss.Long)
         if (!table.roll(state.turn)) {
@@ -304,6 +316,23 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         scope.launch {
             delay(ROLL_WAIT_MS)
             if (pendingToss[0] === toss && !animating) { pendingToss[0] = null; renderer?.holdDie(false) }
+        }
+    }
+
+    // Countdown to throw (same as ludo): pauses while the die is held, then a short toss.
+    LaunchedEffect(throwReady(), state.turn, state.lastRoll, state.lastSeat) {
+        if (!throwReady()) {
+            rollSeconds = 0
+            return@LaunchedEffect
+        }
+        rollSeconds = rollTotal
+        while (rollSeconds > 0) {
+            delay(1000L)
+            if (!throwReadyNow) return@LaunchedEffect
+            if (holdingNow) continue
+            val next = rollSeconds - 1
+            rollSeconds = next
+            if (next == 0 && throwReadyNow && !holdingNow) roll(UlarTanggaRenderer.Toss.Short)
         }
     }
 
@@ -434,8 +463,12 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     modifier = Modifier.hud("emote"),
                 )
                 if (table.canEmote) Spacer(Modifier.height(10.dp))
-                // The die itself is 3D, drawn by the renderer over this spot; tap it to toss
-                // it, hold it to shake it and let go to throw it.
+                // Die above the status line (same as ludo), with a ring that counts down to an
+                // automatic short toss. Tap to toss, hold to shake, release to throw.
+                if (throwReady() && rollSeconds > 0) {
+                    CountdownRing(rollSeconds, rollTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
+                    Spacer(Modifier.height(6.dp))
+                }
                 Box(
                     Modifier.size(104.dp).align(Alignment.CenterHorizontally).hud("die")
                         .onGloballyPositioned {
@@ -446,12 +479,14 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                             contentDescription = dieLabel
                             onClick(rollLabel) { roll(UlarTanggaRenderer.Toss.Short); true }
                         }
-                        .pointerInput(renderer) {
+                        .pointerInput(renderer, throwReady()) {
                             val r = renderer ?: return@pointerInput
+                            if (!throwReady()) return@pointerInput
                             awaitEachGesture {
                                 val down = awaitFirstDown()
                                 if (!canRoll() || pendingToss[0] != null) return@awaitEachGesture
                                 down.consume()
+                                holdingDie = true
                                 r.holdDie(true)
                                 var long = false
                                 var released = false
@@ -472,6 +507,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                                     }
                                 } finally {
                                     hold.cancel()
+                                    holdingDie = false
                                     if (!released) r.holdDie(false)
                                 }
                                 if (released) roll(if (long) UlarTanggaRenderer.Toss.Long else UlarTanggaRenderer.Toss.Short)

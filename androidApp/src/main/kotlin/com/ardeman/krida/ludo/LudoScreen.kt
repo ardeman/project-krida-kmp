@@ -280,9 +280,12 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         holdingDie = false
         rollSeconds = 0
         pendingToss[0] = toss
-        renderer?.holdDie(false)
-        if (!table.roll(state.turn)) pendingToss[0] = null
-        else scope.launch {
+        // Keep pressed (and spinning for a long toss) until the throw animates, same as ular tangga.
+        renderer?.holdDie(true, shake = toss == LudoRenderer.Toss.Long)
+        if (!table.roll(state.turn)) {
+            pendingToss[0] = null
+            renderer?.holdDie(false)
+        } else scope.launch {
             delay(ROLL_WAIT_MS)
             if (pendingToss[0] != null) {
                 pendingToss[0] = null
@@ -476,6 +479,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                                 holdingDie = true
                                 renderer?.holdDie(true)
                                 var long = false
+                                var released = false
                                 val hold = scope.launch {
                                     delay(viewConfiguration.longPressTimeoutMillis)
                                     long = true
@@ -483,20 +487,21 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                                     Sounds.play(Sounds.Effect.Tap)
                                 }
                                 try {
-                                    do {
-                                        val event = awaitPointerEvent()
-                                        val change = event.changes.first()
-                                        if (long) renderer?.moveHeldDie(change.position.x, change.position.y)
-                                        if (!change.pressed) {
-                                            hold.cancel()
-                                            roll(if (long) LudoRenderer.Toss.Long else LudoRenderer.Toss.Short)
-                                            break
-                                        }
-                                    } while (true)
+                                    while (true) {
+                                        val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                                        if (change.isConsumed || !canRoll) break
+                                        // Offset from the press, same as ular tangga.
+                                        val offset = change.position - down.position
+                                        renderer?.moveHeldDie(offset.x, offset.y)
+                                        change.consume()
+                                        if (!change.pressed) { released = true; break }
+                                    }
                                 } finally {
                                     hold.cancel()
                                     holdingDie = false
+                                    if (!released) renderer?.holdDie(false)
                                 }
+                                if (released) roll(if (long) LudoRenderer.Toss.Long else LudoRenderer.Toss.Short)
                             }
                         },
                 )

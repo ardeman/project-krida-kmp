@@ -19,6 +19,8 @@ final class UlarTanggaGameModel: ObservableObject {
     /// Just after the dice-off: everyone's throws stay on the tiles for a moment.
     @Published private(set) var offHold = false
     @Published private(set) var viewFrame: CGRect = .zero
+    /// Seconds left on the throw countdown (`Krida.ROLL_TURN_MS`); 0 when not counting.
+    @Published private(set) var rollSeconds = 0
 
     let table: UlarTanggaTable
     let scene = UlarTanggaScene()
@@ -32,6 +34,8 @@ final class UlarTanggaGameModel: ObservableObject {
     private var pendingToss: UlarTanggaScene.Toss?
     /// The loading screen still covers the board; computers wait for it.
     var loading = true
+    /// Total seconds for the roll countdown (`Krida.ROLL_TURN_MS`).
+    var rollTotal: Int { Int(Krida.shared.ROLL_TURN_MS / 1000) }
 
     private static let hop: Double = 0.23
     private static let jumpUnitsPerSecond: Float = 9
@@ -72,6 +76,7 @@ final class UlarTanggaGameModel: ObservableObject {
         queue.removeAll()
         pressing = false
         pendingToss = nil
+        rollSeconds = 0
         table.leave()
         sounds.stopGameAudio()
     }
@@ -108,6 +113,8 @@ final class UlarTanggaGameModel: ObservableObject {
     /// long throw) until the roll comes back.
     func roll(_ toss: UlarTanggaScene.Toss) {
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
+        rollSeconds = 0
+        lifetime.cancel("rollTurn")
         pendingToss = toss
         scene.holdDie(true, shake: toss == .long)
         if !table.roll(seat: turn) {
@@ -122,6 +129,38 @@ final class UlarTanggaGameModel: ObservableObject {
                 scene.holdDie(false)
             }
         }
+    }
+
+    /// Starts or clears the throw countdown whenever roll availability changes (same as ludo).
+    func syncRollTimer() {
+        lifetime.cancel("rollTurn")
+        guard ready else {
+            rollSeconds = 0
+            return
+        }
+        rollSeconds = rollTotal
+        lifetime.launch("rollTurn") { [self] in
+            while rollSeconds > 0 {
+                try await Task.sleep(for: .seconds(1))
+                guard lifetime.active, ready else {
+                    rollSeconds = 0
+                    return
+                }
+                if pressing { continue }
+                let next = rollSeconds - 1
+                rollSeconds = next
+                if next == 0, ready, !pressing {
+                    roll(.short)
+                    return
+                }
+            }
+        }
+    }
+
+    /// Call after state / animation changes that affect `ready`.
+    func afterReadyChange() {
+        updateReady()
+        syncRollTimer()
     }
 
     // MARK: Holding the die
@@ -164,7 +203,7 @@ final class UlarTanggaGameModel: ObservableObject {
 
     /// Once the board is still, give a computer player its turn after a short pause.
     private func idle() {
-        updateReady()
+        afterReadyChange()
         lifetime.launch("bot") { [self] in
             while loading { try await Task.sleep(for: .milliseconds(100)) }
             try await Task.sleep(for: .seconds(Self.botPause))
@@ -188,7 +227,7 @@ final class UlarTanggaGameModel: ObservableObject {
         let update = queue.removeFirst()
         lifetime.cancel("bot")
         animating = true
-        updateReady()
+        afterReadyChange()
         lifetime.launch("animation") { [self] in
             defer {
                 // Always ease back out after a throw or hop, even if cancelled mid-move.
@@ -381,10 +420,10 @@ private struct UlarTanggaBoardView: View {
         }
         .onChange(of: loading) { _, now in
             model.loading = now
-            model.updateReady()
+            model.afterReadyChange()
         }
-        .onChange(of: model.animating) { _, _ in model.updateReady() }
-        .onChange(of: model.offHold) { _, _ in model.updateReady() }
+        .onChange(of: model.animating) { _, _ in model.afterReadyChange() }
+        .onChange(of: model.offHold) { _, _ in model.afterReadyChange() }
         .sheet(isPresented: $showRules) { UlarTanggaRulesSheet(options: model.state.options) }
     }
 
@@ -398,6 +437,7 @@ private struct UlarTanggaBoardView: View {
         let margin = 12 * s
         // The notice (a dropped player, the host lost) only while it shows.
         var keys = Self.hudKeys
+        if model.ready && model.rollSeconds > 0 { keys.append("rollTimer") }
         if table.waiting != nil || table.notice != nil { keys.append("notice") }
         if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
@@ -521,6 +561,11 @@ private struct UlarTanggaBoardView: View {
                 )
                 .modifier(hudBox("emote"))
                 if table.canEmote { Spacer().frame(height: 10 * s) }
+                if model.ready && model.rollSeconds > 0 {
+                    CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
+                        .modifier(hudBox("rollTimer"))
+                        .padding(.bottom, 6 * s)
+                }
                 // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
                 // hold it to spin it and let go to throw it.
                 Color.clear

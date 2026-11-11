@@ -130,9 +130,10 @@ in the same commit as the code.
   (`StandardRules.ludo`).
 - Pawn colours are the same four as ular tangga (red, blue, green, yellow), picked in room
   lobbies and when a lone person plays computers on this phone (switch with a computer).
-- **Roll timer (2026-11-10):** when it is a local player's turn to throw, a 15 s countdown
-  (`Krida.ROLL_TURN_MS`) sits above the die (`CountdownRing`). Holding the die pauses it; at
-  0 the phone rolls a short toss. Same idea later for ular tangga if wanted.
+- **Roll timer (2026-11-10; ular tangga 2026-11-11):** when it is a local player's turn to
+  throw, a 15 s countdown (`Krida.ROLL_TURN_MS`) sits above the die (`CountdownRing`). Holding
+  the die pauses it; at 0 the phone rolls a short toss. Same on ludo and ular tangga (tap /
+  hold / long toss and the countdown).
 - **Board facing (2026-11-10):** each phone orbits the camera so that player's pawn colour
   sits bottom-left (`LudoBoard.cameraEyeFor`; corners are red→green→yellow→blue clockwise,
   not colour-index order). Pass-and-play keeps seat 0's colour there; guests and the host
