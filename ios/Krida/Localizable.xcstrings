@@ -4497,6 +4497,54 @@
         }
       }
     },
+    "Get invites from friends": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get invites from friends"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terima undangan teman"
+          }
+        }
+      }
+    },
+    "Allow notifications so a friend's invite reaches you while Krida is closed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow notifications so a friend's invite reaches you while Krida is closed."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izinkan notifikasi supaya undangan teman sampai saat Krida ditutup."
+          }
+        }
+      }
+    },
+    "Allow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Izinkan"
+          }
+        }
+      }
+    },
     "Not now": {
       "localizations": {
         "en": {

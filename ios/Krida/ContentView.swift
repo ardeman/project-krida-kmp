@@ -197,6 +197,8 @@ struct ContentView: View {
             showingAccount = false
             joinInvite(opened.invite, code: opened.code)
         }
+        // The app's question before the system one about notifications (after sign-in).
+        .overlay { PushAskLayer() }
         .overlay { if starting { LoadingScreen().transition(.opacity) } }
         // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
         // comes (a join link straight into a room, a slow GPU). Same as Android.

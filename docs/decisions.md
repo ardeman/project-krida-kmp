@@ -121,6 +121,9 @@ in the same commit as the code.
   [mockup](mockups/friends.md).
 - **No Firebase** (2026-11-11): Android gets no FCM push. Invites on Android show while the
   app is open (over the relay) or come as a share link; iOS may use APNs.
+- **Notification permission** (iPhone, 2026-11-12): asked right after sign-in, never at
+  launch. The app shows its own card first (what the notifications are for, Not now /
+  Allow); the iOS question comes only after Allow, so a Not now does not use it up.
 - **Invites** (2026-11-12): only the host of an online room invites, and only friends. An
   invite is delivered over a per-account inbox WebSocket while the friend's app shows a
   menu, and lasts 2 minutes. No switch to turn invites off yet. Approved

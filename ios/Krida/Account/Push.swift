@@ -19,7 +19,12 @@ final class Push: NSObject, ObservableObject {
     /// Set by a tap on a notification; ContentView joins the room and clears it.
     @Published var opened: Opened?
 
+    /// The app's own question is up (`PushAskLayer`): Not now or Allow.
+    @Published private(set) var asking = false
+
     private var deviceToken: String?
+    /// The player answered Not now; only their own tap on a friend or invite screen asks again.
+    private static let laterKey = "push.later"
 
     private override init() {}
 
@@ -33,15 +38,41 @@ final class Push: NSObject, ObservableObject {
         }
     }
 
-    /// Asks for notifications. iOS shows its question only the first time; the app calls
-    /// this when a signed-in player opens Invite friends, adds a friend, sees a friend in
-    /// the list or gets an invite, never at launch.
-    func ask() {
-        guard Account.shared.sessionToken != nil else { return }
+    /// Offers notifications to a signed-in player who was never asked by iOS: the app's own
+    /// card first, then the system question. Called right after sign-in, when a friend shows
+    /// in the list and when an invite arrives; after a Not now only `byPlayer` asks again
+    /// (the player added a friend or opened Invite friends). Never at launch.
+    func ask(byPlayer: Bool = false) {
+        guard Account.shared.sessionToken != nil, !asking else { return }
+        guard byPlayer || !UserDefaults.standard.bool(forKey: Self.laterKey) else { return }
+        Task {
+            switch await UNUserNotificationCenter.current().notificationSettings().authorizationStatus {
+            case .notDetermined: asking = true
+            case .authorized: UIApplication.shared.registerForRemoteNotifications()
+            default: break
+            }
+        }
+    }
+
+    /// A sign-in: the question may come again, then asks.
+    func signedIn() {
+        UserDefaults.standard.removeObject(forKey: Self.laterKey)
+        ask()
+    }
+
+    /// Allow on the app's card: iOS asks, and with a yes the phone registers.
+    func allow() {
+        asking = false
         Task {
             let allowed = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
             if allowed { UIApplication.shared.registerForRemoteNotifications() }
         }
+    }
+
+    /// Not now on the app's card: iOS stays unasked.
+    func later() {
+        asking = false
+        UserDefaults.standard.set(true, forKey: Self.laterKey)
     }
 
     /// iOS handed over the device token.
