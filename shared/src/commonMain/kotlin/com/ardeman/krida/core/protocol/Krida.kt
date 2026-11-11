@@ -11,6 +11,12 @@ object Krida {
     const val BLE_TO_HOST_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646102"
     /** Host -> guest. Host NOTIFIES frames here. */
     const val BLE_TO_GUEST_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646103"
+    /**
+     * Host room code (UTF-8, readable). Guests use this when the advertisement has the
+     * service UUID but the local name was dropped (common on iOS: name + 128-bit UUID
+     * exceeds the 31-byte ADV limit).
+     */
+    const val BLE_ROOM_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646104"
     /** Standard Client Characteristic Configuration Descriptor (enables notify). */
     const val BLE_CCCD_UUID: String = "00002902-0000-1000-8000-00805f9b34fb"
     /** Advertised local name is "Krida-<ROOM>". */

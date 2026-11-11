@@ -76,8 +76,15 @@ class BleHostTransport(
                 ),
             )
         }
+        // Readable room code for guests whose scan only saw the service UUID (iOS ADV overflow).
+        val room = BluetoothGattCharacteristic(
+            ROOM,
+            BluetoothGattCharacteristic.PROPERTY_READ,
+            BluetoothGattCharacteristic.PERMISSION_READ,
+        )
         service.addCharacteristic(toHost)
         service.addCharacteristic(notify)
+        service.addCharacteristic(room)
         toGuest = notify
 
         server = manager.openGattServer(context, callback)
@@ -163,6 +170,30 @@ class BleHostTransport(
             main.post { mtus[device.address] = mtu }
         }
 
+        override fun onCharacteristicReadRequest(
+            device: BluetoothDevice,
+            requestId: Int,
+            offset: Int,
+            characteristic: BluetoothGattCharacteristic,
+        ) {
+            if (characteristic.uuid != ROOM) {
+                server?.sendResponse(device, requestId, BluetoothGatt.GATT_FAILURE, 0, null)
+                return
+            }
+            val bytes = roomCode.encodeToByteArray()
+            if (offset > bytes.size) {
+                server?.sendResponse(device, requestId, BluetoothGatt.GATT_INVALID_OFFSET, offset, null)
+                return
+            }
+            server?.sendResponse(
+                device,
+                requestId,
+                BluetoothGatt.GATT_SUCCESS,
+                offset,
+                bytes.copyOfRange(offset, bytes.size),
+            )
+        }
+
         override fun onDescriptorWriteRequest(
             device: BluetoothDevice, requestId: Int, descriptor: BluetoothGattDescriptor,
             preparedWrite: Boolean, responseNeeded: Boolean, offset: Int, value: ByteArray,
@@ -214,6 +245,7 @@ class BleHostTransport(
         val SERVICE: UUID = UUID.fromString(Krida.BLE_SERVICE_UUID)
         val TO_HOST: UUID = UUID.fromString(Krida.BLE_TO_HOST_UUID)
         val TO_GUEST: UUID = UUID.fromString(Krida.BLE_TO_GUEST_UUID)
+        val ROOM: UUID = UUID.fromString(Krida.BLE_ROOM_UUID)
         val CCCD: UUID = UUID.fromString(Krida.BLE_CCCD_UUID)
     }
 }

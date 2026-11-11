@@ -12,13 +12,17 @@ Same bytes on every transport (BLE, LAN, online). Source of truth:
 | BLE service UUID | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646101` |
 | BLE `toHost` characteristic (guest → host, write) | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646102` |
 | BLE `toGuest` characteristic (host → guest, notify) | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646103` |
+| BLE `room` characteristic (host → guest, read, UTF-8 code) | `6b72a1d0-4b1e-4c8a-9b8e-6b7269646104` |
 | Bonjour / NSD service type | `_krida._tcp` |
 | Reconnect grace | 60 s |
 
 Example: `{"type":"hello","protocol":1,"name":"Ayu","platform":"ios"}`
 
-The room code (4 chars, e.g. `KRD4`) is put in the BLE advertisement's local name as
-`Krida-KRD4`, and in the QR code as `krida://join?room=KRD4`.
+The room code (4 chars, e.g. `KRD4`) is put in the BLE advertisement when it fits: Android
+hosts put it in service data; iOS hosts put it in the local name as `Krida-KRD4`. A 128-bit
+service UUID plus that name often exceeds the 31-byte ADV limit on iOS, so the name is
+dropped — guests that only see the service UUID connect and read the `room` characteristic
+before joining. The QR code is `krida://join?room=KRD4`.
 
 ## Messages
 

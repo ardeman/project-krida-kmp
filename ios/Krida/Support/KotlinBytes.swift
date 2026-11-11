@@ -28,6 +28,7 @@ enum KridaBle {
     static let service = CBUUID(string: Krida.shared.BLE_SERVICE_UUID)
     static let toHost = CBUUID(string: Krida.shared.BLE_TO_HOST_UUID)
     static let toGuest = CBUUID(string: Krida.shared.BLE_TO_GUEST_UUID)
+    static let room = CBUUID(string: Krida.shared.BLE_ROOM_UUID)
     /// Same as TransportListener.HOST_PEER in Kotlin.
     static let hostPeer = "host"
 }

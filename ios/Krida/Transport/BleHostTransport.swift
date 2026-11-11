@@ -6,7 +6,9 @@ import Shared
 /// `toGuest`, and write frames to `toHost`. Peer id = CBCentral.identifier.
 ///
 /// iOS can only advertise a local name + service UUIDs, so the room code goes in the
-/// local name ("Krida-ABCD"). Delegate queue is main, so everything runs on main.
+/// local name ("Krida-ABCD"). That name is often dropped when the 128-bit UUID fills the
+/// 31-byte ADV packet; guests then read the fixed `room` characteristic instead.
+/// Delegate queue is main, so everything runs on main.
 final class BleHostTransport: NSObject, Transport, CBPeripheralManagerDelegate {
     private let roomCode: String
     private var manager: CBPeripheralManager?
@@ -74,8 +76,15 @@ final class BleHostTransport: NSObject, Transport, CBPeripheralManagerDelegate {
             value: nil,
             permissions: [.readable]
         )
+        // Fixed value: CoreBluetooth answers reads without didReceiveRead.
+        let room = CBMutableCharacteristic(
+            type: KridaBle.room,
+            properties: [.read],
+            value: Data(roomCode.utf8),
+            permissions: [.readable]
+        )
         let service = CBMutableService(type: KridaBle.service, primary: true)
-        service.characteristics = [toHost, notify]
+        service.characteristics = [toHost, notify, room]
         toGuest = notify
         peripheral.add(service)
     }
