@@ -152,6 +152,8 @@ final class Invites: ObservableObject {
             let invite = Invite(id: message.id, from: from.name, code: code, game: game, seats: seats, players: players,
                                 until: Date().addingTimeInterval(ttl / 1000))
             received = received.filter { $0.id != invite.id } + [invite]
+            // The next invite should also arrive while the app is closed.
+            Push.shared.ask()
         case "invite_end":
             expire(message.id)
         default:

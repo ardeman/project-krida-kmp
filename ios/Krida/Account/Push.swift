@@ -34,7 +34,8 @@ final class Push: NSObject, ObservableObject {
     }
 
     /// Asks for notifications. iOS shows its question only the first time; the app calls
-    /// this when a signed-in player opens Invite friends or adds a friend, never at launch.
+    /// this when a signed-in player opens Invite friends, adds a friend, sees a friend in
+    /// the list or gets an invite, never at launch.
     func ask() {
         guard Account.shared.sessionToken != nil else { return }
         Task {

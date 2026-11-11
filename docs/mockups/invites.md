@@ -45,8 +45,9 @@ English copy.
    No owner setup.
 2. **10c-2 iPhone notifications**: needs owner setup first: an APNs key (`.p8`) set as
    relay secrets, and the Push Notifications capability on the App ID. The app asks for
-   notification permission the first time the player opens Invite friends or adds a
-   friend, never at launch. Privacy page and `docs/store.md` get the push token row.
+   notification permission the first time the player opens Invite friends, adds a
+   friend, sees a friend in their list or gets an in-app invite (a player added by someone
+   else never does the first two), never at launch. Privacy page and `docs/store.md` get the push token row.
 
 ## Decided (2026-11-12)
 

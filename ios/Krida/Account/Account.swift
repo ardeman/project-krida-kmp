@@ -205,6 +205,8 @@ final class Account: NSObject, ObservableObject {
                   let list = try? JSONDecoder().decode(FriendList.self, from: data) else { return }
             friendCode = list.code
             friends = list.friends
+            // A friend may have added this player; their invites should reach a closed app.
+            if !list.friends.isEmpty { Push.shared.ask() }
         }
     }
 
