@@ -165,6 +165,10 @@ Google) and Personal info → User IDs (the provider's account id). Stored in Cl
 until the player deletes the account. The friends list (step 10b: a friend code and which
 accounts are friends) is kept with the account and deleted with it; it uses the same name and
 user id, so it adds no new data type (agent's reading of the forms, not checked with a store).
+Invite notifications (step 10c-2, iPhone only): the APNs device token is stored with the
+session until sign-out or account deletion. On the App Store label add Identifiers → Device ID
+under **Data Linked to You**, App Functionality (agent's reading; Android stores no token, so
+the Play form does not change).
 
 Not collected by us: personal info other than the optional account's name and id (no email, phone), financial info (Play Billing handles
 payment; the app keeps only an on-device "ads removed" flag), messages/chat, contacts, photos,

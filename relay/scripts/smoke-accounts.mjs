@@ -2,7 +2,7 @@
 // point at a mock in this script, then signs in with both, signs out and deletes.
 // Usage: node scripts/smoke-accounts.mjs   (from relay/; needs no network or credentials)
 import { spawn } from "node:child_process";
-import { createHash, generateKeyPairSync, randomBytes, sign } from "node:crypto";
+import { createHash, generateKeyPairSync, randomBytes, sign, verify } from "node:crypto";
 import { createServer, request } from "node:http";
 import assert from "node:assert/strict";
 
@@ -25,9 +25,22 @@ function appleToken(claims = {}, key = privateKey) {
 }
 
 let googleSub = "google-user-1";
+// APNs: what the relay posted, and the status the mock answers each device token with.
+const apns = generateKeyPairSync("ec", { namedCurve: "P-256" });
+const pushes = [];
+const pushStatus = {};
 const server = createServer((req, res) => {
   res.setHeader("Content-Type", "application/json");
-  if (req.url === "/keys") {
+  if (req.url.startsWith("/3/device/")) {
+    let text = "";
+    req.on("data", (d) => (text += d));
+    req.on("end", () => {
+      const token = req.url.slice("/3/device/".length);
+      pushes.push({ token, headers: req.headers, body: JSON.parse(text) });
+      res.statusCode = pushStatus[token] ?? 200;
+      res.end(res.statusCode === 200 ? "" : JSON.stringify({ reason: "Unregistered" }));
+    });
+  } else if (req.url === "/keys") {
     res.end(JSON.stringify({ keys: [{ ...publicKey.export({ format: "jwk" }), kid: "k1", alg: "RS256", use: "sig" }] }));
   } else if (req.url === "/token") {
     const idToken = `${b64({ alg: "none" })}.${b64({ iss: "https://accounts.google.com", aud: GOOGLE_CLIENT, sub: googleSub, given_name: "Budi" })}.x`;
@@ -42,6 +55,8 @@ const dev = spawn("npx", [
   "wrangler", "dev", "--port", String(RELAY_PORT), "--persist-to", `.wrangler/smoke-accounts-${Date.now()}`,
   "--var", `APPLE_JWKS_URL:${mock}/keys`, "--var", `GOOGLE_TOKEN_URL:${mock}/token`,
   "--var", `GOOGLE_CLIENT_ID:${GOOGLE_CLIENT}`, "--var", "GOOGLE_CLIENT_SECRET:test-secret",
+  "--var", `APNS_URL:${mock}`, "--var", "APPLE_TEAM_ID:TEAM123456", "--var", "APNS_KEY_ID:KEY1234567",
+  "--var", `APNS_PRIVATE_KEY:${apns.privateKey.export({ format: "der", type: "pkcs8" }).toString("base64")}`,
 ], { stdio: ["ignore", "pipe", "pipe"] });
 let log = "";
 dev.stdout.on("data", (d) => (log += d));
@@ -241,10 +256,30 @@ async function invites(ayu, budi, ayuId, budiId) {
   assert.equal((await invite(ayu, { friendId: budiId, code: "ABC234", key: "another-key-0123456789" })).data.error, "not_host");
   assert.equal((await invite(ayu, { friendId: budiId, code: "ABC239", key })).data.error, "room_closed");
 
+  // iPhone notifications: Budi has two iPhones, one of which no longer has the app.
+  const iphone = "ab".repeat(32);
+  const gone = "cd".repeat(32);
+  const pushToken = (token, json) => call("POST", "/v1/push-token", { token, json });
+  assert.equal((await pushToken(undefined, { token: iphone })).status, 401);
+  assert.equal((await pushToken(budi, { token: "short" })).data.error, "bad_request");
+  assert.equal((await pushToken(budi, { token: iphone.toUpperCase(), env: "sandbox", lang: "id" })).status, 204);
+  assert.equal((await pushToken(budi, { token: gone })).status, 204);
+  pushStatus[gone] = 410;
+
   const phone = await inboxSocket(budi);
   assert.equal(phone.status, 101);
   const sent = await invite(ayu, { friendId: budiId, code: "ABC234", key });
   assert.equal(sent.status, 200);
+  assert.deepEqual(pushes.map((p) => p.token).sort(), [iphone, gone]);
+  const push = pushes.find((p) => p.token === iphone);
+  assert.deepEqual(push.body, { aps: { alert: { body: "Ayu mengajakmu main Ludo" }, sound: "default" }, code: "ABC234", invite: sent.data.id });
+  assert.equal(push.headers["apns-topic"], BUNDLE);
+  assert.equal(push.headers["apns-push-type"], "alert");
+  assert.equal(push.headers["apns-collapse-id"], sent.data.id);
+  const [head, claims, signature] = push.headers.authorization.replace(/^bearer /, "").split(".");
+  assert.deepEqual(JSON.parse(Buffer.from(head, "base64url")), { alg: "ES256", kid: "KEY1234567" });
+  assert.equal(JSON.parse(Buffer.from(claims, "base64url")).iss, "TEAM123456");
+  assert.ok(verify("sha256", Buffer.from(`${head}.${claims}`), { key: apns.publicKey, dsaEncoding: "ieee-p1363" }, Buffer.from(signature, "base64url")), "APNs token signature");
   const got = await phone.next();
   assert.ok(got.ttlMs > 100_000 && got.ttlMs <= 120_000);
   delete got.ttlMs;
@@ -259,7 +294,10 @@ async function invites(ayu, budi, ayuId, budiId) {
 
   // A room that fills ends its invites, and takes no new ones.
   const full = await roomSocket(`ABC235?role=host&key=${key}&game=congklak&seats=2`);
+  pushes.length = 0;
   const second = await invite(ayu, { friendId: budiId, code: "ABC235", key });
+  assert.deepEqual(pushes.map((p) => p.token), [iphone], "a token APNs calls unregistered is dropped");
+  assert.equal(pushes[0].body.aps.alert.body, "Ayu mengajakmu main Congklak");
   assert.equal((await phone.next()).id, second.data.id);
   const guest = await roomSocket("ABC235?role=guest");
   assert.deepEqual(await phone.next(), { type: "invite_end", id: second.data.id });

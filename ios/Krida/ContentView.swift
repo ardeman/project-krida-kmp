@@ -161,8 +161,6 @@ struct ContentView: View {
         // the Account screen with the code filled in. A running game or lobby stays; the
         // link only applies from the menus.
         .onOpenURL { url in
-            let onMenus = passAndPlay == nil && ularTable == nil && ludoTable == nil && room == nil
-                && !creatingOnlineRoom && !playingQuickMatch
             guard onMenus, Account.shared.handleFriendLink(url) else { return }
             joining = false
             joinError = nil
@@ -190,7 +188,15 @@ struct ContentView: View {
             )
         }
         // Friend invites, over any menu screen.
-        .overlay { InviteLayer(onMenus: !keepAwake && !playingQuickMatch, onJoin: joinInvite) }
+        .overlay { InviteLayer(onMenus: !keepAwake && !playingQuickMatch, onJoin: { joinInvite($0.id, code: $0.code) }) }
+        // A tapped invite notification joins its room, from the menus only (as links do).
+        .onReceive(Push.shared.$opened) { opened in
+            guard let opened else { return }
+            Push.shared.opened = nil
+            guard onMenus, Account.shared.sessionToken != nil, RoomCode.shared.isValidOnline(code: opened.code) else { return }
+            showingAccount = false
+            joinInvite(opened.invite, code: opened.code)
+        }
         .overlay { if starting { LoadingScreen().transition(.opacity) } }
         // Up for at least 0.7 s so it doesn't flash, at most 3 s in case the snapshot never
         // comes (a join link straight into a room, a slow GPU). Same as Android.
@@ -202,6 +208,12 @@ struct ContentView: View {
             endStartup()
         }
         .onChange(of: menuReady) { _, ready in if ready && startMinDone { endStartup() } }
+    }
+
+    /// No game, lobby or search is up; links and notifications only apply here.
+    private var onMenus: Bool {
+        passAndPlay == nil && ularTable == nil && ludoTable == nil && room == nil
+            && !creatingOnlineRoom && !playingQuickMatch
     }
 
     private func openJoin() {
@@ -220,12 +232,12 @@ struct ContentView: View {
 
     /// VisionKit's scanner, after asking for the camera if needed.
     /// Join on a friend's invite: straight into the room, as a room link would after Join.
-    private func joinInvite(_ invite: Invites.Invite) {
-        Invites.shared.dismiss(invite.id)
+    private func joinInvite(_ id: String, code: String) {
+        Invites.shared.dismiss(id)
         joining = false
         creatingOnlineRoom = false
         joinError = nil
-        room = NearbyRoom.join(code: invite.code, online: true, invite: invite.id)
+        room = NearbyRoom.join(code: code, online: true, invite: id)
     }
 
     private func scanRoomQr() {

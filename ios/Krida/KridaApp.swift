@@ -3,6 +3,7 @@ import Shared
 
 @main
 struct KridaApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var roomCode = ""
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var language = Language.shared
@@ -26,7 +27,10 @@ struct KridaApp: App {
                 .onAppear { Ads.shared.start() }
                 .onChange(of: scenePhase, initial: true) { _, phase in
                     Sounds.shared.setActive(phase == .active)
-                    if phase == .active { Ads.shared.refresh() }
+                    if phase == .active {
+                        Ads.shared.refresh()
+                        Push.shared.clearDelivered()
+                    }
                 }
         }
     }

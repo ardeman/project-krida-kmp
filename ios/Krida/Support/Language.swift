@@ -26,6 +26,8 @@ final class Language: ObservableObject {
         UserDefaults.standard.set([new.rawValue], forKey: "AppleLanguages")
         Bundle.app = Self.bundle(for: new)
         code = new
+        // Invite notifications are written in this language (Account/Push.swift).
+        Task { @MainActor in Push.shared.upload() }
     }
 
     private static func bundle(for code: Code) -> Bundle {

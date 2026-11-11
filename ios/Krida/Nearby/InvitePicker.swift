@@ -80,6 +80,8 @@ struct InvitePicker: View {
         .onAppear {
             invites.sendFailed = false
             account.loadFriends()
+            // So the friends' own invites reach this phone while the app is closed.
+            Push.shared.ask()
         }
     }
 

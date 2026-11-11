@@ -220,6 +220,8 @@ final class Account: NSObject, ObservableObject {
             if let (status, data) = reply, status == 200, let added = try? JSONDecoder().decode(Added.self, from: data).friend {
                 friends = (friends.filter { $0.id != added.id } + [added]).sorted { $0.name.lowercased() < $1.name.lowercased() }
                 friendDraft = ""
+                // Their invites should reach this phone while the app is closed.
+                Push.shared.ask()
             } else {
                 switch reply.flatMap({ try? JSONDecoder().decode(Refused.self, from: $0.1) })?.error {
                 case "code_not_found": friendError = .notFound
@@ -263,6 +265,7 @@ final class Account: NSObject, ObservableObject {
         self.user = user
         Self.saveToken(token)
         UserDefaults.standard.set(try? JSONEncoder().encode(user), forKey: Self.userKey)
+        Push.shared.upload()
     }
 
     private func clear() {

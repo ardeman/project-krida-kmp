@@ -10,6 +10,7 @@
  */
 import type { Env } from "./index";
 import { INVITE_MS, type Invite } from "./inbox";
+import { PUSH_SCHEMA, pushInvite, savePushToken } from "./push";
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 const STATE_MS = 10 * 60_000;
@@ -55,6 +56,7 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS friends_b ON friends (b)`,
   `CREATE TABLE IF NOT EXISTS friend_tries (user_id TEXT PRIMARY KEY, started INTEGER NOT NULL, count INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS invite_tries (user_id TEXT PRIMARY KEY, started INTEGER NOT NULL, count INTEGER NOT NULL)`,
+  ...PUSH_SCHEMA,
 ];
 
 interface User {
@@ -70,7 +72,7 @@ let appleKeys: { at: number; url: string; keys: JsonWebKey[] } | undefined;
 export async function handleAccounts(request: Request, env: Env, url: URL): Promise<Response | null> {
   const path = url.pathname;
   const friends = path === "/v1/friends" || path.startsWith("/v1/friends/");
-  const invites = path === "/v1/inbox" || path === "/v1/invites";
+  const invites = path === "/v1/inbox" || path === "/v1/invites" || path === "/v1/push-token";
   if (path !== "/v1/me" && !path.startsWith("/v1/auth/") && !friends && !invites) return null;
   const db = env.DB;
   if (!db) return fail(503, "accounts_unavailable");
@@ -105,6 +107,10 @@ export async function handleAccounts(request: Request, env: Env, url: URL): Prom
     const user = await authed(db, request);
     if (!user) return fail(401, "unauthorized");
     if (path === "/v1/invites" && method === "POST") return sendInvite(env, db, user, await body(request));
+    if (path === "/v1/push-token" && method === "POST") {
+      const saved = await savePushToken(db, user.id, await sha256(bearer(request) ?? ""), await body(request));
+      return saved ? new Response(null, { status: 204 }) : fail(400, "bad_request");
+    }
     if (path === "/v1/inbox" && method === "GET") {
       if (request.headers.get("Upgrade") !== "websocket") return fail(426, "expected_websocket");
       return inbox(env, user.id).fetch(request);
@@ -283,7 +289,13 @@ async function appleClientSecret(env: Env): Promise<string> {
 
 async function signOut(db: D1Database, request: Request): Promise<Response> {
   const token = bearer(request);
-  if (token) await db.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(await sha256(token)).run();
+  if (token) {
+    const hash = await sha256(token);
+    await db.batch([
+      db.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(hash),
+      db.prepare("DELETE FROM push_tokens WHERE session = ?").bind(hash),
+    ]);
+  }
   return new Response(null, { status: 204 });
 }
 
@@ -316,6 +328,7 @@ async function deleteAccount(env: Env, db: D1Database, request: Request): Promis
     db.prepare("DELETE FROM friend_codes WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM friend_tries WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM invite_tries WHERE user_id = ?").bind(user.id),
+    db.prepare("DELETE FROM push_tokens WHERE user_id = ?").bind(user.id),
     db.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
   ]);
   await inbox(env, user.id).fetch(new Request("https://internal/clear", { method: "POST" })).catch(() => undefined);
@@ -434,7 +447,7 @@ function inbox(env: Env, userId: string): DurableObjectStub {
 /**
  * The host of an open online room invites a friend. The room checks the host key and the
  * open seat, and allows one live invite per friend; the invite then goes to the friend's
- * inbox for two minutes.
+ * inbox for two minutes, and to their iPhones as a notification (src/push.ts).
  */
 async function sendInvite(env: Env, db: D1Database, user: User, input: Record<string, unknown>): Promise<Response> {
   const friendId = typeof input.friendId === "string" ? input.friendId : "";
@@ -464,6 +477,7 @@ async function sendInvite(env: Env, db: D1Database, user: User, input: Record<st
     game: room.game, seats: room.seats, players: room.players, expires: now + INVITE_MS,
   };
   await inbox(env, friendId).fetch(new Request("https://internal/deliver", { method: "POST", body: JSON.stringify(invite) }));
+  await pushInvite(env, db, friendId, invite);
   return json({ id, ttlMs: INVITE_MS });
 }
 

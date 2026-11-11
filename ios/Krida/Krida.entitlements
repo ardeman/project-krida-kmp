@@ -8,6 +8,9 @@
 	<array>
 		<string>applinks:krida.ardeman.com</string>
 	</array>
+	<!-- Invite notifications (Account/Push.swift); App Store signing makes it production. -->
+	<key>aps-environment</key>
+	<string>development</string>
 	<!-- Sign in with Apple (Account/Account.swift). -->
 	<key>com.apple.developer.applesignin</key>
 	<array>

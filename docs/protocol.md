@@ -319,6 +319,7 @@ accounts. Users and sessions live in Cloudflare D1: the provider's user id, a di
 | `DELETE /v1/friends/{id}` | Bearer | 204; ends the friendship for both players |
 | `POST /v1/invites` | Bearer, `{friendId, code, key}` | `{id, ttlMs}`; or `not_friends` or `not_host` (403), `room_closed` or `already_invited` (409), `too_many_invites` (429) |
 | `GET /v1/inbox` | Bearer, WebSocket upgrade | the account's invites inbox (below) |
+| `POST /v1/push-token` | Bearer, `{token, env?, lang?}` | 204; stores an iPhone's APNs device token with that session (below) |
 
 `user` is `{id, name, provider}` with `provider` `"apple"` or `"google"`; `name` may be empty
 (the apps then show "Player"). `token` is 32 random bytes, base64url; the relay stores only
@@ -356,6 +357,16 @@ invite is dropped and the account's other devices get `invite_end`. A join that 
 invite sends its `id` as `invite` in `hello`, so the host can show that friend as joined
 (`HostSession.joinedInvites`); rooms themselves still know nothing about accounts.
 Account deletion closes the inbox and drops its invites.
+
+iPhone notifications (step 10c-2, `relay/src/push.ts`): an iPhone that allowed notifications
+sends its APNs device token (hex) with `POST /v1/push-token`; `env` is `"sandbox"` for a
+debug build (default production) and `lang` `"id"` or `"en"` (default), the language the
+relay writes the notification in. A token belongs to one session: sending it again moves or
+updates it, sign-out and account deletion remove it, and an account keeps its 4 newest. Each
+invite then also goes to those tokens through APNs as "NAME invites you to play GAME", with
+`code` and `invite` (the invite id) beside `aps`, and is not delivered after the invite's
+two minutes. A token APNs refuses is dropped. Without the APNs key the relay sends nothing.
+Android gets no push.
 
 ## Compatibility rule
 

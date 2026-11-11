@@ -25,9 +25,13 @@ export interface Env {
   APPLE_TEAM_ID?: string;
   APPLE_KEY_ID?: string;
   APPLE_PRIVATE_KEY?: string;
+  /** APNs key for invite notifications (src/push.ts); uses APPLE_TEAM_ID too. */
+  APNS_KEY_ID?: string;
+  APNS_PRIVATE_KEY?: string;
   /** Test overrides for the provider endpoints (scripts/smoke-accounts.mjs). */
   APPLE_JWKS_URL?: string;
   GOOGLE_TOKEN_URL?: string;
+  APNS_URL?: string;
 }
 
 /** Same alphabet as RoomCode in shared/; online codes are 6 chars. */
