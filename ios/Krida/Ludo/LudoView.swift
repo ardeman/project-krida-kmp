@@ -128,6 +128,8 @@ final class LudoGameModel: ObservableObject {
             rollSeconds = 0
             return
         }
+        // Recover if a prior recall raced the throw frame and left the die on the board.
+        recallDie(for: state)
         rollSeconds = rollTotal
         lifetime.launch("rollTurn") { [self] in
             while rollSeconds > 0 {
@@ -273,7 +275,8 @@ final class LudoGameModel: ObservableObject {
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
                 watchDie()
                 let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
-                try await Task.sleep(for: .seconds(Double(seconds)))
+                // Small buffer so the last throw frame can mark landed before we hop (and recall).
+                try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
                 sounds.play(.tap)
                 if let pawn = next.lastPawn?.intValue, let from = next.lastFrom?.intValue, let to = next.lastTo?.intValue {
                     let color = next.color(seat: Int32(seat))

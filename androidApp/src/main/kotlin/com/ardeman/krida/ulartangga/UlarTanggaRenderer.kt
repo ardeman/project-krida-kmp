@@ -324,19 +324,26 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     /** Returns to the next player's box, or the local control when [origin] is null. */
     fun recallDie(origin: FloatArray? = null) {
         idleOrigin = origin
-        if (dieMode == DieMode.Home) {
-            diePosition(idleOrigin).copyInto(shown)
-            applyDie()
-            invalidate()
+        when (dieMode) {
+            DieMode.Home -> {
+                diePosition(idleOrigin).copyInto(shown)
+                applyDie()
+                invalidate()
+            }
+            DieMode.Returning -> {
+                flight?.to?.let { diePosition(idleOrigin).copyInto(it) }
+            }
+            DieMode.Thrown, DieMode.Landed -> {
+                // Bring home even if the throw frame hasn't flipped to Landed yet (delay race).
+                flight = Flight(
+                    from = shown.copyOf(), to = diePosition(idleOrigin), q0 = dieRot, q1 = homeRotation(dieValue),
+                    axis = floatArrayOf(1f, 0f, 0f), turns = 0, seconds = 0.45f,
+                    heights = floatArrayOf(0f), shares = floatArrayOf(1f),
+                )
+                dieMode = DieMode.Returning
+                invalidate()
+            }
         }
-        if (dieMode != DieMode.Landed) return
-        flight = Flight(
-            from = shown.copyOf(), to = diePosition(idleOrigin), q0 = dieRot, q1 = homeRotation(dieValue),
-            axis = floatArrayOf(1f, 0f, 0f), turns = 0, seconds = 0.45f,
-            heights = floatArrayOf(0f), shares = floatArrayOf(1f),
-        )
-        dieMode = DieMode.Returning
-        invalidate()
     }
 
     private fun stepDie(dt: Float): Boolean {

@@ -189,7 +189,8 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 ),
             )
             val flight = r.throwDie(roll, toss, origin, seat)
-            delay((flight * 1000).toLong())
+            // Small buffer so the last throw frame can mark Landed before we hop (and recall).
+            delay((flight * 1000).toLong() + 200L)
             Sounds.play(Sounds.Effect.Tap)
 
             val pawn = after.lastPawn
@@ -260,6 +261,11 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     val rollTotal = (Krida.ROLL_TURN_MS / 1000L).toInt()
     val holdingNow by rememberUpdatedState(holdingDie)
     val canRollNow by rememberUpdatedState(canRoll)
+
+    // If a prior recall raced the throw frame, snap the die home when it is time to roll again.
+    LaunchedEffect(canRoll, renderer, state.turn) {
+        if (canRoll) renderer?.recallDie(null)
+    }
 
     // Gold rings on the board under legal tokens; zoom onto them; ease back out when pick ends.
     LaunchedEffect(canPick, legal, renderer, animating, state.turn, state.roll, state.tokens) {

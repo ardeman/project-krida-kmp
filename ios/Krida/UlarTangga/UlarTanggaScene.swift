@@ -463,11 +463,22 @@ final class UlarTanggaScene {
     /// Returns to the next player's box, or the local control when `origin` is nil.
     func recallDie(origin: CGPoint? = nil) {
         idleOrigin = origin
-        if dieMode == .home { shown = diePosition(idleOrigin); applyDie() }
-        guard dieMode == .landed else { return }
-        flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: Self.homeRotation(dieValue),
-                        axis: [1, 0, 0], turns: 0, seconds: 0.45, heights: [0], shares: [1])
-        dieMode = .returning
+        switch dieMode {
+        case .home:
+            shown = diePosition(idleOrigin)
+            applyDie()
+        case .returning:
+            if let f = flight {
+                flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: f.q1,
+                                axis: f.axis, turns: 0, seconds: max(0.15, f.seconds - f.elapsed),
+                                heights: [0], shares: [1])
+            }
+        case .thrown, .landed:
+            // Bring home even if the throw frame hasn't flipped to landed yet (delay race).
+            flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: Self.homeRotation(dieValue),
+                            axis: [1, 0, 0], turns: 0, seconds: 0.45, heights: [0], shares: [1])
+            dieMode = .returning
+        }
     }
 
     private func stepDie(_ dt: Float) {
