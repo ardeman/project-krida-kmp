@@ -119,8 +119,9 @@ and the Pixel on different networks (one on mobile data).
       Relay (`GET`/`POST /v1/friends`, `DELETE /v1/friends/{id}`, D1 tables made on first
       use), the web `/f/CODE` page and Android (two-card Account screen, `/f/` and
       `krida://friend` links) built 2026-11-11; `npm run smoke:accounts` covers friends.
-      Open: iOS (screen, `/f/*` in `apple-app-site-association`, the sign-in text that still
-      says friends are coming soon), deploying the relay and web, and the Pixel check.
+      iOS built the same day (same two-card screen and links, `/f/*` in
+      `apple-app-site-association`). Open: deploying the relay and web, and the Pixel and
+      iPhone checks.
     - [ ] **10c Invites.** iOS via APNs. Android without Firebase (owner, 2026-11-11):
       invites show while the app is open, over the relay, or arrive as a share link.
 

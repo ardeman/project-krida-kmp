@@ -17,6 +17,8 @@ struct KridaApp: App {
                 .environment(\.locale, language.locale)
                 // QR join links: krida://join?room=ABCD
                 .onOpenURL { url in
+                    // Friend links belong to ContentView.
+                    guard Account.friendCode(in: url) == nil else { return }
                     if let code = RoomCode.shared.parse(text: url.absoluteString) ?? RoomCode.shared.parseOnline(text: url.absoluteString) {
                         roomCode = code
                     }

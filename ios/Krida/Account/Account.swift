@@ -6,8 +6,8 @@ import Shared
 import UIKit
 
 /// The signed-in Krida account ("Accounts" in docs/protocol.md): Sign in with Apple, Google
-/// sign-in through the browser and the relay, the session token, sign out and account
-/// deletion. Same endpoints and stored fields as Android (`account/Account.kt`).
+/// sign-in through the browser and the relay, the session token, sign out, account
+/// deletion and the friends list. Same endpoints and stored fields as Android (`account/Account.kt`).
 @MainActor
 final class Account: NSObject, ObservableObject {
     static let shared = Account()
@@ -27,6 +27,29 @@ final class Account: NSObject, ObservableObject {
         let user: User
     }
 
+    struct Friend: Decodable, Equatable, Identifiable {
+        let id: String
+        let name: String
+    }
+
+    /// Why the last add was refused; `failed` also covers an unreachable relay.
+    enum FriendError {
+        case notFound, own, already, full, tooMany, failed
+    }
+
+    private struct FriendList: Decodable {
+        let code: String
+        let friends: [Friend]
+    }
+
+    private struct Added: Decodable {
+        let friend: Friend
+    }
+
+    private struct Refused: Decodable {
+        let error: String
+    }
+
     private static let userKey = "account.user"
     private static let keychainService = "com.ardeman.krida.account"
     private static let api = Krida.shared.RELAY_URL.replacingOccurrences(of: "wss://", with: "https://")
@@ -37,6 +60,15 @@ final class Account: NSObject, ObservableObject {
     @Published private(set) var busy = false
     /// The last sign-in, sign-out or deletion failed; cleared by the next attempt.
     @Published private(set) var failed = false
+
+    /// This account's friend code; nil until the list has loaded.
+    @Published private(set) var friendCode: String?
+    @Published private(set) var friends: [Friend] = []
+    /// The code being typed on the account screen; a friend link fills it in.
+    @Published var friendDraft = ""
+    /// An add is running.
+    @Published private(set) var addingFriend = false
+    @Published var friendError: FriendError?
 
     private var token: String?
     private var webSession: ASWebAuthenticationSession?
@@ -135,6 +167,84 @@ final class Account: NSObject, ObservableObject {
         }
     }
 
+    /// The code in "https://krida.ardeman.com/f/K7M2XQ4D" or "krida://friend?code=K7M2XQ4D";
+    /// nil when `link` is not a friend link.
+    static func friendCode(in link: URL) -> String? {
+        let raw: String?
+        if link.scheme == "krida", link.host == "friend" {
+            raw = URLComponents(url: link, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "code" })?.value
+        } else if link.scheme == "https", link.host == "krida.ardeman.com", link.pathComponents.dropFirst().first == "f" {
+            raw = link.pathComponents.dropFirst(2).first
+        } else {
+            return nil
+        }
+        return cleanFriendCode(raw ?? "")
+    }
+
+    /// Fills in the code from a friend link. True when `link` was one.
+    func handleFriendLink(_ link: URL) -> Bool {
+        guard let code = Self.friendCode(in: link) else { return false }
+        friendDraft = code
+        friendError = nil
+        return true
+    }
+
+    /// Upper-case letters and digits only, at most the code's length.
+    static func cleanFriendCode(_ text: String) -> String {
+        String(text.uppercased().filter { $0.isASCII && ($0.isLetter || $0.isNumber) }.prefix(Int(Krida.shared.FRIEND_CODE_LENGTH)))
+    }
+
+    /// Fetches the friend code and the list; the screen calls it when it opens.
+    func loadFriends() {
+        guard let saved = token else { return }
+        Task {
+            // An answer this build can't read leaves the list as it was.
+            guard let (status, data) = await send("GET", "/v1/friends", token: saved), token == saved, status == 200,
+                  let list = try? JSONDecoder().decode(FriendList.self, from: data) else { return }
+            friendCode = list.code
+            friends = list.friends
+        }
+    }
+
+    /// Adds the player with `friendDraft` as a friend; instant and mutual.
+    func addFriend() {
+        guard let saved = token, !addingFriend, friendDraft.count == Int(Krida.shared.FRIEND_CODE_LENGTH) else { return }
+        friendError = nil
+        addingFriend = true
+        Task {
+            let reply = await send("POST", "/v1/friends", token: saved, body: ["code": friendDraft])
+            guard token == saved else { return }
+            addingFriend = false
+            if let (status, data) = reply, status == 200, let added = try? JSONDecoder().decode(Added.self, from: data).friend {
+                friends = (friends.filter { $0.id != added.id } + [added]).sorted { $0.name.lowercased() < $1.name.lowercased() }
+                friendDraft = ""
+            } else {
+                switch reply.flatMap({ try? JSONDecoder().decode(Refused.self, from: $0.1) })?.error {
+                case "code_not_found": friendError = .notFound
+                case "own_code": friendError = .own
+                case "already_friends": friendError = .already
+                case "friends_full": friendError = .full
+                case "too_many_tries": friendError = .tooMany
+                default: friendError = .failed
+                }
+            }
+        }
+    }
+
+    /// Ends the friendship for both players.
+    func removeFriend(_ id: String) {
+        guard let saved = token else { return }
+        let before = friends
+        friendError = nil
+        friends.removeAll { $0.id == id }
+        Task {
+            let status = await send("DELETE", "/v1/friends/\(id)", token: saved)?.0
+            guard token == saved, status != 204 else { return }
+            friends = before
+            friendError = .failed
+        }
+    }
+
     private func signIn(path: String, body: [String: String]) async {
         busy = true
         let reply = await send("POST", path, body: body)
@@ -156,6 +266,10 @@ final class Account: NSObject, ObservableObject {
     private func clear() {
         token = nil
         user = nil
+        friendCode = nil
+        friends = []
+        addingFriend = false
+        friendError = nil
         Self.saveToken(nil)
         UserDefaults.standard.removeObject(forKey: Self.userKey)
     }

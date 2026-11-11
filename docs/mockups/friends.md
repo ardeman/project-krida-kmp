@@ -54,4 +54,9 @@ use without a migration. On Android the row's × turns the row into "Remove NAME
 Cancel and Remove. A friend link opens the Account screen with the code filled in; it stays
 in the field through sign-in while the app keeps running. Checked: relay typecheck and
 `npm run smoke:accounts` (add, list, remove, the errors, deletion, the try limit), shared
-JVM tests, Android `assembleDebug`, web build. Not checked on a device. iOS is open.
+JVM tests, Android `assembleDebug`, web build. Not checked on a device.
+
+iOS is built (2026-11-11) the same way as Android: the two cards, the row that turns into
+"Remove NAME?", and `/f/` and `krida://friend` links that open the Account screen from the
+menus only. `apple-app-site-association` lists `/f/*`. Checked: the simulator build and the
+web build. Not checked on a device.

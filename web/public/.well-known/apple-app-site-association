@@ -3,7 +3,7 @@
     "details": [
       {
         "appIDs": ["B36A8H9S8E.com.ardeman.krida"],
-        "components": [{ "/": "/r/*" }]
+        "components": [{ "/": "/r/*" }, { "/": "/f/*" }]
       }
     ]
   }

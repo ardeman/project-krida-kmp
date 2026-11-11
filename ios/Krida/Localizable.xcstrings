@@ -4183,12 +4183,6 @@
         "id": { "stringUnit": { "state": "translated", "value": "Masuk ke Krida" } }
       }
     },
-    "Sign in to add friends and invite them to play. Friends are coming soon.": {
-      "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign in to add friends and invite them to play. Friends are coming soon." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk untuk menambah teman dan mengajak mereka main. Fitur teman segera hadir." } }
-      }
-    },
     "Sign in with Google": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Sign in with Google" } },
@@ -4229,6 +4223,102 @@
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Sign in with Apple" } },
         "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Apple" } }
+      }
+    },
+    "Sign in to add friends. Playing never needs an account.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign in to add friends. Playing never needs an account." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk untuk menambah teman. Main tidak pernah butuh akun." } }
+      }
+    },
+    "Friends": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Friends" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Teman" } }
+      }
+    },
+    "Your friend code": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your friend code" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Kode temanmu" } }
+      }
+    },
+    "Add me as a friend on Krida!": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Add me as a friend on Krida!" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tambahkan aku jadi teman di Krida!" } }
+      }
+    },
+    "Friend's code": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Friend's code" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Kode teman" } }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Add" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tambah" } }
+      }
+    },
+    "No friends yet": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No friends yet" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Belum ada teman" } }
+      }
+    },
+    "Share your code, or type a friend's code.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Share your code, or type a friend's code." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Bagikan kodemu, atau ketik kode teman." } }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Remove" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Hapus" } }
+      }
+    },
+    "Remove %@": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Remove %@" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Hapus %@" } }
+      }
+    },
+    "Remove %@?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Remove %@?" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Hapus %@?" } }
+      }
+    },
+    "No player has that code.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No player has that code." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Tidak ada pemain dengan kode itu." } }
+      }
+    },
+    "That's your own code.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "That's your own code." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Itu kodemu sendiri." } }
+      }
+    },
+    "You're already friends.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "You're already friends." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Kalian sudah berteman." } }
+      }
+    },
+    "The friends list is full.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "The friends list is full." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Daftar teman sudah penuh." } }
+      }
+    },
+    "Too many tries. Wait a few minutes.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Too many tries. Wait a few minutes." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Terlalu banyak percobaan. Tunggu beberapa menit." } }
       }
     }
   },

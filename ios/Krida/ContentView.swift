@@ -157,6 +157,17 @@ struct ContentView: View {
             }
         }
         #endif
+        // A friend link (https://krida.ardeman.com/f/K7M2XQ4D or krida://friend?code=…) opens
+        // the Account screen with the code filled in. A running game or lobby stays; the
+        // link only applies from the menus.
+        .onOpenURL { url in
+            let onMenus = passAndPlay == nil && ularTable == nil && ludoTable == nil && room == nil
+                && !creatingOnlineRoom && !playingQuickMatch
+            guard onMenus, Account.shared.handleFriendLink(url) else { return }
+            joining = false
+            joinError = nil
+            showingAccount = true
+        }
         // A room link opens the app ready to join: the code field on "Nearby" or "Online".
         .onAppear { if !roomCode.isEmpty { openJoin() } }
         .onChange(of: roomCode) { _, code in if !code.isEmpty && !joining { openJoin() } }
