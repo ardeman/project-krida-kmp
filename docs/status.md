@@ -5,7 +5,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
-- Online step 10: accounts, friends, invites (largest step; ask before Firebase/FCM).
+- Online step 10b: friends list. Then 10c: invites (no Firebase on Android).
+- Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
+  check, and D1 edit rights on the GitHub deploy token (the first deploy was run by hand).
 
 ## Device checks the owner hasn't done yet
 
@@ -19,6 +21,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - iPhone: seat tiles and rule hint lines, loading screen, play card, ular tangga board.
 - Audio: SFX, voice-over and music not yet listened to by the owner.
 - Bilingual: check both languages on the devices.
+- Account: iPhone checked 2026-11-11 (Google sign-in and sign out, Apple sign-in and delete
+  account). Pixel: sign in with Google, sign out, delete account still open.
 
 ## Release setup
 

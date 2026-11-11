@@ -21,7 +21,7 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <article class="doc">
       <h1>Privacy Policy</h1>
-      <p class="doc-date">Effective 10 November 2026</p>
+      <p class="doc-date">Effective 11 November 2026</p>
 
       <p>
         Krida is a collection of board games for Android and iPhone, made by Ardeman. This page explains what data
@@ -30,9 +30,11 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
       <h2>In short</h2>
       <ul>
-        <li>Krida does not ask for an account, your real name, email, phone number, or contacts.</li>
+        <li>Krida can be played without an account, and does not ask for your email, phone number, or contacts.</li>
+        <li>An account is optional (Sign in with Apple or Google). We keep only the account ID Apple or Google
+          gives us and your display name, and you can delete it from the app at any time.</li>
         <li>Online play goes through a relay that only forwards game traffic while a room is open; it does not keep
-          accounts or a history of games.</li>
+          a history of games.</li>
         <li>Ads in Krida are provided by Google AdMob, which collects some device data as described below.</li>
         <li>Payments are processed by Google Play or the App Store; we never see your payment details.</li>
       </ul>
@@ -115,9 +117,23 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
         13. If you are a parent and believe your child has given us data, contact us and we will help.
       </p>
 
+      <h2 id="account">Account (optional)</h2>
+      <p>
+        You can sign in with Apple or Google from the account button in the menu. When you do, we store in the
+        relay's database (Cloudflare D1): the account ID Apple or Google gives Krida, your display name, and when
+        the account was created. We do not receive or store your email, password, photo, or contacts. Your phone
+        keeps a session token so you stay signed in.
+      </p>
+      <p>
+        To delete your account, open the account button in the menu and choose "Delete account". The account, name,
+        and every session are removed from our database right away; for Apple accounts, Krida's access at Apple is
+        revoked too. If you can't open the app, email the address under Contact and we will delete the account.
+      </p>
+
       <h2>Deleting data</h2>
       <p>
-        Because Krida has no accounts, uninstalling the app deletes all Krida data on your device. Data Google
+        Without an account, uninstalling the app deletes all Krida data on your device; an account is deleted from
+        the app as described above. Data Google
         collects for ads is managed by Google; you can manage it in your device's ad settings or your Google account.
       </p>
 

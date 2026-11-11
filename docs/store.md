@@ -130,9 +130,12 @@ General questions:
   the online relay while a room is open).
 - Is all user data encrypted in transit? **Yes** (HTTPS / WSS to the relay; AdMob over TLS;
   nearby play stays on the local link).
-- Do you provide a way for users to request that their data is deleted? **No**. There are no
-  accounts; uninstalling removes local data (including any rejoin token), ad data is handled by
-  Google, and relay room state is deleted when the room ends.
+- Do you provide a way for users to request that their data is deleted? **Yes**, once
+  accounts (online step 10a) ship: "Delete account" on the in-app account screen removes the
+  account, name and sessions at once. Account deletion URL for the Play form:
+  `https://krida.ardeman.com/en/privacy#account`. Without an account, uninstalling removes
+  local data (including any rejoin token), ad data is handled by Google, and relay room
+  state is deleted when the room ends.
 
 Data types collected by the **Google Mobile Ads SDK** (unchanged; the app itself sends nothing
 to us for ads):
@@ -156,7 +159,12 @@ when the room ends or after a short idle period — not a lasting player profile
 | App activity → Other user-generated content | Yes | No | Required | App functionality | Seat names chosen in the lobby; no free-text chat |
 | App activity → Other actions | Yes | No | Required | App functionality | Room codes, matchmaking, game moves and lobby status forwarded by the relay |
 
-Not collected by us: personal info (name, email, phone), financial info (Play Billing handles
+With an **optional account** (step 10a) add, as collected, not shared, **Optional**, for App
+functionality and Account management: Personal info → Name (the display name from Apple or
+Google) and Personal info → User IDs (the provider's account id). Stored in Cloudflare D1
+until the player deletes the account.
+
+Not collected by us: personal info other than the optional account's name and id (no email, phone), financial info (Play Billing handles
 payment; the app keeps only an on-device "ads removed" flag), messages/chat, contacts, photos,
 files, health, web history, precise location, device IDs for the relay. Game data sent over
 Bluetooth or Wi-Fi for nearby play goes device to device and never leaves the players'
@@ -183,6 +191,10 @@ gets no IDFA). Privacy Nutrition Labels:
 | Usage Data → Other User Content | App Functionality | Seat names in online lobbies |
 | Diagnostics → Crash Data, Performance Data | Analytics | AdMob |
 | Usage Data → Advertising Data | Third-Party Advertising, Analytics | AdMob |
+
+Once accounts ship, add under **Data Linked to You** (only for players who sign in):
+Contact Info → Name and Identifiers → User ID, both for App Functionality. The app offers
+in-app account deletion (App Review guideline 5.1.1(v)).
 
 Purchases are handled by the App Store and not collected by the app. Check against Google's
 [iOS data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure) before

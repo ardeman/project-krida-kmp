@@ -311,4 +311,16 @@
     <string name="emote_oops">Ups!</string>
     <string name="emote_hmm">Hmm…</string>
     <string name="emote_ready">Siap!</string>
+    <string name="account_title">Akun</string>
+    <string name="account_sign_in_title">Masuk ke Krida</string>
+    <string name="account_sign_in_detail">Masuk untuk menambah teman dan mengajak mereka main. Fitur teman segera hadir.</string>
+    <string name="account_google">Masuk dengan Google</string>
+    <string name="account_with_google">Masuk dengan Google</string>
+    <string name="account_with_apple">Masuk dengan Apple</string>
+    <string name="account_player">Pemain</string>
+    <string name="account_sign_out">Keluar</string>
+    <string name="account_delete">Hapus akun</string>
+    <string name="account_delete_title">Hapus akunmu?</string>
+    <string name="account_delete_detail">Akun dan namamu dihapus dari Krida. Ini tidak bisa dibatalkan.</string>
+    <string name="account_failed">Belum berhasil. Cek koneksimu lalu coba lagi.</string>
 </resources>

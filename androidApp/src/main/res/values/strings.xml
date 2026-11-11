@@ -321,4 +321,16 @@
     <string name="emote_oops">Oops!</string>
     <string name="emote_hmm">Hmm…</string>
     <string name="emote_ready">Ready!</string>
+    <string name="account_title">Account</string>
+    <string name="account_sign_in_title">Sign in to Krida</string>
+    <string name="account_sign_in_detail">Sign in to add friends and invite them to play. Friends are coming soon.</string>
+    <string name="account_google">Sign in with Google</string>
+    <string name="account_with_google">Signed in with Google</string>
+    <string name="account_with_apple">Signed in with Apple</string>
+    <string name="account_player">Player</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Delete your account?</string>
+    <string name="account_delete_detail">Your account and name are removed from Krida. This can\'t be undone.</string>
+    <string name="account_failed">That didn\'t work. Check your connection and try again.</string>
 </resources>

@@ -98,6 +98,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
+import com.ardeman.krida.account.Account
+import com.ardeman.krida.account.AccountScreen
 import com.ardeman.krida.congklak.CongklakSettings
 import com.ardeman.krida.congklak.BoardPreview
 import com.ardeman.krida.congklak.CongklakTable
@@ -140,6 +142,7 @@ import com.ardeman.krida.playonline.PlayOnlineScreen
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.Language
 import com.ardeman.krida.ui.LanguagePicker
 import com.ardeman.krida.ui.LoadingScreen
@@ -162,6 +165,7 @@ class MainActivity : ComponentActivity() {
     /** The join screen takes a 6-letter online code instead of a 4-letter nearby one. */
     private var joinOnline by mutableStateOf(false)
     private var creatingOnlineRoom by mutableStateOf(false)
+    private var showingAccount by mutableStateOf(false)
     private var quickMatchTarget by mutableStateOf(4)
     private var playingQuickMatch by mutableStateOf(false)
     private var quickMatchGame by mutableStateOf(CongklakGame.id)
@@ -218,10 +222,12 @@ class MainActivity : ComponentActivity() {
         UlarTanggaSettings.init(this)
         LudoSettings.init(this)
         LastRoom.init(this)
+        Account.init(this)
         // Language and theme changes recreate this activity with its original launch intent.
         // Apply a room link only on the initial launch so leaving it is not undone later.
         if (savedInstanceState == null) {
-            intent?.data?.toString()?.let(::openRoomLink)
+            if (Account.handleLink(intent?.data)) showingAccount = true
+            else intent?.data?.toString()?.let(::openRoomLink)
         }
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
@@ -312,6 +318,7 @@ class MainActivity : ComponentActivity() {
                         error = joinError ?: R.string.nearby_permission_denied.takeIf { permissionDenied && !joinOnline },
                         online = joinOnline,
                     )
+                    showingAccount -> AccountScreen(onBack = { showingAccount = false })
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
                 }
                 StartupCover()
@@ -323,6 +330,9 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        // Back from Google sign-in: finish it whatever is on screen, and show the result
+        // on the account screen once the menus are back.
+        if (Account.handleLink(intent.data)) { showingAccount = true; return }
         // A running game or lobby stays; the link only applies from the menus.
         if (room == null && passAndPlay == null && ularTable == null) {
             intent.data?.toString()?.let(::openRoomLink)
@@ -384,12 +394,16 @@ class MainActivity : ComponentActivity() {
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             Column(Modifier.width(236.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Image(
-                    rememberWordmark(),
-                    contentDescription = stringResource(R.string.app_name),
-                    modifier = Modifier.height(40.dp),
-                    alignment = Alignment.CenterStart,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        rememberWordmark(),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.height(40.dp),
+                        alignment = Alignment.CenterStart,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    CircleIconButton(R.drawable.ic_person, stringResource(R.string.account_title), { showingAccount = true })
+                }
                 GameCard(game, onGame = { game = it }, Modifier.weight(1f), onReady = { menuReady = true })
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SoundToggles()

@@ -53,6 +53,9 @@ jobs:
           npm run smoke:group || { cat dev.log; exit 1; }
           node scripts/smoke-public.mjs ws://localhost:8787 || { cat dev.log; exit 1; }
 
+      - name: Account smoke test (own local relay, mocked Apple and Google)
+        run: npm run smoke:accounts
+
       - name: Deploy
         run: |
           set -o pipefail

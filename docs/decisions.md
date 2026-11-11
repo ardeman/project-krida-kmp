@@ -111,6 +111,12 @@ in the same commit as the code.
   Waiting groups stay together. Existing public-room hosts keep their rule choices and
   manual Start; full, started and disconnected rooms cannot receive matches. Approved
   [mockup](mockups/public-rooms.md). Android and relay first, then iOS (done 2026-11-10).
+- **Accounts are optional** (2026-11-11): playing never needs one. Sign in with Apple (iOS)
+  and Google (both) from an account button on the menu; the relay keeps only the provider's
+  user id and a display name in D1, no email. Google runs as a browser flow through the
+  relay, so no sign-in SDK is added. Deleting the account is in the app.
+- **No Firebase** (2026-11-11): Android gets no FCM push. Invites on Android show while the
+  app is open (over the relay) or come as a share link; iOS may use APNs.
 - Relay deploys on push to `main` touching `relay/`; drop the push trigger once online play
   ships, because a deploy drops open games.
 

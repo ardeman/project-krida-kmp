@@ -1,4 +1,5 @@
 export { GroupMatchmaker } from "./group-matchmaker";
+import { handleAccounts } from "./accounts";
 /**
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
  * and up to four guest sockets. It knows no game rules; the host stays authoritative.
@@ -12,6 +13,18 @@ export interface Env {
   ROOMS: DurableObjectNamespace;
   MATCHMAKERS: DurableObjectNamespace;
   GROUP_MATCHMAKERS: DurableObjectNamespace;
+  /** Accounts (src/accounts.ts). Optional so the relay still serves rooms without them. */
+  DB?: D1Database;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  APPLE_BUNDLE_ID?: string;
+  /** Sign in with Apple key, only used to revoke access when an account is deleted. */
+  APPLE_TEAM_ID?: string;
+  APPLE_KEY_ID?: string;
+  APPLE_PRIVATE_KEY?: string;
+  /** Test overrides for the provider endpoints (scripts/smoke-accounts.mjs). */
+  APPLE_JWKS_URL?: string;
+  GOOGLE_TOKEN_URL?: string;
 }
 
 /** Same alphabet as RoomCode in shared/; online codes are 6 chars. */
@@ -51,6 +64,9 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/") return new Response("krida relay\n");
+
+    const account = await handleAccounts(request, env, url);
+    if (account) return account;
 
     const matchRoomsMatch = url.pathname.match(/^\/v1\/match\/([^/]+)\/(\d+)$/);
     if (matchRoomsMatch) {

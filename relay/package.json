@@ -11,7 +11,8 @@
     "smoke:match": "node scripts/smoke-match.mjs",
     "test:match": "node --test scripts/test-group-match.mjs scripts/test-public-rooms.mjs",
     "smoke:group": "node scripts/smoke-group.mjs",
-    "smoke:public": "node scripts/smoke-public.mjs"
+    "smoke:public": "node scripts/smoke-public.mjs",
+    "smoke:accounts": "node scripts/smoke-accounts.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261109.1",

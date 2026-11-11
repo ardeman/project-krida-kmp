@@ -42,6 +42,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |
 | Dropped-player countdown | `online/Waiting.kt` | `Nearby/Waiting.swift` |
 | Preset reactions (emotes) | `ui/Emotes.kt` (+ `core/protocol/Emotes.kt`) | `Support/Emotes.swift` |
+| Account (sign-in, sign out, delete) | `account/Account.kt`, `AccountScreen.kt` | `Account/Account.swift`, `AccountScreen.swift` |
 | Online create/join setup | `playonline/OnlineRoomScreens.kt` | `PlayOnline/OnlineRoomScreens.swift` |
 | Quick match | `playonline/PlayOnlineScreens.kt`, `QuickMatchClient.kt` | `PlayOnline/PlayOnlineScreens.swift`, `QuickMatchClient.swift` |
 | BLE | `ble/BleHostTransport.kt`, `BleGuestTransport.kt` | `Transport/BleHostTransport.swift`, `BleGuestTransport.swift` |
@@ -55,7 +56,7 @@ A change to one side usually needs the same change in the file on the same row.
 
 | Part | Where |
 |---|---|
-| Online relay (Cloudflare Worker, Durable Object per room, matchmaker) | `relay/src/` |
+| Online relay (Cloudflare Worker, Durable Object per room, matchmaker, accounts in D1) | `relay/src/` |
 | Website and privacy page | `web/src/` |
 | Brand generator | `scripts/brand.swift` → outputs listed in [brand.md](brand.md) |
 | Device install | `scripts/install-android.sh`, `scripts/install-ios.sh` (see [install.md](install.md)) |

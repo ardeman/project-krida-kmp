@@ -27,3 +27,14 @@ class_name = "GroupMatchmaker"
 [[migrations]]
 tag = "v3"
 new_sqlite_classes = ["GroupMatchmaker"]
+
+# Accounts (src/accounts.ts). Without a database_id, wrangler creates the database on the
+# first deploy; the tables are created by the Worker itself. Secrets, set once with
+# `wrangler secret put`: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and for revoking Apple
+# access on account deletion APPLE_TEAM_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY.
+[[d1_databases]]
+binding = "DB"
+database_name = "krida"
+
+[vars]
+APPLE_BUNDLE_ID = "com.ardeman.krida"

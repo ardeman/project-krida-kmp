@@ -4152,6 +4152,84 @@
         "en": { "stringUnit": { "state": "translated", "value": "You must finish exactly; a roll that goes past stays put." } },
         "id": { "stringUnit": { "state": "translated", "value": "Harus pas sampai finish; lemparan yang lewat membuat bidak diam." } }
       }
+    },
+    "Account": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Account" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Akun" } }
+      }
+    },
+    "Delete account": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Delete account" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Hapus akun" } }
+      }
+    },
+    "Delete your account?": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Delete your account?" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Hapus akunmu?" } }
+      }
+    },
+    "Player": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Player" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Pemain" } }
+      }
+    },
+    "Sign in to Krida": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign in to Krida" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk ke Krida" } }
+      }
+    },
+    "Sign in to add friends and invite them to play. Friends are coming soon.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign in to add friends and invite them to play. Friends are coming soon." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk untuk menambah teman dan mengajak mereka main. Fitur teman segera hadir." } }
+      }
+    },
+    "Sign in with Google": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign in with Google" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Google" } }
+      }
+    },
+    "Sign out": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign out" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Keluar" } }
+      }
+    },
+    "Signed in with Apple": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Signed in with Apple" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Apple" } }
+      }
+    },
+    "Signed in with Google": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Signed in with Google" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Google" } }
+      }
+    },
+    "That didn't work. Check your connection and try again.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "That didn't work. Check your connection and try again." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Belum berhasil. Cek koneksimu lalu coba lagi." } }
+      }
+    },
+    "Your account and name are removed from Krida. This can't be undone.": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Your account and name are removed from Krida. This can't be undone." } },
+        "id": { "stringUnit": { "state": "translated", "value": "Akun dan namamu dihapus dari Krida. Ini tidak bisa dibatalkan." } }
+      }
+    },
+    "Sign in with Apple": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sign in with Apple" } },
+        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Apple" } }
+      }
     }
   },
   "version": "1.0"

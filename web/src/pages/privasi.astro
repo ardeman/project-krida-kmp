@@ -21,7 +21,7 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <article class="doc">
       <h1>Kebijakan Privasi</h1>
-      <p class="doc-date">Berlaku sejak 10 November 2026</p>
+      <p class="doc-date">Berlaku sejak 11 November 2026</p>
 
       <p>
         Krida adalah kumpulan permainan papan untuk Android dan iPhone, dibuat oleh Ardeman. Halaman ini
@@ -30,9 +30,11 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
       <h2>Singkatnya</h2>
       <ul>
-        <li>Krida tidak meminta akun, nama asli, email, nomor telepon, atau kontak.</li>
+        <li>Krida bisa dimainkan tanpa akun, dan tidak meminta email, nomor telepon, atau kontak.</li>
+        <li>Akun itu pilihan (masuk dengan Apple atau Google). Kami hanya menyimpan ID akun dari Apple atau Google
+          dan nama panggilanmu, dan kamu bisa menghapusnya kapan saja dari aplikasi.</li>
         <li>Main online lewat relay yang hanya meneruskan lalu lintas permainan selama room terbuka; relay tidak
-          menyimpan akun atau riwayat permainan.</li>
+          menyimpan riwayat permainan.</li>
         <li>Iklan di Krida disediakan oleh Google AdMob, yang mengumpulkan sebagian data perangkat seperti dijelaskan di bawah.</li>
         <li>Pembayaran diproses oleh Google Play atau App Store; kami tidak pernah melihat data pembayaranmu.</li>
       </ul>
@@ -117,9 +119,23 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
         kami akan membantu.
       </p>
 
+      <h2 id="akun">Akun (pilihan)</h2>
+      <p>
+        Kamu bisa masuk dengan Apple atau Google dari tombol akun di menu. Saat masuk, kami menyimpan di database
+        relay (Cloudflare D1): ID akun yang diberikan Apple atau Google untuk Krida, nama panggilanmu, dan waktu akun
+        dibuat. Kami tidak menerima atau menyimpan email, kata sandi, foto, atau kontakmu. Ponselmu menyimpan token
+        sesi supaya kamu tetap masuk.
+      </p>
+      <p>
+        Untuk menghapus akun, buka tombol akun di menu, lalu pilih "Hapus akun". Akun, nama, dan semua sesi langsung
+        dihapus dari database kami; untuk akun Apple, akses Krida di Apple ikut dicabut. Kalau kamu tidak bisa
+        membuka aplikasinya, kirim email ke alamat di bagian Kontak dan kami hapus akunmu.
+      </p>
+
       <h2>Menghapus data</h2>
       <p>
-        Karena Krida tidak punya akun, menghapus aplikasi sudah menghapus semua data Krida di perangkatmu. Data yang
+        Tanpa akun, menghapus aplikasi sudah menghapus semua data Krida di perangkatmu; akun dihapus dari aplikasi
+        seperti dijelaskan di atas. Data yang
         dikumpulkan Google untuk iklan dikelola oleh Google; kamu dapat mengelolanya lewat pengaturan iklan di
         perangkat atau di akun Google-mu.
       </p>

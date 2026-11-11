@@ -23,6 +23,7 @@ struct ContentView: View {
     /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
     @State private var joinOnline = false
     @State private var creatingOnlineRoom = false
+    @State private var showingAccount = false
     @State private var playingQuickMatch = false
     @State private var quickMatchGame: String = CongklakGame.shared.id
     /// Total seats the join screen searches for.
@@ -129,6 +130,8 @@ struct ContentView: View {
                 )
             } else if joining {
                 JoinScreen(code: $roomCode, online: joinOnline, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
+            } else if showingAccount {
+                AccountScreen(onBack: { showingAccount = false })
             } else {
                 menu
             }
@@ -230,8 +233,12 @@ struct ContentView: View {
     private var menu: some View {
         HStack(alignment: .top, spacing: 24 * s) {
             VStack(alignment: .leading, spacing: 14 * s) {
-                Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
-                    .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
+                HStack {
+                    Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
+                        .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
+                    Spacer(minLength: 8 * s)
+                    CircleIconButton(systemImage: "person.fill", label: "Account") { showingAccount = true }
+                }
                 GameCard(game: $game) { menuReady = true }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }

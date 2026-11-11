@@ -54,6 +54,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="krida" android:host="join" />
             </intent-filter>
+            <!-- Back from Google sign-in in the browser: krida://auth?code=… -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="krida" android:host="auth" />
+            </intent-filter>
             <!-- Online share links: https://krida.ardeman.com/r/ABC234, verified through
                  web/public/.well-known/assetlinks.json -->
             <intent-filter android:autoVerify="true">

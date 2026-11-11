@@ -8,5 +8,10 @@
 	<array>
 		<string>applinks:krida.ardeman.com</string>
 	</array>
+	<!-- Sign in with Apple (Account/Account.swift). -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 </dict>
 </plist>

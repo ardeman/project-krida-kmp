@@ -298,6 +298,31 @@ lobbies cannot provide new reservations. The authoritative room rechecks eligibi
 serializes reservations with manual admissions. Public hosts keep their settings and
 manual Start; matching into an existing room does not elect another host.
 
+## Accounts
+
+Optional sign-in, served by the relay over HTTPS (`relay/src/accounts.ts`). JSON bodies; an
+error is `{"error":"<code>"}` with a 4xx/5xx status. Rooms and matchmaking do not use
+accounts. Users and sessions live in Cloudflare D1: the provider's user id, a display name
+(at most 24 characters), the creation time; no email.
+
+| Request | Body / query | Reply |
+|---|---|---|
+| `POST /v1/auth/apple` | `{identityToken, authorizationCode?, name?}` from the native sheet | `{token, user}` |
+| `GET /v1/auth/google/start` | `?challenge=` base64url SHA-256 of a 32-byte random verifier | 302 to Google |
+| `GET /v1/auth/google/callback` | Google's `code` and `state` | a page that opens `krida://auth?code=…` (or `?error=cancelled\|expired\|failed`) |
+| `POST /v1/auth/exchange` | `{code, verifier}` | `{token, user}` |
+| `GET /v1/me` | `Authorization: Bearer <token>` | `{user}`, or 401 |
+| `POST /v1/auth/signout` | Bearer | 204; ends that session |
+| `DELETE /v1/me` | Bearer | 204; deletes the account and all its sessions |
+
+`user` is `{id, name, provider}` with `provider` `"apple"` or `"google"`; `name` may be empty
+(the apps then show "Player"). `token` is 32 random bytes, base64url; the relay stores only
+its hash. The Apple identity token is checked against Apple's keys (issuer, audience = the
+bundle id, expiry). The Google flow runs in the browser with the relay as the OAuth client;
+the app's code works once, for two minutes, and only together with the verifier, so another
+app receiving the `krida://auth` redirect cannot use it. With the Sign in with Apple key
+configured, deletion also revokes the app's access at Apple.
+
 ## Compatibility rule
 
 Never change the meaning of an existing field. Add optional fields only. Bump

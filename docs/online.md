@@ -103,7 +103,29 @@ and the Pixel on different networks (one on mobile data).
 9. [x] **Emotes.** Optional `emote` message and fixed bilingual catalog in `Emotes`; host
    fans out with a 2 s cooldown. Picker + bubble on congklak and ular tangga (Android and
    iOS), nearby and online only. Shared tests cover fan-out and cooldown; device check open.
-10. [ ] **Accounts, friends, invites.**
+10. [ ] **Accounts, friends, invites.** Split in three:
+    - [x] **10a Sign-in.** Relay: `relay/src/accounts.ts` with D1 (users, sessions), Sign in
+      with Apple (identity token check), Google through a browser flow via the relay (no
+      SDK), sign out, account deletion ("Accounts" in `docs/protocol.md`);
+      `npm run smoke:accounts` passes locally against mocked Apple/Google. Android: account
+      button on the menu, `account/Account.kt` + `AccountScreen.kt` (Google). iOS:
+      `Account/Account.swift` + `AccountScreen.swift` (Apple + Google). Built 2026-11-11
+      without a mockup at the owner's request. Relay deployed by hand (D1 `krida` created,
+      Google secrets set) and checked on the iPhone the same day: Google sign-in, sign out,
+      Apple sign-in, delete account. Open: the Pixel check. Apple sign-in on Android is not
+      offered.
+    - [ ] **10b Friends list** (D1; friend codes or links).
+    - [ ] **10c Invites.** iOS via APNs. Android without Firebase (owner, 2026-11-11):
+      invites show while the app is open, over the relay, or arrive as a share link.
+
+    Owner setup for 10a (1 done; 2 and the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
+    redirect URI `https://krida-relay.ardeman.com/v1/auth/google/callback`, then
+    `wrangler secret put GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `relay/`. (2) The
+    relay's Cloudflare API token (GitHub secret) needs D1 edit rights; the first deploy
+    creates the `krida` database. (3) Apple Developer: enable Sign in with Apple on the
+    `com.ardeman.krida` App ID; optionally create a Sign in with Apple key and set
+    `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` so deletion revokes access at
+    Apple. (4) Update the store privacy answers from `docs/store.md`.
 
 ## Public rooms and combined joining (2026-11-10)
 
