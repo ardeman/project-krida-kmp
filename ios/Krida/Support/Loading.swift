@@ -127,8 +127,10 @@ private struct SpinningDie: View {
 
     var body: some View {
         Canvas { ctx, size in
-            let scale = min(size.width, size.height) / 3.2
-            let center = CGPoint(x: size.width / 2, y: size.height / 2 + scale * 0.1)
+            // A corner turned toward the viewer reaches 1.63 units above or below the centre
+            // (cos tilt + sin tilt · √2), so 3.4 units keep the whole turn inside the canvas.
+            let scale = min(size.width, size.height) / 3.4
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
             let theta = angle - .pi / 4
             func rotate(_ p: V) -> V {
                 let c = cos(theta), s = sin(theta), ct = cos(Self.tilt), st = sin(Self.tilt)

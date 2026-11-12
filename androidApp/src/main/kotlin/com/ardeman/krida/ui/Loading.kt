@@ -163,9 +163,11 @@ private const val TILT = 0.6155
 @Composable
 private fun SpinningDie(angle: Double, modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val scale = minOf(size.width, size.height) / 3.2f
+        // A corner turned toward the viewer reaches 1.63 units above or below the centre
+        // (cos tilt + sin tilt · √2), so 3.4 units keep the whole turn inside the canvas.
+        val scale = minOf(size.width, size.height) / 3.4f
         val cx = size.width / 2
-        val cy = size.height / 2 + scale * 0.1f
+        val cy = size.height / 2
         val theta = angle - Math.PI / 4
         val c = cos(theta)
         val s = sin(theta)
