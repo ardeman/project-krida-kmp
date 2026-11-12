@@ -195,6 +195,11 @@ in the same commit as the code.
   selects the next ship not yet on the ocean; a gold ring marks the last shot; a peg on a
   ship stands on its deck so hits on your own ships show.
 
+## Game lineup
+
+- Dam-daman and macanan are dropped from the web page and the plan (owner, 2026-11-12).
+  Add either one only if users ask for it. The web page lists only games that exist.
+
 ## Release
 
 - Play internal testing waits until several games exist, not just congklak.
