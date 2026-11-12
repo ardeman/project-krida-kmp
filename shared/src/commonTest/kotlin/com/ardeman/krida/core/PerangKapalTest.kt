@@ -118,6 +118,38 @@ class PerangKapalTest {
     }
 
     @Test
+    fun bowForCentresTheShipAndStaysOnBoard() {
+        // Carrier (5) across, tapped on row 2: centred, then clamped at both edges.
+        assertEquals(23, game.bowFor(25, 0, horizontal = true))
+        assertEquals(20, game.bowFor(20, 0, horizontal = true))
+        assertEquals(25, game.bowFor(29, 0, horizontal = true))
+        // Up the grid from the last row: pushed back so all five rows fit.
+        assertEquals(53, game.bowFor(93, 0, horizontal = false))
+        for (kind in 0 until game.KINDS) for (cell in 0 until game.CELLS) for (h in listOf(true, false)) {
+            assertTrue(game.cellsFor(game.bowFor(cell, kind, h), game.FLEET[kind], h) != null)
+        }
+    }
+
+    @Test
+    fun turnedBowKeepsTheMiddleCell() {
+        val ship = PerangKapalShip(1, game.cellsFor(44, 4, true)!!)
+        assertTrue(ship.horizontal)
+        assertEquals(44, ship.bow)
+        val bow = game.turnedBow(ship)
+        val turned = PerangKapalShip(1, game.cellsFor(bow, 4, false)!!)
+        assertTrue(!turned.horizontal)
+        assertTrue(46 in turned.cells)
+    }
+
+    @Test
+    fun viewHidesOpponentPlacementCell() {
+        var s = game.initialState(2, Random(0))
+        s = game.apply(s, 1, PerangKapalMove(kind = 4, cell = 37, horizontal = true), Random.Default)
+        assertNull(game.viewFor(s, 0).lastCell)
+        assertEquals(37, game.viewFor(s, 1).lastCell)
+    }
+
+    @Test
     fun viewMoveHidesOpponentPlacement() {
         val place = PerangKapalMove(kind = 4, cell = 0, horizontal = true)
         assertNull(game.viewMove(place, actor = 1, viewer = 0))

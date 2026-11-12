@@ -37,6 +37,9 @@ A change to one side usually needs the same change in the file on the same row.
 | Ludo screen | `ludo/LudoScreen.kt` | `Ludo/LudoView.swift` |
 | Ludo 3D | `ludo/LudoRenderer.kt` | `Ludo/LudoScene.swift`, `LudoPreview.swift` |
 | Ludo table + settings | `ludo/LudoTable.kt`, `LudoSettings.kt` | `Ludo/LudoTable.swift` |
+| Perang kapal screen | `perangkapal/PerangKapalScreen.kt` | `PerangKapal/PerangKapalView.swift` |
+| Perang kapal 3D | `perangkapal/PerangKapalRenderer.kt` | `PerangKapal/PerangKapalScene.swift`, `PerangKapalPreview.swift` |
+| Perang kapal table + settings | `perangkapal/PerangKapalTable.kt`, `PerangKapalSettings.kt` | `PerangKapal/PerangKapalTable.swift` |
 | Room state (nearby and online) | `nearby/NearbyRoom.kt` | `Nearby/NearbyRoom.swift` |
 | Lobby, join, QR, connecting screens | `nearby/NearbyScreens.kt` | `Nearby/NearbyScreens.swift` |
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |

@@ -602,10 +602,13 @@ class MainActivity : ComponentActivity() {
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
         val congklak = LocalSeats.decode(congklakSeats, 2, listOf(LocalSeat.PERSON, LocalSeat.PERSON))
+        // Perang kapal: the first seat is a person, the second the computer or a person.
+        var kapalSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(PerangKapalSettings.phoneSeats)) }
+        val kapalSeatList = LocalSeats.decode(kapalSeats, 2, PerangKapalSettings.phoneSeats)
         val seats = when {
             ular -> UlarTanggaSettings.seats
             ludo -> LudoSettings.seats
-            kapal -> PerangKapalSettings.phoneSeats
+            kapal -> kapalSeatList
             else -> congklak
         }
         val computers = seats.count { it == LocalSeat.COMPUTER }
@@ -653,7 +656,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             // In a nearby room everyone who joins plays, up to 4. Perang kapal on this phone
-            // is locked to you vs the computer (no seat taps).
+            // has its own two tiles below (the second: computer or person).
             if (!nearby && !kapal) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
@@ -678,8 +681,8 @@ class MainActivity : ComponentActivity() {
                     SeatTiles(
                         seats = seats,
                         colors = listOf(Color(0xFFD6453D), Color(0xFF2F6FD1)),
-                        tappable = emptySet(),
-                        onTap = {},
+                        tappable = setOf(1),
+                        onTap = { i -> kapalSeats = LocalSeats.encode(LocalSeats.next(kapalSeatList, i, allowEmpty = false)) },
                     )
                 }
                 Hint(stringResource(R.string.perang_kapal_hint))
@@ -714,7 +717,7 @@ class MainActivity : ComponentActivity() {
                                 kapal -> R.string.perang_kapal_detail_nearby
                                 else -> R.string.nearby_detail
                             }))
-                            kapal -> Detail(stringResource(R.string.perang_kapal_detail_computer))
+                            kapal -> Detail(stringResource(if (computers > 0) R.string.perang_kapal_detail_computer else R.string.mode_pass_detail))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
                             !multi -> Detail(stringResource(R.string.mode_pass_detail))
                             computers == 0 -> Detail(stringResource(if (ludo) R.string.ludo_detail_phone else R.string.ular_detail_phone))
@@ -772,7 +775,8 @@ class MainActivity : ComponentActivity() {
                                         }
                                         if (lan) startHost() else withBlePermissions { startHost() }
                                     }
-                                    kapal -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
+                                    kapal -> perangKapalTable = if (computers > 0) PerangKapalHostTable.vsComputer(you, computer)
+                                    else PerangKapalHostTable.passAndPlay(names)
                                     multi -> {
                                         var nextComputer = 0
                                         val players = seats.mapIndexedNotNull { i, kind ->

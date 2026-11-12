@@ -12,7 +12,13 @@ import kotlinx.serialization.Serializable
  * row 0 nearest the camera), sorted ascending. [kind] indexes [FLEET].
  */
 @Serializable
-data class PerangKapalShip(val kind: Int, val cells: List<Int>)
+data class PerangKapalShip(val kind: Int, val cells: List<Int>) {
+    /** First cell (lowest index): the left end across, the near end up the grid. */
+    val bow: Int get() = cells.min()
+
+    /** Lies along a row; false when it runs up the grid. */
+    val horizontal: Boolean get() = cells.size < 2 || cells.sorted().let { it[1] - it[0] == 1 }
+}
 
 /** A shot this seat fired onto the opponent's ocean. */
 @Serializable
@@ -162,7 +168,9 @@ object PerangKapalGame :
                 else -> fleet.filter { ship -> sunk(state, seat, ship) }
             }
         }
-        return state.copy(fleets = fleets)
+        // While placing, the last cell is the bow of a ship; only its owner may see it.
+        val lastCell = state.lastCell.takeIf { !state.placing || state.lastSeat == seat }
+        return state.copy(fleets = fleets, lastCell = lastCell)
     }
 
     override fun viewMove(move: PerangKapalMove, actor: Int, viewer: Int): PerangKapalMove? =
@@ -208,6 +216,22 @@ object PerangKapalGame :
             else (0 until length).map { bow + it * SIZE }
         }
     }
+
+    /**
+     * Bow cell that puts ship [kind] with its middle on [cell], pushed back onto the board
+     * when it would hang over the edge. What a tap or a drop on the ocean places.
+     */
+    fun bowFor(cell: Int, kind: Int, horizontal: Boolean): Int {
+        val length = FLEET[kind]
+        val col = cell % SIZE
+        val row = cell / SIZE
+        return if (horizontal) row * SIZE + (col - length / 2).coerceIn(0, SIZE - length)
+        else (row - length / 2).coerceIn(0, SIZE - length) * SIZE + col
+    }
+
+    /** Bow cell after turning [ship] a quarter around its middle cell, kept on the board. */
+    fun turnedBow(ship: PerangKapalShip): Int =
+        bowFor(ship.cells.sorted()[ship.cells.size / 2], ship.kind, !ship.horizontal)
 
     fun fleetComplete(fleet: List<PerangKapalShip>): Boolean =
         fleet.size == KINDS && fleet.map { it.kind }.toSet() == (0 until KINDS).toSet() &&

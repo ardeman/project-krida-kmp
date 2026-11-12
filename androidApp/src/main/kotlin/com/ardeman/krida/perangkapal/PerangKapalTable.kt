@@ -29,6 +29,7 @@ class PerangKapalUpdate(val state: PerangKapalState, val fresh: Boolean)
  * Host UI receives a per-seat fog-of-war view; the session keeps the full state for bots.
  */
 abstract class PerangKapalTable {
+    /** This device's seat; null when two people pass one phone (whoever's turn it is). */
     abstract val mySeat: Int?
     abstract val canRestart: Boolean
 
@@ -121,8 +122,9 @@ class PerangKapalHostTable(
 
     override val canEmote: Boolean get() = transport !is LocalTransport
 
+    /** With two people on one phone the screen gets everything and hides per turn itself. */
     private fun view(state: PerangKapalState) =
-        PerangKapalGame.viewFor(state, mySeat ?: 0)
+        mySeat?.let { PerangKapalGame.viewFor(state, it) } ?: state
 
     override fun place(seat: Int, kind: Int, cell: Int, horizontal: Boolean) =
         active && session.submitLocal(seat, PerangKapalMove(kind = kind, cell = cell, horizontal = horizontal)) == null
@@ -165,6 +167,15 @@ class PerangKapalHostTable(
             session.addBot(computer, Platform.ANDROID, PerangKapalBot())
             session.start()
             return PerangKapalHostTable(session, mySeat = 0, transport = transport)
+        }
+
+        /** This phone: two people, passing it for each turn. */
+        fun passAndPlay(names: List<String>): PerangKapalTable {
+            val transport = LocalTransport()
+            val session = HostSession(StandardRules.perangKapal, transport, roomCode = "LOCAL")
+            names.forEach { session.addLocalPlayer(it, Platform.ANDROID) }
+            session.start()
+            return PerangKapalHostTable(session, mySeat = null, transport = transport)
         }
     }
 }

@@ -177,8 +177,9 @@ in the same commit as the code.
 
 - Fourth game (2026-11-12). Classic Battleship; game id `perang_kapal`. Mockup approved
   ([mockups/perang-kapal.md](mockups/perang-kapal.md)).
-- **2 seats only.** This phone is person vs computer (no pass-and-play fog of war). Nearby /
-  Online allow person / computer seats like the other 2-player games.
+- **2 seats only.** This phone is person vs computer, or two people passing the phone behind
+  a "Pass the phone to …" cover (owner, 2026-11-12; first decided as vs computer only).
+  Nearby / Online allow person / computer seats like the other 2-player games.
 - **10 × 10 grid**, fleet 5 / 4 / 3 / 3 / 2 (Kapal induk, perang, penjelajah, selam, perusak).
   Ships orthogonal, no overlap or overhang; **may touch**. Alternate **one shot** per turn
   (hit does not grant another). No host rule chips in v1; quick match uses
@@ -186,6 +187,13 @@ in the same commit as the code.
 - Shared rules / board / bot first, then Android (both done 2026-11-12), then iOS. Voxel
   grids, no textures. Fog of war: `PrivateStateRules` + per-seat `state` payloads from
   `HostSession`; simultaneous placement via `GameRules.actingSeats`.
+- Placement and board (owner, 2026-11-12, both platforms): ships are voxel models, not
+  boxes; the tray shows the ships themselves, to tap then place or to drag and drop; a tap
+  on a placed ship turns it (no Rotate button); in battle the opponent's grid is large and
+  your own a small view-only copy.
+- Added by the agent, not asked for (tell the owner if they should go): placing a ship
+  selects the next ship not yet on the ocean; a gold ring marks the last shot; a peg on a
+  ship stands on its deck so hits on your own ships show.
 
 ## Release
 

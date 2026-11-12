@@ -5,8 +5,13 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
-- **Perang kapal** (fourth game): shared + Android done 2026-11-12
-  ([mockups/perang-kapal.md](mockups/perang-kapal.md)). Next: iOS parity, then phone checks.
+- **Perang kapal** (fourth game): shared, Android and iOS done 2026-11-12
+  ([mockups/perang-kapal.md](mockups/perang-kapal.md)); both build, nothing played on a
+  device yet. Reworked the same day on the owner's notes (voxel ships, tap/drag placement,
+  tap to turn, large radar with a small ocean, two people on one phone). Next: phone checks
+  (this phone vs computer first: drag and tap ships from the tray, turn one, Ready, fire,
+  hit pegs on ships, the ring on the last shot, result card; then two people on one phone
+  with the pass cover; then nearby and online, iPhone ↔ Pixel, both languages and themes).
 - Offline LAN (README roadmap 6): coded under Nearby (Bluetooth | Wi‑Fi control, default
   Bluetooth; decision in `docs/decisions.md`). Android and iOS host/guest transports,
   play-card Link control, join/lobby copy. iOS dual-simulator e2e passes

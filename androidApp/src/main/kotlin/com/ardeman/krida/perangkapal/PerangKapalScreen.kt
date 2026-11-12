@@ -2,6 +2,20 @@ package com.ardeman.krida.perangkapal
 
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
+import com.ardeman.krida.core.games.PerangKapalBoard
+import com.ardeman.krida.core.games.PerangKapalMove
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -118,12 +132,22 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         table.leave()
         Sounds.stopGameAudio()
     }
+    /** Latest snapshot from the table: this seat's view, or everything when passing the phone. */
     var state by remember { mutableStateOf(table.latest) }
     var renderer by remember { mutableStateOf<PerangKapalRenderer?>(null) }
-    var selectedKind by remember { mutableIntStateOf(4) }
-    var horizontal by remember { mutableStateOf(true) }
+    /** Two people share this phone. */
+    val passing = table.mySeat == null
+    /** The seat whose side of the game is on screen. */
+    var viewer by remember { mutableIntStateOf(table.mySeat ?: 0) }
+    /** Passing the phone: the seat to hand it to; the cover hides the board until they continue. */
+    var cover by remember { mutableStateOf<Int?>(null) }
+    /** Ship kind the next tap on an empty ocean cell places; null once all are placed. */
+    var selectedKind by remember { mutableStateOf<Int?>(0) }
+    /** A ship dragged from the tray that is not over the ocean yet, under the finger. */
+    var ghost by remember { mutableStateOf<Pair<Int, Offset>?>(null) }
+    /** Ocean cell the dragged ship was last put on. */
+    val dragCell = remember { arrayOfNulls<Int>(1) }
     var showRules by remember { mutableStateOf(false) }
-    val mySeat = table.mySeat ?: 0
     val scopeActive = rememberUpdatedState(lifetime.active)
 
     DisposableEffect(table) {
@@ -133,8 +157,8 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         onDispose { table.onUpdate = null }
     }
 
-    LaunchedEffect(renderer, state, mySeat) {
-        renderer?.applyState(state, mySeat)
+    LaunchedEffect(renderer, state, viewer) {
+        renderer?.applyState(PerangKapalGame.viewFor(state, viewer), viewer)
     }
 
     // Bot steps after each update while a bot may act.
@@ -148,10 +172,86 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         }
     }
 
-    val canPlace = state.placing && table.isLocal(mySeat) && !state.ready[mySeat]
-    val canReady = canPlace && PerangKapalGame.fleetComplete(state.fleets[mySeat])
-    val canFire = !state.placing && !state.finished && table.isLocal(state.turn) &&
-        mySeat == state.turn
+    // Passing the phone: when the other person has to act the cover goes up; after a shot
+    // its result shows first.
+    LaunchedEffect(state, viewer) {
+        if (!passing || state.finished) {
+            cover = null
+            return@LaunchedEffect
+        }
+        val wanted = if (state.placing) state.ready.indexOfFirst { !it }.takeIf { it >= 0 } ?: viewer else state.turn
+        if (wanted == viewer) return@LaunchedEffect
+        if (cover == null && !state.placing && state.lastHit != null) delay(1500)
+        if (lifetime.active) cover = wanted
+    }
+
+    fun fleet() = state.fleets.getOrElse(viewer) { emptyList() }
+    fun canPlace() = lifetime.active && cover == null && state.placing && !state.finished &&
+        table.isLocal(viewer) && !state.ready.getOrElse(viewer) { true }
+    fun canFire() = lifetime.active && cover == null && !state.placing && !state.finished &&
+        viewer == state.turn && table.isLocal(viewer)
+    val canPlace = canPlace()
+    val canFire = canFire()
+    val canReady = canPlace && PerangKapalGame.fleetComplete(fleet())
+
+    /** A placed ship keeps its direction when moved; a new one starts across. */
+    fun horizontal(kind: Int) = fleet().firstOrNull { it.kind == kind }?.horizontal ?: true
+
+    /** On to the first ship that is not on the ocean yet. */
+    fun selectNext(extra: Int? = null) {
+        val placed = fleet().map { it.kind } + listOfNotNull(extra)
+        selectedKind = (0 until PerangKapalGame.KINDS).firstOrNull { it !in placed }
+    }
+
+    /**
+     * Sends the placement if the rules allow it here (checked first, so a guest's drag over
+     * another ship is not a refused move).
+     */
+    fun place(kind: Int, bow: Int, across: Boolean): Boolean {
+        val move = PerangKapalMove(kind = kind, cell = bow, horizontal = across)
+        if (PerangKapalGame.validate(table.latest, viewer, move) != null) return false
+        return table.place(viewer, kind, bow, across)
+    }
+
+    /** The dragged ship follows the finger cell by cell, wherever it fits. */
+    fun dragTo(kind: Int, at: Offset) {
+        if (!canPlace()) return
+        val cell = renderer?.pickCell(at.x, at.y, onRadar = false) ?: return
+        if (cell == dragCell[0]) return
+        dragCell[0] = cell
+        val across = horizontal(kind)
+        place(kind, PerangKapalGame.bowFor(cell, kind, across), across)
+    }
+
+    fun endDrag() {
+        ghost = null
+        if (dragCell[0] == null) return
+        dragCell[0] = null
+        Sounds.play(Sounds.Effect.Tap)
+        selectNext()
+    }
+
+    fun tap(at: Offset) {
+        val r = renderer ?: return
+        if (canFire()) {
+            val cell = r.pickCell(at.x, at.y, onRadar = true) ?: return
+            if (table.fire(viewer, cell)) Sounds.play(Sounds.Effect.Tap)
+        } else if (canPlace()) {
+            val cell = r.pickCell(at.x, at.y, onRadar = false) ?: return
+            val ship = fleet().firstOrNull { cell in it.cells }
+            val kind = selectedKind
+            if (ship != null) {
+                // A tap on a placed ship turns it around its middle.
+                if (place(ship.kind, PerangKapalGame.turnedBow(ship), !ship.horizontal)) Sounds.play(Sounds.Effect.Tap)
+            } else if (kind != null) {
+                val across = horizontal(kind)
+                if (place(kind, PerangKapalGame.bowFor(cell, kind, across), across)) {
+                    Sounds.play(Sounds.Effect.Tap)
+                    selectNext(kind)
+                }
+            }
+        }
+    }
 
     fun exit() {
         lifetime.stop()
@@ -174,7 +274,7 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
     }
 
     var viewOrigin by remember { mutableStateOf(floatArrayOf(0f, 0f)) }
-    val reach = with(LocalDensity.current) { 36.dp.toPx() }
+    val slop = with(LocalDensity.current) { 10.dp.toPx() }
 
     Box(Modifier.fillMaxSize().background(Theme.backdropBrush)) {
         key(turned) {
@@ -202,18 +302,33 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
             )
         }
 
+        // A tap fires or places; a drag that starts on a placed ship moves it.
         if (canPlace || canFire) {
             Box(
-                Modifier.fillMaxSize().pointerInput(canPlace, canFire, selectedKind, horizontal, state) {
-                    detectTapGestures { tap ->
-                        val r = renderer ?: return@detectTapGestures
-                        if (canFire) {
-                            val cell = r.pickCell(tap.x, tap.y, onRadar = true, reach = reach) ?: return@detectTapGestures
-                            if (table.fire(mySeat, cell)) Sounds.play(Sounds.Effect.Tap)
-                        } else if (canPlace) {
-                            val cell = r.pickCell(tap.x, tap.y, onRadar = false, reach = reach) ?: return@detectTapGestures
-                            if (table.place(mySeat, selectedKind, cell, horizontal)) Sounds.play(Sounds.Effect.Tap)
+                Modifier.fillMaxSize().pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown()
+                        val start = down.position
+                        val grabbed = if (canPlace()) {
+                            renderer?.pickCell(start.x, start.y, onRadar = false)
+                                ?.let { cell -> fleet().firstOrNull { cell in it.cells }?.kind }
+                        } else null
+                        var dragging = false
+                        var lifted = false
+                        while (true) {
+                            val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) {
+                                lifted = true
+                                break
+                            }
+                            if (grabbed == null) continue
+                            if (!dragging && (change.position - start).getDistance() >= slop) dragging = true
+                            if (dragging) {
+                                change.consume()
+                                dragTo(grabbed, change.position)
+                            }
                         }
+                        if (dragging) endDrag() else if (lifted) tap(start)
                     }
                 },
             )
@@ -242,10 +357,10 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         Row(
             Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud("room"),
         ) {
-            Column(Modifier.width(136.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.hud("back"))
+            Column(Modifier.width(136.dp).fillMaxHeight().hud("left"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
                 Spacer(Modifier.height(4.dp))
-                Column(Modifier.hud("players"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (seat in 0..1) {
                         val on = if (state.placing) !state.ready[seat] && !state.finished
                         else seat == state.turn && !state.finished
@@ -254,12 +369,12 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
                 }
             }
             Spacer(Modifier.weight(1f))
-            Column(Modifier.width(168.dp).fillMaxHeight(), horizontalAlignment = Alignment.End) {
-                SoundToggles(Modifier.hud("sound"))
+            Column(Modifier.width(168.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
+                SoundToggles()
                 Spacer(Modifier.height(8.dp))
                 CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), {
                     showRules = true
-                }, Modifier.hud("help"))
+                })
                 Spacer(Modifier.height(10.dp))
                 val youLabel = stringResource(R.string.bot_you)
                 EmoteHud(
@@ -269,22 +384,46 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
                     onSend = table::sendEmote,
                 )
                 Spacer(Modifier.weight(1f))
-                if (state.placing && table.isLocal(mySeat) && !state.ready.getOrElse(mySeat) { true }) {
+                if (canPlace) {
                     ShipTray(
-                        fleetKinds = state.fleets[mySeat].map { it.kind }.toSet(),
+                        placed = fleet().map { it.kind }.toSet(),
                         selected = selectedKind,
-                        horizontal = horizontal,
-                        onSelect = { selectedKind = it },
-                        onRotate = { horizontal = !horizontal },
+                        // Finger that went down on a tray ship, in the board's coordinates.
+                        onTouch = { kind, at, moved ->
+                            if (canPlace() && (dragCell[0] != null || ghost != null || moved >= slop)) {
+                                selectedKind = kind
+                                val over = renderer?.pickCell(at.x, at.y, onRadar = false) != null
+                                ghost = if (over) null else kind to at
+                                dragTo(kind, at)
+                            }
+                        },
+                        onRelease = { kind ->
+                            if (dragCell[0] != null || ghost != null) endDrag()
+                            else if (canPlace()) {
+                                Sounds.play(Sounds.Effect.Tap)
+                                selectedKind = kind
+                            }
+                        },
+                        origin = { Offset(viewOrigin[0], viewOrigin[1]) },
                         canReady = canReady,
                         onReady = {
-                            if (table.ready(mySeat)) Sounds.play(Sounds.Effect.Tap)
+                            if (table.ready(viewer)) Sounds.play(Sounds.Effect.Tap)
                         },
-                        modifier = Modifier.hud("tray"),
                     )
                 }
-                StatusLine(table, state, Modifier.hud("status").padding(top = 8.dp))
+                if (!state.placing) {
+                    FleetStatus(R.string.perang_kapal_enemy_fleet, state.lost(1 - viewer))
+                    Spacer(Modifier.height(8.dp))
+                    FleetStatus(R.string.perang_kapal_your_fleet, state.lost(viewer))
+                }
+                StatusLine(table, state, canPlace, Modifier.padding(top = 8.dp))
             }
+        }
+
+        ghost?.let { (kind, at) ->
+            val w = with(LocalDensity.current) { (PerangKapalBoard.shipLength(kind) * TRAY_UNIT).dp.toPx() }
+            val h = with(LocalDensity.current) { (PerangKapalBoard.CELL * TRAY_UNIT).dp.toPx() }
+            ShipPicture(kind, Modifier.offset { IntOffset((at.x - w / 2).toInt(), (at.y - h / 2).toInt()) })
         }
 
         table.waiting?.let { away ->
@@ -304,14 +443,34 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
             )
         }
 
+        cover?.let { next ->
+            PassCover(table.name(next), if (next == 0) SEAT_0 else SEAT_1) {
+                if (lifetime.active) {
+                    Sounds.play(Sounds.Effect.Tap)
+                    viewer = next
+                    cover = null
+                    val placed = state.fleets.getOrElse(next) { emptyList() }.map { it.kind }
+                    selectedKind = (0 until PerangKapalGame.KINDS).firstOrNull { it !in placed }
+                }
+            }
+        }
         if (state.finished) ResultCard(
             table, state,
             onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
-            onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
+            onRestart = {
+                selectedKind = 0
+                activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart()
+            },
         )
         if (showRules) RulesSheet { showRules = false }
     }
 }
+
+private val SEAT_0 = Color(0xFFD6453D)
+private val SEAT_1 = Color(0xFF2F6FD1)
+
+/** Dp per board unit in the tray: the longest ship fills the column. */
+private val TRAY_UNIT = 152f / PerangKapalBoard.shipLength(0)
 
 /** True when a bot is among the seats that may act now. */
 private fun PerangKapalTable.botToMove(): Boolean {
@@ -319,73 +478,149 @@ private fun PerangKapalTable.botToMove(): Boolean {
     return seats.any { it in botSeats }
 }
 
+/**
+ * A ship seen from above, drawn from the boxes of its voxel model (`shipParts` in shared/),
+ * bow to the left.
+ */
+@Composable
+private fun ShipPicture(kind: Int, modifier: Modifier = Modifier, unitDp: Float = TRAY_UNIT) {
+    val parts = remember(kind) { PerangKapalBoard.shipParts(kind) }
+    Canvas(
+        modifier.size((PerangKapalBoard.shipLength(kind) * unitDp).dp, (PerangKapalBoard.CELL * unitDp).dp),
+    ) {
+        val unit = unitDp.dp.toPx()
+        for (i in parts.indices step 9) {
+            drawRect(
+                Color(parts[i + 6], parts[i + 7], parts[i + 8]),
+                topLeft = Offset(parts[i] * unit, size.height / 2 + parts[i + 2] * unit),
+                size = Size((parts[i + 1] - parts[i]) * unit, (parts[i + 3] - parts[i + 2]) * unit),
+            )
+        }
+    }
+}
+
+/** The five ships themselves: tap one then a cell, or drag it onto the ocean. Then Ready. */
 @Composable
 private fun ShipTray(
-    fleetKinds: Set<Int>,
-    selected: Int,
-    horizontal: Boolean,
-    onSelect: (Int) -> Unit,
-    onRotate: () -> Unit,
+    placed: Set<Int>,
+    selected: Int?,
+    onTouch: (kind: Int, at: Offset, moved: Float) -> Unit,
+    onRelease: (kind: Int) -> Unit,
+    origin: () -> Offset,
     canReady: Boolean,
     onReady: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    val names = listOf(
-        R.string.perang_kapal_ship_carrier,
-        R.string.perang_kapal_ship_battleship,
-        R.string.perang_kapal_ship_cruiser,
-        R.string.perang_kapal_ship_sub,
-        R.string.perang_kapal_ship_destroyer,
-    )
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.End) {
+    val touch = rememberUpdatedState(onTouch)
+    val release = rememberUpdatedState(onRelease)
+    val boardOrigin = rememberUpdatedState(origin)
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.End) {
         Text(stringResource(R.string.perang_kapal_place_fleet), style = Theme.font(13, FontWeight.Bold, Theme.ink), textAlign = TextAlign.End)
-        names.forEachIndexed { kind, label ->
+        for (kind in 0 until PerangKapalGame.KINDS) {
             val on = kind == selected
-            val placed = kind in fleetKinds
-            Row(
+            val name = stringResource(shipName(kind))
+            var inWindow by remember { mutableStateOf(Offset.Zero) }
+            Box(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
                     .background(if (on) Theme.chip else Theme.surface)
                     .border(1.5.dp, if (on) Theme.accent else Theme.line, RoundedCornerShape(10.dp))
-                    .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onSelect(kind) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .onGloballyPositioned { inWindow = it.positionInWindow() }
+                    .semantics {
+                        contentDescription = name
+                        role = Role.Button
+                        this.selected = on
+                    }
+                    .pointerInput(kind) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            var lifted = false
+                            while (true) {
+                                val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                                if (!change.pressed) {
+                                    lifted = true
+                                    break
+                                }
+                                change.consume()
+                                val at = inWindow + change.position - boardOrigin.value()
+                                touch.value(kind, at, (change.position - down.position).getDistance())
+                            }
+                            release.value(kind)
+                        }
+                    }
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
             ) {
-                Text(stringResource(label), style = Theme.font(12, FontWeight.Bold, Theme.ink))
-                Text(
-                    if (placed) "✓" else "${PerangKapalGame.FLEET[kind]}",
-                    style = Theme.font(12, FontWeight.Bold, Theme.muted),
-                )
+                ShipPicture(kind, Modifier.alpha(if (kind in placed) 0.35f else 1f))
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SecondaryButton(
-                stringResource(if (horizontal) R.string.perang_kapal_rotate else R.string.perang_kapal_rotate),
-                onRotate,
-                Modifier.weight(1f),
-                tint = Theme.muted,
+        PrimaryButton(stringResource(R.string.perang_kapal_ready), onReady, Modifier.fillMaxWidth().padding(top = 2.dp), height = 38.dp, enabled = canReady)
+    }
+}
+
+/** Ship kinds of [seat]'s fleet that the other side has sunk. */
+private fun PerangKapalState.lost(seat: Int): Set<Int> =
+    shots.getOrElse(1 - seat) { emptyList() }.mapNotNull { it.sunk }.toSet()
+
+/** How the battle stands for one side: its five ships, the sunk ones faded and struck out. */
+@Composable
+private fun FleetStatus(title: Int, sunk: Set<Int>) {
+    val left = "${PerangKapalGame.KINDS - sunk.size}/${PerangKapalGame.KINDS}"
+    val label = stringResource(title)
+    Column(
+        Modifier.fillMaxWidth().semantics(mergeDescendants = true) { contentDescription = "$label $left" },
+        verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.End,
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label, style = Theme.font(12, FontWeight.Bold, Theme.ink), maxLines = 1)
+            Text(left, style = Theme.font(12, FontWeight.Bold, Theme.muted), maxLines = 1)
+        }
+        for (row in listOf(listOf(0, 1), listOf(2, 3, 4))) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (kind in row) Box(contentAlignment = Alignment.Center) {
+                    ShipPicture(kind, Modifier.alpha(if (kind in sunk) 0.3f else 1f), unitDp = 13f)
+                    if (kind in sunk) {
+                        Box(Modifier.matchParentSize().padding(vertical = 7.dp).height(2.dp).background(Theme.error, CircleShape))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Two people on one phone: hides the board while it changes hands. */
+@Composable
+private fun PassCover(name: String, color: Color, onContinue: () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().background(Theme.backdropBrush).pointerInput(Unit) { detectTapGestures { } },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier.widthIn(max = 420.dp).fillMaxWidth(0.7f)
+                .clip(RoundedCornerShape(20.dp)).background(Theme.surface)
+                .border(1.5.dp, Theme.line, RoundedCornerShape(20.dp))
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(Modifier.size(28.dp).clip(CircleShape).background(color))
+            Text(
+                stringResource(R.string.perang_kapal_pass, name),
+                style = Theme.font(22, FontWeight.Black, Theme.ink), textAlign = TextAlign.Center,
             )
-            PrimaryButton(stringResource(R.string.perang_kapal_ready), onReady, Modifier.weight(1f), enabled = canReady)
+            PrimaryButton(stringResource(R.string.perang_kapal_continue), onContinue, Modifier.fillMaxWidth(), height = 48.dp)
         }
     }
 }
 
 @Composable
-private fun StatusLine(table: PerangKapalTable, state: PerangKapalState, modifier: Modifier = Modifier) {
+private fun StatusLine(table: PerangKapalTable, state: PerangKapalState, canPlace: Boolean, modifier: Modifier = Modifier) {
     val you = stringResource(R.string.bot_you)
     val text = when {
         state.finished -> ""
-        state.placing -> {
-            val seat = table.mySeat ?: 0
-            when {
-                state.ready.getOrElse(seat) { false } -> stringResource(R.string.perang_kapal_waiting_ready)
-                else -> stringResource(R.string.perang_kapal_place_hint)
-            }
-        }
+        state.placing -> stringResource(if (canPlace) R.string.perang_kapal_place_hint else R.string.perang_kapal_waiting_ready)
         state.lastHit == true && state.lastSunk != null ->
             stringResource(R.string.perang_kapal_sunk, stringResource(shipName(state.lastSunk!!)))
         state.lastHit == true -> stringResource(R.string.perang_kapal_hit)
         state.lastHit == false -> stringResource(R.string.perang_kapal_miss)
-        table.isLocal(state.turn) -> stringResource(R.string.perang_kapal_your_turn)
+        table.mySeat == state.turn -> stringResource(R.string.perang_kapal_your_turn)
         else -> stringResource(R.string.ular_turn_of, if (table.mySeat == state.turn) you else table.name(state.turn))
     }
     if (text.isNotEmpty()) {
@@ -404,7 +639,7 @@ private fun shipName(kind: Int) = when (kind) {
 @Composable
 private fun PlayerTile(table: PerangKapalTable, seat: Int, on: Boolean) {
     val name = if (seat == table.mySeat) stringResource(R.string.bot_you) else table.name(seat)
-    val color = if (seat == 0) Color(0xFFD6453D) else Color(0xFF2F6FD1)
+    val color = if (seat == 0) SEAT_0 else SEAT_1
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
             .background(if (on) Theme.chip else Theme.surface)

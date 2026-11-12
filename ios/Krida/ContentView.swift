@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var passAndPlay: CongklakTable?
     @State private var ularTable: UlarTanggaTable?
     @State private var ludoTable: LudoTable?
+    @State private var perangKapalTable: PerangKapalTable?
     /// The game on the left card; the play card follows it.
     @State private var game: MenuGame = .congklak
     /// Ular tangga's seat tiles for a game on this phone, as `LocalSeats.encode` text.
@@ -16,6 +17,8 @@ struct ContentView: View {
     @AppStorage(LudoSettings.seatsKey) private var ludoSeatsText = ""
     /// Congklak's seats: the first is always a person, the second a person or the computer.
     @State private var congklakSeats: [LocalSeat] = [.person, .person]
+    /// Perang kapal's seats: the first is always a person, the second the computer or a person.
+    @State private var kapalSeats: [LocalSeat] = [.person, .computer]
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     /// The join screen (scan the host's QR or type the code) is up.
@@ -53,7 +56,7 @@ struct ContentView: View {
 
     /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
     private var keepAwake: Bool {
-        passAndPlay != nil || ularTable != nil || ludoTable != nil || room != nil
+        passAndPlay != nil || ularTable != nil || ludoTable != nil || perangKapalTable != nil || room != nil
     }
 
     var body: some View {
@@ -66,6 +69,9 @@ struct ContentView: View {
                     .id(ObjectIdentifier(table))
             } else if let table = ludoTable {
                 LudoView(table: table) { ludoTable = nil }
+                    .id(ObjectIdentifier(table))
+            } else if let table = perangKapalTable {
+                PerangKapalView(table: table) { perangKapalTable = nil }
                     .id(ObjectIdentifier(table))
             } else if let room {
                 RoomView(
@@ -120,6 +126,8 @@ struct ContentView: View {
                             } else {
                                 ularTable = UlarTanggaHostTable.local(players: players)
                             }
+                        } else if quickMatchGame == PerangKapalGame.shared.id {
+                            startPerangKapal(computer: true)
                         } else {
                             startVsComputer(.normal)
                         }
@@ -148,15 +156,16 @@ struct ContentView: View {
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openLudo") { game = .ludo; startLudo() } }
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openPerangKapal") { game = .perangKapal; startPerangKapal(computer: true) } }
         #if DEBUG
         // Direct entry for quick-match screenshots and native flow checks.
         .onAppear {
             let args = ProcessInfo.processInfo.arguments
             if let index = args.firstIndex(of: "-openQuickMatch"), args.indices.contains(index + 1) {
                 let selected = args[index + 1]
-                if [CongklakGame.shared.id, UlarTanggaGame.shared.id, LudoGame.shared.id].contains(selected) {
+                if [CongklakGame.shared.id, UlarTanggaGame.shared.id, LudoGame.shared.id, PerangKapalGame.shared.id].contains(selected) {
                     quickMatchGame = selected
-                    quickMatchTarget = selected == CongklakGame.shared.id ? 2 : 4
+                    quickMatchTarget = selected == CongklakGame.shared.id || selected == PerangKapalGame.shared.id ? 2 : 4
                     playingQuickMatch = true
                 }
             }
@@ -220,7 +229,7 @@ struct ContentView: View {
 
     /// No game, lobby or search is up; links and notifications only apply here.
     private var onMenus: Bool {
-        passAndPlay == nil && ularTable == nil && ludoTable == nil && room == nil
+        passAndPlay == nil && ularTable == nil && ludoTable == nil && perangKapalTable == nil && room == nil
             && !creatingOnlineRoom && !playingQuickMatch
     }
 
@@ -386,6 +395,7 @@ struct ContentView: View {
         let name = switch saved.game {
         case UlarTanggaGame.shared.id: String(localized: "Snakes & ladders", bundle: .app)
         case LudoGame.shared.id: String(localized: "Ludo", bundle: .app)
+        case PerangKapalGame.shared.id: String(localized: "Perang kapal", bundle: .app)
         default: String(localized: "Congklak", bundle: .app)
         }
         return HStack(spacing: 8 * s) {
@@ -418,12 +428,14 @@ struct ContentView: View {
     private var playCard: some View {
         let ular = game == .ularTangga
         let ludo = game == .ludo
+        // Two seats; on this phone against the computer, or two people passing the phone.
+        let kapal = game == .perangKapal
         let multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         let nearby = place != .phone
         let online = place == .online
         let lan = nearby && !online && nearbyLink == .wifi
-        let seats = ludo ? ludoSeats : ular ? ularSeats : congklakSeats
+        let seats = kapal ? kapalSeats : ludo ? ludoSeats : ular ? ularSeats : congklakSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
         let seatColors: [Int] = multi
@@ -457,13 +469,15 @@ struct ContentView: View {
                         seats: seats,
                         colors: multi
                             ? seats.indices.map { seatColors[$0] >= 0 ? pawnColor(seatColors[$0]) : Theme.border }
-                            : [Theme.wood, Theme.seed],
+                            : kapal ? [Color(hex: 0xD6453D), Color(hex: 0x2F6FD1)] : [Theme.wood, Theme.seed],
                         tappable: multi ? Set(seats.indices) : [1]
                     ) { i in
                         if ludo {
                             ludoSeatsText = LocalSeats.shared.encode(seats: LocalSeats.shared.next(seats: seats, index: Int32(i), allowEmpty: true))
                         } else if ular {
                             ularSeatsText = LocalSeats.shared.encode(seats: LocalSeats.shared.next(seats: seats, index: Int32(i), allowEmpty: true))
+                        } else if kapal {
+                            kapalSeats = LocalSeats.shared.next(seats: kapalSeats, index: Int32(i), allowEmpty: false)
                         } else {
                             congklakSeats = LocalSeats.shared.next(seats: congklakSeats, index: Int32(i), allowEmpty: false)
                         }
@@ -475,14 +489,18 @@ struct ContentView: View {
             }
             // The description above equally sized Join/Create buttons, as on Android. Online
             // rules move to the Create room screen.
-            SettingRow(label: !multi && !nearby && computers > 0 ? "Level" : nil) {
+            SettingRow(label: !multi && !kapal && !nearby && computers > 0 ? "Level" : nil) {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
-                        detail(multi ? "Up to 4 phones over the internet, friends anywhere" : "Over the internet, friends anywhere")
+                        detail(multi ? "Up to 4 phones over the internet, friends anywhere"
+                            : kapal ? "2 phones over the internet, friends anywhere" : "Over the internet, friends anywhere")
                     } else if lan {
                         detail("Wi‑Fi or hotspot, no internet")
                     } else if nearby {
-                        detail(multi ? "Up to 4 phones over Bluetooth, no internet" : "Bluetooth, no internet")
+                        detail(multi ? "Up to 4 phones over Bluetooth, no internet"
+                            : kapal ? "2 phones over Bluetooth, no internet" : "Bluetooth, no internet")
+                    } else if kapal {
+                        detail(computers > 0 ? "You against the computer." : "Two players, taking turns on one phone")
                     } else if !multi && computers > 0 {
                         Segmented(options: [(.easy, "Easy", nil), (.normal, "Medium", nil), (.hard, "Hard", nil)], selection: $level, label: "Difficulty")
                     } else if !multi {
@@ -546,6 +564,7 @@ struct ContentView: View {
     private func gameId(_ menu: MenuGame) -> String {
         switch menu {
         case .ludo: LudoGame.shared.id
+        case .perangKapal: PerangKapalGame.shared.id
         case .ularTangga: UlarTanggaGame.shared.id
         case .congklak: CongklakGame.shared.id
         }
@@ -553,12 +572,14 @@ struct ContentView: View {
 
     private func roomGame(_ id: String) -> NearbyRoom.Game {
         if id == LudoGame.shared.id { return .ludo }
+        if id == PerangKapalGame.shared.id { return .perangKapal }
         if id == UlarTanggaGame.shared.id { return .ularTangga }
         return .congklak
     }
 
     private func rules(for id: String) -> RoomRules {
         if id == LudoGame.shared.id { return .ludo }
+        if id == PerangKapalGame.shared.id { return .perangKapal }
         if id == UlarTanggaGame.shared.id { return .ularTangga }
         return .congklak
     }
@@ -566,6 +587,7 @@ struct ContentView: View {
     private func rules(for menu: MenuGame) -> RoomRules {
         switch menu {
         case .ludo: .ludo
+        case .perangKapal: .perangKapal
         case .ularTangga: .ularTangga
         case .congklak: .congklak
         }
@@ -582,6 +604,7 @@ struct ContentView: View {
             return
         }
         if game == .ludo { return startLudo() }
+        if game == .perangKapal { return startPerangKapal(computer: kapalSeats.contains(.computer)) }
         if game == .ularTangga { return startUlarTangga() }
         if congklakSeats.contains(.computer) { startVsComputer(level) } else { startPassAndPlay() }
     }
@@ -630,6 +653,14 @@ struct ContentView: View {
 
     private func startLudo() {
         ludoTable = LudoHostTable.local(players: localPlayers(ludoSeats))
+    }
+
+    private func startPerangKapal(computer: Bool) {
+        perangKapalTable = computer
+            ? PerangKapalHostTable.vsComputer(
+                you: String(localized: "You", bundle: .app), computer: String(localized: "Computer", bundle: .app))
+            : PerangKapalHostTable.passAndPlay(
+                names: [String(localized: "Player 1", bundle: .app), String(localized: "Player 2", bundle: .app)])
     }
 
     private func startPassAndPlay() {
@@ -822,7 +853,7 @@ private struct SeatTiles: View {
 
 /// A small label above its control; no label keeps the rows' spacing. Same as Android.
 /// Which game's rule controls the play card and the online create screen show.
-enum RoomRules { case congklak, ularTangga, ludo }
+enum RoomRules { case congklak, ularTangga, ludo, perangKapal }
 
 /// The game's rule options (ular tangga or ludo chips; congklak tembak and starter), saved as they
 /// change: on the play card for this phone and nearby, on Create room online.
@@ -838,6 +869,9 @@ struct GameRoomOptions: View {
             SettingRow(label: "Rules") { UlarTanggaOptionChips() }
         case .ludo:
             SettingRow(label: "Rules") { LudoOptionChips() }
+        case .perangKapal:
+            // No rule options in v1; one line says how it is played.
+            RuleHint(text: "Classic · one shot each turn")
         case .congklak:
             Group {
                 SettingRow(label: "Shooting") {
@@ -914,21 +948,23 @@ struct Segmented<T: Hashable>: View {
 
 /// The games the left card switches between, until the game list exists. Same as Android.
 enum MenuGame: CaseIterable {
-    case congklak, ularTangga, ludo
+    case congklak, ularTangga, ludo, perangKapal
 
     var title: LocalizedStringKey {
         switch self {
         case .congklak: "Congklak"
         case .ularTangga: "Snakes & ladders"
         case .ludo: "Ludo"
+        case .perangKapal: "Perang kapal"
         }
     }
-    var players: LocalizedStringKey { self == .congklak ? "2 players" : "2–4 players" }
+    var players: LocalizedStringKey { self == .congklak || self == .perangKapal ? "2 players" : "2–4 players" }
     var tagline: LocalizedStringKey {
         switch self {
         case .congklak: "Gather the most seeds in your store."
         case .ularTangga: "Climb the ladders, dodge the snakes."
         case .ludo: "Race your four tokens home."
+        case .perangKapal: "Sink the fleet."
         }
     }
     var face: Color {
@@ -936,6 +972,7 @@ enum MenuGame: CaseIterable {
         case .congklak: Theme.wood
         case .ularTangga: Color(hex: 0x4F8A3B)
         case .ludo: Color(hex: 0x3D6EB5)
+        case .perangKapal: Color(hex: 0x1B4F72)
         }
     }
     var edge: Color {
@@ -943,6 +980,7 @@ enum MenuGame: CaseIterable {
         case .congklak: Theme.woodShadow
         case .ularTangga: Color(hex: 0x3B6A2B)
         case .ludo: Color(hex: 0x2A5085)
+        case .perangKapal: Color(hex: 0x123A54)
         }
     }
 }
@@ -1019,6 +1057,7 @@ private struct GameCardFace: View {
                 case .congklak: BoardPreview(onReady: onReady)
                 case .ularTangga: UlarTanggaPreview(onReady: onReady)
                 case .ludo: LudoPreview(onReady: onReady)
+                case .perangKapal: PerangKapalPreview(onReady: onReady)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
@@ -1208,6 +1247,9 @@ private struct RoomView: View {
                 .id(ObjectIdentifier(table))
         } else if let table = room.ludo {
             LudoView(table: table, onExit: onExit)
+                .id(ObjectIdentifier(table))
+        } else if let table = room.perangKapal {
+            PerangKapalView(table: table, onExit: onExit)
                 .id(ObjectIdentifier(table))
         } else if (room.isHost && !room.failed) || room.stage == .lobby {
             RoomLobby(room: room, onLeave: onLeave)

@@ -6,13 +6,13 @@ import com.ardeman.krida.core.session.GameRules
 import com.ardeman.krida.core.session.LocalSeat
 
 /**
- * Perang kapal has no host rule chips in v1. This phone is always you vs the computer
- * (two seats); nearby / online rooms also use two seats.
+ * Perang kapal has no host rule chips in v1. This phone plays you vs the computer or two
+ * people passing it (two seats); nearby / online rooms also use two seats.
  */
 object PerangKapalSettings {
     const val SEATS = 2
 
-    /** Fixed local lineup: person, then computer. */
+    /** Local lineup to start from: person, then computer (the second seat can be a person). */
     val phoneSeats: List<LocalSeat> = listOf(LocalSeat.PERSON, LocalSeat.COMPUTER)
 
     fun init(@Suppress("UNUSED_PARAMETER") context: android.content.Context) = Unit

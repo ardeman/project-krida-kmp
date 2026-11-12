@@ -5412,6 +5412,438 @@
           }
         }
       }
+    },
+    "Perang kapal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perang kapal"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perang kapal"
+          }
+        }
+      }
+    },
+    "Sink the fleet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sink the fleet."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tenggelamkan armadanya."
+          }
+        }
+      }
+    },
+    "2 phones over Bluetooth, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 phones over Bluetooth, no internet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 HP lewat Bluetooth, tanpa internet"
+          }
+        }
+      }
+    },
+    "2 phones over the internet, friends anywhere": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 phones over the internet, friends anywhere"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 HP lewat internet, teman di mana saja"
+          }
+        }
+      }
+    },
+    "Classic · one shot each turn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Classic · one shot each turn"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klasik · satu tembakan tiap giliran"
+          }
+        }
+      }
+    },
+    "Place your fleet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place your fleet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Susun armadamu"
+          }
+        }
+      }
+    },
+    "Waiting for the other player…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the other player…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu pemain lain…"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siap"
+          }
+        }
+      }
+    },
+    "Your turn · tap a radar cell": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your turn · tap a radar cell"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giliranmu · ketuk kotak di radar"
+          }
+        }
+      }
+    },
+    "Hit!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hit!"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kena!"
+          }
+        }
+      }
+    },
+    "Miss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miss"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meleset"
+          }
+        }
+      }
+    },
+    "%@ sunk!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sunk!"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ tenggelam!"
+          }
+        }
+      }
+    },
+    "Fleet sunk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fleet sunk"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armada tenggelam"
+          }
+        }
+      }
+    },
+    "Carrier · 5": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carrier · 5"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapal induk · 5"
+          }
+        }
+      }
+    },
+    "Battleship · 4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battleship · 4"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapal perang · 4"
+          }
+        }
+      }
+    },
+    "Cruiser · 3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cruiser · 3"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapal penjelajah · 3"
+          }
+        }
+      }
+    },
+    "Submarine · 3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Submarine · 3"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapal selam · 3"
+          }
+        }
+      }
+    },
+    "Destroyer · 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Destroyer · 2"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapal perusak · 2"
+          }
+        }
+      }
+    },
+    "Each side has five ships: lengths 5, 4, 3, 3 and 2 on a 10×10 grid.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each side has five ships: lengths 5, 4, 3, 3 and 2 on a 10×10 grid."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiap pihak punya lima kapal: panjang 5, 4, 3, 3, dan 2 di papan 10×10."
+          }
+        }
+      }
+    },
+    "Place every ship before firing. Ships are straight, on the board, and may touch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Place every ship before firing. Ships are straight, on the board, and may touch."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Susun semua kapal sebelum menembak. Kapal lurus, di dalam papan, dan boleh saling bersentuhan."
+          }
+        }
+      }
+    },
+    "Players take turns firing one shot. A hit does not grant another shot.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players take turns firing one shot. A hit does not grant another shot."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain bergiliran menembak satu kali. Kena tidak memberi tembakan lagi."
+          }
+        }
+      }
+    },
+    "Sink the whole enemy fleet to win.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sink the whole enemy fleet to win."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tenggelamkan seluruh armada lawan untuk menang."
+          }
+        }
+      }
+    },
+    "Drag ships onto your ocean · tap one to turn it": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag ships onto your ocean · tap one to turn it"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seret kapal ke lautmu · ketuk untuk memutar"
+          }
+        }
+      }
+    },
+    "Pass the phone to %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass the phone to %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berikan HP ke %@"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lanjut"
+          }
+        }
+      }
+    },
+    "Enemy fleet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enemy fleet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armada lawan"
+          }
+        }
+      }
+    },
+    "Your fleet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your fleet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Armadamu"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
