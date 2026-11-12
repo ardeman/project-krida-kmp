@@ -130,6 +130,8 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
         shiftX += (targetShiftX - shiftX) * k
         shiftY += (targetShiftY - shiftY) * k
         applyProjection()
+        // Labels and tap targets follow the camera every frame, not only once it settles.
+        projectPits()
         val done = abs(targetFov - fovDegrees) < 0.05f &&
             abs(targetShiftX - shiftX) < 0.002 && abs(targetShiftY - shiftY) < 0.002
         if (done) {
@@ -189,7 +191,14 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
     }
 
     private fun projectPits() {
-        onPitsProjected?.invoke(List(CongklakGame.PITS) { CongklakBoard.pitAnchor(it).let { (x, y, z) -> project(x, y, z) } })
+        // Filament's projection matrix leaves out setShift, so add the shift (NDC) by hand.
+        val dx = (shiftX * width / 2).toFloat()
+        val dy = (shiftY * height / 2).toFloat()
+        onPitsProjected?.invoke(
+            List(CongklakGame.PITS) {
+                CongklakBoard.pitAnchor(it).let { (x, y, z) -> project(x, y, z) }.let { (px, py) -> floatArrayOf(px + dx, py - dy) }
+            },
+        )
     }
 
     /**
