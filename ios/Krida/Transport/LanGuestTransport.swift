@@ -26,7 +26,7 @@ final class LanGuestTransport: Transport {
         guard !closed, browser == nil, !connecting else { return }
         if let host = directHost, let port = directPort, let nwPort = NWEndpoint.Port(rawValue: port) {
             connecting = true
-            connect(.hostPort(host: host, port: nwPort))
+            connect(.hostPort(host: NWEndpoint.Host(host), port: nwPort))
             return
         }
         let wanted = RoomCode.shared.advertisedName(code: roomCode)
