@@ -4,6 +4,7 @@ import android.Manifest
 import android.os.Build
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -136,6 +137,7 @@ import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.core.games.CongklakStarter
+import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.session.LocalSeat
 import com.ardeman.krida.core.session.LocalSeats
 import com.ardeman.krida.core.session.RoomCode
@@ -538,11 +540,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** "Privasi iklan" where the consent rules require a way back into the form. */
+    /**
+     * Always offer the site privacy policy; "Ad privacy" only where the consent rules require
+     * a way back into the form.
+     */
     @Composable
     private fun AdButtons() {
-        if (!Ads.privacyOptionsRequired) return
-        SecondaryButton(stringResource(R.string.ads_privacy), onClick = { Ads.showPrivacyOptions(this@MainActivity) }, tint = Theme.muted)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SecondaryButton(
+                stringResource(R.string.privacy_policy),
+                onClick = {
+                    val url = if (Language.current(this@MainActivity) == Language.Lang.ID) {
+                        Krida.PRIVACY_URL_ID
+                    } else {
+                        Krida.PRIVACY_URL_EN
+                    }
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                },
+                tint = Theme.muted,
+            )
+            if (Ads.privacyOptionsRequired) {
+                SecondaryButton(stringResource(R.string.ads_privacy), onClick = { Ads.showPrivacyOptions(this@MainActivity) }, tint = Theme.muted)
+            }
+        }
     }
 
     /**

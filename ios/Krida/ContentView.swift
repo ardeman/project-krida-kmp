@@ -708,27 +708,34 @@ struct ContentView: View {
     }
 }
 
-/// "Restore purchases" while ads are on; "Ad privacy" where required. "Remove ads" sits beside the banner.
+/// Privacy policy (always); "Restore purchases" while ads are on; "Ad privacy" where required.
+/// "Remove ads" sits beside the banner.
 private struct AdButtons: View {
     @ObservedObject private var ads = Ads.shared
+    @ObservedObject private var language = Language.shared
+    @Environment(\.openURL) private var openURL
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if !ads.removed || ads.privacyOptionsRequired {
-            HStack(spacing: 8 * s) {
-                if !ads.removed {
-                    Button("Restore purchases", action: ads.restorePurchases)
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                }
-                if ads.privacyOptionsRequired {
-                    Button("Ad privacy", action: ads.showPrivacyOptions)
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                }
-                Spacer(minLength: 0)
+        HStack(spacing: 8 * s) {
+            Button("Privacy policy") {
+                Sounds.shared.play(.tap)
+                let url = language.code == .id ? Krida.shared.PRIVACY_URL_ID : Krida.shared.PRIVACY_URL_EN
+                if let link = URL(string: url) { openURL(link) }
             }
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
+            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+            if !ads.removed {
+                Button("Restore purchases", action: ads.restorePurchases)
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+            }
+            if ads.privacyOptionsRequired {
+                Button("Ad privacy", action: ads.showPrivacyOptions)
+                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+            }
+            Spacer(minLength: 0)
         }
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
 }
 

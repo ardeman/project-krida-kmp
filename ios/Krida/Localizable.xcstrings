@@ -6660,6 +6660,22 @@
           }
         }
       }
+    },
+    "Privacy policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy policy"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kebijakan privasi"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -41,6 +41,11 @@ object Krida {
     /** Friend codes use the room-code alphabet. */
     const val FRIEND_CODE_LENGTH: Int = 8
 
+    /** Marketing site and privacy pages (footer on the site; opened from the app menu). */
+    const val SITE_URL: String = "https://krida.ardeman.com"
+    const val PRIVACY_URL_ID: String = "$SITE_URL/privasi/"
+    const val PRIVACY_URL_EN: String = "$SITE_URL/en/privacy/"
+
     const val RELAY_URL: String = "wss://krida-relay.ardeman.com"
 
     /** How long a transport keeps reopening a dropped link (online socket) before giving up. */

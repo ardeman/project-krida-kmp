@@ -281,3 +281,6 @@ in the same commit as the code.
 
 - Play internal testing waits until several games exist, not just congklak.
 - Store listing text and privacy answers live in [store.md](store.md).
+- **Privacy link in the app (owner, 2026-11-13):** the menu always has a "Privacy policy"
+  control that opens the site page in the app language (`/privasi/` or `/en/privacy/`).
+  No in-app terms, about, or changelog pages yet.
