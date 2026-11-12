@@ -49,6 +49,9 @@ struct AccountEdit: View {
             editCard
             pickerCard
         }
+        // Keep both cards inside the stage when the island narrows the width.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
     }
 
     private var editCard: some View {
@@ -187,66 +190,68 @@ struct AccountEdit: View {
         .nearbyCard(s)
     }
 
+    /// Six across so a half-width card on a narrow landscape phone does not clip.
+    /// Badge sizes are unscaled; `AvatarBadge` applies `uiScale`.
     private var shapeGrid: some View {
-        let count = Int(Avatar.shared.SHAPE_COUNT)
-        let rows = stride(from: 0, to: count, by: 7).map { Array($0..<min($0 + 7, count)) }
-        return VStack(spacing: 10 * s) {
-            ForEach(rows, id: \.first!) { row in
-                HStack {
-                    ForEach(row, id: \.self) { shape in
-                        let selected = shape == Int(mix.shape)
-                        let cell = Avatar.Mix(shape: Int32(shape), background: mix.background, symbol: mix.symbol)
-                        Button {
-                            Sounds.shared.play(.tap)
-                            mix = cell
-                            useGoogle = false
-                            account.profileError = nil
-                        } label: {
-                            AvatarBadge(avatar: cell.encode(), size: selected ? 38 : 44, ring: selected)
-                                .frame(width: 48 * s, height: 48 * s)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    ForEach(0..<(7 - row.count), id: \.self) { _ in
-                        Color.clear.frame(width: 48 * s, height: 48 * s)
-                    }
-                }
-                .frame(maxWidth: .infinity)
+        avatarChoiceGrid(count: Int(Avatar.shared.SHAPE_COUNT), columns: 6) { shape in
+            let selected = shape == Int(mix.shape)
+            let cellMix = Avatar.Mix(shape: Int32(shape), background: mix.background, symbol: mix.symbol)
+            Button {
+                Sounds.shared.play(.tap)
+                mix = cellMix
+                useGoogle = false
+                account.profileError = nil
+            } label: {
+                AvatarBadge(avatar: cellMix.encode(), size: selected ? 34 : 40, ring: selected)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44 * s)
             }
+            .buttonStyle(.plain)
         }
     }
 
     private func colourGrid(selected: Int, forbidden: Int, onPick: @escaping (Int) -> Void) -> some View {
-        let count = Int(Avatar.shared.COLOUR_COUNT)
-        let rows = stride(from: 0, to: count, by: 7).map { Array($0..<min($0 + 7, count)) }
-        return VStack(spacing: 10 * s) {
+        avatarChoiceGrid(count: Int(Avatar.shared.COLOUR_COUNT), columns: 7) { i in
+            let disabled = i == forbidden
+            let on = i == selected
+            let argb = Avatar.shared.COLOURS.get(index: Int32(i))
+            let side = (on ? 34 : 40) * s
+            Button {
+                Sounds.shared.play(.tap)
+                onPick(i)
+            } label: {
+                Circle()
+                    .fill(avatarColor(argb))
+                    .frame(width: side, height: side)
+                    .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
+                    .overlay { if on { Circle().stroke(Theme.accent, lineWidth: 3 * s) } }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44 * s)
+                    .opacity(disabled ? 0.25 : 1)
+            }
+            .buttonStyle(.plain)
+            .disabled(disabled)
+        }
+    }
+
+    private func avatarChoiceGrid<Cell: View>(
+        count: Int,
+        columns: Int,
+        @ViewBuilder cell: @escaping (_ index: Int) -> Cell
+    ) -> some View {
+        let rows = stride(from: 0, to: count, by: columns).map { Array($0..<min($0 + columns, count)) }
+        return VStack(spacing: 8 * s) {
             ForEach(rows, id: \.first!) { row in
-                HStack {
-                    ForEach(row, id: \.self) { i in
-                        let disabled = i == forbidden
-                        let on = i == selected
-                        let argb = Avatar.shared.COLOURS.get(index: Int32(i))
-                        Button {
-                            Sounds.shared.play(.tap)
-                            onPick(i)
-                        } label: {
-                            Circle()
-                                .fill(avatarColor(argb))
-                                .frame(width: (on ? 38 : 44) * s, height: (on ? 38 : 44) * s)
-                                .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
-                                .overlay { if on { Circle().stroke(Theme.accent, lineWidth: 3 * s) } }
-                                .frame(width: 48 * s, height: 48 * s)
-                                .opacity(disabled ? 0.25 : 1)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(disabled)
+                HStack(spacing: 0) {
+                    ForEach(row, id: \.self) { index in
+                        cell(index)
                     }
-                    ForEach(0..<(7 - row.count), id: \.self) { _ in
-                        Color.clear.frame(width: 48 * s, height: 48 * s)
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity).frame(height: 44 * s)
                     }
                 }
-                .frame(maxWidth: .infinity)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 }

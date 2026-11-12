@@ -46,6 +46,7 @@ struct ContentView: View {
     @ObservedObject private var ads = Ads.shared
     @ObservedObject private var lastRoom = LastRoom.shared
     @ObservedObject private var push = Push.shared
+    @ObservedObject private var account = Account.shared
 
     /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
     private var keepAwake: Bool {
@@ -264,6 +265,29 @@ struct ContentView: View {
         withAnimation(.easeOut(duration: 0.3)) { starting = false }
     }
 
+    /// Menu account control: the player's avatar when signed in, otherwise the person icon.
+    private var accountMenuButton: some View {
+        Button {
+            Sounds.shared.play(.tap)
+            showingAccount = true
+        } label: {
+            Group {
+                if let user = account.user {
+                    AvatarBadge(avatar: user.avatar, accountId: user.id, picture: user.picture, size: 44)
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 18 * s, weight: .bold))
+                        .foregroundStyle(Theme.ink)
+                        .frame(width: 44 * s, height: 44 * s)
+                        .background(Theme.surface, in: Circle())
+                }
+            }
+            .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Account"))
+    }
+
     /// Two columns at any size: on a big screen the menu grows with `uiScale` and keeps the
     /// phone's proportions, centered, instead of stretching the cards across the screen.
     /// On a narrow screen (a foldable's cover display) the left column gives up some width.
@@ -275,7 +299,7 @@ struct ContentView: View {
                     Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
                         .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
                     Spacer(minLength: 8 * s)
-                    CircleIconButton(systemImage: "person.fill", label: "Account") { showingAccount = true }
+                    accountMenuButton
                 }
                 GameCard(game: $game) { menuReady = true }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -35,7 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.ardeman.krida.R
 import com.ardeman.krida.core.account.Avatar
 import com.ardeman.krida.nearby.card
@@ -127,20 +130,22 @@ private fun NameField(value: String, onChange: (String) -> Unit) {
         cursorBrush = SolidColor(Theme.accent),
         modifier = Modifier.fillMaxWidth(),
         decorationBox = { field ->
-            Box(
+            // Row so the counter sits on the trailing edge (padding on the Box left a gap
+            // after "n/24" because CenterEnd was inside end padding reserved for the counter).
+            Row(
                 Modifier
                     .height(44.dp)
                     .clip(shape)
                     .background(Theme.chip)
                     .border(2.dp, Theme.accent, shape)
-                    .padding(start = 14.dp, end = 48.dp),
-                contentAlignment = Alignment.CenterStart,
+                    .padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                field()
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) { field() }
                 Text(
                     "${clipped.length}/24",
                     style = Theme.font(13, FontWeight.Bold, Theme.muted),
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 14.dp),
                 )
             }
         },
@@ -212,56 +217,66 @@ private fun AvatarPicker(
 }
 
 @Composable
-private fun ShapeGrid(mix: Avatar.Mix, onMix: (Avatar.Mix) -> Unit) {
-    val rows = (0 until Avatar.SHAPE_COUNT).chunked(7)
-    rows.forEach { row ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            row.forEach { shape ->
-                val selected = shape == mix.shape
-                val cell = Avatar.Mix(shape, mix.background, mix.symbol)
-                Box(
-                    Modifier
-                        .size(48.dp)
-                        .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onMix(cell) },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AvatarBadge(cell.encode(), size = if (selected) 38.dp else 44.dp, ring = selected)
+private fun AvatarChoiceGrid(
+    count: Int,
+    columns: Int,
+    content: @Composable (index: Int, cell: Dp, badge: Dp) -> Unit,
+) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        // Leave a little slack so rounding cannot clip the first/last cell.
+        val cell = min(48.dp, (maxWidth - 2.dp) / columns)
+        val badge = min(44.dp, cell - 4.dp)
+        val rows = (0 until count).chunked(columns)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            rows.forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    row.forEach { index -> content(index, cell, badge) }
+                    repeat(columns - row.size) { Box(Modifier.size(cell)) }
                 }
             }
-            // Pad a short last row so spacing matches.
-            repeat(7 - row.size) { Box(Modifier.size(48.dp)) }
+        }
+    }
+}
+
+@Composable
+private fun ShapeGrid(mix: Avatar.Mix, onMix: (Avatar.Mix) -> Unit) {
+    // Six across so a half-width card on Pixel XL / island-narrowed iPhones does not clip.
+    AvatarChoiceGrid(Avatar.SHAPE_COUNT, columns = 6) { shape, cell, badge ->
+        val selected = shape == mix.shape
+        val mixCell = Avatar.Mix(shape, mix.background, mix.symbol)
+        Box(
+            Modifier
+                .size(cell)
+                .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onMix(mixCell) },
+            contentAlignment = Alignment.Center,
+        ) {
+            AvatarBadge(mixCell.encode(), size = if (selected) badge - 6.dp else badge, ring = selected)
         }
     }
 }
 
 @Composable
 private fun ColourGrid(selected: Int, forbidden: Int, onPick: (Int) -> Unit) {
-    val rows = (0 until Avatar.COLOUR_COUNT).chunked(7)
-    rows.forEach { row ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            row.forEach { i ->
-                val disabled = i == forbidden
-                val on = i == selected
-                Box(
-                    Modifier
-                        .size(48.dp)
-                        .alpha(if (disabled) 0.25f else 1f)
-                        .clickable(enabled = !disabled, role = Role.Button) {
-                            Sounds.play(Sounds.Effect.Tap); onPick(i)
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(
-                        Modifier
-                            .size(if (on) 38.dp else 44.dp)
-                            .then(if (on) Modifier.border(3.dp, Theme.accent, CircleShape) else Modifier)
-                            .clip(CircleShape)
-                            .background(Color(Avatar.COLOURS[i]))
-                            .border(1.5.dp, Theme.line, CircleShape),
-                    )
-                }
-            }
-            repeat(7 - row.size) { Box(Modifier.size(48.dp)) }
+    AvatarChoiceGrid(Avatar.COLOUR_COUNT, columns = 7) { i, cell, badge ->
+        val disabled = i == forbidden
+        val on = i == selected
+        Box(
+            Modifier
+                .size(cell)
+                .alpha(if (disabled) 0.25f else 1f)
+                .clickable(enabled = !disabled, role = Role.Button) {
+                    Sounds.play(Sounds.Effect.Tap); onPick(i)
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier
+                    .size(if (on) badge - 6.dp else badge)
+                    .then(if (on) Modifier.border(3.dp, Theme.accent, CircleShape) else Modifier)
+                    .clip(CircleShape)
+                    .background(Color(Avatar.COLOURS[i]))
+                    .border(1.5.dp, Theme.line, CircleShape),
+            )
         }
     }
 }

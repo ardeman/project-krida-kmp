@@ -99,6 +99,7 @@ import androidx.compose.ui.unit.sp
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.CongklakScreen
 import com.ardeman.krida.account.Account
+import com.ardeman.krida.account.AvatarBadge
 import com.ardeman.krida.account.InviteCard
 import com.ardeman.krida.account.Invites
 import com.ardeman.krida.account.AccountScreen
@@ -411,6 +412,34 @@ class MainActivity : ComponentActivity() {
         ) { LoadingScreen() }
     }
 
+    /** Menu account control: the player's avatar when signed in, otherwise the person icon. */
+    @Composable
+    private fun AccountMenuButton(onClick: () -> Unit) {
+        val user = Account.user
+        val label = stringResource(R.string.account_title)
+        Box(
+            Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Theme.surface)
+                .border(1.5.dp, Theme.line, CircleShape)
+                .clickable(role = Role.Button) { Sounds.play(Sounds.Effect.Tap); onClick() }
+                .semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (user != null) {
+                AvatarBadge(user.avatar, user.id, user.picture, size = 44.dp)
+            } else {
+                Icon(
+                    painterResource(R.drawable.ic_person),
+                    contentDescription = null,
+                    tint = Theme.ink,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+        }
+    }
+
     @Composable
     private fun Menu() {
         // Until the game list exists, the left card switches between the games. A room
@@ -430,7 +459,7 @@ class MainActivity : ComponentActivity() {
                         alignment = Alignment.CenterStart,
                     )
                     Spacer(Modifier.weight(1f))
-                    CircleIconButton(R.drawable.ic_person, stringResource(R.string.account_title), { showingAccount = true })
+                    AccountMenuButton { showingAccount = true }
                 }
                 GameCard(game, onGame = { game = it }, Modifier.weight(1f), onReady = { menuReady = true })
                 Row(verticalAlignment = Alignment.CenterVertically) {

@@ -269,15 +269,23 @@ final class LudoGameModel: ObservableObject {
                 animating = false
                 if lifetime.active { drain() }
             }
+            let before = state
             let next = update.state
             if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 scene.showPickRings([])
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
-                watchDie()
-                let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
-                // Small buffer so the last throw frame can mark landed before we hop (and recall).
-                try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
-                sounds.play(.tap)
+                // A pick after a multi-choice roll keeps lastRoll; only throw when this update is
+                // the roll itself (or an auto-move that applied the roll in one step).
+                let throwNow = before.roll == nil
+                if throwNow {
+                    watchDie()
+                    let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
+                    // Small buffer so the last throw frame can mark landed before we hop (and recall).
+                    try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
+                    sounds.play(.tap)
+                } else {
+                    _ = toss(for: seat)
+                }
                 if let pawn = next.lastPawn?.intValue, let from = next.lastFrom?.intValue, let to = next.lastTo?.intValue {
                     let color = next.color(seat: Int32(seat))
                     let path = game.walk(from: Int32(from), to: Int32(to)).map { pos in

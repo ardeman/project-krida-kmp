@@ -139,8 +139,9 @@ and the Pixel on different networks (one on mobile data).
 
     - [ ] **10d Name and avatar.** Approved mockup ([profile.md](mockups/profile.md),
       2026-11-12). Relay, shared, Account edit / friends / invites, and room seat name +
-      avatar (`hello` / `players`) on Android and iOS are built; open: deploy the relay and
-      privacy pages, then phone checks.
+      avatar (`hello` / `players`) on Android and iOS are built; relay and privacy deployed
+      2026-11-12. Open: phone checks (edit profile, friends/invites, seats; Google + Apple;
+      both themes and languages).
       - Name: the player sets and changes it on the Account screen (at most 24 characters,
         the relay's limit); `PATCH /v1/me` saves it. It shows to friends, on invites and
         notifications, and replaces the device name on the player's seat in rooms when

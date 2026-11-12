@@ -178,20 +178,26 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         val toss = pendingToss[0] ?: LudoRenderer.Toss.Short
         pendingToss[0] = null
         val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
+        // A pick after a multi-choice roll keeps lastRoll; only throw when this update is the roll
+        // itself (or an auto-move that applied the roll in one step). Re-throwing on pick looked
+        // like the die rolling the same face again.
+        val throwNow = before.roll == null
         try {
             r.showPickRings(emptyList())
-            // Ease in on the board centre while the die flies.
-            val land = LudoBoard.dieLanding
-            r.watch(
-                listOf(
-                    floatArrayOf(land[0], LudoBoard.TOP, land[1]),
-                    floatArrayOf(land[2], LudoBoard.TOP, land[3]),
-                ),
-            )
-            val flight = r.throwDie(roll, toss, origin, seat)
-            // Small buffer so the last throw frame can mark Landed before we hop (and recall).
-            delay((flight * 1000).toLong() + 200L)
-            Sounds.play(Sounds.Effect.Tap)
+            if (throwNow) {
+                // Ease in on the board centre while the die flies.
+                val land = LudoBoard.dieLanding
+                r.watch(
+                    listOf(
+                        floatArrayOf(land[0], LudoBoard.TOP, land[1]),
+                        floatArrayOf(land[2], LudoBoard.TOP, land[3]),
+                    ),
+                )
+                val flight = r.throwDie(roll, toss, origin, seat)
+                // Small buffer so the last throw frame can mark Landed before we hop (and recall).
+                delay((flight * 1000).toLong() + 200L)
+                Sounds.play(Sounds.Effect.Tap)
+            }
 
             val pawn = after.lastPawn
             if (pawn != null && after.lastFrom != null && after.lastTo != null) {

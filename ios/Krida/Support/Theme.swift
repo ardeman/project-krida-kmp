@@ -123,7 +123,11 @@ struct LandscapeStage<Content: View>: View {
                 let portrait = geo.size.height > geo.size.width
                 let width = portrait ? geo.size.height : geo.size.width
                 let height = min(portrait ? geo.size.width : geo.size.height, width * Self.maxHeightRatio)
-                let scale = min(max(min(width / Self.designSize.width, height / Self.designSize.height), 1), 1.5)
+                // Fit the 874×402 design into the stage. Allow a mild shrink when the Dynamic
+                // Island safe-area padding makes the stage narrower than the design width;
+                // flooring at 1 used to push Account edit and other two-card screens off-screen.
+                let fit = min(width / Self.designSize.width, height / Self.designSize.height)
+                let scale = min(max(fit, 0.85), 1.5)
                 content
                     .frame(width: width, height: height)
                     .environment(\.uiScale, scale)

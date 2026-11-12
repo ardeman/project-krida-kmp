@@ -176,7 +176,9 @@ private object GooglePictures {
 private fun DrawScope.drawShape(shape: Avatar.Shape, fg: Color, bg: Color) {
     when (shape) {
         Avatar.Shape.SEED -> {
-            rotate(25f) {
+            // Pivot at local origin: callers translate to the badge centre first. Default
+            // rotate() pivots on the Canvas centre and throws seed/sun/flower off the circle.
+            rotate(25f, pivot = Offset.Zero) {
                 drawOval(fg, Offset(-8f, -11f), Size(16f, 22f))
                 val vein = Path().apply { moveTo(-2f, -8f); quadraticTo(3f, 0f, -1f, 8f) }
                 drawPath(vein, bg, style = Stroke(width = 2f))
@@ -216,14 +218,14 @@ private fun DrawScope.drawShape(shape: Avatar.Shape, fg: Color, bg: Color) {
         Avatar.Shape.SUN -> {
             drawCircle(fg, 6f)
             for (a in 0 until 360 step 45) {
-                rotate(a.toFloat()) {
+                rotate(a.toFloat(), pivot = Offset.Zero) {
                     drawLine(fg, Offset(0f, -9f), Offset(0f, -12.5f), strokeWidth = 2.4f, cap = StrokeCap.Round)
                 }
             }
         }
         Avatar.Shape.FLOWER -> {
             for (a in 0 until 360 step 72) {
-                rotate(a.toFloat()) { drawCircle(fg, 5f, Offset(0f, -6.5f)) }
+                rotate(a.toFloat(), pivot = Offset.Zero) { drawCircle(fg, 5f, Offset(0f, -6.5f)) }
             }
             drawCircle(bg, 3.2f)
         }

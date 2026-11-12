@@ -63,6 +63,6 @@ and English copy.
 
 ## Implementation and validation
 
-Relay, shared, Account/friends/invites and room seat avatars are coded on Android and iOS.
-Deploy the relay and privacy pages, then check the screens on the Pixel and iPhone in both
+Relay, shared, Account/friends/invites and room seat avatars are coded on Android and iOS;
+relay and privacy are deployed. Open: check the screens on the Pixel and iPhone in both
 themes and languages, with one Google and one Apple account in the same room.
