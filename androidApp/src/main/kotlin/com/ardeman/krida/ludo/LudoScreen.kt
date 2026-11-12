@@ -195,17 +195,21 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         // itself (or an auto-move that applied the roll in one step). Re-throwing on pick looked
         // like the die rolling the same face again.
         val throwNow = before.roll == null
+        // Zoom only while a seat on this phone throws and moves (pick zoom is already local-only).
+        val local = table.isLocal(seat)
         try {
             r.showPickRings(emptyList())
             if (throwNow) {
                 // Ease in on the board centre while the die flies.
                 val land = LudoBoard.dieLanding
-                r.watch(
-                    listOf(
-                        floatArrayOf(land[0], LudoBoard.TOP, land[1]),
-                        floatArrayOf(land[2], LudoBoard.TOP, land[3]),
-                    ),
-                )
+                if (local) {
+                    r.watch(
+                        listOf(
+                            floatArrayOf(land[0], LudoBoard.TOP, land[1]),
+                            floatArrayOf(land[2], LudoBoard.TOP, land[3]),
+                        ),
+                    )
+                }
                 val flight = r.throwDie(roll, toss, origin, seat)
                 // Small buffer so the last throw frame can mark Landed before we hop (and recall).
                 delay((flight * 1000).toLong() + 200L)
@@ -222,7 +226,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 // Frame only the mover (start + hops). Capture yards used to pull the
                 // camera across the board away from the piece that moves.
                 val start = spot(before, seat, pawn)
-                r.watch(listOf(start) + path)
+                if (local) r.watch(listOf(start) + path)
                 delay(180L)
                 r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
                 // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
@@ -242,7 +246,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 for (cap in after.lastCaptures) {
                     val from = spot(before, cap.seat, cap.pawn)
                     val to = spot(after, cap.seat, cap.pawn)
-                    r.watch(listOf(from, to))
+                    if (local) r.watch(listOf(from, to))
                     r.move(cap.seat, cap.pawn, listOf(to), 0.35f, hop = 0.5f)
                 }
                 if (after.lastCaptures.isNotEmpty()) {

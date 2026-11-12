@@ -23,6 +23,7 @@ file in the same commit when an item is done or a new one comes up. Last updated
   (same screen, table and menu card) plus nearby and online rooms (host, join, computers in
   empty seats, 2–4 seat online rooms, partners, quick match); builds, not played on a device
   yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line plays when a seat passes (recorded 2026-11-12).
+  Picking a tile zooms onto the open ends; unpick or place eases back out (2026-11-12).
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak
@@ -78,7 +79,11 @@ Real users will try online play first; don't push for these, ask whether feedbac
   lobby over BLE after the `room` characteristic fix).
 - Ludo: iPhone and Pixel (menu, this phone, nearby, online). Android and iOS are wired; not checked on a device.
 - iPhone: seat tiles and rule hint lines, loading screen, play card, ular tangga board.
-- Audio: SFX, voice-over and music not yet listened to by the owner.
+- Audio: SFX, voice-over and music not yet listened to by the owner. New lines 2026-11-12:
+  ular tangga dice-off ("Throw the die to set the playing order") and perang kapal placement
+  ("Drag ships onto your ocean").
+- Camera zoom on congklak / ular tangga / ludo only follows a seat on this phone (2026-11-12);
+  bots and remote seats stay on the whole-board view.
 - Bilingual: check both languages on the devices.
 - Account: iPhone checked 2026-11-11 (Google sign-in and sign out, Apple sign-in and delete
   account). Pixel: sign in with Google, sign out, delete account still open.

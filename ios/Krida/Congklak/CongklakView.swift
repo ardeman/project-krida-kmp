@@ -67,6 +67,12 @@ final class CongklakGameModel: ObservableObject {
         lifetime.active && !animating && !waiting && queue.isEmpty && !finished && (table.mySeat == nil || table.mySeat == state.turn)
     }
 
+    /// Seat on this phone (pass-and-play or own seat), not a computer.
+    private func isLocalSeat(_ seat: Int) -> Bool {
+        let bot = table.botLevel != nil ? 1 - Int(table.mySeat ?? 0) : -1
+        return seat != bot && (table.mySeat == nil || Int(table.mySeat!) == seat)
+    }
+
     /// Stop work owned by this board before navigation releases it.
     func stop() {
         guard lifetime.active else { return }
@@ -207,14 +213,18 @@ final class CongklakGameModel: ObservableObject {
             if let seat = update.seat, let move = update.move, game.validate(state: state, seat: seat, move: move) == nil {
                 let sowing = game.play(state: state, seat: seat, move: move)
                 let steps = CongklakSeeds.companion.steps(before: state.pits, startPit: game.pit(seat: seat, hole: move.hole), path: sowing.path)
+                // Zoom only for a seat on this phone (pass-and-play / own seat), not bots or guests watching.
+                let local = isLocalSeat(Int(seat))
                 // One soft frame for the whole sow — zooming every pit feels dizzy at low FPS.
-                var seen = Set<Int32>()
-                let path: [SIMD3<Float>] = steps.compactMap { step in
-                    guard seen.insert(step.pit).inserted else { return nil }
-                    let a = CongklakBoard.shared.pitAnchor(pit: step.pit)
-                    return SIMD3(a.get(index: 0), a.get(index: 1), a.get(index: 2))
+                if local {
+                    var seen = Set<Int32>()
+                    let path: [SIMD3<Float>] = steps.compactMap { step in
+                        guard seen.insert(step.pit).inserted else { return nil }
+                        let a = CongklakBoard.shared.pitAnchor(pit: step.pit)
+                        return SIMD3(a.get(index: 0), a.get(index: 1), a.get(index: 2))
+                    }
+                    board.watch(path)
                 }
-                board.watch(path)
                 for step in steps {
                     guard lifetime.active, !Task.isCancelled else { return }
                     seeds.apply(step: step)

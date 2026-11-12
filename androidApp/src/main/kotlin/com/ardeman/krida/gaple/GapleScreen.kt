@@ -172,6 +172,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         table.onUpdate = null
         queue.clear()
         renderer?.pulseEnds(false)
+        renderer?.watch(null)
         table.leave()
         Sounds.stopGameAudio()
     }
@@ -233,7 +234,12 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     val myTurn = settled && !state.roundOver && !state.finished && state.turn == me
     val playable = if (myTurn) GapleGame.playable(state, me) else emptyList()
     LaunchedEffect(myTurn) { if (!myTurn) picking = null }
-    LaunchedEffect(picking, renderer) { renderer?.pulseEnds(picking != null) }
+    // Zoom onto the open ends while a tile is picked; ease back out on unpick or after place.
+    LaunchedEffect(picking, renderer, state.line.size) {
+        val r = renderer ?: return@LaunchedEffect
+        r.pulseEnds(picking != null)
+        r.watchPicking(picking != null)
+    }
 
     // Once your timer runs out, the phone plays your turns after a short pause
     // (Krida.AUTO_PLAY_MS) instead of a countdown, until you tap a tile yourself.
@@ -242,14 +248,15 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     fun play(tile: GapleTile) {
         if (!myTurn || tile !in playable) return
         auto = false
-        val ends = GapleGame.endsFor(state, tile)
-        if (state.line.isEmpty() || ends.size == 1) {
+        // Opening tile of a round: no ends to pick, play it straight away.
+        if (state.line.isEmpty()) {
             picking = null
-            table.play(tile, if (state.line.isEmpty()) null else ends.single())
-        } else {
-            // Fits both ends: the rings pulse until one is tapped; tapping the tile again cancels.
-            picking = if (picking == tile) null else tile
+            table.play(tile, null)
+            return
         }
+        // Pick / unpick; tap an end ring to place. Zoom follows picking.
+        picking = if (picking == tile) null else tile
+        if (picking != null) Sounds.play(Sounds.Effect.Tap)
     }
 
     fun playEnd(end: Int) {

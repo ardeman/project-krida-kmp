@@ -12,7 +12,11 @@ final class GapleGameModel: ObservableObject {
     @Published private(set) var viewFrame: CGRect = .zero
     /// A tile that fits both ends, waiting for the player to tap one.
     @Published private(set) var picking: GapleTile? {
-        didSet { renderer.pulseEnds(picking != nil) }
+        didSet {
+            renderer.pulseEnds(picking != nil)
+            // Zoom onto the open ends while a tile is picked; ease back out on unpick or place.
+            renderer.watchPicking(picking != nil)
+        }
     }
     @Published private(set) var turnSeconds = 0
     @Published private(set) var roundSeconds = 0
@@ -72,6 +76,7 @@ final class GapleGameModel: ObservableObject {
         }
         let next = queue.removeFirst()
         animating = true
+        // Clear pick (and zoom) before the tile flies in.
         picking = nil
         syncTimers()
         lifetime.launch("animation") { [self] in
@@ -165,14 +170,15 @@ final class GapleGameModel: ObservableObject {
     func play(_ tile: GapleTile) {
         guard myTurn, playable.contains(tile) else { return }
         auto = false
-        let ends = game.endsFor(state: state, tile: tile).map(\.intValue)
-        if state.line.isEmpty || ends.count == 1 {
+        // Opening tile of a round: no ends to pick, play it straight away.
+        if state.line.isEmpty {
             picking = nil
-            if table.play(tile, end: state.line.isEmpty ? nil : ends[0]) { sounds.play(.tap) }
-        } else {
-            // Fits both ends: the rings pulse until one is tapped; tapping the tile again cancels.
-            picking = picking == tile ? nil : tile
+            if table.play(tile, end: nil) { sounds.play(.tap) }
+            return
         }
+        // Pick / unpick; tap an end ring to place. Zoom follows picking.
+        picking = picking == tile ? nil : tile
+        if picking != nil { sounds.play(.tap) }
     }
 
     func playEnd(_ end: Int) {

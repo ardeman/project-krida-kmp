@@ -348,11 +348,13 @@ final class LudoGameModel: ObservableObject {
             if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 scene.showPickRings([])
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
+                // Zoom only while a seat on this phone throws and moves (pick zoom is already local-only).
+                let local = table.isLocal(seat)
                 // A pick after a multi-choice roll keeps lastRoll; only throw when this update is
                 // the roll itself (or an auto-move that applied the roll in one step).
                 let throwNow = before.roll == nil
                 if throwNow {
-                    watchDie()
+                    if local { watchDie() }
                     let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                     // Small buffer so the last throw frame can mark landed before we hop (and recall).
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
@@ -369,7 +371,7 @@ final class LudoGameModel: ObservableObject {
                     // Frame only the mover (start + hops). Capture yards used to pull the
                     // camera across the board away from the piece that moves.
                     let start = spot(before, seat, pawn)
-                    scene.watch([start] + path)
+                    if local { scene.watch([start] + path) }
                     try await Task.sleep(for: .seconds(0.18))
                     scene.move(seat, pawn, path, seconds: Float(Double(path.count) * Self.hop), hop: 0.35)
                     // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
@@ -391,7 +393,7 @@ final class LudoGameModel: ObservableObject {
                     for cap in next.lastCaptures {
                         let fromSpot = spot(state, Int(cap.seat), Int(cap.pawn))
                         let back = spot(next, Int(cap.seat), Int(cap.pawn))
-                        scene.watch([fromSpot, back])
+                        if local { scene.watch([fromSpot, back]) }
                         scene.move(Int(cap.seat), Int(cap.pawn), [back], seconds: 0.35, hop: 0.5)
                     }
                     if !next.lastCaptures.isEmpty {

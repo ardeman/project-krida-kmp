@@ -81,7 +81,9 @@ congklak / perang kapal pills; **3–4 seats** use ular tangga / ludo left-colum
   the middle and turns at the table's edges; doubles lie across the line. The two open ends
   get dashed gold rings. Opponents' hands are face-down voxel tiles at their table sides.
 - **Hand:** face up and upright. Tiles that fit are raised with a gold ring. Tap a tile to
-  play it; if it fits both ends, both end rings pulse and you tap one.
+  pick it (the camera zooms onto the open ends; tap again to unpick). Then tap an end ring
+  to place it. The opening tile of a round still plays on the first tap. After a place (or
+  unpick) the camera eases back out.
 - **Turn timer:** 15 s (`Krida.PLAY_TURN_MS`, the same `CountdownRing` as the ludo die). At 0
   the phone plays `GapleGame.timeoutMove`: the heaviest fitting tile on the first end it fits.
   Passing needs no timer: the host skips a seat with no fitting tile by itself.

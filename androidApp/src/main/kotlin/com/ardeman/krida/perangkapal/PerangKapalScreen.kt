@@ -211,6 +211,10 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
     val canPlace = canPlace()
     val canFire = canFire()
     val canReady = canPlace && PerangKapalGame.fleetComplete(fleet())
+    // Placement: tell the local player to drag ships onto their ocean.
+    LaunchedEffect(canPlace) {
+        if (canPlace) Sounds.say(Sounds.Line.PlaceShips)
+    }
 
     /** A placed ship keeps its direction when moved; a new one starts across. */
     fun horizontal(kind: Int) = fleet().firstOrNull { it.kind == kind }?.horizontal ?: true

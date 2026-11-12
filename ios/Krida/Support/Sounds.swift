@@ -20,6 +20,7 @@ final class Sounds: ObservableObject {
         case win = "vo_win", lose = "vo_lose", draw = "vo_draw"
         case pick = "vo_pick", rollAgain = "vo_roll_again", captured = "vo_captured", home = "vo_home"
         case ladder = "vo_ladder", snake = "vo_snake", pass = "vo_pass"
+        case diceOff = "vo_dice_off", placeShips = "vo_place_ships"
     }
 
     @AppStorage("soundOn") var soundOn = true {

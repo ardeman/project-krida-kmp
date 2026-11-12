@@ -215,7 +215,8 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
                     pendingToss[0] = null
                     val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
-                    watchDie()
+                    // Zoom only while a seat on this phone throws.
+                    if (table.isLocal(thrower)) watchDie()
                     val seconds = renderer?.throwDie(value, toss, origin, thrower) ?: 0f
                     delay((seconds * 1000).toLong() + 150)
                     die = value
@@ -235,7 +236,9 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
                     pendingToss[0] = null
                     val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
-                    watchDie()
+                    val local = table.isLocal(seat)
+                    // Zoom only while a seat on this phone throws and moves.
+                    if (local) watchDie()
                     val seconds = renderer?.throwDie(roll, toss, origin, seat) ?: 0f
                     delay((seconds * 1000).toLong() + 200)
                     die = roll
@@ -243,7 +246,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     val r = renderer
                     for (square in play.steps) {
                         val at = UlarTanggaBoard.pieceSpot(square, seat, false)
-                        r?.watch(listOf(at))
+                        if (local) r?.watch(listOf(at))
                         r?.move(seat, listOf(at), HOP_MS / 1000f * 0.9f, hop = 0.7f)
                         Sounds.play(Sounds.Effect.Step)
                         delay(HOP_MS)
@@ -256,7 +259,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                         val seconds = pathLength(path) / JUMP_UNITS_PER_SECOND + 0.2f
                         Sounds.play(if (ladder) Sounds.Effect.Store else Sounds.Effect.Capture)
                         Sounds.say(if (ladder) Sounds.Line.Ladder else Sounds.Line.Snake)
-                        r?.watch(path)
+                        if (local) r?.watch(path)
                         r?.move(seat, path.drop(1), seconds)
                         delay((seconds * 1000).toLong() + 80)
                     }
@@ -387,6 +390,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     // Once the order is set, the tiles stand in play order.
     val tileOrder = if (off) (0 until players).toList() else state.playOrder
     SideEffect { renderer?.dieReady = ready }
+    // Dice-off: ask the local player to throw for the play order.
+    LaunchedEffect(ready, state.opening, state.turn) {
+        if (ready && state.opening) Sounds.say(Sounds.Line.DiceOff)
+    }
     val rollLabel = stringResource(R.string.ular_roll)
     val dieLabel = die?.toString() ?: ""
 

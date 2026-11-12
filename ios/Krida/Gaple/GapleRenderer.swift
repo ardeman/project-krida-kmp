@@ -42,12 +42,25 @@ final class GapleRenderer {
     /// Points to frame instead of the whole table (the menu card zooms on a few tiles).
     var focus: [SIMD3<Float>]?
 
+    /// Gameplay zoom onto the open ends while a tile is picked; nil = whole table.
+    private var watchPoints: [SIMD3<Float>]?
+    private var camSettled = true
+    private var targetFov: Float = 0
+    private var targetLook: SIMD3<Float> = .zero
+    private var currentLook: SIMD3<Float> = .zero
+    private var baseFov: Float = 0
+
     private var updates: Cancellable?
     private var frameWatch: Cancellable?
     private var screen: CGSize = .zero
     private var free: CGRect = .zero
     /// Tangent of half the vertical field of view in use.
     private var tanHalf: Float
+    private static let cameraTau: Float = 0.35
+    private static let maxCameraDt: Float = 1 / 30
+    private static let minFov: Float = 18
+    private static let frameFill: Float = 0.7
+    private static let watchPad: Float = 2.2
 
     /// Face-down tiles: up to three other hands of seven.
     private static let backCount = 3 * Int(GapleGame.shared.HAND)
@@ -92,6 +105,9 @@ final class GapleRenderer {
         }
         anchor.addChild(camera)
         view.scene.addAnchor(anchor)
+        let look = Self.vec(scene.cameraTarget)
+        currentLook = look
+        targetLook = look
         applyCamera()
         updates = view.scene.subscribe(to: SceneEvents.Update.self) { [weak self] event in
             self?.step(Float(event.deltaTime))
@@ -104,6 +120,40 @@ final class GapleRenderer {
         frameWatch = nil
         flight = nil
         pulsing = false
+        watchPoints = nil
+        camSettled = true
+    }
+
+    /**
+     * Ease the camera onto `points` (the open ends while a tile is picked), or back to the
+     * whole table when nil. Unpicking or placing calls this with nil.
+     */
+    func watch(_ points: [SIMD3<Float>]?) {
+        guard screen.width > 0, baseFov > 0 else { return }
+        if points == nil, watchPoints == nil, camSettled { return }
+        if let points, !points.isEmpty {
+            let pad = Self.watchPad
+            let x0 = points.map(\.x).min()! - pad, x1 = points.map(\.x).max()! + pad
+            let z0 = points.map(\.z).min()! - pad, z1 = points.map(\.z).max()! + pad
+            let y = points.map(\.y).reduce(0, +) / Float(points.count)
+            watchPoints = [
+                SIMD3(x0, y, z0), SIMD3(x1, y, z0),
+                SIMD3(x0, y, z1), SIMD3(x1, y, z1),
+            ]
+            targetLook = SIMD3((x0 + x1) / 2, y, (z0 + z1) / 2)
+            targetFov = max(baseFov * Self.frameFill, Self.minFov)
+        } else {
+            watchPoints = nil
+            targetLook = Self.vec(scene.cameraTarget)
+            targetFov = baseFov
+        }
+        camSettled = false
+    }
+
+    /// Zoom onto the end rings while `on`, or ease back out.
+    func watchPicking(_ on: Bool) {
+        let pts = on ? ringAt.compactMap { $0 } : []
+        watch(pts.isEmpty ? nil : pts)
     }
 
     /// Calls `done` once the scene has updated `frames` times, i.e. the table is on screen.
@@ -188,6 +238,8 @@ final class GapleRenderer {
         if !on {
             for (end, c) in ringAt.enumerated() { if let c { rings[end].transform = Self.ring(c, scale: 1) } }
         }
+        // Rings moved with the last apply: retarget the zoom if still picking.
+        if on { watchPicking(true) }
     }
 
     /// Screen point of `end`'s ring (0 left, 1 right), or nil when it has none.
@@ -198,6 +250,7 @@ final class GapleRenderer {
     }
 
     private func step(_ dt: Float) {
+        stepCamera(dt)
         if var f = flight {
             f.t = min(f.t + dt / Float(Self.flightSeconds), 1)
             let e = 1 - (1 - f.t) * (1 - f.t)
@@ -220,6 +273,24 @@ final class GapleRenderer {
         }
     }
 
+    private func stepCamera(_ dt: Float) {
+        guard !camSettled else { return }
+        let k = 1 - exp(-min(dt, Self.maxCameraDt) / Self.cameraTau)
+        currentLook += (targetLook - currentLook) * k
+        let fov = camera.camera.fieldOfViewInDegrees + (targetFov - camera.camera.fieldOfViewInDegrees) * k
+        camera.camera.fieldOfViewInDegrees = fov
+        tanHalf = tan(fov * .pi / 360)
+        camera.look(at: currentLook, from: Self.vec(scene.cameraEye), relativeTo: nil)
+        let done = abs(targetFov - fov) < 0.05 && length(targetLook - currentLook) < 0.01
+        if done {
+            currentLook = targetLook
+            camera.camera.fieldOfViewInDegrees = targetFov
+            tanHalf = tan(targetFov * .pi / 360)
+            camera.look(at: currentLook, from: Self.vec(scene.cameraEye), relativeTo: nil)
+            camSettled = true
+        }
+    }
+
     private func lastIndex(_ state: GapleState) -> Int {
         switch state.lastEnd?.intValue {
         case Int(GapleGame.shared.LEFT): 0
@@ -236,7 +307,6 @@ final class GapleRenderer {
         guard size.width > 0, size.height > 0, free.width > 0, free.height > 0 else { return viewFrame }
         screen = size
         self.free = free
-        applyCamera()
         let baseTan = tan(scene.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
         let points = focus ?? scene.bounds().map(Self.vec)
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -245,8 +315,18 @@ final class GapleRenderer {
         let halfH = max(shot.map { abs($0.y - c.y) }.max() ?? 1, 1)
         // Scaling the picture by k around the centre is the same as dividing the tangent by k.
         let k = min(free.width / 2 / halfW, free.height / 2 / halfH)
-        tanHalf = baseTan / Float(k)
-        camera.camera.fieldOfViewInDegrees = 2 * atan(tanHalf) * 180 / .pi
+        baseFov = 2 * atan(baseTan / Float(k)) * 180 / .pi
+        if focus != nil || camSettled {
+            targetFov = baseFov
+            camera.camera.fieldOfViewInDegrees = baseFov
+            tanHalf = tan(baseFov * .pi / 360)
+            currentLook = Self.vec(scene.cameraTarget)
+            targetLook = currentLook
+            applyCamera()
+        } else if watchPoints == nil {
+            targetFov = baseFov
+            targetLook = Self.vec(scene.cameraTarget)
+        }
         viewFrame = CGRect(x: free.midX - c.x, y: free.midY - c.y, width: size.width, height: size.height)
         return viewFrame
     }

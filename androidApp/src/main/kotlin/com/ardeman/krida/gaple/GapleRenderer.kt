@@ -10,8 +10,10 @@ import com.ardeman.krida.core.games.GapleTile
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
 import java.nio.ByteBuffer
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan
+import kotlin.math.exp
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
@@ -50,6 +52,8 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
 
     private var room: FloatArray? = null
     private var obstacles: List<FloatArray> = emptyList()
+    /** Free box left by the HUD after carving [obstacles] (left, top, right, bottom). */
+    private var free = floatArrayOf(0f, 0f, 1f, 1f)
 
     /** Points to frame instead of the whole table (the menu card zooms on a few tiles). */
     var focus: List<FloatArray>? = null
@@ -66,6 +70,16 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
     /** Both rings pulse while you choose an end. */
     private var pulsing = false
     private var pulseTime = 0f
+
+    /** Gameplay zoom onto the open ends while a tile is picked; null = whole table. */
+    private var watchPoints: List<FloatArray>? = null
+    private var fovDegrees = GapleScene.CAMERA_VERTICAL_FOV_DEGREES
+    private var shiftX = 0f
+    private var shiftY = 0f
+    private var targetFov = GapleScene.CAMERA_VERTICAL_FOV_DEGREES
+    private var targetShiftX = 0f
+    private var targetShiftY = 0f
+    private var camSettled = true
 
     /** A tile flying from its player's side to its place in the line. */
     private class Flight(val entity: Int, val from: FloatArray, val to: FloatArray, var t: Float = 0f)
@@ -85,6 +99,30 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             onResize()
             invalidate()
         }
+    }
+
+    /**
+     * Ease the camera onto [points] (the open ends while a tile is picked), or back to the
+     * whole table when null. Unpicking or placing calls this with null.
+     */
+    fun watch(points: List<FloatArray>?) {
+        // Already on (or easing to) the overview: a second null must not restart the ease.
+        if (points == null && watchPoints == null) return
+        watchPoints = points?.let { padded(it) }
+        if (width > 1) {
+            val view = computeView(watchPoints)
+            targetFov = view[0]
+            targetShiftX = view[1]
+            targetShiftY = view[2]
+            camSettled = false
+            invalidate()
+        }
+    }
+
+    /** Zoom onto the end rings while [on], or ease back out. */
+    fun watchPicking(on: Boolean) {
+        val pts = if (on) ringAt.filterNotNull() else null
+        watch(pts?.takeIf { it.isNotEmpty() })
     }
 
     /**
@@ -168,7 +206,7 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
     }
 
     override fun step(dt: Float): Boolean {
-        var moving = false
+        var moving = stepCamera(dt)
         flight?.let { f ->
             f.t = (f.t + dt / FLIGHT_SECONDS).coerceAtMost(1f)
             val e = 1 - (1 - f.t) * (1 - f.t)
@@ -188,7 +226,27 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             ringAt.forEachIndexed { end, c -> if (c != null) setTransform(rings[end], scaled(c, s)) }
             moving = true
         }
-        return moving
+        return moving || !camSettled
+    }
+
+    /** Ease FOV and shift toward the watch target. */
+    private fun stepCamera(dt: Float): Boolean {
+        if (camSettled || width <= 1) return false
+        val k = 1f - exp(-min(dt, MAX_CAMERA_DT) / CAMERA_TAU)
+        fovDegrees += (targetFov - fovDegrees) * k
+        shiftX += (targetShiftX - shiftX) * k
+        shiftY += (targetShiftY - shiftY) * k
+        applyProjection()
+        val done = abs(targetFov - fovDegrees) < 0.05f &&
+            abs(targetShiftX - shiftX) < 0.5f && abs(targetShiftY - shiftY) < 0.5f
+        if (done) {
+            fovDegrees = targetFov
+            shiftX = targetShiftX
+            shiftY = targetShiftY
+            applyProjection()
+            camSettled = true
+        }
+        return !done
     }
 
     private fun lastIndex(state: GapleState): Int = when {
@@ -215,12 +273,7 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             target[0].toDouble(), target[1].toDouble(), target[2].toDouble(),
             0.0, 1.0, 0.0,
         )
-        val aspect = width.toDouble() / height.coerceAtLeast(1)
-        val base = GapleScene.CAMERA_VERTICAL_FOV_DEGREES.toDouble()
-        camera.setProjection(base, aspect, 0.5, 120.0, Camera.Fov.VERTICAL)
-
-        // The narrowest field of view that keeps the table inside the room the HUD leaves,
-        // centred where the camera looks (same approach as perang kapal).
+        // The free box left by the HUD (hand, pills, side columns).
         val cx = width / 2f
         val cy = height / 2f
         val room = room ?: floatArrayOf(0f, 0f, width.toFloat(), height.toFloat())
@@ -230,35 +283,114 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         var bottom = room[3]
         for (o in obstacles) {
             when {
-                // Your hand along the bottom, the event pills along the top, the side columns.
                 o[1] > cy -> bottom = min(bottom, o[1])
                 o[3] < cy && o[0] < cx && o[2] > cx -> top = max(top, o[3])
                 (o[0] + o[2]) / 2 < cx -> left = max(left, o[2])
                 else -> right = min(right, o[0])
             }
         }
-        // The free box left by the HUD. The picture is scaled to fill it and then shifted so
-        // the table's centre sits in the box's centre.
-        val halfW = (right - left) / 2
-        val halfH = (bottom - top) / 2
-        if (halfW <= 1f || halfH <= 1f) return
-        camera.setShift(0.0, 0.0)
-        val shot = (focus ?: GapleScene.bounds()).map { project(it[0], it[1], it[2]) }
-        val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
-        val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)
-        val k = min(halfW / needW, halfH / needH)
-        val fov = Math.toDegrees(2 * atan(tan(Math.toRadians(base / 2)) / k))
-        camera.setProjection(fov, aspect, 0.5, 120.0, Camera.Fov.VERTICAL)
-        shiftX = (left + right) / 2 - cx
-        shiftY = (top + bottom) / 2 - cy
+        free = floatArrayOf(left, top, right, bottom)
+        if ((right - left) / 2 <= 1f || (bottom - top) / 2 <= 1f) return
+        // Menu preview snaps; gameplay eases via [watch].
+        val view = computeView(focus ?: watchPoints)
+        if (focus != null || camSettled) {
+            fovDegrees = view[0]
+            shiftX = view[1]
+            shiftY = view[2]
+            targetFov = fovDegrees
+            targetShiftX = shiftX
+            targetShiftY = shiftY
+            camSettled = true
+        } else {
+            targetFov = view[0]
+            targetShiftX = view[1]
+            targetShiftY = view[2]
+        }
+        applyProjection()
+    }
+
+    private fun applyProjection() {
+        val aspect = width.toDouble() / height.coerceAtLeast(1)
+        camera.setProjection(fovDegrees.toDouble(), aspect, 0.5, 120.0, Camera.Fov.VERTICAL)
         camera.setShift((shiftX / (width / 2f)).toDouble(), (-shiftY / (height / 2f)).toDouble())
     }
 
-    /** Screen pixels the picture is shifted by (see [onResize]); [project] does not include it. */
-    private var shiftX = 0f
-    private var shiftY = 0f
+    /**
+     * Vertical FOV and pixel shift that frames [points] (or the whole table) in the free box.
+     * Returns floatArrayOf(fov, shiftX, shiftY). Projects at the base FOV in code — never
+     * through Filament's live matrix — so a zoomed-in camera cannot bake into the next fit.
+     */
+    private fun computeView(points: List<FloatArray>?): FloatArray {
+        val base = GapleScene.CAMERA_VERTICAL_FOV_DEGREES
+        val cx = width / 2f
+        val cy = height / 2f
+        val left = free[0]; val top = free[1]; val right = free[2]; val bottom = free[3]
+        val halfW = (right - left) / 2
+        val halfH = (bottom - top) / 2
+        if (halfW <= 1f || halfH <= 1f || width <= 1) {
+            return floatArrayOf(base, 0f, 0f)
+        }
+        val framed = points?.takeIf { it.isNotEmpty() } ?: GapleScene.bounds()
+        val tanBase = tan(base * PI.toFloat() / 360f)
+        val aspect = width.toFloat() / height
+        val eye = GapleScene.cameraEye
+        val at = GapleScene.cameraTarget
+        fun norm(v: FloatArray): FloatArray {
+            val n = kotlin.math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+            return floatArrayOf(v[0] / n, v[1] / n, v[2] / n)
+        }
+        fun cross(a: FloatArray, b: FloatArray) =
+            floatArrayOf(a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+        val fwd = norm(FloatArray(3) { at[it] - eye[it] })
+        val rightV = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
+        val up = cross(rightV, fwd)
+        fun screen(p: FloatArray): FloatArray {
+            val dx = p[0] - eye[0]; val dy = p[1] - eye[1]; val dz = p[2] - eye[2]
+            val depth = dx * fwd[0] + dy * fwd[1] + dz * fwd[2]
+            val nx = (dx * rightV[0] + dy * rightV[1] + dz * rightV[2]) / (depth * tanBase * aspect)
+            val ny = (dx * up[0] + dy * up[1] + dz * up[2]) / (depth * tanBase)
+            return floatArrayOf(cx * (1 + nx), cy * (1 - ny))
+        }
+        val shot = framed.map(::screen)
+        val midX = (shot.minOf { it[0] } + shot.maxOf { it[0] }) / 2
+        val midY = (shot.minOf { it[1] } + shot.maxOf { it[1] }) / 2
+        val needW = shot.maxOf { abs(it[0] - midX) }.coerceAtLeast(1f)
+        val needH = shot.maxOf { abs(it[1] - midY) }.coerceAtLeast(1f)
+        val fill = if (points != null) FRAME_FILL else 1f
+        val k = (fill * min(halfW / needW, halfH / needH)).coerceAtLeast(1f)
+        // Never zoom out past the whole-table fit: a wide shot uses that view instead.
+        if (points != null) {
+            val overview = computeView(null)
+            val overviewK = tanBase / tan(overview[0] * PI.toFloat() / 360f)
+            if (k <= overviewK) return overview
+        }
+        val fov = (atan(tanBase / k) * 360f / PI.toFloat())
+            .coerceIn(MIN_FOV, base)
+        val sx = (left + right) / 2 - (cx + (midX - cx) * (tanBase / tan(fov * PI.toFloat() / 360f)))
+        val sy = (top + bottom) / 2 - (cy + (midY - cy) * (tanBase / tan(fov * PI.toFloat() / 360f)))
+        return floatArrayOf(fov, sx, sy)
+    }
+
+    /** Corners around [points] so a single end ring still has air to breathe. */
+    private fun padded(points: List<FloatArray>): List<FloatArray> {
+        if (points.isEmpty()) return points
+        val pad = 2.2f
+        val x0 = points.minOf { it[0] } - pad
+        val x1 = points.maxOf { it[0] } + pad
+        val z0 = points.minOf { it[2] } - pad
+        val z1 = points.maxOf { it[2] } + pad
+        val y = points.map { it[1] }.average().toFloat()
+        return listOf(
+            floatArrayOf(x0, y, z0), floatArrayOf(x1, y, z0),
+            floatArrayOf(x0, y, z1), floatArrayOf(x1, y, z1),
+        )
+    }
 
     companion object {
         const val FLIGHT_SECONDS = 0.35f
+        private const val MIN_FOV = 18f
+        private const val FRAME_FILL = 0.7f
+        private const val CAMERA_TAU = 0.35f
+        private const val MAX_CAMERA_DT = 1f / 30f
     }
 }

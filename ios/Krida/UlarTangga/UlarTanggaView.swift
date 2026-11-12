@@ -171,10 +171,21 @@ final class UlarTanggaGameModel: ObservableObject {
         }
     }
 
+    /// Last dice-off prompt key, so a layout/loading refresh does not re-speak the same throw.
+    private var diceOffSaidFor: String?
+
     /// Call after state / animation changes that affect `ready`.
     func afterReadyChange() {
         updateReady()
         syncRollTimer()
+        // Dice-off: ask the local player to throw for the play order.
+        let key = ready && state.opening ? "\(turn)-\(state.openingRolls.count)" : nil
+        if let key, key != diceOffSaidFor {
+            diceOffSaidFor = key
+            sounds.say(.diceOff)
+        } else if key == nil {
+            diceOffSaidFor = nil
+        }
     }
 
     // MARK: Holding the die
@@ -255,7 +266,8 @@ final class UlarTanggaGameModel: ObservableObject {
             if let offThrow, let thrower = offThrow.first?.intValue, let value = offThrow.second?.intValue {
                 // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
                 let origin = table.isLocal(thrower) ? nil : playerOrigins[thrower]
-                watchDie()
+                // Zoom only while a seat on this phone throws.
+                if table.isLocal(thrower) { watchDie() }
                 let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin, seat: thrower)
                 try await Task.sleep(for: .seconds(Double(seconds) + 0.15))
                 state = next
@@ -271,13 +283,15 @@ final class UlarTanggaGameModel: ObservableObject {
                 }
             } else if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
-                watchDie()
+                let local = table.isLocal(seat)
+                // Zoom only while a seat on this phone throws and moves.
+                if local { watchDie() }
                 let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                 try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
                 let play = game.play(state: state, seat: Int32(seat), roll: Int32(roll))
                 for square in play.steps {
                     let to = UlarTanggaScene.vec(board.pieceSpot(square: square.int32Value, seat: Int32(seat), shared: false))
-                    scene.watch([to])
+                    if local { scene.watch([to]) }
                     scene.move(seat, [to], seconds: Float(Self.hop * 0.9), hop: 0.7)
                     sounds.play(.step)
                     try await Task.sleep(for: .seconds(Self.hop))
@@ -290,7 +304,7 @@ final class UlarTanggaGameModel: ObservableObject {
                     let seconds = Self.length(path) / Self.jumpUnitsPerSecond + 0.2
                     sounds.play(ladder ? .store : .capture)
                     sounds.say(ladder ? .ladder : .snake)
-                    scene.watch(path)
+                    if local { scene.watch(path) }
                     scene.move(seat, Array(path.dropFirst()), seconds: seconds)
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.08))
                 }

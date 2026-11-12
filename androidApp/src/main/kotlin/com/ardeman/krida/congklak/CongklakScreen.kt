@@ -190,8 +190,11 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
                 if (seat != null && move != null && CongklakGame.validate(state, seat, move) == null) {
                     val sowing = CongklakGame.play(state, seat, move)
                     val steps = CongklakSeeds.steps(state.pits, CongklakGame.pit(seat, move.hole), sowing.path)
+                    // Zoom only for a seat on this phone (pass-and-play / own seat), not bots or guests watching.
+                    val botSeat = if (table.botLevel != null) 1 - (table.mySeat ?: 0) else -1
+                    val local = seat != botSeat && (table.mySeat == null || table.mySeat == seat)
                     // One soft frame for the whole sow — zooming every pit feels dizzy at low FPS.
-                    renderer?.watch(steps.map { it.pit }.distinct().map { CongklakBoard.pitAnchor(it) })
+                    if (local) renderer?.watch(steps.map { it.pit }.distinct().map { CongklakBoard.pitAnchor(it) })
                     for (step in steps) {
                         seeds.apply(step); push()
                         if (!step.pickUp) Sounds.play(if (CongklakGame.isStore(step.pit)) Sounds.Effect.Store else Sounds.Effect.Sow)

@@ -51,6 +51,8 @@ object Sounds {
         Ladder(R.raw.vo_ladder, R.raw.vo_ladder_en),
         Snake(R.raw.vo_snake, R.raw.vo_snake_en),
         Pass(R.raw.vo_pass, R.raw.vo_pass_en),
+        DiceOff(R.raw.vo_dice_off, R.raw.vo_dice_off_en),
+        PlaceShips(R.raw.vo_place_ships, R.raw.vo_place_ships_en),
     }
 
     private const val PREFS = "sounds"

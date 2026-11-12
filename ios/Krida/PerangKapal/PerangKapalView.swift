@@ -121,6 +121,8 @@ final class PerangKapalGameModel: ObservableObject {
         lifetime.cancel("place")
         placeSeconds = 0
         guard let seat = key else { return }
+        // Placement: tell the local player to drag ships onto their ocean.
+        sounds.say(.placeShips)
         placeSeconds = placeTotal
         lifetime.launch("place") { [self] in
             while placeSeconds > 0 {
