@@ -145,23 +145,8 @@ final class UlarTanggaScene {
         guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         let base = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
-        let k: CGFloat
-        let dx: CGFloat
-        let dy: CGFloat
-        if let focus, !focus.isEmpty {
-            let shot = focus.map { project($0, tanV: base, size: size) }
-            let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
-            let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
-            let spanX = max(x1 - x0, 1)
-            let spanY = max(y1 - y0, 1)
-            // Soft fill + a max zoom so a tight die pad cannot crop the landing off-screen.
-            let raw = 0.62 * min(room.width / spanX, room.height / spanY)
-            let maxK = CGFloat(base / tan(12 * Float.pi / 360))
-            k = min(raw, maxK)
-            // Scaling is about the screen's center; then shift the picture's middle to the room's.
-            dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
-            dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
-        } else {
+        /// The whole-board fit: as large as it goes in `room` without covering `obstacles`.
+        func overview() -> (CGFloat, CGFloat, CGFloat) {
             // A narrower view scales the picture about the screen's center and the view's offset
             // moves it, so the board's outline is projected once, then scaled and moved: find the
             // largest scale with a place in the room clear of the HUD, nearest the room's middle.
@@ -197,10 +182,31 @@ final class UlarTanggaScene {
                 let mid = (lo + hi) / 2
                 if place(exp(mid)) != nil { lo = mid } else { hi = mid }
             }
-            k = exp(lo)
+            let k = exp(lo)
             let best = place(k) ?? .zero
-            dx = best.x
-            dy = best.y
+            return (k, best.x, best.y)
+        }
+        var k: CGFloat
+        var dx: CGFloat
+        var dy: CGFloat
+        if let focus, !focus.isEmpty {
+            let shot = focus.map { project($0, tanV: base, size: size) }
+            let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
+            let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
+            let spanX = max(x1 - x0, 1)
+            let spanY = max(y1 - y0, 1)
+            // Soft fill + a max zoom so a tight die pad cannot crop the landing off-screen.
+            let raw = 0.62 * min(room.width / spanX, room.height / spanY)
+            let maxK = CGFloat(base / tan(12 * Float.pi / 360))
+            k = min(raw, maxK)
+            // Scaling is about the screen's center; then shift the picture's middle to the room's.
+            dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
+            dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
+            // Never zoom out past the whole-board view: a wide shot uses that view instead.
+            let whole = overview()
+            if k <= whole.0 { (k, dx, dy) = whole }
+        } else {
+            (k, dx, dy) = overview()
         }
         let nextTan = base / Float(k)
         let w = size.width + 2 * abs(dx), h = size.height + 2 * abs(dy)

@@ -632,6 +632,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         val dx: Float
         val dy: Float
         if (points != null && points.isNotEmpty()) {
+            // Never zoom out past the whole-board view: a wide shot uses that view instead.
+            val overview = computeView(null)
             // Same room as the whole-board fit, so zooming in and out share one centre.
             val shot = points.map { (x, y, z) -> screen(x, y, z) }
             val x0 = shot.minOf { it[0] }; val x1 = shot.maxOf { it[0] }
@@ -644,6 +646,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             // used to keep the old k and push the framed die/tokens off-screen).
             val k = (FRAME_FILL * min(roomW / spanX, roomH / spanY))
                 .coerceIn(scaleFor(MAX_FOV), scaleFor(MIN_FOV))
+            if (k <= scaleFor(overview[0])) return overview
             hi = (atan(tanBase / k) * 360f / PI.toFloat())
             val midX = (x0 + x1) / 2
             val midY = (y0 + y1) / 2

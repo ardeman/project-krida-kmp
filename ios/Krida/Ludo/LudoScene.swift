@@ -169,22 +169,8 @@ final class LudoScene {
         guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         let base = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
-        let k: CGFloat
-        let dx: CGFloat
-        let dy: CGFloat
-        if let focus, !focus.isEmpty {
-            let shot = focus.map { project($0, tanV: base, size: size) }
-            let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
-            let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
-            let spanX = max(x1 - x0, 1)
-            let spanY = max(y1 - y0, 1)
-            // Soft fill + a max zoom so a tight token cluster or die pad cannot crop edges.
-            let raw = 0.62 * min(room.width / spanX, room.height / spanY)
-            let maxK = CGFloat(base / tan(12 * Float.pi / 360))
-            k = min(raw, maxK)
-            dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
-            dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
-        } else {
+        /// The whole-board fit: as large as it goes in `room` without covering `obstacles`.
+        func overview() -> (CGFloat, CGFloat, CGFloat) {
             let hulls = board.bounds().map { part in Self.convexHull(part.map { project(Self.vec($0), tanV: base, size: size) }) }
             func place(_ k: CGFloat) -> CGPoint? {
                 let shapes = hulls.map { hull in hull.map { CGPoint(x: c.x + ($0.x - c.x) * k, y: c.y + ($0.y - c.y) * k) } }
@@ -215,10 +201,30 @@ final class LudoScene {
                 let mid = (lo + hi) / 2
                 if place(exp(mid)) != nil { lo = mid } else { hi = mid }
             }
-            k = exp(lo)
+            let k = exp(lo)
             let best = place(k) ?? .zero
-            dx = best.x
-            dy = best.y
+            return (k, best.x, best.y)
+        }
+        var k: CGFloat
+        var dx: CGFloat
+        var dy: CGFloat
+        if let focus, !focus.isEmpty {
+            let shot = focus.map { project($0, tanV: base, size: size) }
+            let x0 = shot.map(\.x).min()!, x1 = shot.map(\.x).max()!
+            let y0 = shot.map(\.y).min()!, y1 = shot.map(\.y).max()!
+            let spanX = max(x1 - x0, 1)
+            let spanY = max(y1 - y0, 1)
+            // Soft fill + a max zoom so a tight token cluster or die pad cannot crop edges.
+            let raw = 0.62 * min(room.width / spanX, room.height / spanY)
+            let maxK = CGFloat(base / tan(12 * Float.pi / 360))
+            k = min(raw, maxK)
+            dx = room.midX - (c.x + ((x0 + x1) / 2 - c.x) * k)
+            dy = room.midY - (c.y + ((y0 + y1) / 2 - c.y) * k)
+            // Never zoom out past the whole-board view: a wide shot uses that view instead.
+            let whole = overview()
+            if k <= whole.0 { (k, dx, dy) = whole }
+        } else {
+            (k, dx, dy) = overview()
         }
         let nextTan = base / Float(k)
         let w = size.width + 2 * abs(dx), h = size.height + 2 * abs(dy)
