@@ -69,15 +69,8 @@ class BoardRenderer(textureView: TextureView) : VoxelStage(textureView, Congklak
             targetFov = view[0]
             targetShiftX = view[1].toDouble()
             targetShiftY = view[2].toDouble()
-            if (points == null) {
-                fovDegrees = targetFov
-                shiftX = targetShiftX
-                shiftY = targetShiftY
-                applyProjection()
-                camSettled = true
-            } else {
-                camSettled = false
-            }
+            // Ease both ways: in onto the move and back out to the whole board.
+            camSettled = false
             invalidate()
         }
     }

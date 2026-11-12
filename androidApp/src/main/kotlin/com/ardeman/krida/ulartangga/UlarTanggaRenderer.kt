@@ -97,19 +97,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             targetFov = view[0]
             targetShiftX = view[1].toDouble()
             targetShiftY = view[2].toDouble()
-            if (points == null) {
-                // Snap the overview: after hops the die is still and the frame loop may not
-                // advance an ease, which left the board stuck cropped on Pixel.
-                fovDegrees = targetFov
-                shiftX = targetShiftX
-                shiftY = targetShiftY
-                camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
-                camera.setShift(shiftX / 2, shiftY / 2)
-                updateHome()
-                camSettled = true
-            } else {
-                camSettled = false
-            }
+            // Ease both ways: in onto the move and back out to the whole board.
+            camSettled = false
             invalidate()
         }
     }

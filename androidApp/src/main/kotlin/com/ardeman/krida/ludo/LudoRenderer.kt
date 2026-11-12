@@ -98,18 +98,8 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
             targetFov = view[0]
             targetShiftX = view[1].toDouble()
             targetShiftY = view[2].toDouble()
-            if (points == null) {
-                // Snap the overview so a still die cannot leave the board stuck cropped.
-                fovDegrees = targetFov
-                shiftX = targetShiftX
-                shiftY = targetShiftY
-                camera.setProjection(fovDegrees.toDouble(), width.toDouble() / height, 0.5, 120.0, Camera.Fov.VERTICAL)
-                camera.setShift(shiftX / 2, shiftY / 2)
-                updateHome()
-                camSettled = true
-            } else {
-                camSettled = false
-            }
+            // Ease both ways: in onto the move and back out to the whole board.
+            camSettled = false
             invalidate()
         }
     }
