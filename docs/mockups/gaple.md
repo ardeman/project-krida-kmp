@@ -21,6 +21,9 @@ Picked by the owner, 2026-11-12.
   lowest pips).
 - **Play:** turns go clockwise. A tile must match one open end of the line; if it fits both
   ends the player picks the end. A player with no fitting tile **passes** (no drawing).
+  **Drawing** (room option, 2–3 seats, off by default): the player first draws from the
+  face-down tiles until one fits, and passes only when none are left. The round is gaple
+  only when nobody can play and the face-down tiles are gone.
   Playing a fitting tile is compulsory.
 - **Round end:** a player empties their hand ("domino"), or nobody can play ("gaple"). In a
   gaple the lowest pip total in hand wins the round; ties go to the earlier seat after the
@@ -82,7 +85,7 @@ and **Play again** (host only in a room).
 
 ## Out of scope for v1
 
-- Drawing from the boneyard, "ngocok" bonuses, extra points for ending on a double or for
+- "Ngocok" bonuses, extra points for ending on a double or for
   closing both ends, and other house scoring.
 - Two people on one phone.
 - Partners in quick match / public rooms.

@@ -280,6 +280,7 @@ private struct GapleBoardView: View {
     @StateObject private var model: GapleGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var handSpace: CGFloat = 0
     @State private var size: CGSize = .zero
     @State private var boxes: [String: CGRect] = [:]
     @State private var sideInsets = EdgeInsets()
@@ -308,6 +309,8 @@ private struct GapleBoardView: View {
     }
 
     private var state: GapleState { model.state }
+    /// The draw rule is on and this table has face-down tiles (2–3 seats).
+    private var drawing: Bool { state.options.draw && state.players < 4 }
 
     private var board: some View {
         GeometryReader { geo in
@@ -348,7 +351,7 @@ private struct GapleBoardView: View {
         .onChange(of: size) { _, _ in relayout() }
         .onChange(of: loading) { _, now in model.loading = now }
         .onChange(of: table.players.filter(\.bot).count) { _, _ in model.botsChanged() }
-        .sheet(isPresented: $showRules) { GapleRulesSheet(partners: state.partners) }
+        .sheet(isPresented: $showRules) { GapleRulesSheet(partners: state.partners, drawing: drawing) }
     }
 
     /// The table takes the space between the side columns, under the pills and above the hand.
@@ -389,6 +392,12 @@ private struct GapleBoardView: View {
                     .font(Theme.font(12 * s, .bold))
                     .foregroundStyle(Theme.muted)
                     .lineLimit(1)
+                if drawing {
+                    Text("\(Int(GapleGame.shared.asideCount(state: state))) face down")
+                        .font(Theme.font(12 * s, .bold))
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(1)
+                }
                 ForEach(0..<Int(state.players), id: \.self) { seat in
                     playerTile(seat, on: seat == Int(state.turn) && !state.roundOver && !state.finished)
                 }
@@ -405,6 +414,7 @@ private struct GapleBoardView: View {
                 handRow.modifier(hudBox("hand"))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { handSpace = $0 }
             VStack(alignment: .trailing, spacing: 0) {
                 HStack(spacing: 8 * s) {
                     SoundToggles()
@@ -460,7 +470,9 @@ private struct GapleBoardView: View {
                     : String(localized: "\(table.name(Int(seat.int32Value))) plays \(Int(t.left))|\(Int(t.right))", bundle: .app)
             }
         }
-        let passes = state.lastPasses.map { String(localized: "\(seatName($0.intValue)): Pass", bundle: .app) }
+        let draws = state.lastDraws.enumerated().filter { $0.element.intValue > 0 }
+            .map { String(localized: "\(seatName($0.offset)) drew \($0.element.intValue)", bundle: .app) }
+        let passes = draws + state.lastPasses.map { String(localized: "\(seatName($0.intValue)): Pass", bundle: .app) }
         let events = Array(([played].compactMap { $0 } + passes).suffix(2))
         return HStack(spacing: 8 * s) {
             ForEach(events.indices, id: \.self) { pill(events[$0], color: Theme.muted) }
@@ -508,12 +520,16 @@ private struct GapleBoardView: View {
     /// Your hand, upright. Tiles that fit are raised with a gold ring.
     private var handRow: some View {
         let playable = model.playable
-        return HStack(alignment: .bottom, spacing: 6 * s) {
+        // Seven tiles at full size; a hand that grew by drawing shrinks to fit the width.
+        let count = CGFloat(model.hand.count)
+        let gap = (count > 9 ? 3 : 6) * s
+        let width = count > 0 && handSpace > 0 ? min(34 * s, (handSpace - gap * (count - 1)) / count) : 34 * s
+        return HStack(alignment: .bottom, spacing: gap) {
             ForEach(model.hand.indices, id: \.self) { i in
                 let tile = model.hand[i]
                 let fits = playable.contains(tile)
                 let ring: Color? = tile == model.picking ? Theme.accent : fits ? Theme.gold : nil
-                GapleTileFace(tile: tile, width: 34 * s, ring: ring, dim: !playable.isEmpty && !fits)
+                GapleTileFace(tile: tile, width: width, ring: ring, dim: !playable.isEmpty && !fits)
                     .offset(y: fits ? -10 * s : 0)
                     .animation(.easeOut(duration: 0.2), value: fits)
                     .onTapGesture { if fits { model.play(tile) } }
@@ -713,6 +729,7 @@ private struct GapleFrameReader: ViewModifier {
 /// "How to play". Same lines as Android's rules sheet.
 struct GapleRulesSheet: View {
     let partners: Bool
+    let drawing: Bool
     @Environment(\.dismiss) private var dismiss
 
     private var lines: [LocalizedStringKey] {
@@ -720,7 +737,9 @@ struct GapleRulesSheet: View {
             "A double-six set of 28 tiles. Everyone gets 7; with 2 or 3 players the rest stay face down.",
             "The first round opens with balak enam [6|6], or the highest double if nobody holds it. Later rounds: the last winner leads with any tile.",
             "A tile must match one open end. If it fits both, tap the end you want.",
-            "No tile fits? You pass. There is no drawing.",
+            drawing
+                ? "No tile fits? You draw from the face-down tiles until one fits, and pass only when none are left."
+                : "No tile fits? You pass. There is no drawing.",
             "The round ends when someone empties their hand (domino) or nobody can play (gaple): then the lowest pips in hand wins.",
             "The round winner scores the pips left in the other hands. First to 100 wins.",
         ]

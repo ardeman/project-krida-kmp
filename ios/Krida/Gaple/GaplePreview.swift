@@ -49,8 +49,8 @@ struct GaplePreview: View {
             players: 2, hands: [[], []], handCounts: [0, 5], aside: [], line: line, origin: 1, turn: 0,
             mustPlay: nil, round: 1, scores: [0, 0], partners: false, passedOn: [[], []],
             roundOver: false, roundEnd: nil, roundWinner: nil, roundPips: [], roundPoints: [],
-            finished: false, winner: nil, lastSeat: nil, lastTile: nil, lastEnd: nil, lastPasses: [],
-            options: GapleOptions(partners: false)
+            finished: false, winner: nil, lastSeat: nil, lastTile: nil, lastEnd: nil, lastPasses: [], lastDraws: [],
+            options: GapleOptions(partners: false, draw: false)
         )
         board.apply(state, viewer: 0, animate: false)
         // Zoomed in on the three tiles, with a little felt around them.

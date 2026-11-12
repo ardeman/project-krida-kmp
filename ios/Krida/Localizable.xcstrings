@@ -6548,6 +6548,86 @@
           }
         }
       }
+    },
+    "Drawing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drawing"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ambil kartu"
+          }
+        }
+      }
+    },
+    "Until it fits": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until it fits"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sampai cocok"
+          }
+        }
+      }
+    },
+    "%lld face down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld face down"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tertutup"
+          }
+        }
+      }
+    },
+    "%@ drew %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ drew %2$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ambil %2$lld"
+          }
+        }
+      }
+    },
+    "No tile fits? You draw from the face-down tiles until one fits, and pass only when none are left.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tile fits? You draw from the face-down tiles until one fits, and pass only when none are left."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tak ada kartu yang cocok? Ambil dari kartu tertutup sampai ada yang cocok; pas hanya kalau kartunya habis."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

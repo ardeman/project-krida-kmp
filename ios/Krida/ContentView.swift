@@ -905,6 +905,7 @@ struct GameRoomOptions: View {
     @AppStorage(CongklakSettings.starterKey) private var starter = "random"
     @AppStorage(GapleSettings.seatsKey) private var gapleSeatsText = ""
     @AppStorage(GapleSettings.partnersKey) private var gaplePartners = false
+    @AppStorage(GapleSettings.drawKey) private var gapleDraw = false
     @Environment(\.uiScale) private var s
 
     var body: some View {
@@ -915,6 +916,12 @@ struct GameRoomOptions: View {
                 if !onPhone || !GapleSettings.seats(gapleSeatsText).contains(.empty) {
                     SettingRow(label: "Partners") {
                         Segmented(options: [(false, "Off", nil), (true, "Across 2 v 2", nil)], selection: $gaplePartners, label: "Partners")
+                    }
+                }
+                // Drawing needs face-down tiles, so fewer than four at the table; a room may stay below four.
+                if !onPhone || GapleSettings.seats(gapleSeatsText).contains(.empty) {
+                    SettingRow(label: "Drawing") {
+                        Segmented(options: [(false, "Off", nil), (true, "Until it fits", nil)], selection: $gapleDraw, label: "Drawing")
                     }
                 }
                 RuleHint(text: "No tile fits? Pass. First to 100 points wins.")

@@ -17,6 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -283,7 +284,6 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     // interstitial (frequency-capped) may run first; [dealing] keeps the button and the
     // countdown from dealing (or showing an ad) twice.
     val roundCard = settled && state.roundOver && !state.finished
-    var roundSeconds by remember { mutableIntStateOf(0) }
     val activity = LocalActivity.current
     var dealing by remember(state.round) { mutableStateOf(false) }
     fun deal() {
@@ -292,6 +292,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         val a = activity
         if (table.isLocal && a != null) Ads.afterGame(a) { table.nextRound() } else table.nextRound()
     }
+    var roundSeconds by remember { mutableIntStateOf(0) }
     LaunchedEffect(roundCard, state.round) {
         if (!roundCard) {
             roundSeconds = 0
@@ -406,6 +407,10 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                     stringResource(R.string.gaple_round, state.round, GapleGame.TARGET),
                     style = Theme.font(12, FontWeight.Bold, Theme.muted),
                 )
+                if (drawing(state)) Text(
+                    stringResource(R.string.gaple_pile, GapleGame.asideCount(state)),
+                    style = Theme.font(12, FontWeight.Bold, Theme.muted),
+                )
                 for (seat in 0 until state.players) {
                     PlayerTile(table, state, seat, on = seat == state.turn && !state.roundOver && !state.finished)
                 }
@@ -469,9 +474,12 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
             onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
         )
-        if (showRules) RulesSheet(state.partners) { showRules = false }
+        if (showRules) RulesSheet(state.partners, drawing(state)) { showRules = false }
     }
 }
+
+/** The draw rule is on and this table has face-down tiles (2–3 seats). */
+private fun drawing(state: GapleState) = state.options.draw && state.players < 4
 
 /** "You", a player's name, or "Team A" with partners. */
 @Composable
@@ -491,7 +499,9 @@ private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, pi
         myTurn -> state.mustPlay?.let { stringResource(R.string.gaple_must_open, it.a, it.b) }
         else -> stringResource(R.string.gaple_turn_of, seatName(table, state.turn))
     }
-    val passes = state.lastPasses.map { stringResource(R.string.gaple_pass, seatName(table, it)) }
+    val passes = state.lastDraws.withIndex().filter { it.value > 0 }
+        .map { (seat, n) -> stringResource(R.string.gaple_drew, seatName(table, seat), n) } +
+        state.lastPasses.map { stringResource(R.string.gaple_pass, seatName(table, it)) }
     val played = state.lastSeat?.let { seat ->
         state.lastTile?.let {
             if (seat == table.mySeat) stringResource(R.string.gaple_you_play, it.left, it.right)
@@ -553,24 +563,29 @@ private fun Hand(
     onTap: (GapleTile) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
-        hand.forEach { tile ->
-            val fits = tile in playable
-            val lift by animateDpAsState(if (fits) (-10).dp else 0.dp, label = "lift")
-            val label = stringResource(R.string.gaple_tile, tile.a, tile.b)
-            TileFace(
-                tile,
-                width = 34.dp,
-                ring = when {
-                    tile == picking -> Theme.accent
-                    fits -> Theme.gold
-                    else -> null
-                },
-                dim = playable.isNotEmpty() && !fits,
-                modifier = Modifier.offset(y = lift)
-                    .then(if (fits) Modifier.clickable(role = Role.Button) { onTap(tile) } else Modifier)
-                    .semantics { contentDescription = label },
-            )
+    // Seven tiles at full size; a hand that grew by drawing shrinks to fit the width.
+    BoxWithConstraints(modifier.padding(top = 10.dp)) {
+        val gap = if (hand.size > 9) 3.dp else 6.dp
+        val width = if (hand.isEmpty()) 34.dp else minOf(34.dp, (maxWidth - gap * (hand.size - 1)) / hand.size)
+        Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.Bottom) {
+            hand.forEach { tile ->
+                val fits = tile in playable
+                val lift by animateDpAsState(if (fits) (-10).dp else 0.dp, label = "lift")
+                val label = stringResource(R.string.gaple_tile, tile.a, tile.b)
+                TileFace(
+                    tile,
+                    width = width,
+                    ring = when {
+                        tile == picking -> Theme.accent
+                        fits -> Theme.gold
+                        else -> null
+                    },
+                    dim = playable.isNotEmpty() && !fits,
+                    modifier = Modifier.offset(y = lift)
+                        .then(if (fits) Modifier.clickable(role = Role.Button) { onTap(tile) } else Modifier)
+                        .semantics { contentDescription = label },
+                )
+            }
         }
     }
 }
@@ -720,7 +735,7 @@ private fun ResultCard(table: GapleTable, state: GapleState, onExit: () -> Unit,
 }
 
 @Composable
-private fun RulesSheet(partners: Boolean, onDismiss: () -> Unit) {
+private fun RulesSheet(partners: Boolean, drawing: Boolean, onDismiss: () -> Unit) {
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)).padding(24.dp), contentAlignment = Alignment.Center) {
         Column(
             Modifier.widthIn(max = 560.dp).fillMaxWidth()
@@ -738,7 +753,7 @@ private fun RulesSheet(partners: Boolean, onDismiss: () -> Unit) {
                     R.string.gaple_rule_tiles,
                     R.string.gaple_rule_open,
                     R.string.gaple_rule_play,
-                    R.string.gaple_rule_pass,
+                    if (drawing) R.string.gaple_rule_draw else R.string.gaple_rule_pass,
                     R.string.gaple_rule_end,
                     R.string.gaple_rule_score,
                     if (partners) R.string.gaple_rule_partners else null,

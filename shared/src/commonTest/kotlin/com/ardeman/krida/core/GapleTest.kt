@@ -34,6 +34,8 @@ class GapleTest {
         turn: Int = 0,
         partners: Boolean = false,
         scores: List<Int> = List(hands.size) { 0 },
+        aside: List<GapleTile> = emptyList(),
+        draw: Boolean = false,
     ) = GapleState(
         players = hands.size,
         hands = hands,
@@ -43,6 +45,8 @@ class GapleTest {
         scores = scores,
         partners = partners,
         passedOn = List(hands.size) { emptyList() },
+        aside = aside,
+        options = GapleOptions(draw = draw),
     )
 
     @Test
@@ -121,6 +125,57 @@ class GapleTest {
         assertEquals(listOf(1), next.lastPasses)
         assertEquals(listOf(6, 1), next.passedOn[1])
         assertEquals("not_your_turn", game.validate(next, 1, GapleMove(t(2, 3))))
+    }
+
+    @Test
+    fun withDrawTheStuckSeatDrawsUntilATileFits() {
+        // Seat 1 has no 1 or 6; the pile's first two miss, the third [1|4] fits.
+        val s = state(
+            hands = listOf(listOf(t(6, 1), t(0, 0)), listOf(t(2, 3)), listOf(t(1, 5))),
+            line = listOf(GaplePlaced(6, 6)),
+            aside = listOf(t(2, 2), t(3, 4), t(1, 4), t(5, 5)),
+            draw = true,
+        )
+        val next = game.apply(s, 0, GapleMove(t(6, 1), GapleGame.RIGHT), Random(0))
+        assertEquals(1, next.turn)
+        assertEquals(emptyList(), next.lastPasses)
+        assertEquals(listOf(0, 3, 0), next.lastDraws)
+        assertEquals(listOf(t(1, 4), t(2, 2), t(2, 3), t(3, 4)), next.hands[1])
+        assertEquals(listOf(t(5, 5)), next.aside)
+        assertEquals(listOf(1, 4, 1), next.handCounts)
+    }
+
+    @Test
+    fun withDrawAnEmptyPileMeansAPass() {
+        // Seat 1 draws the last tile, which misses, so it passes and seat 2 plays.
+        val s = state(
+            hands = listOf(listOf(t(6, 1), t(0, 0)), listOf(t(2, 3)), listOf(t(1, 5))),
+            line = listOf(GaplePlaced(6, 6)),
+            aside = listOf(t(2, 2)),
+            draw = true,
+        )
+        val next = game.apply(s, 0, GapleMove(t(6, 1), GapleGame.RIGHT), Random(0))
+        assertEquals(2, next.turn)
+        assertEquals(listOf(1), next.lastPasses)
+        assertEquals(listOf(0, 1, 0), next.lastDraws)
+        assertTrue(next.aside.isEmpty())
+    }
+
+    @Test
+    fun withDrawTheRoundIsNotGapleWhileThePileHasAFit() {
+        // The line blocks every hand, but seat 1 draws [0|2] from the pile.
+        val s = state(
+            hands = listOf(listOf(t(6, 0), t(5, 5)), listOf(t(2, 1)), listOf(t(4, 3))),
+            line = listOf(GaplePlaced(6, 6)),
+            aside = listOf(t(0, 2)),
+            draw = true,
+        )
+        val next = game.apply(s, 0, GapleMove(t(6, 0), GapleGame.RIGHT), Random(0))
+        assertEquals(false, next.roundOver)
+        assertEquals(1, next.turn)
+        // Without the rule the same line ends the round.
+        val off = game.apply(s.copy(options = GapleOptions()), 0, GapleMove(t(6, 0), GapleGame.RIGHT), Random(0))
+        assertEquals("gaple", off.roundEnd)
     }
 
     @Test
@@ -253,10 +308,10 @@ class GapleTest {
 
     @Test
     fun botsFinishAMatchForEverySeatCount() {
-        for (n in 2..4) for (level in GapleBot.Level.entries) {
+        for (n in 2..4) for (level in GapleBot.Level.entries) for (draw in listOf(false, true)) {
             val bot = GapleBot(level)
             val random = Random(n * 10 + level.ordinal)
-            var s = game.initialState(n, GapleOptions(partners = n == 4), random)
+            var s = game.initialState(n, GapleOptions(partners = n == 4, draw = draw), random)
             var guard = 0
             while (!s.finished && guard++ < 5_000) {
                 val seat = game.currentTurn(s)

@@ -227,6 +227,9 @@ in the same commit as the code.
 
 - Fifth game (2026-11-12); game id `gaple`. Rules and mockup in
   [mockups/gaple.md](mockups/gaple.md).
+- **Drawing option (owner, 2026-11-12):** a "Drawing" setting (Off / Until it fits) for 2–3
+  seats; the host draws for a stuck seat automatically, no draw button. Off keeps the
+  traditional no-draw rule.
 - **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
   with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
   "Remove ads".

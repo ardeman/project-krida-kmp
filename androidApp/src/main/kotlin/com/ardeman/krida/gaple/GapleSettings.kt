@@ -18,6 +18,7 @@ object GapleSettings {
     private const val PREFS = "gaple"
     private const val KEY_SEATS = "gaple.seats"
     private const val KEY_PARTNERS = "gaple.partners"
+    private const val KEY_DRAW = "gaple.draw"
     const val SEATS = 4
 
     private val DEFAULT = listOf(LocalSeat.PERSON, LocalSeat.COMPUTER, LocalSeat.COMPUTER, LocalSeat.COMPUTER)
@@ -36,7 +37,7 @@ object GapleSettings {
         app = context.applicationContext
         val p = prefs
         seats = sanitize(LocalSeats.decode(p.getString(KEY_SEATS, null), SEATS, DEFAULT))
-        options = GapleOptions(partners = p.getBoolean(KEY_PARTNERS, false))
+        options = GapleOptions(partners = p.getBoolean(KEY_PARTNERS, false), draw = p.getBoolean(KEY_DRAW, false))
     }
 
     /** Seats 1–3 switch between a computer and empty; one computer always stays. */
@@ -52,6 +53,11 @@ object GapleSettings {
     fun choosePartners(on: Boolean) {
         options = options.copy(partners = on)
         prefs.edit().putBoolean(KEY_PARTNERS, on).apply()
+    }
+
+    fun chooseDraw(on: Boolean) {
+        options = options.copy(draw = on)
+        prefs.edit().putBoolean(KEY_DRAW, on).apply()
     }
 
     /** Players at the table on this phone (you plus the computers). */

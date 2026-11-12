@@ -102,6 +102,10 @@ Gaple uses the same per-seat views: each guest's `state` carries only its own ha
 for everyone, and never the set-aside tiles (`aside`). Every played tile is public, so `last`
 is sent unchanged. Seats with no fitting tile are skipped by the host and listed in
 `lastPasses`; there is no pass intent. `{"next":true}` from seat 0 deals the next round.
+`options.draw` (optional, default `false`) turns on drawing with 2–3 seats: the host moves
+set-aside tiles into a stuck seat's hand until one fits, and lists how many each seat drew
+in `lastDraws` (optional, one count per seat, empty when nobody drew). There is still no
+draw intent. Older peers ignore both fields; the `protocol` version is unchanged.
 
 Congklak's `state` carries `tembakAfterStore` (optional, default `false`): the host's choice
 of the Indonesian tembak rule, under which a tembak only counts once the turn's sowing has

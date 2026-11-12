@@ -1073,6 +1073,16 @@ private fun GameRoomOptions(game: Any, onPhone: Boolean = false) {
                     fill = true,
                 )
             }
+            // Drawing needs face-down tiles, so fewer than four at the table; a room may stay below four.
+            if (game != Game.GAPLE || !onPhone || GapleSettings.players < 4) SettingRow(stringResource(R.string.gaple_draw)) {
+                Segmented(
+                    options = listOf(false to stringResource(R.string.gaple_draw_off), true to stringResource(R.string.gaple_draw_on)),
+                    current = GapleSettings.options.draw,
+                    label = stringResource(R.string.gaple_draw),
+                    onChange = GapleSettings::chooseDraw,
+                    fill = true,
+                )
+            }
             Hint(stringResource(R.string.gaple_hint))
         }
         ular -> SettingRow(stringResource(R.string.play_rules)) { UlarTanggaOptionChips() }

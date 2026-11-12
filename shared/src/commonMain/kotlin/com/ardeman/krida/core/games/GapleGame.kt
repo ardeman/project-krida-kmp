@@ -14,9 +14,14 @@ import kotlinx.serialization.Serializable
 data class GapleOptions(
     /** With 4 seats, seats across (0 + 2, 1 + 3) play as a team. Ignored with 2–3 seats. */
     val partners: Boolean = false,
+    /**
+     * With 2–3 seats, a player with no fitting tile draws from the set-aside tiles until one
+     * fits, and passes only when none are left. Nothing is set aside with 4 seats.
+     */
+    val draw: Boolean = false,
 ) {
     /** For Swift, which does not see Kotlin default arguments. */
-    constructor() : this(false)
+    constructor() : this(false, false)
 }
 
 /** A double-six tile, stored with [a] ≤ [b]. */
@@ -78,6 +83,8 @@ data class GapleState(
     val lastEnd: Int? = null,
     /** Seats skipped after the last play because no tile fitted, in turn order. */
     val lastPasses: List<Int> = emptyList(),
+    /** Tiles each seat drew from the set-aside tiles after the last play ([GapleOptions.draw]). */
+    val lastDraws: List<Int> = emptyList(),
     val options: GapleOptions = GapleOptions(),
 ) {
     val leftEnd: Int? get() = line.firstOrNull()?.left
@@ -201,6 +208,9 @@ object GapleGame : GameRules<GapleState, GapleMove>, PrivateStateRules<GapleStat
 
     fun pips(hand: List<GapleTile>): Int = hand.sumOf { it.pips }
 
+    /** Set-aside tiles still face down (public: the count follows from hands and line). */
+    fun asideCount(state: GapleState): Int = SET.size - state.handCounts.sum() - state.line.size
+
     /**
      * What the phone plays for [seat] when its turn timer ([com.ardeman.krida.core.protocol.Krida.PLAY_TURN_MS])
      * runs out: what the easy computer ([GapleBot.Level.EASY]) would play, any fitting tile on
@@ -243,6 +253,7 @@ object GapleGame : GameRules<GapleState, GapleMove>, PrivateStateRules<GapleStat
             lastTile = null,
             lastEnd = null,
             lastPasses = emptyList(),
+            lastDraws = emptyList(),
         )
     }
 
@@ -292,22 +303,39 @@ object GapleGame : GameRules<GapleState, GapleMove>, PrivateStateRules<GapleStat
             lastTile = placed,
             lastEnd = side,
             lastPasses = emptyList(),
+            lastDraws = emptyList(),
         )
         if (hands[seat].isEmpty()) return endRound(next, "domino", seat)
-        if ((0 until state.players).none { playable(next, it).isNotEmpty() }) {
-            return endRound(next, "gaple", lowestSeat(next, seat))
-        }
-        // Skip seats with no fitting tile; someone can play, so this stops.
-        var turn = (seat + 1) % state.players
+        // Seats with no fitting tile draw (with the draw rule) until one fits, else pass. When
+        // every seat, the one that just played included, passes in a row, the round is gaple.
+        val n = state.players
+        val draw = state.options.draw
+        var turn = (seat + 1) % n
         val passes = ArrayList<Int>()
+        val draws = MutableList(n) { 0 }
         val passedOn = next.passedOn.toMutableList()
-        while (playable(next, turn).isEmpty()) {
+        while (true) {
+            if (playable(next, turn).isNotEmpty()) break
+            while (draw && next.aside.isNotEmpty() && playable(next, turn).isEmpty()) {
+                val hand = (next.hands[turn] + next.aside.first()).sortedWith(TILE_ORDER)
+                val drawn = next.hands.toMutableList().also { it[turn] = hand }
+                next = next.copy(hands = drawn, handCounts = drawn.map { it.size }, aside = next.aside.drop(1))
+                draws[turn] += 1
+            }
+            if (playable(next, turn).isNotEmpty()) break
             passes += turn
             passedOn[turn] = (passedOn[turn] + listOf(next.leftEnd!!, next.rightEnd!!)).distinct()
-            turn = (turn + 1) % state.players
+            if (passes.size == n) {
+                return endRound(next.copy(lastDraws = draws.takeIf { d -> d.any { it > 0 } } ?: emptyList()), "gaple", lowestSeat(next, seat))
+            }
+            turn = (turn + 1) % n
         }
-        next = next.copy(turn = turn, lastPasses = passes, passedOn = passedOn)
-        return next
+        return next.copy(
+            turn = turn,
+            lastPasses = passes,
+            passedOn = passedOn,
+            lastDraws = draws.takeIf { d -> d.any { it > 0 } } ?: emptyList(),
+        )
     }
 
     /** Lowest pips in hand; ties go to the first seat after [lastPlacer], clockwise. */

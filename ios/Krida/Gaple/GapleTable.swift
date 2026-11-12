@@ -206,6 +206,7 @@ final class GapleGuestTable: GapleTable {
 enum GapleSettings {
     static let seatsKey = "gaple.seats"
     static let partnersKey = "gaple.partners"
+    static let drawKey = "gaple.draw"
     static let size = 4
 
     private static let fallback: [LocalSeat] = [.person, .computer, .computer, .computer]
@@ -228,7 +229,7 @@ enum GapleSettings {
     static var seats: [LocalSeat] { seats(UserDefaults.standard.string(forKey: seatsKey)) }
 
     static var options: GapleOptions {
-        GapleOptions(partners: UserDefaults.standard.bool(forKey: partnersKey))
+        GapleOptions(partners: UserDefaults.standard.bool(forKey: partnersKey), draw: UserDefaults.standard.bool(forKey: drawKey))
     }
 
     static var rules: GapleRules { GapleRules(options: options) }

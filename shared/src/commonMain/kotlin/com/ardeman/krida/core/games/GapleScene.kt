@@ -172,7 +172,10 @@ object GapleScene {
      * [side]); the tiles point at the table's centre and lie in a row along the rim.
      */
     fun handMatrix(side: Int, index: Int, count: Int): FloatArray {
-        val offset = (index - (count - 1) / 2f) * HAND_STEP
+        // Hands that grew by drawing close up so they stay on the rim.
+        val span = if (side == 1 || side == 3) 2 * FELT_Z - 2f else 2 * FELT_X - 4f
+        val step = if (count > 1) minOf(HAND_STEP, span / (count - 1)) else HAND_STEP
+        val offset = (index - (count - 1) / 2f) * step
         val edge = RIM / 2
         return when (side) {
             1 -> matrix(1f, 0f, -FELT_X - edge, 0f, offset)

@@ -426,6 +426,11 @@
     <string name="gaple_partners">Partners</string>
     <string name="gaple_partners_off">Off</string>
     <string name="gaple_partners_across">Across 2 v 2</string>
+    <string name="gaple_draw">Drawing</string>
+    <string name="gaple_draw_off">Off</string>
+    <string name="gaple_draw_on">Until it fits</string>
+    <string name="gaple_drew">%1$s drew %2$d</string>
+    <string name="gaple_pile">%1$d face down</string>
     <string name="gaple_round">Round %1$d · to %2$d</string>
     <string name="gaple_tiles_left">%1$d tiles</string>
     <string name="gaple_team">Team %1$s</string>
@@ -453,6 +458,7 @@
     <string name="gaple_rule_open">The first round opens with balak enam [6|6], or the highest double if nobody holds it. Later rounds: the last winner leads with any tile.</string>
     <string name="gaple_rule_play">A tile must match one open end. If it fits both, tap the end you want.</string>
     <string name="gaple_rule_pass">No tile fits? You pass. There is no drawing.</string>
+    <string name="gaple_rule_draw">No tile fits? You draw from the face-down tiles until one fits, and pass only when none are left.</string>
     <string name="gaple_rule_end">The round ends when someone empties their hand (domino) or nobody can play (gaple): then the lowest pips in hand wins.</string>
     <string name="gaple_rule_score">The round winner scores the pips left in the other hands. First to 100 wins.</string>
     <string name="gaple_rule_partners">Partners: seats across play as a team and share one score.</string>
