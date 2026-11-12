@@ -226,4 +226,21 @@ class LudoTest {
     fun seatColorsSkipDuplicates() {
         assertEquals(listOf(2, 0, 1, 3), game.seatColors(4, listOf(2, 2, 9)))
     }
+
+    @Test
+    fun timeoutMovePicksLikeTheEasyBot() {
+        val picking = at(listOf(-1, 5, 10, -1), listOf(-1, -1, -1, -1), roll = 6)
+        repeat(20) { i ->
+            val move = assertNotNull(game.timeoutMove(picking, 0, Random(i)))
+            assertNull(game.validate(picking, 0, move))
+            assertEquals(LudoBot(LudoBot.Level.EASY).chooseMove(picking, 0, Random(i)), move)
+        }
+        // Not this seat's turn, no roll yet, or the game is over.
+        assertNull(game.timeoutMove(picking, 1, Random(0)))
+        assertNull(game.timeoutMove(picking.copy(roll = null), 0, Random(0)))
+        assertNull(game.timeoutMove(picking.copy(finished = true), 0, Random(0)))
+        // Only one token can use the roll: that is the move.
+        val one = at(listOf(-1, 5, -1, -1), listOf(-1, -1, -1, -1), roll = 3)
+        assertEquals(LudoMove(1), game.timeoutMove(one, 0, Random(3)))
+    }
 }

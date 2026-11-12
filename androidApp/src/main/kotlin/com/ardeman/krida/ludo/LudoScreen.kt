@@ -87,6 +87,7 @@ import com.ardeman.krida.ui.gameInsets
 import com.ardeman.krida.ui.rememberGameLifetime
 import com.ardeman.krida.ulartangga.pawnColor
 import kotlin.math.hypot
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -339,6 +340,27 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         }
     }
 
+    // Pick timer: while a player on this device picks a token after a roll, a countdown runs
+    // in the same spot; at 0 the phone moves the easy computer's pick for them
+    // (LudoGame.timeoutMove). Animating or waiting on the host stops it.
+    var pickSeconds by remember { mutableIntStateOf(0) }
+    val pickTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
+    val picking = canPick && legal.isNotEmpty()
+    val pickingNow by rememberUpdatedState(picking)
+    LaunchedEffect(picking, state) {
+        if (!picking) {
+            pickSeconds = 0
+            return@LaunchedEffect
+        }
+        pickSeconds = pickTotal
+        while (pickSeconds > 0) {
+            delay(1000L)
+            if (!pickingNow || !lifetime.active) return@LaunchedEffect
+            pickSeconds -= 1
+        }
+        LudoGame.timeoutMove(state, state.turn, Random.Default)?.pawn?.let { table.movePawn(state.turn, it) }
+    }
+
     fun exit() {
         lifetime.stop()
         onExit()
@@ -483,6 +505,11 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 // counts down to an automatic short toss.
                 if (canRoll && rollSeconds > 0) {
                     CountdownRing(rollSeconds, rollTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
+                    Spacer(Modifier.height(6.dp))
+                }
+                // While picking a token: the pick countdown in the same spot.
+                if (picking && pickSeconds > 0) {
+                    CountdownRing(pickSeconds, pickTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
                     Spacer(Modifier.height(6.dp))
                 }
                 Box(

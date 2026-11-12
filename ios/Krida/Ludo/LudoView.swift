@@ -12,6 +12,8 @@ final class LudoGameModel: ObservableObject {
     @Published private(set) var viewFrame: CGRect = .zero
     /// Seconds left to throw while it is the local player's roll; 0 when not counting.
     @Published private(set) var rollSeconds = 0
+    /// Seconds left to pick a token after a roll (`Krida.PLAY_TURN_MS`); 0 when not counting.
+    @Published private(set) var pickSeconds = 0
 
     let table: LudoTable
     let scene = LudoScene()
@@ -27,6 +29,11 @@ final class LudoGameModel: ObservableObject {
     var loading = true
     /// Total seconds for the roll countdown (`Krida.ROLL_TURN_MS`).
     var rollTotal: Int { Int(Krida.shared.ROLL_TURN_MS / 1000) }
+    /// Total seconds for the pick countdown (`Krida.PLAY_TURN_MS`).
+    var pickTotal: Int { Int(Krida.shared.PLAY_TURN_MS / 1000) }
+    private var pickKey: String?
+    /// Counts state changes, so a new pick (even by the same seat) restarts the countdown.
+    private var version = 0
 
     private static let hop: Double = 0.2
     private static let botPause: Double = 0.7
@@ -149,6 +156,31 @@ final class LudoGameModel: ObservableObject {
         }
     }
 
+    /// A player on this device is picking a token after a roll.
+    var picking: Bool { canPick && !legal.isEmpty }
+
+    /// The pick countdown: at 0 the phone moves the easy computer's pick for the player
+    /// (`LudoGame.timeoutMove`). Animating or waiting on the host stops it.
+    func syncPickTimer() {
+        let key = picking ? "\(turn)-\(version)" : nil
+        guard key != pickKey else { return }
+        pickKey = key
+        lifetime.cancel("pickTurn")
+        pickSeconds = 0
+        guard key != nil else { return }
+        pickSeconds = pickTotal
+        lifetime.launch("pickTurn") { [self] in
+            while pickSeconds > 0 {
+                try await Task.sleep(for: .seconds(1))
+                guard lifetime.active, picking else { pickSeconds = 0; return }
+                pickSeconds -= 1
+            }
+            if let pawn = game.timeoutMove(state: state, seat: state.turn, random: KotlinRandom.companion)?.pawn?.intValue {
+                movePawn(pawn)
+            }
+        }
+    }
+
     func movePawn(_ pawn: Int) {
         guard canPick, legal.contains(pawn) else { return }
         _ = table.movePawn(seat: turn, pawn: pawn)
@@ -223,6 +255,7 @@ final class LudoGameModel: ObservableObject {
     func afterReadyChange() {
         updateReady()
         syncRollTimer()
+        syncPickTimer()
         syncWatch()
     }
 
@@ -319,9 +352,11 @@ final class LudoGameModel: ObservableObject {
                 scene.watch(nil)
                 try await Task.sleep(for: .seconds(0.28))
                 state = next
+                version += 1
                 announce(next)
             } else {
                 state = next
+                version += 1
                 placeAll(next)
                 recallDie(for: next)
             }
@@ -438,10 +473,12 @@ private struct LudoBoardView: View {
         .onChange(of: boxes) { _, _ in relayout() }
         .onChange(of: size) { _, _ in relayout() }
         .onChange(of: model.canPick) { _, _ in
+            model.syncPickTimer()
             model.syncWatch()
             relayout()
         }
         .onChange(of: model.legal) { _, _ in
+            model.syncPickTimer()
             model.syncWatch()
         }
         .onChange(of: dieDown) { _, down in
@@ -467,7 +504,7 @@ private struct LudoBoardView: View {
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
         var keys = Self.hudKeys
-        if model.canRoll && model.rollSeconds > 0 { keys.append("rollTimer") }
+        if (model.canRoll && model.rollSeconds > 0) || (model.picking && model.pickSeconds > 0) { keys.append("rollTimer") }
         if table.waiting != nil || table.notice != nil { keys.append("notice") }
         if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
@@ -559,6 +596,12 @@ private struct LudoBoardView: View {
                 if table.canEmote { Spacer().frame(height: 10 * s) }
                 if model.canRoll && model.rollSeconds > 0 {
                     CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
+                        .modifier(hudBox("rollTimer"))
+                        .padding(.bottom, 6 * s)
+                }
+                // While picking a token: the pick countdown in the same spot.
+                if model.picking && model.pickSeconds > 0 {
+                    CountdownRing(seconds: model.pickSeconds, total: model.pickTotal, size: 40)
                         .modifier(hudBox("rollTimer"))
                         .padding(.bottom, 6 * s)
                 }

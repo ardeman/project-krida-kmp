@@ -194,6 +194,18 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
         (0 until PAWNS).filter { destination(state, seat, it, roll) != null }
 
     /**
+     * What the phone moves for [seat] when its pick timer ([com.ardeman.krida.core.protocol.Krida.PLAY_TURN_MS])
+     * runs out: what the easy computer ([LudoBot.Level.EASY]) would pick, any legal token,
+     * drawn from [random]. The phone of the player who timed out picks it and sends it like a
+     * tap. Null when it is not [seat]'s turn to pick, no token can move, or the game is over.
+     */
+    fun timeoutMove(state: LudoState, seat: Int, random: Random): LudoMove? {
+        val roll = state.roll ?: return null
+        if (state.finished || seat != state.turn || legalPawns(state, seat, roll).isEmpty()) return null
+        return LudoBot(LudoBot.Level.EASY).chooseMove(state, seat, random)
+    }
+
+    /**
      * Where [pawn] lands after [roll], or null when the move is illegal (overshoot, blocked
      * by an opponent stack, or cannot leave the yard).
      */

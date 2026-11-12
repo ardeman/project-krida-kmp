@@ -205,7 +205,10 @@ in the same commit as the code.
   card also counts down and the host deals on. Congklak: 15 s to pick a pit
   (`Krida.PLAY_TURN_MS`), then the phone plays what the easy computer would pick
   (`CongklakGame.timeoutMove`, a random hole with seeds) as if the player tapped it (owner,
-  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown. Perang
+  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown. Ludo:
+  after a roll with more than one token to choose, 15 s to pick (`Krida.PLAY_TURN_MS`), then
+  the easy computer's pick (`LudoGame.timeoutMove`, any legal token); the ring sits above the
+  die where the roll countdown was (owner, 2026-11-12). Perang
   kapal still needs its timer (see `status.md`).
 - Added by the agent, not asked for: passes are automatic (the host skips a seat with no
   fitting tile and lists it in `lastPasses`), so there is no Pass button. A double at a turn
