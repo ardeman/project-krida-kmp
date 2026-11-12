@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.ardeman.krida.ble.BleGuestTransport
 import com.ardeman.krida.ble.BleHostTransport
+import com.ardeman.krida.lan.LanGuestTransport
+import com.ardeman.krida.lan.LanHostTransport
 import com.ardeman.krida.congklak.CongklakSettings
 import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.GuestTable
@@ -43,15 +45,17 @@ import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 
 /**
- * A room over BLE ("Nearby") or through the online relay ("Online"), from hosting or joining
- * until the game starts. Then [congklak], [ular] or [ludo] takes over the session and that game's
- * screen shows it. A guest joins by code and learns the game from the host's Welcome.
+ * A room over BLE or LAN ("Nearby") or through the online relay ("Online"), from hosting or
+ * joining until the game starts. Then [congklak], [ular] or [ludo] takes over the session and
+ * that game's screen shows it. A guest joins by code and learns the game from the host's Welcome.
  */
 class NearbyRoom private constructor(
     val code: String,
     val isHost: Boolean,
-    /** Through the relay rather than over Bluetooth. */
+    /** Through the relay rather than over Bluetooth or Wi‑Fi. */
     val online: Boolean,
+    /** Nearby over Wi‑Fi/hotspot instead of BLE; ignored when [online]. */
+    val lan: Boolean = false,
     private val transport: Transport,
     val publicRoom: Boolean = false,
     private val hostSeats: Int? = null,
@@ -193,9 +197,9 @@ class NearbyRoom private constructor(
         leave()
         val game = hostGame
         return if (isHost && game != null) {
-            host(context, name, game, online, publicRoom = publicRoom, seats = hostSeats, avatar = avatar)
+            host(context, name, game, online, lan = lan, publicRoom = publicRoom, seats = hostSeats, avatar = avatar)
         } else {
-            join(context, code, name, online, avatar = avatar)
+            join(context, code, name, online, lan = lan, avatar = avatar)
         }
     }
 
@@ -274,7 +278,7 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false, avatar: String? = null): NearbyRoom {
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, lan: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false, avatar: String? = null): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
             val gameId = when (game) {
                 Game.ULAR_TANGGA -> UlarTanggaGame.id
@@ -282,8 +286,13 @@ class NearbyRoom private constructor(
                 Game.CONGKLAK -> CongklakGame.id
             }
             val total = if (game == Game.CONGKLAK) 2 else seats?.coerceIn(2, 4) ?: 4
-            val transport: Transport = if (online) OnlineHostTransport(roomCode, game = gameId, seats = total, publicRoom = publicRoom) else BleHostTransport(context, roomCode)
-            val room = NearbyRoom(roomCode, isHost = true, online = online, transport = transport, publicRoom = online && publicRoom, hostSeats = if (online) total else null)
+            val useLan = lan && !online
+            val transport: Transport = when {
+                online -> OnlineHostTransport(roomCode, game = gameId, seats = total, publicRoom = publicRoom)
+                useLan -> LanHostTransport(context, roomCode)
+                else -> BleHostTransport(context, roomCode)
+            }
+            val room = NearbyRoom(roomCode, isHost = true, online = online, lan = useLan, transport = transport, publicRoom = online && publicRoom, hostSeats = if (online) total else null)
             room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
@@ -322,6 +331,7 @@ class NearbyRoom private constructor(
             }
             when (transport) {
                 is BleHostTransport -> transport.start()
+                is LanHostTransport -> transport.start()
                 is OnlineHostTransport -> {
                     // Only before the game: once it runs, the table shows the drop.
                     transport.onReady = onOnlineReady
@@ -333,9 +343,14 @@ class NearbyRoom private constructor(
         }
 
         /** [invite]: the id of the friend invite this join answers, so the host sees "Joined". */
-        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null, invite: String? = null, avatar: String? = null): NearbyRoom {
-            val transport: Transport = if (online) OnlineGuestTransport(code, reservation) else BleGuestTransport(context, code)
-            val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
+        fun join(context: Context, code: String, name: String, online: Boolean = false, lan: Boolean = false, reservation: String? = null, invite: String? = null, avatar: String? = null): NearbyRoom {
+            val useLan = lan && !online
+            val transport: Transport = when {
+                online -> OnlineGuestTransport(code, reservation)
+                useLan -> LanGuestTransport(context, code)
+                else -> BleGuestTransport(context, code)
+            }
+            val room = NearbyRoom(code, isHost = false, online = online, lan = useLan, transport = transport)
             // Joining a room this device has a seat in asks for that seat back.
             val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online), avatar)
             room.join = join
@@ -364,6 +379,7 @@ class NearbyRoom private constructor(
             room.main.postDelayed(room.notFound, NOT_FOUND_MS)
             when (transport) {
                 is BleGuestTransport -> transport.start()
+                is LanGuestTransport -> transport.start()
                 is OnlineGuestTransport -> {
                     transport.onClosed = { closeCode -> room.relayClosed(closeCode) }
                     transport.start()

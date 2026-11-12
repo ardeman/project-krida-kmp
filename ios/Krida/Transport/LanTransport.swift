@@ -1,10 +1,7 @@
-// TODO: LAN / hotspot transport (second offline mode).
+// Offline LAN / hotspot (README multiplayer roadmap 6). Lives under Nearby with a
+// Bluetooth | Wi‑Fi control (docs/decisions.md).
 //
-// Host:  NWListener with service NWListener.Service(name: "Krida-<ROOM>", type: "_krida._tcp").
-// Guest: NWBrowser(for: .bonjour(type: "_krida._tcp", domain: nil)), pick the result whose
-//        name matches the room code, open an NWConnection.
-// Wire:  4-byte big-endian length prefix + Codec bytes (no BLE framing needed).
-//
-// Implement the Shared `Transport` protocol like BleHostTransport/BleGuestTransport and keep
-// every callback on the main queue. Android counterpart: androidApp/.../lan/LanTransport.kt.
-// NSLocalNetworkUsageDescription and NSBonjourServices are already in project.yml.
+// Host:  LanHostTransport — NWListener + Bonjour `_krida._tcp`
+// Guest: LanGuestTransport — NWBrowser + NWConnection
+// Wire:  4-byte big-endian length + Codec bytes (LanFraming); no BLE framing.
+// Android: androidApp/.../lan/LanHostTransport.kt / LanGuestTransport.kt

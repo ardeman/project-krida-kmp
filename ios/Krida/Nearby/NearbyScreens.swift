@@ -53,9 +53,11 @@ struct NearbyFrame<Content: View>: View {
     }
 }
 
-/// The line under a room screen's title: Bluetooth nearby, or the internet.
-func placeLine(_ online: Bool) -> Text {
-    online ? Text("Online · over the internet") : Text("Nearby · Bluetooth, no internet")
+/// The line under a room screen's title: Bluetooth, Wi‑Fi nearby, or the internet.
+func placeLine(_ online: Bool, lan: Bool = false) -> Text {
+    if online { return Text("Online · over the internet") }
+    if lan { return Text("Nearby · Wi‑Fi, no internet") }
+    return Text("Nearby · Bluetooth, no internet")
 }
 
 func gameTitle(_ game: String?) -> Text {
@@ -106,7 +108,7 @@ struct RoomLobby: View {
         let guestSubtitle = String(localized: "Room \(room.code) · host \(hostName)", bundle: .app)
         NearbyFrame(
             title: gameTitle(room.game),
-            subtitle: room.isHost ? placeLine(room.online) : Text(verbatim: guestSubtitle),
+            subtitle: room.isHost ? placeLine(room.online, lan: room.lan) : Text(verbatim: guestSubtitle),
             online: room.online,
             backLabel: room.isHost ? "Back" : "Leave room",
             onBack: onLeave
@@ -484,6 +486,7 @@ private struct RoomQr: View {
 struct JoinScreen: View {
     @Binding var code: String
     let online: Bool
+    var lan: Bool = false
     let error: LocalizedStringKey?
     let onScan: () -> Void
     let onJoin: () -> Void
@@ -491,7 +494,7 @@ struct JoinScreen: View {
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        NearbyFrame(title: Text("Join a room"), subtitle: placeLine(online), online: online, backLabel: "Back", onBack: onBack) {
+        NearbyFrame(title: Text("Join a room"), subtitle: placeLine(online, lan: lan), online: online, backLabel: "Back", onBack: onBack) {
             VStack(spacing: 12 * s) {
                 Image(systemName: "qrcode.viewfinder")
                     .font(.system(size: 44 * s, weight: .semibold))
@@ -673,9 +676,14 @@ struct ConnectingScreen: View {
 
     private var texts: (LocalizedStringKey, LocalizedStringKey) {
         switch room.stage {
-        case .searching: room.online
-            ? ("Connecting to the room…", "Over the internet. Both phones need a connection.")
-            : ("Looking for the room…", "Hold your phone near the host's. Bluetooth must be on on both phones.")
+        case .searching:
+            if room.online {
+                ("Connecting to the room…", "Over the internet. Both phones need a connection.")
+            } else if room.lan {
+                ("Looking for the room…", "Same Wi‑Fi or hotspot as the host. No internet needed.")
+            } else {
+                ("Looking for the room…", "Hold your phone near the host's. Bluetooth must be on on both phones.")
+            }
         case .connecting, .lobby: ("Connecting…", "Found the room. Almost in.")
         case .full: ("The room is full", "Every seat is taken. Ask the host to make a new room.")
         case .started: ("The game has already started", "This room is already playing. Wait for the next round or make your own room.")
@@ -683,9 +691,14 @@ struct ConnectingScreen: View {
         case .notFound: room.online
             ? ("Room not found", "Check the code, make sure the host still has the room open, then try again.")
             : ("Room not found", "Check the code, make sure the host is still on the room screen, then try again.")
-        case .lost: room.online
-            ? ("Disconnected from the host", "The internet connection to the host was lost.")
-            : ("Disconnected from the host", "The Bluetooth connection to the host was lost.")
+        case .lost:
+            if room.online {
+                ("Disconnected from the host", "The internet connection to the host was lost.")
+            } else if room.lan {
+                ("Disconnected from the host", "The Wi‑Fi connection to the host was lost.")
+            } else {
+                ("Disconnected from the host", "The Bluetooth connection to the host was lost.")
+            }
         case .unknownGame: ("Couldn't join the room", "This room plays a game this app doesn't have. Update the app.")
         case .refused: ("Couldn't join the room", "Try again, or ask the host to make a new room.")
         case .offline: ("Can't reach Krida online", "Check this phone's internet connection, then try again.")
@@ -704,7 +717,7 @@ struct ConnectingScreen: View {
         let failed = room.failed
         let cancel: LocalizedStringKey = failed ? "Back" : "Cancel"
         let (title, detail) = texts
-        NearbyFrame(title: gameTitle(room.game), subtitle: placeLine(room.online), online: room.online, backLabel: cancel, onBack: onCancel) {
+        NearbyFrame(title: gameTitle(room.game), subtitle: placeLine(room.online, lan: room.lan), online: room.online, backLabel: cancel, onBack: onCancel) {
             VStack(spacing: 12 * s) {
                 Group {
                     if failed {

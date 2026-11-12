@@ -22,6 +22,9 @@ struct ContentView: View {
     @State private var joining = false
     /// The join screen takes a 6-letter online code instead of a 4-letter nearby one.
     @State private var joinOnline = false
+    /// Nearby join/host over Wi‑Fi instead of Bluetooth.
+    @State private var joinLan = false
+    @State private var nearbyLink: NearbyLink = .bluetooth
     @State private var creatingOnlineRoom = false
     @State private var showingAccount = false
     @State private var playingQuickMatch = false
@@ -131,7 +134,7 @@ struct ContentView: View {
                     onBack: { joining = false; joinError = nil }
                 )
             } else if joining {
-                JoinScreen(code: $roomCode, online: joinOnline, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
+                JoinScreen(code: $roomCode, online: joinOnline, lan: joinLan, error: joinError, onScan: scanRoomQr, onJoin: joinRoom, onBack: { joining = false; joinError = nil })
             } else if showingAccount {
                 AccountScreen(onBack: { showingAccount = false })
             } else {
@@ -227,12 +230,12 @@ struct ContentView: View {
         joining = true
     }
 
-    /// Joins the room `roomCode` names, online or nearby.
+    /// Joins the room `roomCode` names, online, Wi‑Fi nearby, or Bluetooth nearby.
     private func joinRoom() {
         let valid = joinOnline ? RoomCode.shared.isValidOnline(code: roomCode) : RoomCode.shared.isValid(code: roomCode)
         guard valid else { return }
         joinError = nil
-        room = NearbyRoom.join(code: roomCode, online: joinOnline)
+        room = NearbyRoom.join(code: roomCode, online: joinOnline, lan: joinLan)
     }
 
     /// VisionKit's scanner, after asking for the camera if needed.
@@ -413,9 +416,10 @@ struct ContentView: View {
         let ular = game == .ularTangga
         let ludo = game == .ludo
         let multi = ular || ludo
-        // A room with other phones, over Bluetooth or the internet.
+        // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         let nearby = place != .phone
         let online = place == .online
+        let lan = nearby && !online && nearbyLink == .wifi
         let seats = ludo ? ludoSeats : ular ? ularSeats : congklakSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
@@ -431,9 +435,17 @@ struct ContentView: View {
             (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
             (.online, "Online", "globe"),
         ]
+        let links: [(NearbyLink, LocalizedStringKey, String?)] = [
+            (.bluetooth, "Bluetooth", nil), (.wifi, "Wi‑Fi", nil),
+        ]
         return VStack(alignment: .leading, spacing: 10 * s) {
             SettingRow(label: "Play on") {
                 Segmented(options: places, selection: $place, label: "Play on")
+            }
+            if nearby && !online {
+                SettingRow(label: "Link") {
+                    Segmented(options: links, selection: $nearbyLink, label: "Link")
+                }
             }
             // In a nearby room everyone who joins plays, up to 4.
             if !nearby {
@@ -464,6 +476,8 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
                         detail(multi ? "Up to 4 phones over the internet, friends anywhere" : "Over the internet, friends anywhere")
+                    } else if lan {
+                        detail("Wi‑Fi or hotspot, no internet")
                     } else if nearby {
                         detail(multi ? "Up to 4 phones over Bluetooth, no internet" : "Bluetooth, no internet")
                     } else if !multi && computers > 0 {
@@ -480,8 +494,9 @@ struct ContentView: View {
                     HStack(spacing: 10 * s) {
                         if nearby {
                             Button {
-                                if joinOnline != online { roomCode = "" }
+                                if joinOnline != online || joinLan != lan { roomCode = "" }
                                 joinOnline = online
+                                joinLan = lan
                                 quickMatchGame = gameId(game)
                                 joining = true
                             } label: {
@@ -560,7 +575,7 @@ struct ContentView: View {
             return
         }
         if place == .nearby {
-            room = NearbyRoom.host(game: roomGame(gameId(game)))
+            room = NearbyRoom.host(game: roomGame(gameId(game)), lan: nearbyLink == .wifi)
             return
         }
         if game == .ludo { return startLudo() }
@@ -667,6 +682,9 @@ private struct RemoveAdsButton: View {
 
 /// Where the game is played; the play card's first choice.
 private enum Place { case phone, nearby, online }
+
+/// Nearby radio: Bluetooth (default) or Wi‑Fi/hotspot (docs/decisions.md).
+private enum NearbyLink { case bluetooth, wifi }
 
 /// Pawn colours for a lone person vs computers on this phone. Same as Android.
 private struct LocalColorRow: View {

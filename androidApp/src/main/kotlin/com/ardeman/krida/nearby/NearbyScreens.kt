@@ -161,7 +161,7 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
     var inviting by remember { mutableStateOf(false) }
     LaunchedEffect(canInvite) { if (canInvite) Account.loadFriends() else inviting = false }
     val subtitle = if (room.isHost) {
-        subtitle(room.online)
+        subtitle(room.online, room.lan)
     } else {
         stringResource(R.string.nearby_room_host, room.code, room.players.firstOrNull { it.seat == 0 }?.name ?: "")
     }
@@ -257,7 +257,13 @@ private fun ShareChip(code: String) {
 }
 
 @Composable
-internal fun subtitle(online: Boolean) = stringResource(if (online) R.string.online_subtitle else R.string.nearby_subtitle)
+internal fun subtitle(online: Boolean, lan: Boolean = false) = stringResource(
+    when {
+        online -> R.string.online_subtitle
+        lan -> R.string.nearby_subtitle_wifi
+        else -> R.string.nearby_subtitle
+    },
+)
 
 /** The room link as a QR code: dark modules on white in both themes, so any camera reads it. */
 @Composable
@@ -546,9 +552,10 @@ fun JoinScreen(
     onBack: () -> Unit,
     error: Int?,
     online: Boolean,
+    lan: Boolean = false,
 ) {
     val valid = if (online) RoomCode.isValidOnline(code) else RoomCode.isValid(code)
-    NearbyFrame(stringResource(R.string.nearby_join_title), subtitle(online), online, stringResource(R.string.congklak_back), onBack) {
+    NearbyFrame(stringResource(R.string.nearby_join_title), subtitle(online, lan), online, stringResource(R.string.congklak_back), onBack) {
         Column(
             Modifier.weight(1f).fillMaxHeight().card().padding(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -654,10 +661,10 @@ private fun IconPrimaryButton(@DrawableRes icon: Int, text: String, onClick: () 
 @Composable
 fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit) {
     val (title, detail) = when (room.stage) {
-        NearbyRoom.Stage.SEARCHING -> if (room.online) {
-            R.string.online_searching_title to R.string.online_searching_detail
-        } else {
-            R.string.nearby_searching_title to R.string.nearby_searching_detail
+        NearbyRoom.Stage.SEARCHING -> when {
+            room.online -> R.string.online_searching_title to R.string.online_searching_detail
+            room.lan -> R.string.nearby_searching_title to R.string.nearby_searching_detail_wifi
+            else -> R.string.nearby_searching_title to R.string.nearby_searching_detail
         }
         NearbyRoom.Stage.CONNECTING, NearbyRoom.Stage.LOBBY -> R.string.nearby_connecting_title to R.string.nearby_connecting_detail
         NearbyRoom.Stage.FULL -> R.string.nearby_rejected_full to R.string.nearby_full_detail
@@ -665,7 +672,11 @@ fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit
         NearbyRoom.Stage.VERSION -> R.string.nearby_version_title to R.string.nearby_version_detail
         NearbyRoom.Stage.NOT_FOUND -> R.string.nearby_not_found_title to
             if (room.online) R.string.online_not_found_detail else R.string.nearby_not_found_detail
-        NearbyRoom.Stage.LOST -> R.string.nearby_host_lost to if (room.online) R.string.online_lost_detail else R.string.nearby_lost_detail
+        NearbyRoom.Stage.LOST -> R.string.nearby_host_lost to when {
+            room.online -> R.string.online_lost_detail
+            room.lan -> R.string.nearby_lost_detail_wifi
+            else -> R.string.nearby_lost_detail
+        }
         NearbyRoom.Stage.OFFLINE -> R.string.online_offline_title to R.string.online_offline_detail
         NearbyRoom.Stage.UNKNOWN_GAME -> R.string.nearby_rejected to R.string.nearby_unknown_game
         NearbyRoom.Stage.REFUSED -> R.string.nearby_rejected to R.string.nearby_refused_detail
@@ -677,7 +688,7 @@ fun ConnectingScreen(room: NearbyRoom, onCancel: () -> Unit, onRetry: () -> Unit
     }
     val failed = room.failed
     val cancel = stringResource(if (failed) R.string.congklak_back else R.string.nearby_cancel)
-    NearbyFrame(gameTitle(room.game), subtitle(room.online), room.online, cancel, onCancel) {
+    NearbyFrame(gameTitle(room.game), subtitle(room.online, room.lan), room.online, cancel, onCancel) {
         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
                 Modifier.width(480.dp).card().padding(horizontal = 24.dp, vertical = 22.dp),

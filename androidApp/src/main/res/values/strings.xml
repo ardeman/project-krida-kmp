@@ -48,6 +48,10 @@
     <string name="bot_hard">Hard</string>
     <string name="bot_start">Start</string>
     <string name="nearby_detail">Bluetooth, no internet</string>
+    <string name="nearby_detail_wifi">Wi‑Fi or hotspot, no internet</string>
+    <string name="nearby_link">Link</string>
+    <string name="nearby_bluetooth">Bluetooth</string>
+    <string name="nearby_wifi">Wi‑Fi</string>
     <string name="nearby_host">Create room</string>
     <string name="nearby_join_with_code">Join</string>
     <string name="nearby_code">Room code</string>
@@ -187,6 +191,7 @@
     <string name="menu_prev_game">Previous game</string>
     <string name="menu_next_game">Next game</string>
     <string name="nearby_subtitle">Nearby · Bluetooth, no internet</string>
+    <string name="nearby_subtitle_wifi">Nearby · Wi‑Fi, no internet</string>
     <string name="nearby_qr_label">Room QR code</string>
     <string name="nearby_host_hint">Your friend opens Nearby › Join,\nthen scans this QR or types the code</string>
     <string name="nearby_players_title">Players · %1$d of %2$d</string>
@@ -228,6 +233,7 @@
     <string name="nearby_scan_not_room">That QR isn\'t a Krida room</string>
     <string name="nearby_searching_title">Looking for the room…</string>
     <string name="nearby_searching_detail">Hold your phone near the host\'s. Bluetooth must be on on both phones.</string>
+    <string name="nearby_searching_detail_wifi">Same Wi‑Fi or hotspot as the host. No internet needed.</string>
     <string name="nearby_connecting_title">Connecting…</string>
     <string name="nearby_connecting_detail">Found the room. Almost in.</string>
     <string name="nearby_full_detail">Every seat is taken. Ask the host to make a new room.</string>
@@ -237,6 +243,7 @@
     <string name="nearby_not_found_title">Room not found</string>
     <string name="nearby_not_found_detail">Check the code, make sure the host is still on the room screen, then try again.</string>
     <string name="nearby_lost_detail">The Bluetooth connection to the host was lost.</string>
+    <string name="nearby_lost_detail_wifi">The Wi‑Fi connection to the host was lost.</string>
     <string name="nearby_refused_detail">Try again, or ask the host to make a new room.</string>
     <string name="nearby_try_again">Try again</string>
     <string name="nearby_reconnect">Reconnect</string>

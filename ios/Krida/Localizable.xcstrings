@@ -5300,6 +5300,118 @@
           }
         }
       }
+    },
+    "Bluetooth": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth"
+          }
+        }
+      }
+    },
+    "Link": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Link"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambungan"
+          }
+        }
+      }
+    },
+    "Nearby · Wi‑Fi, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nearby · Wi‑Fi, no internet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman dekat · Wi‑Fi, tanpa internet"
+          }
+        }
+      }
+    },
+    "Wi‑Fi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi‑Fi"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi‑Fi"
+          }
+        }
+      }
+    },
+    "Wi‑Fi or hotspot, no internet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi‑Fi or hotspot, no internet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi‑Fi atau hotspot, tanpa internet"
+          }
+        }
+      }
+    },
+    "Same Wi‑Fi or hotspot as the host. No internet needed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same Wi‑Fi or hotspot as the host. No internet needed."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi‑Fi atau hotspot yang sama dengan host. Tanpa internet."
+          }
+        }
+      }
+    },
+    "The Wi‑Fi connection to the host was lost.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Wi‑Fi connection to the host was lost."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambungan Wi‑Fi ke host hilang."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

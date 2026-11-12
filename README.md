@@ -122,7 +122,8 @@ and `state` (see the compatibility rule in `docs/protocol.md`).
    `krida-relay.ardeman.com` (room, group and public-room smoke pass); multi-phone
    checks remain open — see `docs/mockups/public-rooms.md` and
    `docs/mockups/matchmaking.md`.
-6. Offline LAN / hotspot — Bonjour (`_krida._tcp`)
+6. Offline LAN / hotspot — Bonjour (`_krida._tcp`), under Nearby with Bluetooth | Wi‑Fi
+   (default Bluetooth). Host/guest transports and UI on Android and iOS; phone checks open.
 7. Wi‑Fi Aware — later, once device support is broad
 
 All of them plug into the same `Transport` interface; game code never changes.

@@ -2,7 +2,7 @@ import Foundation
 import Shared
 import UIKit
 
-/// A room over BLE ("Nearby" on the play card) or through the online relay ("Online"),
+/// A room over BLE or LAN ("Nearby" on the play card) or through the online relay ("Online"),
 /// from hosting or joining until the game starts. Then `congklak`, `ular` or `ludo` takes over the session and that game's screen shows it.
 /// A guest joins by code and learns the game from the host's Welcome. Same as Android.
 @MainActor
@@ -14,8 +14,10 @@ final class NearbyRoom: ObservableObject {
 
     let code: String
     let isHost: Bool
-    /// Through the relay rather than over Bluetooth.
+    /// Through the relay rather than over Bluetooth or Wi‑Fi.
     let online: Bool
+    /// Nearby over Wi‑Fi/hotspot instead of BLE; ignored when `online`.
+    let lan: Bool
     /// Online and discoverable by matchmaking (host only).
     let publicRoom: Bool
     /// Lobby size the online host chose; nil uses the game's maximum.
@@ -66,10 +68,11 @@ final class NearbyRoom: ObservableObject {
 
     var failed: Bool { ![.searching, .connecting, .lobby].contains(stage) }
 
-    private init(code: String, isHost: Bool, online: Bool, transport: Transport, publicRoom: Bool = false, hostSeats: Int? = nil) {
+    private init(code: String, isHost: Bool, online: Bool, lan: Bool = false, transport: Transport, publicRoom: Bool = false, hostSeats: Int? = nil) {
         self.code = code
         self.isHost = isHost
         self.online = online
+        self.lan = lan
         self.transport = transport
         self.publicRoom = publicRoom
         self.hostSeats = hostSeats
@@ -132,8 +135,8 @@ final class NearbyRoom: ObservableObject {
     /// Leaves and opens the same kind of room again: a new one for a host, the same code for a guest.
     func retry() -> NearbyRoom {
         leave()
-        if isHost, let hostGame { return Self.host(game: hostGame, online: online, publicRoom: publicRoom, seats: hostSeats) }
-        return Self.join(code: code, online: online)
+        if isHost, let hostGame { return Self.host(game: hostGame, online: online, lan: lan, publicRoom: publicRoom, seats: hostSeats) }
+        return Self.join(code: code, online: online, lan: lan)
     }
 
     private static var seatName: String { Account.shared.seatName(UIDevice.current.name) }
@@ -216,7 +219,7 @@ final class NearbyRoom: ObservableObject {
         if !failed { stage = .lost }
     }
 
-    static func host(game: Game, online: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil,
+    static func host(game: Game, online: Bool = false, lan: Bool = false, code: String? = nil, onOnlineReady: (() -> Void)? = nil,
                      publicRoom: Bool = false, seats: Int? = nil, standardRules: Bool = false) -> NearbyRoom {
         let roomCode = code ?? (online ? RoomCode.shared.generateOnline() : RoomCode.shared.generate())
         let gameId = switch game {
@@ -225,10 +228,12 @@ final class NearbyRoom: ObservableObject {
         case .congklak: CongklakGame.shared.id
         }
         let total = game == .congklak ? 2 : min(max(seats ?? 4, 2), 4)
+        let useLan = lan && !online
         let relay = online ? OnlineHostTransport(code: roomCode, game: gameId, seats: total, publicRoom: publicRoom) : nil
-        let ble = online ? nil : BleHostTransport(roomCode: roomCode)
-        let transport: Transport = (relay as Transport?) ?? ble!
-        let room = NearbyRoom(code: roomCode, isHost: true, online: online, transport: transport,
+        let lanHost = useLan ? LanHostTransport(roomCode: roomCode) : nil
+        let ble = (!online && !useLan) ? BleHostTransport(roomCode: roomCode) : nil
+        let transport: Transport = (relay as Transport?) ?? (lanHost as Transport?) ?? ble!
+        let room = NearbyRoom(code: roomCode, isHost: true, online: online, lan: useLan, transport: transport,
                               publicRoom: online && publicRoom, hostSeats: online ? total : nil)
         room.hostGame = game
         switch game {
@@ -269,16 +274,19 @@ final class NearbyRoom: ObservableObject {
             relay.onReady = onOnlineReady
             relay.start()
         }
+        lanHost?.start()
         ble?.start()
         return room
     }
 
     /// `invite`: the id of the friend invite this join answers, so the host sees "Joined".
-    static func join(code: String, online: Bool = false, reservation: String? = nil, invite: String? = nil) -> NearbyRoom {
+    static func join(code: String, online: Bool = false, lan: Bool = false, reservation: String? = nil, invite: String? = nil) -> NearbyRoom {
+        let useLan = lan && !online
         let relay = online ? OnlineGuestTransport(code: code, reservation: reservation) : nil
-        let ble = online ? nil : BleGuestTransport(roomCode: code)
-        let transport: Transport = (relay as Transport?) ?? ble!
-        let room = NearbyRoom(code: code, isHost: false, online: online, transport: transport)
+        let lanGuest = useLan ? LanGuestTransport(roomCode: code) : nil
+        let ble = (!online && !useLan) ? BleGuestTransport(roomCode: code) : nil
+        let transport: Transport = (relay as Transport?) ?? (lanGuest as Transport?) ?? ble!
+        let room = NearbyRoom(code: code, isHost: false, online: online, lan: useLan, transport: transport)
         // Joining a room this device has a seat in asks for that seat back.
         let join = GuestJoin(transport: transport, name: seatName, platform: .ios,
                              rejoinToken: LastRoom.shared.token(for: code, online: online),
@@ -329,6 +337,7 @@ final class NearbyRoom: ObservableObject {
             relay.onClosed = { [weak room] in room?.relayClosed($0) }
             relay.start()
         }
+        lanGuest?.start()
         ble?.start()
         return room
     }

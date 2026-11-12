@@ -61,5 +61,5 @@ directly. Each platform provides:
 | Local (pass-and-play) | shared `LocalTransport` | shared `LocalTransport` |
 | BLE host | `BleHostTransport.kt` | `BleHostTransport.swift` |
 | BLE guest | `BleGuestTransport.kt` | `BleGuestTransport.swift` |
-| LAN | `LanTransport.kt` (TODO) | `LanTransport.swift` (TODO) |
-| Online | TODO (WebSocket) | TODO (WebSocket) |
+| LAN | `LanHostTransport.kt` / `LanGuestTransport.kt` | `LanHostTransport.swift` / `LanGuestTransport.swift` |
+| Online | `OnlineHostTransport` / `OnlineGuestTransport` | same |

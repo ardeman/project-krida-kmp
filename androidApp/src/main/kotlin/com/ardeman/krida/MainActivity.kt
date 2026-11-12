@@ -167,6 +167,8 @@ class MainActivity : ComponentActivity() {
     private var joining by mutableStateOf(false)
     /** The join screen takes a 6-letter online code instead of a 4-letter nearby one. */
     private var joinOnline by mutableStateOf(false)
+    /** Nearby join/host over Wi‑Fi instead of Bluetooth. */
+    private var joinLan by mutableStateOf(false)
     private var creatingOnlineRoom by mutableStateOf(false)
     private var showingAccount by mutableStateOf(false)
     private var quickMatchTarget by mutableStateOf(4)
@@ -329,8 +331,11 @@ class MainActivity : ComponentActivity() {
                         onScan = ::scanRoomQr,
                         onJoin = ::joinRoom,
                         onBack = { joining = false; joinError = null },
-                        error = joinError ?: R.string.nearby_permission_denied.takeIf { permissionDenied && !joinOnline },
+                        error = joinError ?: R.string.nearby_permission_denied.takeIf {
+                            permissionDenied && !joinOnline && !joinLan
+                        },
                         online = joinOnline,
+                        lan = joinLan,
                     )
                     showingAccount -> AccountScreen(onBack = { showingAccount = false })
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
@@ -576,12 +581,14 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun PlayCard(game: Game) {
         var place by rememberSaveable { mutableStateOf(Place.PHONE) }
+        var nearbyLink by rememberSaveable { mutableStateOf(NearbyLink.BLUETOOTH) }
         val ular = game == Game.ULAR_TANGGA
         val ludo = game == Game.LUDO
         val multi = ular || ludo
-        // A room with other phones, over Bluetooth or the internet.
+        // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         val nearby = place != Place.PHONE
         val online = place == Place.ONLINE
+        val lan = nearby && !online && nearbyLink == NearbyLink.WIFI
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
         val congklak = LocalSeats.decode(congklakSeats, 2, listOf(LocalSeat.PERSON, LocalSeat.PERSON))
@@ -623,6 +630,17 @@ class MainActivity : ComponentActivity() {
                     fill = true,
                 )
             }
+            if (nearby && !online) {
+                SettingRow(stringResource(R.string.nearby_link)) {
+                    Segmented(
+                        options = NearbyLink.entries.map { it to stringResource(it.label) },
+                        current = nearbyLink,
+                        label = stringResource(R.string.nearby_link),
+                        onChange = { nearbyLink = it },
+                        fill = true,
+                    )
+                }
+            }
             // In a nearby room everyone who joins plays, up to 4.
             if (!nearby) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
@@ -661,6 +679,7 @@ class MainActivity : ComponentActivity() {
                     Box(Modifier.fillMaxWidth()) {
                         when {
                             online -> Detail(stringResource(when { ular -> R.string.ular_detail_online; ludo -> R.string.ludo_detail_online; else -> R.string.online_detail }))
+                            lan -> Detail(stringResource(R.string.nearby_detail_wifi))
                             nearby -> Detail(stringResource(when { ular -> R.string.ular_detail_nearby; ludo -> R.string.ludo_detail_nearby; else -> R.string.nearby_detail }))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
                             !multi -> Detail(stringResource(R.string.mode_pass_detail))
@@ -674,8 +693,9 @@ class MainActivity : ComponentActivity() {
                             SecondaryButton(
                                 stringResource(if (online) R.string.room_join else R.string.nearby_join_with_code),
                                 onClick = {
-                                    if (joinOnline != online) roomCode = ""
+                                    if (joinOnline != online || joinLan != lan) roomCode = ""
                                     joinOnline = online
+                                    joinLan = lan
                                     quickMatchGame = when {
                                         ular -> UlarTanggaGame.id
                                         ludo -> LudoGame.id
@@ -700,16 +720,20 @@ class MainActivity : ComponentActivity() {
                                         }
                                         creatingOnlineRoom = true
                                     }
-                                    nearby -> withBlePermissions {
-                                        room = NearbyRoom.host(
-                                            this@MainActivity, myName,
-                                            when {
-                                                ular -> NearbyRoom.Game.ULAR_TANGGA
-                                                ludo -> NearbyRoom.Game.LUDO
-                                                else -> NearbyRoom.Game.CONGKLAK
-                                            },
-                                            avatar = myAvatar,
-                                        )
+                                    nearby -> {
+                                        val startHost = {
+                                            room = NearbyRoom.host(
+                                                this@MainActivity, myName,
+                                                when {
+                                                    ular -> NearbyRoom.Game.ULAR_TANGGA
+                                                    ludo -> NearbyRoom.Game.LUDO
+                                                    else -> NearbyRoom.Game.CONGKLAK
+                                                },
+                                                lan = lan,
+                                                avatar = myAvatar,
+                                            )
+                                        }
+                                        if (lan) startHost() else withBlePermissions { startHost() }
                                     }
                                     multi -> {
                                         var nextComputer = 0
@@ -737,13 +761,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
             if (!online) GameRoomOptions(game)
-            if (permissionDenied && !online) {
+            if (permissionDenied && !online && !lan) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
         }
     }
 
-    /** Joins the room [roomCode] names: online, or nearby after asking for the Bluetooth permissions. */
+    /** Joins the room [roomCode] names: online, Wi‑Fi nearby, or Bluetooth nearby. */
     private fun joinRoom() {
         joinError = null
         if (joinOnline) {
@@ -751,6 +775,10 @@ class MainActivity : ComponentActivity() {
             return
         }
         if (!RoomCode.isValid(roomCode)) return
+        if (joinLan) {
+            room = NearbyRoom.join(this, roomCode, myName, lan = true, avatar = myAvatar)
+            return
+        }
         withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName, avatar = myAvatar) }
     }
 
@@ -817,6 +845,12 @@ private enum class Place(val label: Int, val icon: Int) {
     PHONE(R.string.opponent_phone, R.drawable.ic_people),
     NEARBY(R.string.opponent_nearby, R.drawable.ic_bluetooth),
     ONLINE(R.string.opponent_online, R.drawable.ic_globe),
+}
+
+/** Nearby radio: Bluetooth (default) or Wi‑Fi/hotspot (docs/decisions.md). */
+private enum class NearbyLink(val label: Int) {
+    BLUETOOTH(R.string.nearby_bluetooth),
+    WIFI(R.string.nearby_wifi),
 }
 
 /**
