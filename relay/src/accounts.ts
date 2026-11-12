@@ -53,7 +53,7 @@ const SCHEMA = [
      avatar TEXT NOT NULL DEFAULT '', picture TEXT, apple_refresh TEXT,
      created_at INTEGER NOT NULL, UNIQUE (provider, sub))`,
   `CREATE TABLE IF NOT EXISTS sessions (
-     token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL)`,
+     token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL, last_used INTEGER)`,
   `CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user_id)`,
   `CREATE TABLE IF NOT EXISTS auth_pending (
      id TEXT PRIMARY KEY, kind TEXT NOT NULL, challenge TEXT NOT NULL, user_id TEXT,
@@ -75,6 +75,10 @@ interface User {
   avatar: string;
   picture: string | null;
 }
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** A session unused this long ends (docs/decisions.md, accounts). */
+const SESSION_TTL_MS = 180 * DAY_MS;
 
 let schemaReady: Promise<unknown> | undefined;
 let appleKeys: { at: number; url: string; keys: JsonWebKey[] } | undefined;
@@ -352,9 +356,35 @@ async function deleteAccount(env: Env, db: D1Database, request: Request): Promis
 async function authed(db: D1Database, request: Request): Promise<User | null> {
   const token = bearer(request);
   if (!token) return null;
-  return db.prepare(
-    "SELECT u.id, u.name, u.provider, u.avatar, u.picture FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?",
-  ).bind(await sha256(token)).first<User>();
+  const hash = await sha256(token);
+  const row = await db.prepare(
+    `SELECT u.id, u.name, u.provider, u.avatar, u.picture, COALESCE(s.last_used, s.created_at) AS used
+     FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`,
+  ).bind(hash).first<User & { used: number }>();
+  if (!row) return null;
+  // At most one write per session a day keeps the expiry clock without a write per request.
+  const now = Date.now();
+  if (now - row.used > DAY_MS) await db.prepare("UPDATE sessions SET last_used = ? WHERE token_hash = ?").bind(now, hash).run();
+  const { used: _, ...user } = row;
+  return user;
+}
+
+/**
+ * Daily cron (wrangler.toml): ends sessions unused for SESSION_TTL_MS, with their push
+ * tokens, and drops expired sign-in challenges. Another sign-in starts a new session.
+ */
+export async function cleanUpAccounts(env: Env): Promise<void> {
+  const db = env.DB;
+  if (!db) return;
+  schemaReady ??= ensureSchema(db);
+  await schemaReady;
+  const now = Date.now();
+  const ttl = Number(env.SESSION_TTL_MS) || SESSION_TTL_MS;
+  await db.batch([
+    db.prepare("DELETE FROM sessions WHERE COALESCE(last_used, created_at) < ?").bind(now - ttl),
+    db.prepare("DELETE FROM push_tokens WHERE session NOT IN (SELECT token_hash FROM sessions)"),
+    db.prepare("DELETE FROM auth_pending WHERE expires < ?").bind(now),
+  ]);
 }
 
 /** Saves name and/or avatar; both are optional. Empty name is refused. */
@@ -398,8 +428,9 @@ function bearer(request: Request): string | null {
 /** Only the token's hash is stored, so a copy of the database cannot sign in as anyone. */
 async function newSession(db: D1Database, userId: string): Promise<string> {
   const token = randomToken();
-  await db.prepare("INSERT INTO sessions (token_hash, user_id, created_at) VALUES (?, ?, ?)")
-    .bind(await sha256(token), userId, Date.now()).run();
+  const now = Date.now();
+  await db.prepare("INSERT INTO sessions (token_hash, user_id, created_at, last_used) VALUES (?, ?, ?, ?)")
+    .bind(await sha256(token), userId, now, now).run();
   return token;
 }
 
@@ -540,13 +571,17 @@ async function sendInvite(env: Env, db: D1Database, user: User, input: Record<st
 
 // Helpers
 
-/** Creates tables, then adds avatar/picture on older D1 databases that predate them. */
+/** Creates tables, then adds columns that older D1 databases predate. */
 async function ensureSchema(db: D1Database): Promise<void> {
   await db.batch(SCHEMA.map((sql) => db.prepare(sql)));
   const info = await db.prepare("PRAGMA table_info(users)").all<{ name: string }>();
   const cols = new Set((info.results ?? []).map((r) => r.name));
   if (!cols.has("avatar")) await db.prepare("ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''").run();
   if (!cols.has("picture")) await db.prepare("ALTER TABLE users ADD COLUMN picture TEXT").run();
+  const sessionInfo = await db.prepare("PRAGMA table_info(sessions)").all<{ name: string }>();
+  if (!(sessionInfo.results ?? []).some((r) => r.name === "last_used")) {
+    await db.prepare("ALTER TABLE sessions ADD COLUMN last_used INTEGER").run();
+  }
 }
 
 /** API shape for the signed-in user: resolved avatar, plus picture for the Google picker. */

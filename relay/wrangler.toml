@@ -45,5 +45,9 @@ new_sqlite_classes = ["Inbox"]
 binding = "DB"
 database_name = "krida"
 
+# Daily account cleanup (cleanUpAccounts in src/accounts.ts).
+[triggers]
+crons = ["17 3 * * *"]
+
 [vars]
 APPLE_BUNDLE_ID = "com.ardeman.krida"

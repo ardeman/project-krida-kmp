@@ -1,6 +1,6 @@
 export { GroupMatchmaker } from "./group-matchmaker";
 export { Inbox } from "./inbox";
-import { handleAccounts } from "./accounts";
+import { cleanUpAccounts, handleAccounts } from "./accounts";
 /**
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
  * and up to four guest sockets. It knows no game rules; the host stays authoritative.
@@ -32,6 +32,8 @@ export interface Env {
   APPLE_JWKS_URL?: string;
   GOOGLE_TOKEN_URL?: string;
   APNS_URL?: string;
+  /** Test override for how long an unused session lasts, in ms. */
+  SESSION_TTL_MS?: string;
 }
 
 /** Same alphabet as RoomCode in shared/; online codes are 6 chars. */
@@ -68,6 +70,10 @@ const CLOSE = {
 } as const;
 
 export default {
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await cleanUpAccounts(env);
+  },
+
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/") return new Response("krida relay\n");

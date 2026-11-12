@@ -12,6 +12,8 @@ const relay = `http://localhost:${RELAY_PORT}`;
 const mock = `http://localhost:${MOCK_PORT}`;
 const BUNDLE = "com.ardeman.krida";
 const GOOGLE_CLIENT = "test-client";
+// Short session lifetime so the cleanup cron can be checked (only runs on /__scheduled).
+const SESSION_TTL_MS = 4000;
 
 const b64 = (value) => Buffer.from(typeof value === "string" ? value : JSON.stringify(value)).toString("base64url");
 const { publicKey, privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
@@ -55,7 +57,7 @@ const server = createServer((req, res) => {
 }).listen(MOCK_PORT);
 
 const dev = spawn("npx", [
-  "wrangler", "dev", "--port", String(RELAY_PORT), "--persist-to", `.wrangler/smoke-accounts-${Date.now()}`,
+  "wrangler", "dev", "--test-scheduled", "--var", `SESSION_TTL_MS:${SESSION_TTL_MS}`, "--port", String(RELAY_PORT), "--persist-to", `.wrangler/smoke-accounts-${Date.now()}`,
   "--var", `APPLE_JWKS_URL:${mock}/keys`, "--var", `GOOGLE_TOKEN_URL:${mock}/token`,
   "--var", `GOOGLE_CLIENT_ID:${GOOGLE_CLIENT}`, "--var", "GOOGLE_CLIENT_SECRET:test-secret",
   "--var", `APNS_URL:${mock}`, "--var", "APPLE_TEAM_ID:TEAM123456", "--var", "APNS_KEY_ID:KEY1234567",
@@ -117,6 +119,7 @@ async function run() {
   assert.equal(apple.data.user.provider, "apple");
   // Apple gives the name only the first time; a later sign-in keeps it and the same id.
   const appleAgain = await call("POST", "/v1/auth/apple", { json: { identityToken: appleToken() } });
+  const appleAgainAt = Date.now();
   assert.equal(appleAgain.data.user.id, apple.data.user.id);
   assert.equal(appleAgain.data.user.name, "Ayu");
   assert.notEqual(appleAgain.data.token, apple.data.token);
@@ -204,6 +207,14 @@ async function run() {
   // Rooms still answer next to the account routes.
   assert.equal((await call("GET", "/v1/rooms/ABC234")).status, 426);
   console.log("accounts smoke ok");
+
+  // The daily cleanup ends sessions unused past the lifetime and keeps fresh ones.
+  await new Promise((r) => setTimeout(r, Math.max(0, appleAgainAt + SESSION_TTL_MS + 200 - Date.now())));
+  const fresh = await call("POST", "/v1/auth/apple", { json: { identityToken: appleToken() } });
+  assert.equal((await call("GET", "/v1/me", { token: appleAgain.data.token })).status, 200, "stale session works until cleanup");
+  assert.equal((await fetch(`${relay}/__scheduled?cron=17+3+*+*+*`)).status, 200);
+  assert.equal((await call("GET", "/v1/me", { token: appleAgain.data.token })).status, 401, "stale session ended");
+  assert.equal((await call("GET", "/v1/me", { token: fresh.data.token })).status, 200, "fresh session kept");
 }
 
 /** A room socket (no headers needed), open. */
@@ -328,6 +339,7 @@ async function invites(ayu, budi, ayuId, budiId) {
   assert.equal((await invite(ayu, { friendId: budiId, code: "ABC235", key })).data.error, "room_closed");
   for (const socket of [host, full, guest]) socket.close(1000);
   phone.close();
+
 }
 
 let failed = false;

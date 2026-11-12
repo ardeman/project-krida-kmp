@@ -120,6 +120,11 @@ in the same commit as the code.
   and Google (both) from an account button on the menu; the relay keeps only the provider's
   user id and a display name in D1, no email. Google runs as a browser flow through the
   relay, so no sign-in SDK is added. Deleting the account is in the app.
+- **Sign-ins expire after 180 days unused** (agent, 2026-11-12, asked for by the owner): the
+  relay keeps a session's last use (updated at most once a day) and a daily cron
+  (`cleanUpAccounts`) deletes sessions unused for 180 days, their push tokens and expired
+  sign-in challenges. The player just signs in again. Accounts themselves are never removed
+  for inactivity.
 - **Friends** (2026-11-11): every account has one fixed friend code. Adding by code or
   `/f/CODE` link is instant and mutual, with no request to accept; either player can remove
   the other. A friend row shows only the display name. Approved
