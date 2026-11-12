@@ -26,6 +26,8 @@ web/.astro/
 # OS
 .DS_Store
 
-# Tmp files
-.cursor-tmp/
+# Agent scratch (screenshots, adb dumps). Use only `.tmp/` at the repo root.
+# Old names stay ignored so a stray folder never shows up in git status.
 .tmp/
+tmp/
+.cursor-tmp/

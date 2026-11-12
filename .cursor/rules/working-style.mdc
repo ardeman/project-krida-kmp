@@ -28,6 +28,8 @@ how the owner likes to work. `docs/status.md` lists open work outside the online
 - Read only the needed part of big files; keep command output short (`tail`, `grep`, `head`).
 - While working run only targeted tests; the full suite once before a push.
 - A flaky test: at most two tries to reproduce, then report and ask.
+- Scratch files (screenshots, adb dumps, one-off builds) go only in `.tmp/` at the repo
+  root (gitignored). Do not use `tmp/`, `.cursor-tmp/`, or other scratch folder names.
 
 ## Doing the work
 
