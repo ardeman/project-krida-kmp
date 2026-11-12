@@ -843,7 +843,7 @@ private fun levelLabel(level: CongklakBot.Level) = when (level) {
 /** Where the game is played; the play card's first choice. */
 private enum class Place(val label: Int, val icon: Int) {
     PHONE(R.string.opponent_phone, R.drawable.ic_people),
-    NEARBY(R.string.opponent_nearby, R.drawable.ic_bluetooth),
+    NEARBY(R.string.opponent_nearby, R.drawable.ic_nearby),
     ONLINE(R.string.opponent_online, R.drawable.ic_globe),
 }
 

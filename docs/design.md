@@ -109,7 +109,7 @@ spinners.
 
 ```
 [‹]  Congklak                          ← NearbyFrame: CircleIconButton + gameTitle (20 Black)
-     🌐 Online · lewat internet         ← place line (13 Bold, muted, globe or bluetooth icon)
+     🌐 Online · lewat internet         ← place line (13 Bold, muted, globe or nearby/antenna icon)
 ┌───────────────┐  ┌───────────────┐
 │ left card     │  │ right card    │   ← one or two cards, 14 apart, filling the height
 └───────────────┘  └───────────────┘

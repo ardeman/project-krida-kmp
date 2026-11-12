@@ -123,7 +123,7 @@ internal fun NearbyFrame(
                 Column {
                     Text(title, style = Theme.font(20, FontWeight.Black, Theme.ink), maxLines = 1)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(painterResource(if (online) R.drawable.ic_globe else R.drawable.ic_bluetooth), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(14.dp))
+                        Icon(painterResource(if (online) R.drawable.ic_globe else R.drawable.ic_nearby), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(14.dp))
                         Text(subtitle, style = Theme.font(13, FontWeight.Bold, Theme.muted), maxLines = 1)
                     }
                 }

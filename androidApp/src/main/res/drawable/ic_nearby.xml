@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material settings_input_antenna (Apache 2.0). Same role as iOS antenna.radiowaves. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FF000000" android:pathData="M12,5c-3.87,0 -7,3.13 -7,7h2c0,-2.76 2.24,-5 5,-5s5,2.24 5,5h2c0,-3.87 -3.13,-7 -7,-7zM13,14.29c0.88,-0.39 1.5,-1.26 1.5,-2.29 0,-1.38 -1.12,-2.5 -2.5,-2.5s-2.5,1.12 -2.5,2.5c0,1.02 0.62,1.9 1.5,2.29v3.3h-1v2h1v2h2v-2h1v-2h-1v-3.3zM12,1C5.93,1 1,5.93 1,12h2c0,-4.96 4.04,-9 9,-9s9,4.04 9,9h2C23,5.93 18.07,1 12,1z" />
+</vector>
