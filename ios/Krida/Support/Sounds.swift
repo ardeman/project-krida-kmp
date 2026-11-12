@@ -18,6 +18,8 @@ final class Sounds: ObservableObject {
     enum Line: String, CaseIterable {
         case yourTurn = "vo_your_turn", theirTurn = "vo_their_turn", shoot = "vo_shoot"
         case win = "vo_win", lose = "vo_lose", draw = "vo_draw"
+        case pick = "vo_pick", rollAgain = "vo_roll_again", captured = "vo_captured", home = "vo_home"
+        case ladder = "vo_ladder", snake = "vo_snake", pass = "vo_pass"
     }
 
     @AppStorage("soundOn") var soundOn = true {

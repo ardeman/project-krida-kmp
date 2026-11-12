@@ -455,7 +455,7 @@ private struct CongklakBoardView: View {
             }
             EmoteHud(
                 canEmote: table.canEmote,
-                emote: table.emote,
+                emotes: table.emotes,
                 playerName: { seat in
                     if let mine = table.mySeat.map(Int.init), mine == seat {
                         return String(localized: "You", bundle: .app)
@@ -463,7 +463,8 @@ private struct CongklakBoardView: View {
                     return table.players.first { Int($0.seat) == seat }?.name ?? "\(seat + 1)"
                 },
                 onSend: table.sendEmote,
-                s: s
+                s: s,
+                opensUp: true
             )
             .padding(.trailing, 24 * s)
             .padding(.bottom, 68 * s)

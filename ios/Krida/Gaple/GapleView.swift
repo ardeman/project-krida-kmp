@@ -80,6 +80,8 @@ final class GapleGameModel: ObservableObject {
             }
             let before = state
             state = next.state
+            // Seats that couldn't play after this move passed: "Pas!".
+            if next.fresh && !next.state.lastPasses.isEmpty { sounds.say(.pass) }
             if next.state.finished && !before.finished {
                 let mine = next.state.winner.map { next.state.team(seat: $0.int32Value) == next.state.team(seat: Int32(me)) } ?? false
                 sounds.play(mine ? .win : .lose)
@@ -399,15 +401,17 @@ private struct GapleBoardView: View {
                     SoundToggles()
                     CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
                 }
-                Spacer(minLength: 0)
+                // Reactions sit right under the rules button.
+                if table.canEmote { Spacer().frame(height: 8 * s) }
                 EmoteHud(
                     canEmote: table.canEmote,
-                    emote: table.emote,
+                    emotes: table.emotes,
                     playerName: seatName,
                     onSend: table.sendEmote,
                     s: s
                 )
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 0)
                 if model.myTurn && model.turnSeconds > 0 {
                     HStack(spacing: 8 * s) {
                         Text("Your turn").font(Theme.font(13 * s, .bold))

@@ -16,7 +16,7 @@ class GapleTable: ObservableObject {
     @Published fileprivate(set) var players: [PlayerInfo] = []
     @Published fileprivate(set) var notice: String?
     @Published fileprivate(set) var waiting: Waiting?
-    @Published fileprivate(set) var emote: (seat: Int, id: String)?
+    @Published fileprivate(set) var emotes: [EmoteEvent] = []
     private(set) var latest: GapleState
     var onUpdate: ((GapleUpdate) -> Void)?
 
@@ -43,7 +43,7 @@ class GapleTable: ObservableObject {
 
     fileprivate func showEmote(seat: Int, id: String) {
         guard active else { return }
-        emote = (seat, id)
+        emotes = emotes.plusEmote(seat: seat, id: id)
     }
 
     fileprivate func playersChanged(_ list: [PlayerInfo]) {
@@ -62,7 +62,7 @@ class GapleTable: ObservableObject {
     func nextRound() -> Bool { false }
     func stepBot() {}
     func restart() {}
-    func leave() { active = false; onUpdate = nil; emote = nil }
+    func leave() { active = false; onUpdate = nil; emotes = [] }
     func sendEmote(_ id: String) {}
 }
 

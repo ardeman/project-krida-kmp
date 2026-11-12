@@ -237,6 +237,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                     Sounds.play(Sounds.Effect.Step)
                     delay(HOP_MS)
                 }
+                if (after.lastTo == LudoGame.FINISH) Sounds.say(Sounds.Line.Home)
                 delay(80L)
                 for (cap in after.lastCaptures) {
                     val from = spot(before, cap.seat, cap.pawn)
@@ -246,8 +247,11 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 }
                 if (after.lastCaptures.isNotEmpty()) {
                     Sounds.play(Sounds.Effect.Capture)
+                    Sounds.say(Sounds.Line.Captured)
                     delay(400L)
                 }
+                // Let "Kena!" / "Masuk rumah!" finish before the turn line cuts in.
+                if (after.lastCaptures.isNotEmpty() || after.lastTo == LudoGame.FINISH) delay(500L)
             }
             placeAll(after)
             r.recallDie(if (table.isLocal(after.turn)) null else playerOrigins[after.turn])
@@ -259,6 +263,15 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         delay(280L)
     }
 
+    // The first turn of a game (or a restart) is announced once, as soon as the board shows.
+    var startSaid by remember { mutableStateOf(false) }
+    fun announceStart(s: LudoState) {
+        if (s.lastSeat != null || s.finished) { startSaid = false; return }
+        if (startSaid) return
+        startSaid = true
+        announceTurn(table, s.turn)
+    }
+
     fun drain() {
         if (animating) return
         val next = queue.removeFirstOrNull() ?: run { idle(); return }
@@ -267,6 +280,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             try {
                 if (next.fresh) animate(state, next.state) else placeAll(next.state)
                 state = next.state
+                if (next.fresh) announce(table, next.state) else announceStart(next.state)
             } finally {
                 animating = false
                 drain()
@@ -285,6 +299,8 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         if (renderer == null) return@LaunchedEffect
         placeAll(state)
         drain()
+        while (loading()) delay(100)
+        if (!animating && queue.isEmpty()) announceStart(state)
     }
 
     val canRoll = !state.finished && state.roll == null && table.isLocal(state.turn) && !animating && queue.isEmpty()
@@ -381,6 +397,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             pickSeconds = 0
             delay(Krida.AUTO_PLAY_MS)
         } else {
+            Sounds.say(Sounds.Line.Pick)
             pickSeconds = pickTotal
             while (pickSeconds > 0) {
                 delay(1000L)
@@ -522,16 +539,17 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                     SoundToggles()
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
-                Spacer(Modifier.weight(1f))
+                // Reactions sit right under the rules button.
+                if (table.canEmote) Spacer(Modifier.height(8.dp))
                 val youLabel = stringResource(R.string.bot_you)
                 EmoteHud(
                     canEmote = table.canEmote,
-                    emote = table.emote,
+                    emotes = table.emotes,
                     playerName = { seat -> if (seat == table.mySeat) youLabel else table.name(seat) },
                     onSend = table::sendEmote,
                     modifier = Modifier.hud("emote"),
                 )
-                if (table.canEmote) Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.weight(1f))
                 val dieLabel = stringResource(R.string.ular_roll)
                 // Die above the status line (same as ular tangga), with its spot measured against
                 // the TextureView origin so the 3D die lines up with this hit target. A ring above
@@ -622,6 +640,29 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
         )
         if (showRules) RulesSheet(state.options) { showRules = false }
+    }
+}
+
+/** Voice for whose turn it is; pass-and-play gets the chime only. */
+private fun announceTurn(table: LudoTable, seat: Int) {
+    val me = table.mySeat
+    if (me != null) Sounds.say(if (seat == me) Sounds.Line.YourTurn else Sounds.Line.TheirTurn) else Sounds.play(Sounds.Effect.Turn)
+}
+
+/** After a move: the result when the game ends, "roll again" for an extra roll, else the next turn. */
+private fun announce(table: LudoTable, after: LudoState) {
+    val me = table.mySeat
+    when {
+        after.finished -> {
+            val won = me == null || after.winner == me
+            Sounds.play(if (won) Sounds.Effect.Win else Sounds.Effect.Lose)
+            if (me != null) Sounds.say(if (won) Sounds.Line.Win else Sounds.Line.Lose)
+        }
+        // A roll with a choice: the pick prompt says "tap a token".
+        after.roll != null -> Unit
+        // Same seat again (a 6, a capture or a token home): roll again.
+        after.turn == after.lastSeat -> if (table.isLocal(after.turn)) Sounds.say(Sounds.Line.RollAgain)
+        else -> announceTurn(table, after.turn)
     }
 }
 

@@ -18,7 +18,7 @@ class CongklakTable: ObservableObject {
     /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
     @Published fileprivate(set) var waiting: Waiting?
     /// Latest preset reaction to show as a bubble; nil when none is up.
-    @Published fileprivate(set) var emote: (seat: Int, id: String)?
+    @Published fileprivate(set) var emotes: [EmoteEvent] = []
 
     /// The computer's difficulty, shown next to its name; nil without a computer player.
     fileprivate(set) var botLevel: String?
@@ -45,7 +45,7 @@ class CongklakTable: ObservableObject {
 
     fileprivate func showEmote(seat: Int, id: String) {
         guard active else { return }
-        emote = (seat, id)
+        emotes = emotes.plusEmote(seat: seat, id: id)
     }
 
     /// Sow from `hole` for `seat`. Returns false when nothing was sent.
@@ -54,7 +54,7 @@ class CongklakTable: ObservableObject {
     func leave() {
         active = false
         onUpdate = nil
-        emote = nil
+        emotes = []
     }
     /// Lets a computer player move if it is its turn. Called once the board is idle.
     func stepBot() {}

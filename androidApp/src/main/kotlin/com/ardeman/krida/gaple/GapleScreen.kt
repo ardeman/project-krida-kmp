@@ -196,6 +196,8 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                 }
                 val before = state
                 state = next.state
+                // Seats that couldn't play after this move passed: "Pas!".
+                if (next.fresh && next.state.lastPasses.isNotEmpty()) Sounds.say(Sounds.Line.Pass)
                 if (next.state.finished && !before.finished) {
                     val mine = next.state.team(me) == next.state.winner?.let(next.state::team)
                     Sounds.play(if (mine) Sounds.Effect.Win else Sounds.Effect.Lose)
@@ -415,14 +417,16 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                     SoundToggles()
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
-                Spacer(Modifier.weight(1f))
+                // Reactions sit right under the rules button.
+                if (table.canEmote) Spacer(Modifier.height(8.dp))
                 val youLabel = stringResource(R.string.bot_you)
                 EmoteHud(
                     canEmote = table.canEmote,
-                    emote = table.emote,
+                    emotes = table.emotes,
                     playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
                     onSend = table::sendEmote,
                 )
+                Spacer(Modifier.weight(1f))
                 if (myTurn && turnSeconds > 0) {
                     Spacer(Modifier.height(10.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

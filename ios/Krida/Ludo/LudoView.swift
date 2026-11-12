@@ -186,6 +186,7 @@ final class LudoGameModel: ObservableObject {
         guard key != nil else { return }
         let auto = autoSeats.contains(turn)
         pickSeconds = auto ? 0 : pickTotal
+        if !auto { sounds.say(.pick) }
         lifetime.launch("pickTurn") { [self] in
             if auto {
                 try await Task.sleep(for: .seconds(autoPause))
@@ -286,8 +287,22 @@ final class LudoGameModel: ObservableObject {
 
     func restart() { if lifetime.active { table.restart() } }
 
+    /// The first turn of a game (or a restart) is announced once, as soon as the board shows.
+    private var startSaid = false
+
+    private func announceStart(_ s: LudoState) {
+        guard s.lastSeat == nil, !s.finished else { startSaid = false; return }
+        guard !startSaid else { return }
+        startSaid = true
+        announceTurn(Int(s.turn))
+    }
+
     private func idle() {
         afterReadyChange()
+        lifetime.launch("start") { [self] in
+            while loading { try await Task.sleep(for: .milliseconds(100)) }
+            if !animating && queue.isEmpty { announceStart(state) }
+        }
         lifetime.launch("bot") { [self] in
             while loading { try await Task.sleep(for: .milliseconds(100)) }
             try await Task.sleep(for: .seconds(Self.botPause))
@@ -318,6 +333,7 @@ final class LudoGameModel: ObservableObject {
         guard !queue.isEmpty else { return idle() }
         let update = queue.removeFirst()
         lifetime.cancel("bot")
+        lifetime.cancel("start")
         animating = true
         afterReadyChange()
         lifetime.launch("animation") { [self] in
@@ -369,6 +385,8 @@ final class LudoGameModel: ObservableObject {
                         sounds.play(.step)
                         try await Task.sleep(for: .seconds(Self.hop))
                     }
+                    let home = to == Int(game.FINISH)
+                    if home { sounds.say(.home) }
                     try await Task.sleep(for: .seconds(0.08))
                     for cap in next.lastCaptures {
                         let fromSpot = spot(state, Int(cap.seat), Int(cap.pawn))
@@ -378,8 +396,11 @@ final class LudoGameModel: ObservableObject {
                     }
                     if !next.lastCaptures.isEmpty {
                         sounds.play(.capture)
+                        sounds.say(.captured)
                         try await Task.sleep(for: .seconds(0.4))
                     }
+                    // Let "Kena!" / "Masuk rumah!" finish before the turn line cuts in.
+                    if !next.lastCaptures.isEmpty || home { try await Task.sleep(for: .seconds(0.5)) }
                 }
                 placeAll(next)
                 recallDie(for: next)
@@ -409,7 +430,12 @@ final class LudoGameModel: ObservableObject {
             let won = me == nil || after.winner?.intValue == me
             sounds.play(won ? .win : .lose)
             if me != nil { sounds.say(won ? .win : .lose) }
-        } else if after.turn != after.lastSeat?.int32Value {
+        } else if after.roll != nil {
+            // A roll with a choice: the pick prompt says "tap a token".
+        } else if after.turn == after.lastSeat?.int32Value {
+            // Same seat again (a 6, a capture or a token home): roll again.
+            if table.isLocal(Int(after.turn)) { sounds.say(.rollAgain) }
+        } else {
             announceTurn(Int(after.turn))
         }
     }
@@ -616,10 +642,11 @@ private struct LudoBoardView: View {
                 }
                 .modifier(hudBox("buttons"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                Spacer(minLength: 0)
+                // Reactions sit right under the rules button.
+                if table.canEmote { Spacer().frame(height: 8 * s) }
                 EmoteHud(
                     canEmote: table.canEmote,
-                    emote: table.emote,
+                    emotes: table.emotes,
                     playerName: { seat in
                         if table.mySeat == seat { return String(localized: "You", bundle: .app) }
                         return table.name(seat)
@@ -628,7 +655,8 @@ private struct LudoBoardView: View {
                     s: s
                 )
                 .modifier(hudBox("emote"))
-                if table.canEmote { Spacer().frame(height: 10 * s) }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 0)
                 if model.canRoll && model.rollSeconds > 0 {
                     CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
                         .modifier(hudBox("rollTimer"))

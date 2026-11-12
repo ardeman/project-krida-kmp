@@ -22,7 +22,7 @@ file in the same commit when an item is done or a new one comes up. Last updated
   quick match without partners); builds, not played on a device yet. iOS matches it: this phone
   (same screen, table and menu card) plus nearby and online rooms (host, join, computers in
   empty seats, 2–4 seat online rooms, partners, quick match); builds, not played on a device
-  yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line needs a recording.
+  yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line plays when a seat passes (recorded 2026-11-12).
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak

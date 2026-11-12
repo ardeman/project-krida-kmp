@@ -289,6 +289,7 @@ final class UlarTanggaGameModel: ObservableObject {
                     let path = (ladder ? board.ladderPath(foot: landed) : board.snakePath(head: landed)).map { UlarTanggaScene.vec($0) }
                     let seconds = Self.length(path) / Self.jumpUnitsPerSecond + 0.2
                     sounds.play(ladder ? .store : .capture)
+                    sounds.say(ladder ? .ladder : .snake)
                     scene.watch(path)
                     scene.move(seat, Array(path.dropFirst()), seconds: seconds)
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.08))
@@ -563,10 +564,11 @@ private struct UlarTanggaBoardView: View {
                 }
                 .modifier(hudBox("buttons"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                Spacer(minLength: 0)
+                // Reactions sit right under the rules button.
+                if table.canEmote { Spacer().frame(height: 8 * s) }
                 EmoteHud(
                     canEmote: table.canEmote,
-                    emote: table.emote,
+                    emotes: table.emotes,
                     playerName: { seat in
                         if table.mySeat == seat { return String(localized: "You", bundle: .app) }
                         return table.name(seat)
@@ -575,7 +577,8 @@ private struct UlarTanggaBoardView: View {
                     s: s
                 )
                 .modifier(hudBox("emote"))
-                if table.canEmote { Spacer().frame(height: 10 * s) }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 0)
                 if model.ready && model.rollSeconds > 0 {
                     CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
                         .modifier(hudBox("rollTimer"))

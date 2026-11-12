@@ -17,7 +17,7 @@ class LudoTable: ObservableObject {
     /// A dropped player the game waits for, with the seconds left; shown instead of `notice`.
     @Published fileprivate(set) var waiting: Waiting?
     /// Latest preset reaction to show as a bubble; nil when none is up.
-    @Published fileprivate(set) var emote: (seat: Int, id: String)?
+    @Published fileprivate(set) var emotes: [EmoteEvent] = []
     /// Latest snapshot; the screen starts from it.
     private(set) var latest: LudoState
     /// Receives every snapshot after `latest`, in order.
@@ -52,7 +52,7 @@ class LudoTable: ObservableObject {
 
     fileprivate func showEmote(seat: Int, id: String) {
         guard active else { return }
-        emote = (seat, id)
+        emotes = emotes.plusEmote(seat: seat, id: id)
     }
 
     fileprivate func playersChanged(_ list: [PlayerInfo]) {
@@ -78,7 +78,7 @@ class LudoTable: ObservableObject {
     /// Lets a computer roll or move if it is its turn. Called once the board is idle.
     func stepBot() {}
     func restart() {}
-    func leave() { active = false; onUpdate = nil; emote = nil }
+    func leave() { active = false; onUpdate = nil; emotes = [] }
     /// Sends a preset reaction from this device's seat. No-op when `canEmote` is false.
     func sendEmote(_ id: String) {}
 }

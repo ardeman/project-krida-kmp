@@ -1,10 +1,8 @@
 package com.ardeman.krida.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,8 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,9 +41,25 @@ import androidx.compose.ui.unit.sp
 import com.ardeman.krida.R
 import com.ardeman.krida.core.protocol.Emotes
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** How long a received reaction stays on screen. */
 private const val SHOW_MS = 2_500L
+
+/** At most this many reactions show at once; older ones drop first. */
+private const val MAX_SHOWN = 4
+
+/**
+ * One reaction from [seat]. [n] numbers every reaction on this device, so two equal
+ * reactions in a row (or two in the same frame) are still told apart.
+ */
+data class EmoteEvent(val seat: Int, val id: String, val n: Int = next++) {
+    private companion object { var next = 1 }
+}
+
+/** Appends a reaction to a table's recent list, keeping only the last few. */
+fun List<EmoteEvent>.plusEmote(seat: Int, id: String): List<EmoteEvent> =
+    (this + EmoteEvent(seat, id)).takeLast(MAX_SHOWN)
 
 /** Localized label for a catalog [id]; falls back to the id itself. */
 @Composable
@@ -59,64 +77,81 @@ fun emoteLabel(id: String): String = stringResource(
 
 /**
  * HUD control for nearby/online games: a smile button opens the preset picker; choosing one
- * calls [onSend]. [emote] is the latest reaction to float above the board.
+ * calls [onSend]. [emotes] is the table's recent reactions; each new one floats beside the
+ * button for [SHOW_MS], stacked when several arrive together. Only the button takes layout
+ * space: the bubbles and picker float in a popup to its left, so they never move the button.
+ * They open downward from the button's top, or upward from its bottom when [opensUp] (a
+ * button near the bottom of the screen).
  */
 @Composable
 fun EmoteHud(
     canEmote: Boolean,
-    emote: Pair<Int, String>?,
+    emotes: List<EmoteEvent>,
     playerName: (Int) -> String,
     onSend: (String) -> Unit,
     modifier: Modifier = Modifier,
+    opensUp: Boolean = false,
 ) {
     if (!canEmote) return
     var open by remember { mutableStateOf(false) }
-    var shown by remember { mutableStateOf<Pair<Int, String>?>(null) }
-    LaunchedEffect(emote) {
-        if (emote == null) return@LaunchedEffect
-        shown = emote
+    val shown = remember { mutableStateListOf<EmoteEvent>() }
+    // Reactions already on show (or that were there before this HUD appeared).
+    var seen by remember { mutableIntStateOf(emotes.maxOfOrNull { it.n } ?: 0) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(emotes) {
+        val fresh = emotes.filter { it.n > seen }
+        if (fresh.isEmpty()) return@LaunchedEffect
+        seen = fresh.maxOf { it.n }
         open = false
-        delay(SHOW_MS)
-        if (shown == emote) shown = null
-    }
-    Box(modifier, contentAlignment = Alignment.BottomEnd) {
-        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            AnimatedVisibility(
-                visible = shown != null,
-                enter = fadeIn() + scaleIn(initialScale = 0.8f),
-                exit = fadeOut() + scaleOut(targetScale = 0.8f),
-            ) {
-                val current = shown
-                if (current != null) {
-                    EmoteBubble(name = playerName(current.first), id = current.second)
-                }
-            }
-            AnimatedVisibility(visible = open, enter = fadeIn(), exit = fadeOut()) {
-                EmotePicker(
-                    onPick = { id ->
-                        open = false
-                        onSend(id)
-                    },
-                )
-            }
-            val openLabel = stringResource(R.string.emote_open)
-            Box(
-                Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(Theme.surface)
-                    .border(1.5.dp, Theme.line, CircleShape)
-                    .semantics { contentDescription = openLabel }
-                    .clickable(role = Role.Button) {
-                        Sounds.play(Sounds.Effect.Tap)
-                        open = !open
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("😊", fontSize = 20.sp)
+        for (e in fresh) {
+            shown += e
+            while (shown.size > MAX_SHOWN) shown.removeAt(0)
+            // Each bubble keeps its own timer; the scope ends with the HUD.
+            scope.launch {
+                delay(SHOW_MS)
+                shown.remove(e)
             }
         }
     }
+    val openLabel = stringResource(R.string.emote_open)
+    // The popup anchors to the inner button, not to [modifier]'s padding.
+    Box(modifier) { Box(
+        Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(Theme.surface)
+            .border(1.5.dp, Theme.line, CircleShape)
+            .semantics { contentDescription = openLabel }
+            .clickable(role = Role.Button) {
+                Sounds.play(Sounds.Effect.Tap)
+                open = !open
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("😊", fontSize = 20.sp)
+        if (shown.isNotEmpty() || open) {
+            // Right edge 8 dp left of the button.
+            val shift = with(LocalDensity.current) { (44.dp + 8.dp).roundToPx() }
+            Popup(
+                alignment = if (opensUp) Alignment.BottomEnd else Alignment.TopEnd,
+                offset = IntOffset(-shift, 0),
+            ) {
+                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (e in shown) {
+                        key(e.n) { EmoteBubble(name = playerName(e.seat), id = e.id) }
+                    }
+                    if (open) {
+                        EmotePicker(
+                            onPick = { id ->
+                                open = false
+                                onSend(id)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    } }
 }
 
 @Composable

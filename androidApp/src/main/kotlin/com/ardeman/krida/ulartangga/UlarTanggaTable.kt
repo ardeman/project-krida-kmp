@@ -1,5 +1,7 @@
 package com.ardeman.krida.ulartangga
 
+import com.ardeman.krida.ui.EmoteEvent
+import com.ardeman.krida.ui.plusEmote
 import com.ardeman.krida.nearby.LastRoom
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +45,7 @@ abstract class UlarTanggaTable {
         protected set
 
     /** Latest preset reaction to show as a bubble; null when none is up. */
-    var emote by mutableStateOf<Pair<Int, String>?>(null)
+    var emotes by mutableStateOf<List<EmoteEvent>>(emptyList())
         protected set
 
     /** Latest snapshot; the screen starts from it. */
@@ -81,7 +83,7 @@ abstract class UlarTanggaTable {
     }
 
     protected fun showEmote(seat: Int, id: String) {
-        if (active) emote = seat to id
+        if (active) emotes = emotes.plusEmote(seat, id)
     }
 
     fun name(seat: Int) = players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
@@ -96,7 +98,7 @@ abstract class UlarTanggaTable {
     open fun stepBot() = Unit
 
     abstract fun restart()
-    open fun leave() { active = false; onUpdate = null; emote = null }
+    open fun leave() { active = false; onUpdate = null; emotes = emptyList() }
 
     /** Sends a preset reaction from this device's seat. No-op when [canEmote] is false. */
     open fun sendEmote(id: String) = Unit

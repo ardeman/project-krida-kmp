@@ -1,5 +1,7 @@
 package com.ardeman.krida.perangkapal
 
+import com.ardeman.krida.ui.EmoteEvent
+import com.ardeman.krida.ui.plusEmote
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -39,7 +41,7 @@ abstract class PerangKapalTable {
         protected set
     var waiting by mutableStateOf<Waiting?>(null)
         protected set
-    var emote by mutableStateOf<Pair<Int, String>?>(null)
+    var emotes by mutableStateOf<List<EmoteEvent>>(emptyList())
         protected set
 
     lateinit var latest: PerangKapalState
@@ -70,7 +72,7 @@ abstract class PerangKapalTable {
     }
 
     protected fun showEmote(seat: Int, id: String) {
-        if (active) emote = seat to id
+        if (active) emotes = emotes.plusEmote(seat, id)
     }
 
     fun name(seat: Int) = players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
@@ -86,7 +88,7 @@ abstract class PerangKapalTable {
     open fun leave() {
         active = false
         onUpdate = null
-        emote = null
+        emotes = emptyList()
     }
 
     open fun sendEmote(id: String) = Unit

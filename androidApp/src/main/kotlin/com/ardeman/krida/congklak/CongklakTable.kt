@@ -1,5 +1,7 @@
 package com.ardeman.krida.congklak
 
+import com.ardeman.krida.ui.EmoteEvent
+import com.ardeman.krida.ui.plusEmote
 import com.ardeman.krida.nearby.LastRoom
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +46,7 @@ abstract class CongklakTable {
         protected set
 
     /** Latest preset reaction to show as a bubble; null when none is up. */
-    var emote by mutableStateOf<Pair<Int, String>?>(null)
+    var emotes by mutableStateOf<List<EmoteEvent>>(emptyList())
         protected set
 
     /** The computer's difficulty, shown next to its name; null without a computer player. */
@@ -71,13 +73,13 @@ abstract class CongklakTable {
     }
 
     protected fun showEmote(seat: Int, id: String) {
-        if (active) emote = seat to id
+        if (active) emotes = emotes.plusEmote(seat, id)
     }
 
     /** Sow from [hole] for [seat]. Returns false when nothing was sent. */
     abstract fun play(seat: Int, hole: Int): Boolean
     abstract fun restart()
-    open fun leave() { active = false; onUpdate = null; emote = null }
+    open fun leave() { active = false; onUpdate = null; emotes = emptyList() }
 
     /** Lets a computer player move if it is its turn. Called once the board is idle. */
     open fun stepBot() = Unit

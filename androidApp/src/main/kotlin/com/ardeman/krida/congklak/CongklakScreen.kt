@@ -429,10 +429,11 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             val youLabel = stringResource(R.string.bot_you)
             EmoteHud(
                 canEmote = table.canEmote,
-                emote = table.emote,
+                emotes = table.emotes,
                 playerName = { seat -> if (seat == table.mySeat) youLabel else seats.name(seat) },
                 onSend = table::sendEmote,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 52.dp),
+                opensUp = true,
             )
         }
 

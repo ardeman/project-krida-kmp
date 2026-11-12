@@ -500,7 +500,7 @@ private struct PerangKapalBoardView: View {
                 if table.canEmote { Spacer().frame(height: 8 * s) }
                 EmoteHud(
                     canEmote: table.canEmote,
-                    emote: table.emote,
+                    emotes: table.emotes,
                     playerName: displayName,
                     onSend: table.sendEmote,
                     s: s

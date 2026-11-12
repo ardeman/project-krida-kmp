@@ -14,63 +14,101 @@ func emoteLabel(_ id: String) -> String {
     }
 }
 
-/// One reaction event; Equatable so `onChange` can pass seat+id without a stale View capture.
-private struct EmoteEvent: Equatable {
+/// At most this many reactions show at once; older ones drop first.
+private let maxShownEmotes = 4
+
+/// One reaction from `seat`. `n` numbers every reaction on this device, so two equal
+/// reactions in a row (or two in the same frame) are still told apart.
+struct EmoteEvent: Equatable {
     let seat: Int
     let id: String
+    let n: Int
+
+    @MainActor private static var next = 1
+
+    @MainActor init(seat: Int, id: String) {
+        self.seat = seat
+        self.id = id
+        n = EmoteEvent.next
+        EmoteEvent.next += 1
+    }
 }
 
-/// HUD control for nearby/online games: smile button, picker, and a floating reaction bubble.
+extension Array where Element == EmoteEvent {
+    /// Appends a reaction to a table's recent list, keeping only the last few.
+    @MainActor func plusEmote(seat: Int, id: String) -> [EmoteEvent] {
+        Array((self + [EmoteEvent(seat: seat, id: id)]).suffix(maxShownEmotes))
+    }
+}
+
+/// HUD control for nearby/online games: smile button, picker, and floating reaction bubbles.
+/// `emotes` is the table's recent reactions; each new one floats beside the button for 2.5 s,
+/// stacked when several arrive together. Only the button takes layout space; the bubbles and
+/// picker float to its left so they never move the button. They open downward from the
+/// button's top, or upward from its bottom when `opensUp` (a button near the bottom of the
+/// screen).
 struct EmoteHud: View {
     let canEmote: Bool
-    let emote: (seat: Int, id: String)?
+    let emotes: [EmoteEvent]
     let playerName: (Int) -> String
     let onSend: (String) -> Void
     var s: CGFloat = 1
+    var opensUp = false
 
     @State private var open = false
-    @State private var shown: (seat: Int, id: String)?
-
-    private var event: EmoteEvent? { emote.map { EmoteEvent(seat: $0.seat, id: $0.id) } }
+    @State private var shown: [EmoteEvent] = []
+    /// Reactions already on show (or there before this HUD appeared); nil until it appears.
+    @State private var seen: Int?
 
     var body: some View {
         if canEmote {
-            VStack(alignment: .trailing, spacing: 8 * s) {
-                if let shown {
-                    EmoteBubble(name: playerName(shown.seat), id: shown.id, s: s)
-                        .transition(.scale.combined(with: .opacity))
-                }
-                if open {
-                    EmotePicker(s: s) { id in
-                        open = false
-                        onSend(id)
-                    }
-                    .transition(.opacity)
-                }
-                Button {
-                    Sounds.shared.play(.tap)
-                    open.toggle()
-                } label: {
-                    Text("😊")
-                        .font(.system(size: 20 * s))
-                        .frame(width: 44 * s, height: 44 * s)
-                        .background(Theme.surface, in: Circle())
-                        .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Send a reaction", bundle: .app))
+            Button {
+                Sounds.shared.play(.tap)
+                open.toggle()
+            } label: {
+                Text("😊")
+                    .font(.system(size: 20 * s))
+                    .frame(width: 44 * s, height: 44 * s)
+                    .background(Theme.surface, in: Circle())
+                    .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(String(localized: "Send a reaction", bundle: .app))
+            .overlay(alignment: opensUp ? .bottomLeading : .topLeading) {
+                VStack(alignment: .trailing, spacing: 8 * s) {
+                    ForEach(shown, id: \.n) { e in
+                        EmoteBubble(name: playerName(e.seat), id: e.id, s: s)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                    if open {
+                        EmotePicker(s: s) { id in
+                            open = false
+                            onSend(id)
+                        }
+                        .transition(.opacity)
+                    }
+                }
+                .fixedSize()
+                // Right edge 8 pt left of the button.
+                .alignmentGuide(.leading) { d in d[.trailing] + 8 * s }
+            }
+            .zIndex(1)
             .animation(.easeOut(duration: 0.2), value: open)
-            .animation(.easeOut(duration: 0.2), value: shown?.id)
-            // Use the onChange *new* value — capturing `emote` from the View is stale (often nil)
-            // and the toast never appeared on receive or after a local send.
-            .onChange(of: event) { _, new in
-                guard let new else { return }
-                shown = (new.seat, new.id)
+            .animation(.easeOut(duration: 0.2), value: shown.map(\.n))
+            .onAppear { if seen == nil { seen = emotes.last?.n ?? 0 } }
+            // Use the onChange *new* value — capturing `emotes` from the View is stale.
+            .onChange(of: emotes) { _, new in
+                let fresh = new.filter { $0.n > (seen ?? 0) }
+                guard let last = fresh.last else { return }
+                seen = last.n
                 open = false
-                Task {
-                    try? await Task.sleep(nanoseconds: 2_500_000_000)
-                    if shown?.id == new.id, shown?.seat == new.seat { shown = nil }
+                for e in fresh {
+                    shown.append(e)
+                    if shown.count > maxShownEmotes { shown.removeFirst() }
+                    Task {
+                        try? await Task.sleep(nanoseconds: 2_500_000_000)
+                        shown.removeAll { $0.n == e.n }
+                    }
                 }
             }
         }

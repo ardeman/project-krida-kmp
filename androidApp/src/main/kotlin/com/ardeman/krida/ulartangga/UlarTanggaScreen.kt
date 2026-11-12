@@ -255,6 +255,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                         val path = if (ladder) UlarTanggaBoard.ladderPath(landed) else UlarTanggaBoard.snakePath(landed)
                         val seconds = pathLength(path) / JUMP_UNITS_PER_SECOND + 0.2f
                         Sounds.play(if (ladder) Sounds.Effect.Store else Sounds.Effect.Capture)
+                        Sounds.say(if (ladder) Sounds.Line.Ladder else Sounds.Line.Snake)
                         r?.watch(path)
                         r?.move(seat, path.drop(1), seconds)
                         delay((seconds * 1000).toLong() + 80)
@@ -471,16 +472,17 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     SoundToggles()
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
                 }
-                Spacer(Modifier.weight(1f))
+                // Reactions sit right under the rules button.
+                if (table.canEmote) Spacer(Modifier.height(8.dp))
                 val youLabel = stringResource(R.string.bot_you)
                 EmoteHud(
                     canEmote = table.canEmote,
-                    emote = table.emote,
+                    emotes = table.emotes,
                     playerName = { seat -> if (seat == table.mySeat) youLabel else table.name(seat) },
                     onSend = table::sendEmote,
                     modifier = Modifier.hud("emote"),
                 )
-                if (table.canEmote) Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.weight(1f))
                 // Die above the status line (same as ludo), with a ring that counts down to an
                 // automatic short toss. Tap to toss, hold to shake, release to throw.
                 if (throwReady() && rollSeconds > 0) {

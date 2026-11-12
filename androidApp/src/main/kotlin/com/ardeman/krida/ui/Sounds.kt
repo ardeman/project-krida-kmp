@@ -44,6 +44,13 @@ object Sounds {
         Win(R.raw.vo_win, R.raw.vo_win_en),
         Lose(R.raw.vo_lose, R.raw.vo_lose_en),
         Draw(R.raw.vo_draw, R.raw.vo_draw_en),
+        Pick(R.raw.vo_pick, R.raw.vo_pick_en),
+        RollAgain(R.raw.vo_roll_again, R.raw.vo_roll_again_en),
+        Captured(R.raw.vo_captured, R.raw.vo_captured_en),
+        Home(R.raw.vo_home, R.raw.vo_home_en),
+        Ladder(R.raw.vo_ladder, R.raw.vo_ladder_en),
+        Snake(R.raw.vo_snake, R.raw.vo_snake_en),
+        Pass(R.raw.vo_pass, R.raw.vo_pass_en),
     }
 
     private const val PREFS = "sounds"
