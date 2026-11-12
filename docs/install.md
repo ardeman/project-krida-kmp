@@ -23,9 +23,9 @@ The APK it installs is `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
 ./scripts/install-ios.sh --no-build # reinstall the last build
 ```
 
-Needs Xcode, `xcodegen` and `jq`, and an iPhone that has trusted this Mac (plugged in, or on the same Wi-Fi after pairing). The script picks the first paired physical iPhone that `xcrun devicectl list devices` reports and ignores simulators.
+Needs Xcode, `xcodegen` and `jq`, and an iPhone that has trusted this Mac (plugged in, or on the same Wi-Fi after pairing once over USB). The script picks the first paired physical iPhone that `xcrun devicectl list devices` reports (cable preferred, then Wi-Fi) and ignores simulators.
 
-It regenerates the project with `xcodegen`, builds for that phone with automatic signing (team `B36A8H9S8E`, `-allowProvisioningUpdates`) into `ios/build/device`, installs with `xcrun devicectl device install app`, and opens the app. If the phone is locked the install still succeeds; open Krida by hand.
+It regenerates the project with `xcodegen`, builds for that phone with automatic signing (team `B36A8H9S8E`, `-allowProvisioningUpdates`) into `ios/build/device`, installs with `xcrun devicectl device install app`, and opens the app. Over Wi-Fi it wakes the developer tunnel (`device info apps`), waits until `tunnelState` is `connected` before and after the build, and retries the install a few times with a longer timeout when CoreDevice drops the link. If the phone is locked the install still succeeds; open Krida by hand.
 
 The first install from a new signing certificate may need trusting on the phone: Settings › General › VPN & Device Management.
 
@@ -39,6 +39,6 @@ The first install from a new signing certificate may need trusting on the phone:
 
 - **`No Android device ready`**: check the cable, USB debugging, and the authorization prompt on the phone; `adb devices` should list it as `device`.
 - **`No paired iPhone found`**: open Xcode's Device Hub with the phone plugged in and trust the Mac on the phone.
-- **iPhone install fails or times out (CoreDevice error 3002 or 4000)**: the link to the phone dropped, usually over Wi-Fi while the phone locked or slept. The script says whether it found the phone over cable or Wi-Fi and retries the install once; if it still fails, plug the phone in, unlock it, and run `./scripts/install-ios.sh --no-build`.
+- **iPhone install fails or times out (CoreDevice error 3002 or 4000)**: the Wi-Fi developer tunnel dropped (phone locked/slept or left the network). The script wakes the tunnel and retries a few times; if it still fails, unlock the phone and keep it awake on the same Wi-Fi, or plug in a cable and run `./scripts/install-ios.sh --no-build`.
 - **iOS signing errors**: open `ios/Krida.xcodeproj` once in Xcode and check Signing & Capabilities is signed in to the team.
 - **Gradle fails with a Java version error**: install JDK 21 (`brew install openjdk@21`).
