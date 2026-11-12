@@ -36,6 +36,9 @@ final class BoardScene {
     private var placed = false
     private var updates: Cancellable?
     private var viewSize: CGSize = .zero
+    /// The view's bounds and safe-area insets when `layout` last ran.
+    private var laidOutBounds: CGSize = .zero
+    private var laidOutInsets: UIEdgeInsets = .zero
     private var baseFov: Float = 0
     private var targetFov: Float = 0
     private var currentLook = SIMD3<Float>.zero
@@ -83,7 +86,16 @@ final class BoardScene {
         aimCamera()
         view.scene.addAnchor(anchor)
         updates = view.scene.subscribe(to: SceneEvents.Update.self) { [weak self] event in
-            self?.stepCamera(Float(event.deltaTime))
+            guard let self else { return }
+            // SwiftUI can lay out before the view has its size on screen or its safe-area
+            // insets: then the zoom was set without the insets and every pit projected to
+            // (0, 0), stacking the counts in a corner and leaving no hole to tap. Redo the
+            // layout as soon as the view's own size or insets differ from what it used.
+            if viewSize.width > 0, view.bounds.width > 0,
+               view.bounds.size != laidOutBounds || view.safeAreaInsets != laidOutInsets {
+                layout(size: view.bounds.size)
+            }
+            stepCamera(Float(event.deltaTime))
         }
     }
 
@@ -131,6 +143,8 @@ final class BoardScene {
     func layout(size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
         viewSize = size
+        laidOutBounds = view.bounds.size
+        laidOutInsets = view.safeAreaInsets
         // RealityKit's field of view is vertical; the shared camera is defined horizontally.
         // Widen it so the board fits between the safe-area insets (Dynamic Island, corners).
         // An inset on one side only is a corner punch hole (see `PunchHole`): the board's
