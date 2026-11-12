@@ -381,12 +381,14 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
             }
             Spacer(Modifier.weight(1f))
             Column(Modifier.width(168.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
-                SoundToggles()
-                Spacer(Modifier.height(8.dp))
-                CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), {
-                    showRules = true
-                })
-                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SoundToggles()
+                    CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), {
+                        showRules = true
+                    })
+                }
+                // Reactions sit right under the rules button.
+                if (table.canEmote) Spacer(Modifier.height(8.dp))
                 val youLabel = stringResource(R.string.bot_you)
                 EmoteHud(
                     canEmote = table.canEmote,
