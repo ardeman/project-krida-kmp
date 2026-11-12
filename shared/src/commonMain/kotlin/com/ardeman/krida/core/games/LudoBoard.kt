@@ -374,6 +374,9 @@ object LudoBoard {
      * Flat five-point star on the tile top, like the classic safe-square mark. The tip
      * reaches farther than the two lower points, so the draw centre is nudged toward the
      * base to keep the mark visually centred in the cell.
+     *
+     * Flat marks are wound counter-clockwise seen from above (normal +y): iOS culls back
+     * faces, so a mark wound the other way is invisible there.
      */
     private fun star(mesh: VoxelMesh, at: FloatArray, radius: Float, rgb: FloatArray) {
         val y = MARK
@@ -389,7 +392,7 @@ object LudoBoard {
             val outer = tip(i * 2, radius)
             val before = tip((i * 2 + 9) % 10, radius * 0.4f)
             val after = tip(i * 2 + 1, radius * 0.4f)
-            mesh.quad(arrayOf(c, before, outer, after), rgb)
+            mesh.quad(arrayOf(c, after, outer, before), rgb)
         }
     }
 
@@ -410,14 +413,14 @@ object LudoBoard {
         val headBase = floatArrayOf(from[0] + fx * CELL * 0.02f, y, from[1] + fz * CELL * 0.02f)
         val headL = floatArrayOf(headBase[0] + px * CELL * 0.22f, y, headBase[2] + pz * CELL * 0.22f)
         val headR = floatArrayOf(headBase[0] - px * CELL * 0.22f, y, headBase[2] - pz * CELL * 0.22f)
-        mesh.quad(arrayOf(tip, headL, headR, tip), rgb)
+        mesh.quad(arrayOf(tip, headR, headL, tip), rgb)
         val stemBack = floatArrayOf(from[0] - fx * CELL * 0.28f, y, from[1] - fz * CELL * 0.28f)
         val stemHalf = CELL * 0.08f
         val s0 = floatArrayOf(stemBack[0] + px * stemHalf, y, stemBack[2] + pz * stemHalf)
         val s1 = floatArrayOf(stemBack[0] - px * stemHalf, y, stemBack[2] - pz * stemHalf)
         val s2 = floatArrayOf(headBase[0] - px * stemHalf, y, headBase[2] - pz * stemHalf)
         val s3 = floatArrayOf(headBase[0] + px * stemHalf, y, headBase[2] + pz * stemHalf)
-        mesh.quad(arrayOf(s0, s1, s2, s3), rgb)
+        mesh.quad(arrayOf(s0, s3, s2, s1), rgb)
     }
 
     /** Low disc on a yard slot. */
@@ -430,7 +433,7 @@ object LudoBoard {
             at[1] + sin(i * 2 * PI.toFloat() / n) * radius,
         )
         for (i in 0 until n) {
-            mesh.quad(arrayOf(c, pt(i), pt((i + 1) % n), c), rgb)
+            mesh.quad(arrayOf(c, pt((i + 1) % n), pt(i), c), rgb)
         }
     }
 

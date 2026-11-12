@@ -78,4 +78,23 @@ class LudoBoardTest {
         assertEquals(listOf(7, 14), LudoBoard.trackCell(24).toList()) // yellow gate
         assertTrue(LudoBoard.boardMesh().vertexCount > 0)
     }
+
+    @Test
+    fun flatBoardTrianglesFaceUp() {
+        // iOS (RealityKit) culls back faces, so a flat mark wound the wrong way vanishes there.
+        val mesh = LudoBoard.boardMesh()
+        val pos = mesh.positionArray()
+        val idx = mesh.indexArray()
+        for (t in idx.indices step 3) {
+            val (a, b, c) = Triple(idx[t] * 3, idx[t + 1] * 3, idx[t + 2] * 3)
+            val flat = pos[a + 1] == pos[b + 1] && pos[b + 1] == pos[c + 1]
+            if (!flat) continue
+            val ux = pos[b] - pos[a]; val uz = pos[b + 2] - pos[a + 2]
+            val vx = pos[c] - pos[a]; val vz = pos[c + 2] - pos[a + 2]
+            val ny = uz * vx - ux * vz
+            // Degenerate halves of triangle-as-quad marks have no area; skip them.
+            if (kotlin.math.abs(ny) < 1e-6f) continue
+            assertTrue(ny > 0, "flat triangle at index $t faces down (y=${pos[a + 1]})")
+        }
+    }
 }
