@@ -5,6 +5,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
+- Offline LAN (README roadmap 6): under Nearby, with a Bluetooth | Wi‑Fi control (default
+  Bluetooth). Decision in `docs/decisions.md`. Not started; stubs in `lan/LanTransport.kt`
+  and `Transport/LanTransport.swift`.
 - Online step 10b, friends list: relay, web, Android and iOS are built
   (`docs/mockups/friends.md`); deploying the relay and web and the phone checks are open.
 - Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay, Android and

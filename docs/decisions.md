@@ -75,6 +75,11 @@ in the same commit as the code.
 
 ## Nearby and online rooms
 
+- **LAN lives under Nearby** (2026-11-12): no fourth Play-on tile. Nearby means same place —
+  Bluetooth (BLE) or Wi‑Fi/hotspot (Bonjour `_krida._tcp`). When Nearby is selected, a
+  Bluetooth | Wi‑Fi control chooses the radio (default Bluetooth, so today's nearby stays
+  the same). Same 4-letter codes, lobby and join screens as BLE. Offline LAN is README
+  multiplayer roadmap step 6; not built yet.
 - Join by QR code or by typing the 4-character code. The QR holds the room link
   `krida://join?room=ABCD`. No new dependencies for QR: shared Kotlin encoder, VisionKit on iOS,
   Google code scanner on Android (no camera permission).
