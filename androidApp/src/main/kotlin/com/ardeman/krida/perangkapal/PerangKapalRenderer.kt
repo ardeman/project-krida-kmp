@@ -66,6 +66,12 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
 
     private var battle = false
     private var room: FloatArray? = null
+
+    /**
+     * Points (x, y, z) to fit instead of the whole grid, for the menu preview. The fit is
+     * centred on the camera's target, so keep them around the grid's centre.
+     */
+    var focus: List<FloatArray>? = null
     private var obstacles: List<FloatArray> = emptyList()
     /** Cell 0 of the ocean: the ship, peg and ring meshes are built there and moved from it. */
     private val base = PerangKapalBoard.cellCenter(0, 0f)
@@ -222,7 +228,8 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         // The narrowest field of view that keeps the grid to play on between the HUD columns:
         // the free space is taken evenly around the screen centre, where the camera looks. In
         // battle that grid is the radar; the small ocean may reach under the left column.
-        val room = room ?: return
+        // The menu preview has no HUD: its focus fills the whole view.
+        val room = room ?: focus?.let { floatArrayOf(0f, 0f, width.toFloat(), height.toFloat()) } ?: return
         val cx = width / 2f
         val cy = height / 2f
         var left = room[0]
@@ -233,7 +240,7 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         val halfW = min(cx - left, right - cx)
         val halfH = min(cy - room[1], room[3] - cy)
         if (halfW <= 1f || halfH <= 1f) return
-        val corners = PerangKapalBoard.bounds(if (battle) PerangKapalBoard.RADAR_OFFSET_X else 0f)
+        val corners = focus ?: PerangKapalBoard.bounds(if (battle) PerangKapalBoard.RADAR_OFFSET_X else 0f)
         val shot = corners.map { project(it[0], it[1], it[2]) }
         val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
         val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)

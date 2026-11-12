@@ -3,8 +3,7 @@ import Shared
 import SwiftUI
 
 /// The real ular tangga board as a still picture, for the menu's game card: zoomed in on the
-/// start, with the pawns waiting in the tray, the first rows, ladder 4→25 and snake 27→5 (as
-/// Android). Drawn once with RealityKit, snapshotted and shown as an image, like `BoardPreview`.
+/// first rows, with ladder 4→25 and snake 27→5 both whole (as Android). Drawn once with RealityKit, snapshotted and shown as an image, like `BoardPreview`.
 struct UlarTanggaPreview: View {
     var onReady: () -> Void = {}
     @State private var image: UIImage?
@@ -48,8 +47,8 @@ struct UlarTanggaPreview: View {
         board.setSeats(Array(0..<pieces))
         let pawns = (0..<pieces).map { UlarTanggaScene.vec(UlarTanggaBoard.shared.pieceSpot(square: 0, seat: Int32($0), shared: true)) }
         for (seat, spot) in pawns.enumerated() { board.place(seat, spot) }
-        let squares = [1, 4, 5, 25, 27].map { UlarTanggaScene.vec(UlarTanggaBoard.shared.squareAnchor(square: Int32($0))) }
-        frame = board.layout(size: size, room: CGRect(origin: .zero, size: size), focus: pawns + squares)
+        let squares = [4, 5, 25, 27].map { UlarTanggaScene.vec(UlarTanggaBoard.shared.squareAnchor(square: Int32($0))) }
+        frame = board.layout(size: size, room: CGRect(origin: .zero, size: size), focus: squares)
         board.view.frame = CGRect(origin: .zero, size: frame.size)
         scene = board
         snapshot(board, size: size, tries: 4)

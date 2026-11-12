@@ -2,8 +2,8 @@ import RealityKit
 import Shared
 import SwiftUI
 
-/// The real ludo board as a still picture, for the menu's game card: the whole board with
-/// four tokens waiting in each yard. Drawn once with RealityKit, snapshotted and shown as an
+/// The real ludo board as a still picture, for the menu's game card: zoomed in on one
+/// corner: the first colour's yard and the start of its track, with one pawn out. Drawn once with RealityKit, snapshotted and shown as an
 /// image, like `UlarTanggaPreview`. Same framing as Android's `LudoPreview`.
 struct LudoPreview: View {
     var onReady: () -> Void = {}
@@ -54,7 +54,12 @@ struct LudoPreview: View {
                 board.place(color, pawn, spot)
             }
         }
-        let focus = LudoBoard.shared.bounds().flatMap { part in part.map { LudoScene.vec($0) } }
+        // One pawn already out on the track.
+        board.place(0, 0, LudoScene.vec(LudoBoard.shared.tokenAnchor(color: 0, pawn: 0, pos: 2)))
+        // Zoomed in on one corner: the first colour's yard and the start of its track.
+        let focus = (0..<pawns).map {
+            LudoScene.vec(LudoBoard.shared.tokenAnchor(color: 0, pawn: Int32($0), pos: LudoGame.shared.YARD))
+        } + (0...5).map { LudoScene.vec(LudoBoard.shared.tokenAnchor(color: 0, pawn: 0, pos: Int32($0))) }
         frame = board.layout(size: size, room: CGRect(origin: .zero, size: size), focus: focus)
         board.view.frame = CGRect(origin: .zero, size: frame.size)
         scene = board

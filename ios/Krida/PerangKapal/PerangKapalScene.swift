@@ -192,6 +192,10 @@ final class PerangKapalScene {
 
     // MARK: Fitting the board
 
+    /// Points (x, y, z) to fit instead of the whole grid, for the menu preview. The fit is
+    /// centred on the camera's target, so keep them around the grid's centre.
+    var focus: [SIMD3<Float>]?
+
     /// Fits the grid to play on into `free` (the screen without the HUD columns). In battle
     /// that is the radar; the small ocean beside it may reach under the left column, down to
     /// `left`. Returns the frame the view must take.
@@ -209,7 +213,7 @@ final class PerangKapalScene {
         applyCamera()
         guard screen.width > 0 else { return viewFrame }
         let baseTan = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
-        let corners = board.bounds(originX: battle ? board.RADAR_OFFSET_X : 0).map(Self.vec)
+        let corners = focus ?? board.bounds(originX: battle ? board.RADAR_OFFSET_X : 0).map(Self.vec)
         let c = CGPoint(x: screen.width / 2, y: screen.height / 2)
         let shot = corners.map { project($0, tanV: baseTan) }
         let halfW = max(shot.map { abs($0.x - c.x) }.max() ?? 1, 1)

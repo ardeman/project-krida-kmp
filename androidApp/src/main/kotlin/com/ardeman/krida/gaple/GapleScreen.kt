@@ -145,8 +145,8 @@ fun GaplePreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) =
                 viewer = 0,
                 animate = false,
             )
-            // The three tiles and the start of the far hand, with felt around them.
-            focus = listOf(floatArrayOf(-5f, 0f, -4f), floatArrayOf(5f, 0f, 3f))
+            // Zoomed in on the three tiles, with a little felt around them.
+            focus = listOf(floatArrayOf(-3.4f, 0f, -2f), floatArrayOf(3.4f, 0f, 2f))
         }
     }
 

@@ -73,6 +73,7 @@ import com.ardeman.krida.R
 import com.ardeman.krida.ads.Ads
 import com.ardeman.krida.congklak.VoxelPreview
 import com.ardeman.krida.core.games.PerangKapalGame
+import com.ardeman.krida.core.games.PerangKapalShip
 import com.ardeman.krida.core.games.PerangKapalState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
@@ -107,21 +108,29 @@ fun PerangKapalScreen(table: PerangKapalTable, onExit: () -> Unit) {
     }
 }
 
+/**
+ * The menu preview's fleet (bow cell, across), one ship per kind, same as iOS: the carrier,
+ * battleship and a cruiser sit near the centre, where the preview zooms in.
+ */
+private val PREVIEW_FLEET = listOf(33 to true, 54 to true, 42 to false, 7 to false, 90 to true)
+
 @Composable
 fun PerangKapalPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) =
     VoxelPreview("perang_kapal", null, modifier, onReady) { view ->
         PerangKapalRenderer(view).apply {
+            val fleet = PREVIEW_FLEET.mapIndexedNotNull { kind, (bow, across) ->
+                PerangKapalGame.cellsFor(bow, PerangKapalGame.FLEET[kind], across)?.let { PerangKapalShip(kind, it) }
+            }
             applyState(
-                PerangKapalState(
-                    placing = true,
-                    fleets = listOf(
-                        PerangKapalGame.randomFleet(kotlin.random.Random(1)),
-                        emptyList(),
-                    ),
-                    ready = listOf(false, false),
-                ),
+                PerangKapalState(placing = true, fleets = listOf(fleet, emptyList()), ready = listOf(false, false)),
                 mySeat = 0,
             )
+            // Zoomed in on the middle of the grid: rows 3–6, columns 2–7.
+            val x = 3 * PerangKapalBoard.CELL
+            val z = 2 * PerangKapalBoard.CELL
+            focus = listOf(PerangKapalBoard.TOP, PerangKapalBoard.TOP + PerangKapalBoard.SHIP_H).flatMap { y ->
+                listOf(floatArrayOf(-x, y, -z), floatArrayOf(x, y, -z), floatArrayOf(-x, y, z), floatArrayOf(x, y, z))
+            }
             resume()
         }
     }

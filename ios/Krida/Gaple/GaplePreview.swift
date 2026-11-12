@@ -53,8 +53,8 @@ struct GaplePreview: View {
             options: GapleOptions(partners: false)
         )
         board.apply(state, viewer: 0, animate: false)
-        // The three tiles and the start of the far hand, with felt around them.
-        board.focus = [SIMD3(-5, 0, -4), SIMD3(5, 0, 3)]
+        // Zoomed in on the three tiles, with a little felt around them.
+        board.focus = [SIMD3(-3.4, 0, -2), SIMD3(3.4, 0, 2)]
         frame = board.layout(size: size, free: CGRect(origin: .zero, size: size))
         board.view.frame = CGRect(origin: .zero, size: frame.size)
         renderer = board

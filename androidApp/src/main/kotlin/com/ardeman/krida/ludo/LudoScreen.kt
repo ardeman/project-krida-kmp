@@ -116,6 +116,9 @@ fun LudoScreen(table: LudoTable, onExit: () -> Unit) {
     }
 }
 
+/** Where the menu preview's one pawn on the track stands (steps from its start). */
+private const val PREVIEW_OUT = 2
+
 @Composable
 fun LudoPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) =
     VoxelPreview("ludo", null, modifier, onReady) { view ->
@@ -124,7 +127,13 @@ fun LudoPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) =
             for (color in 0 until 4) for (pawn in 0 until 4) {
                 place(color, pawn, LudoBoard.tokenAnchor(color, pawn, LudoGame.YARD))
             }
-            frame(LudoBoard.bounds().flatten())
+            // One pawn already out on the track.
+            place(0, 0, LudoBoard.tokenAnchor(0, 0, PREVIEW_OUT))
+            // Zoomed in on one corner: the first colour's yard and the start of its track.
+            frame(
+                (0 until 4).map { LudoBoard.tokenAnchor(0, it, LudoGame.YARD) } +
+                    (0..5).map { LudoBoard.tokenAnchor(0, 0, it) },
+            )
         }
     }
 
