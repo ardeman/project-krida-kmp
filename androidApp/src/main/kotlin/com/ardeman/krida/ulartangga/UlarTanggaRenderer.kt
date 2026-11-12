@@ -161,6 +161,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         /** Arc height of each bounce, and its share of the time. */
         val heights: FloatArray,
         val shares: FloatArray,
+        /** The die's scale when the flight starts (see [homeScale]). */
+        val s0: Float = 1f,
     ) {
         var elapsed = 0f
         var landed = 0
@@ -193,6 +195,13 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     private var drawnRot = dieRot
     private val drawnPos = home.copyOf()
     private var fovDegrees = UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES
+    /**
+     * Scale of the waiting die. Zoomed in, [home] stays at the normal-view depth (farther
+     * would put it behind the board), so the die shrinks to keep its size on screen.
+     */
+    private var homeScale = 1f
+    /** Scale of the die in flight, eased between 1 on the board and [homeScale]. */
+    private var flyScale = 1f
     private var shiftX = 0.0
     private var shiftY = 0.0
 
@@ -291,7 +300,9 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             seconds = seconds,
             heights = heights,
             shares = shares,
+            s0 = homeScale,
         )
+        flyScale = homeScale
         dieMode = DieMode.Thrown
         show(dieShadow, true)
         invalidate()
@@ -306,7 +317,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         val fwd = norm(FloatArray(3) { at[it] - eye[it] })
         val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
         val up = cross(right, fwd)
-        val units = UlarTanggaBoard.DIE / spot[2]
+        val units = UlarTanggaBoard.DIE * homeScale / spot[2]
         return FloatArray(3) { home[it] + (right[it] * (origin[0] - spot[0]) - up[it] * (origin[1] - spot[1])) * units }
     }
 
@@ -327,7 +338,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 flight = Flight(
                     from = shown.copyOf(), to = diePosition(idleOrigin), q0 = dieRot, q1 = homeRotation(dieValue),
                     axis = floatArrayOf(1f, 0f, 0f), turns = 0, seconds = 0.45f,
-                    heights = floatArrayOf(0f), shares = floatArrayOf(1f),
+                    heights = floatArrayOf(0f), shares = floatArrayOf(1f), s0 = flyScale,
                 )
                 dieMode = DieMode.Returning
                 invalidate()
@@ -344,11 +355,13 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 val e = 1 - (1 - k) * (1 - k)
                 for (i in 0..2) shown[i] = f.from[i] + (f.to[i] - f.from[i]) * e
                 dieRot = qSlerp(f.q0, f.q1, e)
+                flyScale = f.s0 + (homeScale - f.s0) * e
             } else {
                 // Across, slowing down; down in bounces, the first falling from the screen.
                 val glide = 1 - (1 - k) * (1 - k)
                 shown[0] = f.from[0] + (f.to[0] - f.from[0]) * glide
                 shown[2] = f.from[2] + (f.to[2] - f.from[2]) * glide
+                flyScale = f.s0 + (1f - f.s0) * glide
                 var start = 0f
                 for (i in f.shares.indices) {
                     val end = start + f.shares[i]
@@ -376,6 +389,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 } else {
                     while (f.landed < f.shares.size) { f.landed++; onDieBounce?.invoke() }
                     dieMode = DieMode.Landed
+                    flyScale = 1f
                 }
                 idleTime = 0f
             }
@@ -414,7 +428,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
     /** Sets the die and its shadow: pressed, shaken or rocking while it waits on screen. */
     private fun applyDie() {
         var q = dieRot
-        var scale = 1f
+        var scale = flyScale
         val pos = shown.copyOf()
         if (dieMode == DieMode.Home) {
             dieSpot?.let { spot ->
@@ -423,7 +437,7 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 val fwd = norm(FloatArray(3) { at[it] - eye[it] })
                 val right = norm(cross(fwd, floatArrayOf(0f, 1f, 0f)))
                 val up = cross(right, fwd)
-                val units = UlarTanggaBoard.DIE / spot[2]
+                val units = UlarTanggaBoard.DIE * homeScale / spot[2]
                 for (i in 0..2) pos[i] += (right[i] * heldX - up[i] * heldY) * units
             }
             if (spinAngle != 0f) {
@@ -439,12 +453,12 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
             if (shakeAmt > 0f) {
                 // A small toss up and down while it spins.
                 val s = shakeTime * 2 * PI.toFloat()
-                val bob = UlarTanggaBoard.DIE * 0.12f * shakeAmt
+                val bob = UlarTanggaBoard.DIE * homeScale * 0.12f * shakeAmt
                 pos[0] += bob * 0.5f * sin(s * 2.3f)
                 pos[1] += bob * kotlin.math.abs(sin(s * 3.1f))
             }
             if (rockAmt > 0f) q = qMul(qAxis(0f, 1f, 0f, rockAmt * 0.18f * sin(idleTime * 2 * PI.toFloat() / 1.6f)), q)
-            scale = 1f - 0.1f * pressAmt
+            scale = homeScale * (1f - 0.1f * pressAmt)
         }
         drawnRot = q
         pos.copyInto(drawnPos)
@@ -470,11 +484,18 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         val tanH = tanV * width / height
         val nx = (spot[0] * 2f / width - 1f - shiftX.toFloat())
         val ny = (1f - spot[1] * 2f / height - shiftY.toFloat())
-        val depth = UlarTanggaBoard.DIE * (height / 2f) / (tanV * spot[2])
+        // A narrower (zoomed-in) FOV would need the die farther away, past the board; keep the
+        // normal-view depth and shrink the die instead.
+        val refTan = maxOf(tanV, tan(UlarTanggaBoard.CAMERA_VERTICAL_FOV_DEGREES * PI.toFloat() / 360f))
+        homeScale = tanV / refTan
+        val depth = UlarTanggaBoard.DIE * (height / 2f) / (refTan * spot[2])
         for (i in 0..2) home[i] = eye[i] + (fwd[i] + right[i] * nx * tanH + up[i] * ny * tanV) * depth
         if (dieMode == DieMode.Home) {
             diePosition(idleOrigin).copyInto(shown)
             applyDie()
+        } else if (dieMode == DieMode.Returning) {
+            // Follow the spot while the camera eases, so the die lands where it is drawn.
+            flight?.to?.let { diePosition(idleOrigin).copyInto(it) }
         }
         show(die, true)
         invalidate()

@@ -108,6 +108,11 @@ final class UlarTanggaScene {
     var onViewFrame: ((CGRect) -> Void)?
     /// Vertical field of view of the screen-sized picture, before the view is enlarged.
     private var tanHalf: Float = 0
+    /// Scale of the waiting die. Zoomed in, `home` stays at the normal-view depth (farther
+    /// would put it behind the board), so the die shrinks to keep its size on screen.
+    private var homeScale: Float = 1
+    /// Scale of the die in flight, eased between 1 on the board and `homeScale`.
+    private var flyScale: Float = 1
 
     /**
      * Gameplay: ease the camera onto `points` (die landing, pawn hops), or back to the whole
@@ -354,7 +359,7 @@ final class UlarTanggaScene {
 
     private struct Flight {
         let from: SIMD3<Float>
-        let to: SIMD3<Float>
+        var to: SIMD3<Float>
         let q0: simd_quatf
         let q1: simd_quatf
         let axis: SIMD3<Float>
@@ -363,6 +368,8 @@ final class UlarTanggaScene {
         /// Arc height of each bounce, and its share of the time.
         let heights: [Float]
         let shares: [Float]
+        /// The die's scale when the flight starts (see `homeScale`).
+        var s0: Float = 1
         var elapsed: Float = 0
         var landed = 0
     }
@@ -458,8 +465,10 @@ final class UlarTanggaScene {
             turns: long ? 4 : 2,
             seconds: seconds,
             heights: heights,
-            shares: weights.map { $0 / total }
+            shares: weights.map { $0 / total },
+            s0: homeScale
         )
+        flyScale = homeScale
         dieMode = .thrown
         dieShadow.isEnabled = true
         return seconds
@@ -468,7 +477,7 @@ final class UlarTanggaScene {
     private func diePosition(_ origin: CGPoint?) -> SIMD3<Float> {
         guard let origin, let spot = dieSpot else { return home }
         let (_, right, up) = Self.basis()
-        let units = board.DIE / Float(spot.size)
+        let units = board.DIE * homeScale / Float(spot.size)
         return home + (right * Float(origin.x - spot.center.x) - up * Float(origin.y - spot.center.y)) * units
     }
 
@@ -483,12 +492,12 @@ final class UlarTanggaScene {
             if let f = flight {
                 flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: f.q1,
                                 axis: f.axis, turns: 0, seconds: max(0.15, f.seconds - f.elapsed),
-                                heights: [0], shares: [1])
+                                heights: [0], shares: [1], s0: flyScale)
             }
         case .thrown, .landed:
             // Bring home even if the throw frame hasn't flipped to landed yet (delay race).
             flight = Flight(from: shown, to: diePosition(idleOrigin), q0: dieRot, q1: Self.homeRotation(dieValue),
-                            axis: [1, 0, 0], turns: 0, seconds: 0.45, heights: [0], shares: [1])
+                            axis: [1, 0, 0], turns: 0, seconds: 0.45, heights: [0], shares: [1], s0: flyScale)
             dieMode = .returning
         }
     }
@@ -501,11 +510,13 @@ final class UlarTanggaScene {
                 let e = 1 - (1 - k) * (1 - k)
                 shown = f.from + (f.to - f.from) * e
                 dieRot = simd_slerp(f.q0, f.q1, e)
+                flyScale = f.s0 + (homeScale - f.s0) * e
             } else {
                 // Across, slowing down; down in bounces, the first falling from the screen.
                 let glide = 1 - (1 - k) * (1 - k)
                 shown.x = f.from.x + (f.to.x - f.from.x) * glide
                 shown.z = f.from.z + (f.to.z - f.from.z) * glide
+                flyScale = f.s0 + (1 - f.s0) * glide
                 var start: Float = 0
                 for i in f.shares.indices {
                     let end = start + f.shares[i]
@@ -534,6 +545,7 @@ final class UlarTanggaScene {
                 } else {
                     for _ in f.landed..<f.shares.count { onDieBounce?() }
                     dieMode = .landed
+                    flyScale = 1
                 }
                 idleTime = 0
             }
@@ -571,11 +583,11 @@ final class UlarTanggaScene {
     private func applyDie() {
         var q = dieRot
         var pos = shown
-        var scale: Float = 1
+        var scale = flyScale
         if dieMode == .home {
             if let spot = dieSpot {
                 let (_, right, up) = Self.basis()
-                let units = board.DIE / Float(spot.size)
+                let units = board.DIE * homeScale / Float(spot.size)
                 pos += (right * Float(heldOffset.width) - up * Float(heldOffset.height)) * units
             }
             if spinAngle != 0 {
@@ -588,14 +600,14 @@ final class UlarTanggaScene {
             if shakeAmt > 0 {
                 // A small toss up and down while it spins.
                 let s = shakeTime * 2 * .pi
-                let bob = board.DIE * 0.12 * shakeAmt
+                let bob = board.DIE * homeScale * 0.12 * shakeAmt
                 pos.x += bob * 0.5 * sin(s * 2.3)
                 pos.y += bob * abs(sin(s * 3.1))
             }
             if rockAmt > 0 {
                 q = simd_quatf(angle: rockAmt * 0.18 * sin(idleTime * 2 * .pi / 1.6), axis: [0, 1, 0]) * q
             }
-            scale = 1 - 0.1 * pressAmt
+            scale = homeScale * (1 - 0.1 * pressAmt)
         }
         drawnRot = q
         drawnPos = pos
@@ -616,11 +628,17 @@ final class UlarTanggaScene {
         let tanH = tanV * w / h
         let nx = Float(spot.center.x - viewFrame.minX) * 2 / w - 1
         let ny = 1 - Float(spot.center.y - viewFrame.minY) * 2 / h
-        let depth = board.DIE * (h / 2) / (tanV * Float(spot.size))
+        // A narrower (zoomed-in) FOV would need the die farther away, past the board; keep the
+        // normal-view depth and shrink the die instead.
+        homeScale = min(1, tanHalf / tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360))
+        let depth = board.DIE * (h / 2) / (tanV * Float(spot.size)) * homeScale
         home = eye + (fwd + right * nx * tanH + up * ny * tanV) * depth
         if dieMode == .home {
             shown = diePosition(idleOrigin)
             applyDie()
+        } else if dieMode == .returning, flight != nil {
+            // Follow the spot while the camera eases, so the die lands where it is drawn.
+            flight?.to = diePosition(idleOrigin)
         }
         die.isEnabled = true
     }
