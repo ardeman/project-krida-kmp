@@ -14,8 +14,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ardeman.krida.core.games.LudoGame
-import com.ardeman.krida.core.games.UlarTanggaGame
 import com.ardeman.krida.R
 import com.ardeman.krida.nearby.NearbyFrame
 import com.ardeman.krida.nearby.NearbyRoom
@@ -40,7 +38,7 @@ fun PlayOnlineScreen(
     onHost: (NearbyRoom) -> Unit,
     onJoin: (String, String?) -> Unit,
     onComputer: (Int) -> Unit,
-    target: Int = if ((game == UlarTanggaGame.id || game == LudoGame.id)) 4 else 2,
+    target: Int = if (fourSeatGame(game)) 4 else 2,
 ) {
     var attempt by remember(game) { mutableIntStateOf(0) }
     NearbyFrame(gameTitle(game), subtitle(true), true, stringResource(R.string.nearby_cancel), onCancel) {
@@ -174,7 +172,7 @@ private fun MatchSearch(
             ).joinToString("\n")
         })
         if (offer && !preparing && !failed) {
-            if (humans == 1 && (game == UlarTanggaGame.id || game == LudoGame.id)) Segmented(
+            if (humans == 1 && fourSeatGame(game)) Segmented(
                 (2..4).map { it to "$it" }, soloSeats, stringResource(R.string.play_players), { soloSeats = it }, fill = true,
             )
             if (humans >= 2) {

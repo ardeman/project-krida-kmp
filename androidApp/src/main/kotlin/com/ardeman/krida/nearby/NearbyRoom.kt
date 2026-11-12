@@ -15,10 +15,16 @@ import com.ardeman.krida.congklak.CongklakTable
 import com.ardeman.krida.congklak.GuestTable
 import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakGame
+import com.ardeman.krida.core.games.GapleBot
+import com.ardeman.krida.core.games.GapleGame
 import com.ardeman.krida.core.games.LudoBot
 import com.ardeman.krida.core.games.LudoGame
 import com.ardeman.krida.core.games.PerangKapalBot
 import com.ardeman.krida.core.games.PerangKapalGame
+import com.ardeman.krida.gaple.GapleGuestTable
+import com.ardeman.krida.gaple.GapleHostTable
+import com.ardeman.krida.gaple.GapleSettings
+import com.ardeman.krida.gaple.GapleTable
 import com.ardeman.krida.ludo.LudoGuestTable
 import com.ardeman.krida.ludo.LudoHostTable
 import com.ardeman.krida.ludo.LudoSettings
@@ -51,7 +57,7 @@ import com.ardeman.krida.ulartangga.UlarTanggaTable
 
 /**
  * A room over BLE or LAN ("Nearby") or through the online relay ("Online"), from hosting or
- * joining until the game starts. Then [congklak], [ular] or [ludo] takes over the session and
+ * joining until the game starts. Then a game table ([congklak], [ludo], [gaple]…) takes over the session and
  * that game's screen shows it. A guest joins by code and learns the game from the host's Welcome.
  */
 class NearbyRoom private constructor(
@@ -107,6 +113,11 @@ class NearbyRoom private constructor(
         private set
     var perangKapal by mutableStateOf<PerangKapalTable?>(null)
         private set
+    var gaple by mutableStateOf<GapleTable?>(null)
+        private set
+
+    /** A game table has taken over the session. */
+    private val playing: Boolean get() = congklak != null || ular != null || ludo != null || perangKapal != null || gaple != null
 
     /** Ids of the friend invites whose guests hold a seat now (host only). */
     var joinedInvites by mutableStateOf<List<String>>(emptyList())
@@ -188,11 +199,13 @@ class NearbyRoom private constructor(
         main.removeCallbacks(notFound)
         // A guest leaving the lobby gives up its seat; leaving a running game (the tables
         // handle that) or a search keeps it to come back to.
-        if (!isHost && congklak == null && ular == null && ludo == null && stage == Stage.LOBBY) LastRoom.clear(code)
+        if (!isHost && !playing && stage == Stage.LOBBY) LastRoom.clear(code)
         when {
             congklak != null -> congklak?.leave()
             ular != null -> ular?.leave()
             ludo != null -> ludo?.leave()
+            perangKapal != null -> perangKapal?.leave()
+            gaple != null -> gaple?.leave()
             guest != null -> guest?.leave()
             join != null -> join?.leave()
             else -> transport.close()
@@ -263,7 +276,7 @@ class NearbyRoom private constructor(
     /** The relay closed a guest's socket for good; the game's table shows drops once it runs. */
     private fun relayClosed(closeCode: Int) {
         main.removeCallbacks(notFound)
-        if (failed || congklak != null || ular != null || ludo != null) return // table owns the drop once the game runs
+        if (failed || playing) return // table owns the drop once the game runs
         if (closeCode != OnlineTransport.GAVE_UP) LastRoom.clear(code)
         stage = when (closeCode) {
             OnlineTransport.NO_ROOM -> Stage.NOT_FOUND
@@ -279,7 +292,7 @@ class NearbyRoom private constructor(
         if (!failed) stage = Stage.LOST
     }
 
-    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO, PERANG_KAPAL }
+    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO, PERANG_KAPAL, GAPLE }
 
     companion object {
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
@@ -291,6 +304,7 @@ class NearbyRoom private constructor(
                 Game.ULAR_TANGGA -> UlarTanggaGame.id
                 Game.LUDO -> LudoGame.id
                 Game.PERANG_KAPAL -> PerangKapalGame.id
+                Game.GAPLE -> GapleGame.id
                 Game.CONGKLAK -> CongklakGame.id
             }
             val total = when (game) {
@@ -351,6 +365,18 @@ class NearbyRoom private constructor(
                         }
                     }
                 }
+                Game.GAPLE -> {
+                    val session = room.hostSession(if (standardRules) StandardRules.gaple else GapleSettings.rules, name, transport, avatar)
+                    room.canAddBots = true
+                    room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, GapleBot()) }
+                    room.removeBot = { seat -> session.removeBot(seat) }
+                    room.begin = {
+                        if (session.canStart()) {
+                            session.start()
+                            room.gaple = GapleHostTable(session, mySeat = 0, transport = transport)
+                        }
+                    }
+                }
             }
             when (transport) {
                 is BleHostTransport -> transport.start()
@@ -359,7 +385,7 @@ class NearbyRoom private constructor(
                     // Only before the game: once it runs, the table shows the drop.
                     transport.onReady = onOnlineReady
                     transport.onClosed = {
-                        if (room.congklak == null && room.ular == null && room.ludo == null && room.perangKapal == null) {
+                        if (!room.playing) {
                             room.stage = Stage.OFFLINE
                         }
                     }
@@ -414,6 +440,10 @@ class NearbyRoom private constructor(
                     }
                     PerangKapalGame.id -> room.guestSession(PerangKapalGame, join).also { s ->
                         s.onState = { _ -> room.perangKapal = PerangKapalGuestTable(s) }
+                        s.replay()
+                    }
+                    GapleGame.id -> room.guestSession(GapleGame, join).also { s ->
+                        s.onState = { _ -> room.gaple = GapleGuestTable(s) }
                         s.replay()
                     }
                     else -> room.stage = Stage.UNKNOWN_GAME

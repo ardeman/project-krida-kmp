@@ -76,6 +76,7 @@ import com.ardeman.krida.account.Account
 import com.ardeman.krida.congklak.CongklakRulesDialog
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.LobbyOptions
+import com.ardeman.krida.core.games.GapleGame
 import com.ardeman.krida.core.games.LudoGame
 import com.ardeman.krida.core.games.PerangKapalGame
 import com.ardeman.krida.core.games.UlarTanggaGame
@@ -139,6 +140,7 @@ internal fun gameTitle(game: String?) = when (game) {
     UlarTanggaGame.id -> stringResource(R.string.ular_title)
     LudoGame.id -> stringResource(R.string.ludo_title)
     PerangKapalGame.id -> stringResource(R.string.perang_kapal_title)
+    GapleGame.id -> stringResource(R.string.gaple_title)
     CongklakGame.id -> stringResource(R.string.congklak_title)
     else -> stringResource(R.string.nearby_join_title)
 }

@@ -112,6 +112,7 @@ import com.ardeman.krida.core.games.UlarTanggaBoard
 import com.ardeman.krida.ulartangga.UlarTanggaRenderer
 import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
+import com.ardeman.krida.core.games.GapleGame
 import com.ardeman.krida.core.games.LudoGame
 import com.ardeman.krida.core.games.PerangKapalGame
 import com.ardeman.krida.gaple.GapleHostTable
@@ -269,7 +270,7 @@ class MainActivity : ComponentActivity() {
                 val ular = ularTable ?: r?.ular
                 val ludo = ludoTable ?: r?.ludo
                 val perang = perangKapalTable ?: r?.perangKapal
-                val gaple = gapleTable
+                val gaple = gapleTable ?: r?.gaple
                 // Games and rooms can sit idle between turns / while waiting for a friend;
                 // keep the screen awake so the phone doesn't sleep mid-session.
                 val keepAwake = gaple != null || perang != null || ludo != null || ular != null || table != null || r != null
@@ -287,7 +288,7 @@ class MainActivity : ComponentActivity() {
                     onDispose { Invites.stop() }
                 }
                 when {
-                    gaple != null -> GapleScreen(gaple, onExit = { gapleTable = null })
+                    gaple != null -> GapleScreen(gaple, onExit = { gapleTable = null; room = null; joining = false })
                     perang != null -> PerangKapalScreen(perang, onExit = { perangKapalTable = null; room = null; joining = false })
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
@@ -328,6 +329,7 @@ class MainActivity : ComponentActivity() {
                                     LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
                                 })
                                 PerangKapalGame.id -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
+                                GapleGame.id -> gapleTable = GapleHostTable.vsComputer(you, count - 1) { computer }
                                 else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             }
                             playingQuickMatch = false
@@ -374,7 +376,7 @@ class MainActivity : ComponentActivity() {
         // on the account screen once the menus are back.
         if (Account.handleLink(intent.data)) { showingAccount = true; return }
         // A running game or lobby stays; the link only applies from the menus.
-        if (room == null && passAndPlay == null && ularTable == null && ludoTable == null) {
+        if (room == null && passAndPlay == null && ularTable == null && ludoTable == null && perangKapalTable == null && gapleTable == null) {
             if (Account.handleFriendLink(intent.data)) { joining = false; showingAccount = true; return }
             intent.data?.toString()?.let(::openRoomLink)
         }
@@ -603,11 +605,10 @@ class MainActivity : ComponentActivity() {
         val ular = game == Game.ULAR_TANGGA
         val ludo = game == Game.LUDO
         val kapal = game == Game.PERANG_KAPAL
-        // Gaple is on this phone only until its nearby and online rooms are wired.
         val gaple = game == Game.GAPLE
         val multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
-        val nearby = place != Place.PHONE && !gaple
+        val nearby = place != Place.PHONE
         val online = nearby && place == Place.ONLINE
         val lan = nearby && !online && nearbyLink == NearbyLink.WIFI
         // Congklak's second seat: a person on this phone or the computer.
@@ -646,7 +647,7 @@ class MainActivity : ComponentActivity() {
                 .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (!gaple) SettingRow(stringResource(R.string.play_where)) {
+            SettingRow(stringResource(R.string.play_where)) {
                 Segmented(
                     options = Place.entries.map { it to stringResource(it.label) },
                     current = place,
@@ -669,7 +670,7 @@ class MainActivity : ComponentActivity() {
             }
             // In a nearby room everyone who joins plays, up to 4. Perang kapal on this phone
             // has its own two tiles below (the second: computer or person).
-            if (gaple) SettingRow(stringResource(R.string.play_players)) {
+            if (!nearby && gaple) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
                     colors = seats.indices.map { if (seats[it] == LocalSeat.EMPTY) Theme.border else pawnColor(it) },
@@ -729,6 +730,7 @@ class MainActivity : ComponentActivity() {
                                 ular -> R.string.ular_detail_online
                                 ludo -> R.string.ludo_detail_online
                                 kapal -> R.string.perang_kapal_detail_online
+                                gaple -> R.string.gaple_detail_online
                                 else -> R.string.online_detail
                             }))
                             lan -> Detail(stringResource(R.string.nearby_detail_wifi))
@@ -736,6 +738,7 @@ class MainActivity : ComponentActivity() {
                                 ular -> R.string.ular_detail_nearby
                                 ludo -> R.string.ludo_detail_nearby
                                 kapal -> R.string.perang_kapal_detail_nearby
+                                gaple -> R.string.gaple_detail_nearby
                                 else -> R.string.nearby_detail
                             }))
                             gaple -> Detail(stringResource(R.string.gaple_detail_computer))
@@ -759,6 +762,7 @@ class MainActivity : ComponentActivity() {
                                         ular -> UlarTanggaGame.id
                                         ludo -> LudoGame.id
                                         kapal -> PerangKapalGame.id
+                                        gaple -> GapleGame.id
                                         else -> CongklakGame.id
                                     }
                                     joining = true
@@ -777,6 +781,7 @@ class MainActivity : ComponentActivity() {
                                             ular -> UlarTanggaGame.id
                                             ludo -> LudoGame.id
                                             kapal -> PerangKapalGame.id
+                                            gaple -> GapleGame.id
                                             else -> CongklakGame.id
                                         }
                                         creatingOnlineRoom = true
@@ -789,6 +794,7 @@ class MainActivity : ComponentActivity() {
                                                     ular -> NearbyRoom.Game.ULAR_TANGGA
                                                     ludo -> NearbyRoom.Game.LUDO
                                                     kapal -> NearbyRoom.Game.PERANG_KAPAL
+                                                    gaple -> NearbyRoom.Game.GAPLE
                                                     else -> NearbyRoom.Game.CONGKLAK
                                                 },
                                                 lan = lan,
@@ -827,7 +833,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            if (!online) GameRoomOptions(game)
+            if (!online) GameRoomOptions(game, onPhone = !nearby)
             if (permissionDenied && !online && !lan) {
                 Text(stringResource(R.string.nearby_permission_denied), style = Theme.font(14, FontWeight.Bold, Theme.error))
             }
@@ -1045,19 +1051,20 @@ private fun nearbyGame(id: String) = when (id) {
     LudoGame.id -> NearbyRoom.Game.LUDO
     UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA
     PerangKapalGame.id -> NearbyRoom.Game.PERANG_KAPAL
+    GapleGame.id -> NearbyRoom.Game.GAPLE
     else -> NearbyRoom.Game.CONGKLAK
 }
 
 @Composable
-private fun GameRoomOptions(game: Any) {
+private fun GameRoomOptions(game: Any, onPhone: Boolean = false) {
     val ular = game == Game.ULAR_TANGGA || game == UlarTanggaGame.id
     val ludo = game == Game.LUDO || game == LudoGame.id
     val kapal = game == Game.PERANG_KAPAL || game == PerangKapalGame.id
-    val gaple = game == Game.GAPLE
+    val gaple = game == Game.GAPLE || game == GapleGame.id
     when {
         gaple -> {
-            // Partners only make sense with four at the table.
-            if (GapleSettings.players == 4) SettingRow(stringResource(R.string.gaple_partners)) {
+            // Partners only make sense with four at the table; a room may fill to four.
+            if (game != Game.GAPLE || !onPhone || GapleSettings.players == 4) SettingRow(stringResource(R.string.gaple_partners)) {
                 Segmented(
                     options = listOf(false to stringResource(R.string.gaple_partners_off), true to stringResource(R.string.gaple_partners_across)),
                     current = GapleSettings.options.partners,

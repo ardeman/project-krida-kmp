@@ -17,9 +17,10 @@ file in the same commit when an item is done or a new one comes up. Last updated
   ([mockups/gaple.md](mockups/gaple.md)). Shared rules, board layout, bots, turn-timeout
   move and tests done; relay allows `gaple/2`–`/4` (deploys with the next relay push).
   Android on this phone is done: you against 1–3 computers, partners with 4 seats,
-  shared table meshes (`GapleScene.kt`); "Play on" is hidden for gaple until rooms are wired.
-  Next: Android nearby/online wiring (`NearbyRoom`, lobby, online create/quick match; the
-  guest table already exists), then iOS. The "Pas!" voice line needs a recording.
+  shared table meshes (`GapleScene.kt`). Android nearby (Bluetooth, Wi‑Fi) and online rooms
+  are wired (host, join, computers in empty seats, online create with 2–4 seats and partners,
+  quick match without partners); builds, not played on a device yet. Next: iOS (this phone,
+  then rooms), then phone checks. The "Pas!" voice line needs a recording.
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer); gaple has it in its
   plan. Still missing: congklak (pick a pit) and perang kapal (fire; placement could finish

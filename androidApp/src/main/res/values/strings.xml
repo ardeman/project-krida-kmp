@@ -417,6 +417,8 @@
     <string name="gaple_card_tagline">Match the ends, empty your hand.</string>
     <string name="gaple_hint">No tile fits? Pass. First to 100 points wins.</string>
     <string name="gaple_detail_computer">You against the computer. Hands stay hidden.</string>
+    <string name="gaple_detail_nearby">Up to 4 phones over Bluetooth, each hand on its own phone</string>
+    <string name="gaple_detail_online">Up to 4 phones over the internet, each hand on its own phone</string>
     <string name="gaple_partners">Partners</string>
     <string name="gaple_partners_off">Off</string>
     <string name="gaple_partners_across">Across 2 v 2</string>
