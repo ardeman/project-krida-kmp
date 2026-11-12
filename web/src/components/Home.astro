@@ -12,30 +12,34 @@ const { lang } = Astro.props;
 const root = import.meta.env.BASE_URL.replace(/\/$/, "");
 const alternates = { id: "", en: "en/" };
 
-// Game names stay Indonesian in both languages: they are the names players know them by.
-const colors = ["#c9783a", "#d64545", "#3f9b5a", "#2f7fc1"];
-const names = ["Congklak", "Ludo", "Ular Tangga", "Perang Kapal"];
+// Names, player counts and taglines are the app's menu card text (MenuGame in
+// ios/Krida/ContentView.swift, *_card_* in Android's strings.xml); keep them identical.
+// Colors are the app's card accents.
+const colors = ["#8a5a2e", "#4f8a3b", "#3d6eb5", "#1b4f72", "#7b2d3b"];
 
 const copy = {
   id: {
     title: "Krida — Board games Nusantara, main bareng di mana saja",
     description:
-      "Ludo, ular tangga, congklak, perang kapal dan lainnya dalam gaya voxel 3D. Main online atau offline lewat Bluetooth, Android dan iPhone bisa main bareng.",
+      "Congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel 3D. Lawan komputer, main offline lewat Bluetooth atau Wi‑Fi, atau online. Android dan iPhone bisa main bareng.",
     gamesNav: "Permainan",
     h1: "Main bareng, di mana saja.",
-    lead: "Congklak, ludo, ular tangga, perang kapal dan lainnya, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Online atau offline lewat Bluetooth.",
+    lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
     soon: "Segera hadir di Google Play dan App Store.",
-    notes: [
-      "Kumpulkan biji terbanyak di lumbungmu",
-      "Bidak-bidak kecil menuju rumah",
-      "Naiki tangga, hindari ular",
-      "Pinisi lawan jukung",
+    games: [
+      { name: "Congklak", players: "2 pemain", tagline: "Kumpulkan biji terbanyak di lumbungmu." },
+      { name: "Ular tangga", players: "2–4 pemain", tagline: "Naiki tangga, hindari ular." },
+      { name: "Ludo", players: "2–4 pemain", tagline: "Pacu empat bidakmu ke rumah." },
+      { name: "Perang kapal", players: "2 pemain", tagline: "Tenggelamkan armadanya." },
+      { name: "Gaple", players: "2–4 pemain", tagline: "Sambung ujungnya, habiskan kartumu." },
     ],
     whyTitle: "Kenapa Krida",
     features: [
-      { title: "Main offline", body: "Lewat Bluetooth, tanpa internet. Cocok di rumah, di mobil, atau di warung." },
-      { title: "Android ↔ iPhone", body: "Semua bisa satu meja, apa pun HP-nya. Sampai 4 pemain." },
-      { title: "Online juga bisa", body: "Bagikan kode room ke teman yang jauh dan langsung main." },
+      { title: "Main offline", body: "Lewat Bluetooth atau Wi‑Fi yang sama, tanpa internet. Cocok di rumah, di mobil, atau di warung." },
+      { title: "Android ↔ iPhone", body: "Semua bisa satu meja, apa pun HP-nya, di setiap mode. Sampai 4 pemain." },
+      { title: "Online juga bisa", body: "Bagikan kode room atau QR ke teman yang jauh, atau gabung room publik dan cari pemain lain." },
+      { title: "Lawan komputer", body: "Main sendiri lawan komputer, atau gantian berdua di satu HP. Kursi kosong bisa diisi komputer." },
+      { title: "Teman", body: "Akun opsional lewat Apple atau Google: tambah teman dengan kodenya dan undang mereka ke room." },
       { title: "Ringan", body: "Aplikasi native, ukuran kecil, lancar di tablet kelas menengah." },
     ],
     lemaDef: "Alasan untuk duduk satu meja, menjadi lawan selama satu ronde, lalu tertawa bersama sesudahnya.",
@@ -47,22 +51,25 @@ const copy = {
   en: {
     title: "Krida — Board games from Indonesia, play together anywhere",
     description:
-      "Ludo, snakes and ladders, congklak, battleships and more in 3D voxel style. Play online or offline over Bluetooth; Android and iPhone play together.",
+      "Congklak, snakes & ladders, ludo, perang kapal and gaple in 3D voxel style. Play the computer, offline over Bluetooth or Wi‑Fi, or online; Android and iPhone play together.",
     gamesNav: "Games",
     h1: "Play together, anywhere.",
-    lead: "Congklak, ludo, snakes and ladders, battleships and more, remade as little toys you can play with family and friends. Online, or offline over Bluetooth.",
+    lead: "Congklak, snakes & ladders, ludo, perang kapal and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
     soon: "Coming soon to Google Play and the App Store.",
-    notes: [
-      "Gather the most seeds in your store",
-      "Little pawns racing home",
-      "Climb the ladders, dodge the snakes",
-      "Battleships, with Indonesian boats",
+    games: [
+      { name: "Congklak", players: "2 players", tagline: "Gather the most seeds in your store." },
+      { name: "Snakes & ladders", players: "2–4 players", tagline: "Climb the ladders, dodge the snakes." },
+      { name: "Ludo", players: "2–4 players", tagline: "Race your four tokens home." },
+      { name: "Perang kapal", players: "2 players", tagline: "Sink the fleet." },
+      { name: "Gaple", players: "2–4 players", tagline: "Match the ends, empty your hand." },
     ],
     whyTitle: "Why Krida",
     features: [
-      { title: "Play offline", body: "Over Bluetooth, no internet needed. At home, in the car, or at a roadside café." },
-      { title: "Android ↔ iPhone", body: "Everyone at one table, whatever their phone. Up to 4 players." },
-      { title: "Online too", body: "Share a room code with a friend far away and start playing." },
+      { title: "Play offline", body: "Over Bluetooth or the same Wi‑Fi, no internet needed. At home, in the car, or at a roadside café." },
+      { title: "Android ↔ iPhone", body: "Everyone at one table, whatever their phone, in every mode. Up to 4 players." },
+      { title: "Online too", body: "Share a room code or QR with a friend far away, or join a public room and find other players." },
+      { title: "Against the computer", body: "Play solo against the computer, or take turns on one phone. Empty seats can go to the computer." },
+      { title: "Friends", body: "An optional account with Apple or Google: add friends by their code and invite them to your room." },
       { title: "Lightweight", body: "A native app, small download, smooth on a mid-range tablet." },
     ],
     lemaDef: "A reason to sit at one table, be rivals for a round, and laugh together afterwards.",
@@ -73,7 +80,7 @@ const copy = {
   },
 }[lang];
 
-const games = names.map((name, i) => ({ name, note: copy.notes[i], color: colors[i] }));
+const games = copy.games.map((g, i) => ({ ...g, color: colors[i] }));
 const year = new Date().getFullYear();
 ---
 
@@ -103,8 +110,9 @@ const year = new Date().getFullYear();
           games.map((g) => (
             <article class="game">
               <Voxel color={g.color} size={48} />
-              <h3 lang="id">{g.name}</h3>
-              <p>{g.note}</p>
+              <h3 lang={g.name === "Snakes & ladders" ? undefined : "id"}>{g.name}</h3>
+              <p class="players">{g.players}</p>
+              <p>{g.tagline}</p>
             </article>
           ))
         }
