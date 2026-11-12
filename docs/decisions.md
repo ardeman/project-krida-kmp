@@ -202,8 +202,11 @@ in the same commit as the code.
 - **Turn timer in every game (owner, 2026-11-12):** no game may wait forever on a player.
   Each turn has a countdown and at 0 the phone moves for the player. Gaple: 15 s
   (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (heaviest fitting tile); the round-end
-  card also counts down and the host deals on. Congklak and perang kapal still need theirs
-  (see `status.md`).
+  card also counts down and the host deals on. Congklak: 15 s to pick a pit
+  (`Krida.PLAY_TURN_MS`), then the phone plays what the easy computer would pick
+  (`CongklakGame.timeoutMove`, a random hole with seeds) as if the player tapped it (owner,
+  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown. Perang
+  kapal still needs its timer (see `status.md`).
 - Added by the agent, not asked for: passes are automatic (the host skips a seat with no
   fitting tile and lists it in `lastPasses`), so there is no Pass button. A double at a turn
   of the line lies lengthwise in the L-shaped corner instead of across. If no double is dealt

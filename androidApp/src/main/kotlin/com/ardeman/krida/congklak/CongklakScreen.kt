@@ -40,6 +40,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +80,7 @@ import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
+import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.SoundToggles
@@ -236,6 +238,27 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         onExit()
     }
 
+    // Turn timer: while a player on this device picks a pit, a countdown runs; at 0 the
+    // phone plays the easy computer's pick for them (CongklakGame.timeoutMove). Sowing and
+    // waiting on the host stop it; the next still board starts a new one.
+    val turnTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
+    var turnSeconds by remember { mutableIntStateOf(0) }
+    val localTurn = canPlay() && Seats(table, viewSeat).isLocal(state.turn)
+    val localTurnNow by rememberUpdatedState(localTurn)
+    LaunchedEffect(localTurn, state) {
+        if (!localTurn) {
+            turnSeconds = 0
+            return@LaunchedEffect
+        }
+        turnSeconds = turnTotal
+        while (turnSeconds > 0) {
+            delay(1000L)
+            if (!localTurnNow || !lifetime.active) return@LaunchedEffect
+            turnSeconds -= 1
+        }
+        CongklakGame.timeoutMove(state, state.turn, Random.Default)?.let { play(it.hole) }
+    }
+
     LaunchedEffect(table.notice) { if (table.notice != null) waiting = false }
     LaunchedEffect(state) { hint = null }
 
@@ -351,12 +374,16 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             Column(Modifier.fillMaxSize()) {
                 TopBar(gap = 12.dp) {
                     CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
-                    OpponentPill(
-                        seats = seats,
-                        on = active(seats.far),
-                        detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
-                        modifier = Modifier,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OpponentPill(
+                            seats = seats,
+                            on = active(seats.far),
+                            detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
+                            modifier = Modifier,
+                        )
+                        // Pass-and-play: the far player's countdown sits by their pill.
+                        if (turnSeconds > 0 && state.turn == seats.far) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SoundToggles()
                         if (canPlay() && seats.isLocal(state.turn) && hint == null) {
@@ -379,7 +406,10 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
                             Text(stringResource(R.string.congklak_direction), style = Theme.font(13, FontWeight.Bold, Theme.muted))
                         }
                     }
-                    PlayerPill(seats, seats.near, active(seats.near), status(seats.near))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        PlayerPill(seats, seats.near, active(seats.near), status(seats.near))
+                        if (turnSeconds > 0 && state.turn == seats.near) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
+                    }
                 }
             }
             val youLabel = stringResource(R.string.bot_you)

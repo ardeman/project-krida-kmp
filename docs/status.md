@@ -24,9 +24,10 @@ file in the same commit when an item is done or a new one comes up. Last updated
   empty seats, 2–4 seat online rooms, partners, quick match); builds, not played on a device
   yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line needs a recording.
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
-  phone moves for the player. Ludo and ular tangga have it (roll timer); gaple has it in its
-  plan. Still missing: congklak (pick a pit) and perang kapal (fire; placement could finish
-  with a random fleet).
+  phone moves for the player. Ludo and ular tangga have it (roll timer), gaple and congklak
+  (15 s; congklak plays the easy computer's pick) too. Still missing: perang kapal (fire;
+  placement could finish with a random fleet). Congklak's timer is checked on the iOS
+  simulator (vs computer, pass-and-play), not yet on Android or in nearby/online rooms.
 - Offline LAN (README roadmap 6): coded under Nearby (Bluetooth | Wi‑Fi control, default
   Bluetooth; decision in `docs/decisions.md`). Android and iOS host/guest transports,
   play-card Link control, join/lobby copy. iOS dual-simulator e2e passes

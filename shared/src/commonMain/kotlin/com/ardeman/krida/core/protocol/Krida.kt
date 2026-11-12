@@ -53,8 +53,9 @@ object Krida {
      */
     const val ROLL_TURN_MS: Long = 15_000L
     /**
-     * How long a local player has to play a tile (gaple) before the phone plays
-     * [com.ardeman.krida.core.games.GapleGame.timeoutMove] for them, and how long the round-end
+     * How long a local player has to play a tile (gaple) or pick a pit (congklak) before the
+     * phone plays [com.ardeman.krida.core.games.GapleGame.timeoutMove] or
+     * [com.ardeman.krida.core.games.CongklakGame.timeoutMove] for them, and how long the gaple round-end
      * card waits before the host deals the next round.
      */
     const val PLAY_TURN_MS: Long = 15_000L

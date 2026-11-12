@@ -19,6 +19,8 @@ final class CongklakGameModel: ObservableObject {
     @Published private(set) var inHand = 0
     /// Hole suggested for the current turn, paid for with a rewarded ad; cleared by the next update.
     @Published private(set) var hint: Int?
+    /// Seconds left for the local player to pick a pit (`Krida.PLAY_TURN_MS`); 0 when not counting.
+    @Published private(set) var turnSeconds = 0
 
     let table: CongklakTable
     let board = BoardScene()
@@ -26,6 +28,9 @@ final class CongklakGameModel: ObservableObject {
     private let seeds: CongklakSeeds
     private var queue: [CongklakUpdate] = []
     private let lifetime = GameLifetime()
+    private var turnKey: String?
+    /// Counts state changes, so an extra turn (same seat) restarts the countdown.
+    private var version = 0
 
     private static let pickUpDelay: UInt64 = 260_000_000
     private static let sowDelay: UInt64 = 170_000_000
@@ -54,6 +59,9 @@ final class CongklakGameModel: ObservableObject {
     var turn: Int { Int(state.turn) }
     var finished: Bool { state.finished }
     var viewSeat: Int32 { board.viewSeat }
+
+    /// Seconds for a turn (`Krida.PLAY_TURN_MS`).
+    var turnTotal: Int { Int(Krida.shared.PLAY_TURN_MS / 1000) }
 
     var canPlay: Bool {
         lifetime.active && !animating && !waiting && queue.isEmpty && !finished && (table.mySeat == nil || table.mySeat == state.turn)
@@ -92,11 +100,39 @@ final class CongklakGameModel: ObservableObject {
     /// Gold rings on the holes the mover may start from, only while this device can play;
     /// a hint narrows them to the suggested hole.
     private func updateRings() {
+        syncTimer()
         guard canPlay else { return board.showRings([]) }
         let seat = state.turn
         if let hint { return board.showRings([Int(game.pit(seat: seat, hole: Int32(hint)))]) }
         let holes = (0..<Int32(game.HOLES)).filter { game.validate(state: state, seat: seat, move: CongklakMove(hole: $0)) == nil }
         board.showRings(Set(holes.map { Int(game.pit(seat: seat, hole: $0)) }))
+    }
+
+    /// The seat to move is picked from this device (not the computer) and may play now.
+    private var localTurn: Bool {
+        let bot: Int? = table.botLevel == nil ? nil : 1 - Int(table.mySeat ?? 0)
+        return canPlay && turn != bot
+    }
+
+    /// The turn countdown: at 0 the phone plays the easy computer's pick for the player
+    /// (`CongklakGame.timeoutMove`).
+    /// Sowing and waiting on the host stop it; the next still board starts a new one.
+    private func syncTimer() {
+        let key = localTurn ? "\(state.turn)-\(version)" : nil
+        guard key != turnKey else { return }
+        turnKey = key
+        lifetime.cancel("turn")
+        turnSeconds = 0
+        guard key != nil else { return }
+        turnSeconds = turnTotal
+        lifetime.launch("turn") { [self] in
+            while turnSeconds > 0 {
+                try await Task.sleep(for: .seconds(1))
+                guard localTurn else { turnSeconds = 0; return }
+                turnSeconds -= 1
+            }
+            if let move = game.timeoutMove(state: state, seat: state.turn, random: KotlinRandom.companion) { play(hole: Int(move.hole)) }
+        }
     }
 
     /// A tap at a view point: plays the nearest hole on the mover's side, if close enough.
@@ -122,6 +158,7 @@ final class CongklakGameModel: ObservableObject {
         if table.play(seat: seat, hole: Int32(hole)), table.isRemote {
             waiting = true
             board.showRings([])
+            syncTimer()
         }
     }
 
@@ -145,6 +182,7 @@ final class CongklakGameModel: ObservableObject {
         lifetime.cancel("bot")
         animating = true
         board.showRings([])
+        syncTimer()
         lifetime.launch("animation") { [self] in
             defer {
                 // Always ease back out after a sow, even if the animation was cancelled.
@@ -198,6 +236,7 @@ final class CongklakGameModel: ObservableObject {
                 catch { return }
             }
             state = update.state
+            version += 1
             hint = nil
         }
     }
@@ -364,7 +403,13 @@ private struct CongklakBoardView: View {
             VStack(spacing: 0 * s) {
                 TopBar(gap: 8 * s) {
                     CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
-                    opponentPill
+                    HStack(spacing: 10 * s) {
+                        opponentPill
+                        // Pass-and-play: the far player's countdown sits by their pill.
+                        if model.turnSeconds > 0 && model.turn == farSeat {
+                            CountdownRing(seconds: model.turnSeconds, total: model.turnTotal, size: 40 * s)
+                        }
+                    }
                     HStack(spacing: 8 * s) {
                         SoundToggles()
                         if model.canPlay && isLocal(model.turn) && model.hint == nil {
@@ -387,7 +432,12 @@ private struct CongklakBoardView: View {
                             .font(Theme.font(13 * s, .bold))
                             .foregroundStyle(Theme.muted)
                     }
-                    playerPill(nearSeat)
+                    HStack(spacing: 10 * s) {
+                        playerPill(nearSeat)
+                        if model.turnSeconds > 0 && model.turn == nearSeat {
+                            CountdownRing(seconds: model.turnSeconds, total: model.turnTotal, size: 40 * s)
+                        }
+                    }
                 }
                 .padding(.bottom, 14 * s)
             }

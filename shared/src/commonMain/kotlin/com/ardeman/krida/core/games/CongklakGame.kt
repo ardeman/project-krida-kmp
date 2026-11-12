@@ -108,6 +108,19 @@ object CongklakGame : GameRules<CongklakState, CongklakMove> {
         return if (a == b) -1 else if (a > b) 0 else 1
     }
 
+    /**
+     * What the phone plays for [seat] when its turn timer ([com.ardeman.krida.core.protocol.Krida.PLAY_TURN_MS])
+     * runs out: what the easy computer ([CongklakBot.Level.EASY]) would pick, any hole with
+     * seeds, drawn from [random]. The phone of the player who timed out picks it and sends it
+     * like a tap, so host and guest need not agree on the draw. Null when it is not [seat]'s
+     * turn or the game is over.
+     */
+    fun timeoutMove(state: CongklakState, seat: Int, random: Random): CongklakMove? {
+        if (state.finished || seat != state.turn) return null
+        if ((0 until HOLES).none { state.pits[pit(seat, it)] > 0 }) return null
+        return CongklakBot(CongklakBot.Level.EASY).chooseMove(state, seat, random)
+    }
+
     /** Applies a validated move and reports the sowing path. */
     fun play(state: CongklakState, seat: Int, move: CongklakMove): CongklakPlay {
         val pits = state.pits.toMutableList()

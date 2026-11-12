@@ -1,6 +1,7 @@
 package com.ardeman.krida.core
 
 import com.ardeman.krida.core.games.CongklakBoard
+import com.ardeman.krida.core.games.CongklakBot
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakGame.PITS
@@ -13,6 +14,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
@@ -212,5 +214,23 @@ class CongklakTest {
         assertTrue(m.indexArray().all { it in 0 until m.vertexCount })
         // Nothing covers the hole itself.
         assertTrue((0 until m.vertexCount).all { v -> pos[v * 3] * pos[v * 3] + pos[v * 3 + 2] * pos[v * 3 + 2] >= 0.45f })
+    }
+
+    @Test
+    fun timeoutMovePlaysLikeTheEasyBot() {
+        val start = CongklakGame.initialState(tembakAfterStore = false)
+        repeat(20) { i ->
+            val move = assertNotNull(CongklakGame.timeoutMove(start, 0, Random(i)))
+            assertNull(CongklakGame.validate(start, 0, move))
+            // Same draw as the easy bot with the same Random.
+            assertEquals(CongklakBot(CongklakBot.Level.EASY).chooseMove(start, 0, Random(i)), move)
+        }
+        assertNull(CongklakGame.timeoutMove(start, 1, Random(0)))
+
+        // Only one hole has seeds: that is the move.
+        val pits = MutableList(PITS) { 0 }.apply { this[CongklakGame.pit(1, 4)] = 2; this[CongklakGame.pit(0, 0)] = 3 }
+        assertEquals(CongklakMove(4), CongklakGame.timeoutMove(CongklakState(pits, turn = 1), 1, Random(7)))
+
+        assertNull(CongklakGame.timeoutMove(start.copy(finished = true), 0, Random(0)))
     }
 }
