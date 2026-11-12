@@ -114,14 +114,15 @@ and the Pixel on different networks (one on mobile data).
       Google secrets set) and checked on the iPhone the same day: Google sign-in, sign out,
       Apple sign-in, delete account. Open: the Pixel check. Apple sign-in on Android is not
       offered.
-    - [ ] **10b Friends list.** Approved [mockup](mockups/friends.md): a friend code per
+    - [x] **10b Friends list.** Approved [mockup](mockups/friends.md): a friend code per
       account, instant mutual adding by code or `/f/CODE` link, removal by either player.
       Relay (`GET`/`POST /v1/friends`, `DELETE /v1/friends/{id}`, D1 tables made on first
       use), the web `/f/CODE` page and Android (two-card Account screen, `/f/` and
       `krida://friend` links) built 2026-11-11; `npm run smoke:accounts` covers friends.
       iOS built the same day (same two-card screen and links, `/f/*` in
-      `apple-app-site-association`). Open: deploying the relay and web, and the Pixel and
-      iPhone checks.
+      `apple-app-site-association`). Relay and web are live (friends rode later successful
+      deploys after the first friends push failed; `/f/` and AASA `/f/*` confirmed
+      2026-11-12). Open: Pixel and iPhone checks.
     - [ ] **10c Invites.** iOS via APNs. Android without Firebase (owner, 2026-11-11):
       invites show while the app is open, over the relay, or arrive as a share link.
       Approved [mockup](mockups/invites.md) (2026-11-12). 10c-1, in-app invites: the

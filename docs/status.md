@@ -18,8 +18,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
   AVD, wipe userdata if bootloop; do not force `-gpu swiftshader_indirect` (Studio uses
   `auto`). Open: phone LAN checks (same Wi‑Fi and hotspot, Android ↔ iOS, leave/rejoin);
   dual-emu / cross only if the Mac can hold two AVDs without thrashing.
-- Online step 10b, friends list: relay, web, Android and iOS are built
-  (`docs/mockups/friends.md`); deploying the relay and web and the phone checks are open.
+- Online step 10b, friends list: relay, web, Android and iOS are built and live
+  (`docs/mockups/friends.md`); phone checks open (add/remove by code and `/f/`, both
+  themes and languages).
 - Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay, Android and
   iOS are built and the relay is deployed. Next: check on two signed-in phones (invite from
   each side, Not now, Join, the 2-minute expiry).
@@ -51,7 +52,7 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - Account: iPhone checked 2026-11-11 (Google sign-in and sign out, Apple sign-in and delete
   account). Pixel: sign in with Google, sign out, delete account still open.
 - Friends (Android and iPhone): add by code and by link, remove, the errors, both themes
-  and languages. On the iPhone `/f/` links open the app only after the web deploy.
+  and languages. Web `/f/` and AASA are live.
 
 ## Release setup
 
