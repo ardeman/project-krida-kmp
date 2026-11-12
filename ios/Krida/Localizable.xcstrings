@@ -6484,6 +6484,70 @@
           }
         }
       }
+    },
+    "Tower blocks": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tower blocks"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menara menghalangi"
+          }
+        }
+      }
+    },
+    "Tower blocks: opponents cannot pass a tower of two or more tokens.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tower blocks: opponents cannot pass a tower of two or more tokens."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menara menghalangi: lawan tidak bisa melewati menara dua bidak atau lebih."
+          }
+        }
+      }
+    },
+    "Tower blocks off: opponents may jump over a tower.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tower blocks off: opponents may jump over a tower."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menara menghalangi mati: lawan boleh melompati menara."
+          }
+        }
+      }
+    },
+    "Opponents cannot pass a tower; your own tokens can.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opponents cannot pass a tower; your own tokens can."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lawan tidak bisa melewati menara; bidakmu sendiri boleh."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

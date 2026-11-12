@@ -93,8 +93,9 @@ final class LudoGameModel: ObservableObject {
 
     func updateReady() { scene.dieReady = canRoll }
 
+    /// Same-colour tokens on one square stack into a tower; colours sharing a square sit apart.
     private func spot(_ s: LudoState, _ seat: Int, _ pawn: Int) -> SIMD3<Float> {
-        LudoScene.vec(board.tokenAnchor(color: s.color(seat: Int32(seat)), pawn: Int32(pawn), pos: s.tokens[seat][pawn].int32Value))
+        LudoScene.vec(board.tokenSpot(state: s, seat: Int32(seat), pawn: Int32(pawn)))
     }
 
     private func placeAll(_ s: LudoState) {
@@ -320,15 +321,25 @@ final class LudoGameModel: ObservableObject {
                 }
                 if let pawn = next.lastPawn?.intValue, let from = next.lastFrom?.intValue, let to = next.lastTo?.intValue {
                     let color = next.color(seat: Int32(seat))
-                    let path = game.walk(from: Int32(from), to: Int32(to)).map { pos in
+                    // Hop square by square; the last hop lands on top of a tower or beside another colour.
+                    let hops = game.walk(from: Int32(from), to: Int32(to)).map { pos in
                         LudoScene.vec(board.tokenAnchor(color: color, pawn: Int32(pawn), pos: pos.int32Value))
                     }
+                    let path = Array(hops.dropLast()) + [spot(next, seat, pawn)]
                     // Frame only the mover (start + hops). Capture yards used to pull the
                     // camera across the board away from the piece that moves.
-                    let start = LudoScene.vec(board.tokenAnchor(color: color, pawn: Int32(pawn), pos: Int32(from)))
+                    let start = spot(before, seat, pawn)
                     scene.watch([start] + path)
                     try await Task.sleep(for: .seconds(0.18))
                     scene.move(seat, pawn, path, seconds: Float(Double(path.count) * Self.hop), hop: 0.35)
+                    // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
+                    let captured = Set(next.lastCaptures.map { "\($0.seat)-\($0.pawn)" })
+                    for s in 0..<next.tokens.count {
+                        for p in 0..<Int(game.PAWNS) where !(s == seat && p == pawn) && !captured.contains("\(s)-\(p)") {
+                            let settled = spot(next, s, p)
+                            if settled != spot(before, s, p) { scene.move(s, p, [settled], seconds: 0.25, hop: 0.15) }
+                        }
+                    }
                     // The same tok on each square as ular tangga.
                     for _ in path {
                         sounds.play(.step)
@@ -774,6 +785,7 @@ struct LudoRulesSheet: View {
             "Two of your tokens on one square are safe; others cannot land there.",
             "Three 6s in a row burn the third roll and end the turn.",
         ]
+        if options.blocksStopPassing { lines.insert("Opponents cannot pass a tower; your own tokens can.", at: 5) }
         if options.sixRollsAgain { lines.append("A 6 rolls again.") }
         if options.captureRollsAgain { lines.append("A capture rolls again.") }
         lines.append(options.firstFinishEnds

@@ -232,6 +232,7 @@ enum LudoSettings {
     static let sixRollsAgainKey = "ludo.sixRollsAgain"
     static let captureRollsAgainKey = "ludo.captureRollsAgain"
     static let firstFinishEndsKey = "ludo.firstFinishEnds"
+    static let blocksStopPassingKey = "ludo.blocksStopPassing"
 
     private static func flag(_ key: String, _ fallback: Bool) -> Bool {
         UserDefaults.standard.object(forKey: key) as? Bool ?? fallback
@@ -242,7 +243,8 @@ enum LudoSettings {
             sixToEnter: flag(sixToEnterKey, true),
             sixRollsAgain: flag(sixRollsAgainKey, true),
             captureRollsAgain: flag(captureRollsAgainKey, true),
-            firstFinishEnds: flag(firstFinishEndsKey, false)
+            firstFinishEnds: flag(firstFinishEndsKey, false),
+            blocksStopPassing: flag(blocksStopPassingKey, false)
         )
     }
 

@@ -1118,12 +1118,14 @@ private fun LudoOptionChips() {
         Triple(R.string.ludo_option_six_again, o.sixRollsAgain) { v: Boolean -> o.copy(sixRollsAgain = v) },
         Triple(R.string.ludo_option_capture_again, o.captureRollsAgain) { v: Boolean -> o.copy(captureRollsAgain = v) },
         Triple(R.string.ludo_option_first_ends, o.firstFinishEnds) { v: Boolean -> o.copy(firstFinishEnds = v) },
+        Triple(R.string.ludo_option_block_pass, o.blocksStopPassing) { v: Boolean -> o.copy(blocksStopPassing = v) },
     )
     val hints = listOf(
         R.string.ludo_hint_six_enter_on to R.string.ludo_hint_six_enter_off,
         R.string.ludo_hint_six_again_on to R.string.ludo_hint_six_again_off,
         R.string.ludo_hint_capture_again_on to R.string.ludo_hint_capture_again_off,
         R.string.ludo_hint_first_ends_on to R.string.ludo_hint_first_ends_off,
+        R.string.ludo_hint_block_pass_on to R.string.ludo_hint_block_pass_off,
     )
     var last by rememberSaveable { mutableStateOf(-1) }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

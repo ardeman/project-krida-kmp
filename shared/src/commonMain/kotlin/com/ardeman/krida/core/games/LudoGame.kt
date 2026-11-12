@@ -23,9 +23,11 @@ data class LudoOptions(
     val captureRollsAgain: Boolean = true,
     /** The game ends when the first player has all four tokens home. */
     val firstFinishEnds: Boolean = false,
+    /** An opponent's block (tower) cannot be passed, only your own. Off: it can be jumped. */
+    val blocksStopPassing: Boolean = false,
 ) {
     /** For Swift, which does not see Kotlin default arguments. */
-    constructor() : this(true, true, true, false)
+    constructor() : this(true, true, true, false, false)
 }
 
 /**
@@ -220,18 +222,21 @@ object LudoGame : GameRules<LudoState, LudoMove>, SeatColorRules<LudoState> {
         }
         val to = from + roll
         if (to > FINISH) return null
+        if (state.options.blocksStopPassing && (from + 1 until to).any { opponentBlock(state, seat, it) }) return null
         return to.takeIf { landingOk(state, seat, pawn, it) }
     }
 
-    private fun landingOk(state: LudoState, seat: Int, pawn: Int, to: Int): Boolean {
-        if (to in HOME_START..FINISH || to == YARD) return true
-        val square = absolute(state, seat, to) ?: return true
-        // An opponent block of two or more stops landing; a single token may be captured.
+    // An opponent block of two or more stops landing; a single token may be captured.
+    private fun landingOk(state: LudoState, seat: Int, pawn: Int, to: Int): Boolean = !opponentBlock(state, seat, to)
+
+    /** Another seat has two or more tokens on [seat]'s relative ring square [pos]. */
+    private fun opponentBlock(state: LudoState, seat: Int, pos: Int): Boolean {
+        val square = absolute(state, seat, pos) ?: return false
         return occupants(state, square)
             .filter { it.seat != seat }
             .groupBy { it.seat }
             .values
-            .none { group -> group.size >= 2 }
+            .any { group -> group.size >= 2 }
     }
 
     data class Occupant(val seat: Int, val pawn: Int)

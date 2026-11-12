@@ -161,6 +161,7 @@
     <string name="ludo_option_six_again">6 again</string>
     <string name="ludo_option_capture_again">Capture again</string>
     <string name="ludo_option_first_ends">First wins</string>
+    <string name="ludo_option_block_pass">Tower blocks</string>
     <string name="ludo_hint_tap">Tap a rule to turn it on or off; it is explained here.</string>
     <string name="ludo_hint_six_enter_on">6 to enter: a token leaves the yard only with a 6.</string>
     <string name="ludo_hint_six_enter_off">6 to enter off: any roll can leave the yard and walk.</string>
@@ -170,6 +171,8 @@
     <string name="ludo_hint_capture_again_off">Capture again off: a capture ends your turn.</string>
     <string name="ludo_hint_first_ends_on">First wins: the game ends when the first player gets all four home.</string>
     <string name="ludo_hint_first_ends_off">First wins off: play goes on until one player is left.</string>
+    <string name="ludo_hint_block_pass_on">Tower blocks: opponents cannot pass a tower of two or more tokens.</string>
+    <string name="ludo_hint_block_pass_off">Tower blocks off: opponents may jump over a tower.</string>
     <string name="ludo_pick_token">Tap a token to move</string>
     <string name="ludo_token_n">Token %1$d</string>
     <string name="ludo_burned_six">Three sixes · turn ends</string>
@@ -183,6 +186,7 @@
     <string name="ludo_rule_exact">You must finish exactly; a roll that goes past stays put.</string>
     <string name="ludo_rule_capture">Landing on a lone opponent sends it to the yard.</string>
     <string name="ludo_rule_block">Two of your tokens on one square are safe; others cannot land there.</string>
+    <string name="ludo_rule_block_pass">Opponents cannot pass a tower; your own tokens can.</string>
     <string name="ludo_rule_three_sixes">Three 6s in a row burn the third roll and end the turn.</string>
     <string name="ludo_rule_six_again">A 6 rolls again.</string>
     <string name="ludo_rule_capture_again">A capture rolls again.</string>

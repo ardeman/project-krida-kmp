@@ -153,6 +153,7 @@
     <string name="ludo_option_six_again">6 lagi</string>
     <string name="ludo_option_capture_again">Tangkap lagi</string>
     <string name="ludo_option_first_ends">Juara 1 selesai</string>
+    <string name="ludo_option_block_pass">Menara menghalangi</string>
     <string name="ludo_hint_tap">Ketuk aturan untuk menyalakan atau mematikannya; penjelasannya muncul di sini.</string>
     <string name="ludo_hint_six_enter_on">6 untuk masuk: bidak keluar dari rumah hanya dengan dadu 6.</string>
     <string name="ludo_hint_six_enter_off">6 untuk masuk mati: dadu berapa pun bisa keluar dan jalan.</string>
@@ -162,6 +163,8 @@
     <string name="ludo_hint_capture_again_off">Tangkap lagi mati: setelah menangkap, giliran pindah.</string>
     <string name="ludo_hint_first_ends_on">Juara 1 selesai: permainan berakhir saat pemain pertama membawa semua bidak pulang.</string>
     <string name="ludo_hint_first_ends_off">Juara 1 selesai mati: main terus sampai tinggal satu pemain.</string>
+    <string name="ludo_hint_block_pass_on">Menara menghalangi: lawan tidak bisa melewati menara dua bidak atau lebih.</string>
+    <string name="ludo_hint_block_pass_off">Menara menghalangi mati: lawan boleh melompati menara.</string>
     <string name="ludo_pick_token">Ketuk bidak yang mau jalan</string>
     <string name="ludo_token_n">Bidak %1$d</string>
     <string name="ludo_burned_six">Tiga kali 6 · giliran habis</string>
@@ -175,6 +178,7 @@
     <string name="ludo_rule_exact">Harus pas sampai finish; lemparan yang lewat membuat bidak diam.</string>
     <string name="ludo_rule_capture">Mendarat di bidak lawan sendirian mengirimnya ke rumah.</string>
     <string name="ludo_rule_block">Dua bidakmu di kotak yang sama aman; lawan tidak bisa mendarat di situ.</string>
+    <string name="ludo_rule_block_pass">Lawan tidak bisa melewati menara; bidakmu sendiri boleh.</string>
     <string name="ludo_rule_three_sixes">Tiga kali 6 beruntun membatalkan lemparan ketiga dan mengakhiri giliran.</string>
     <string name="ludo_rule_six_again">Dadu 6 boleh melempar lagi.</string>
     <string name="ludo_rule_capture_again">Setelah menangkap, lempar lagi.</string>

@@ -149,13 +149,19 @@ in the same commit as the code.
   landing exactly on the home stretch finish is required; capturing a lone opponent token
   sends it to the yard and grants another roll. Colour start squares, the four starred
   safe squares (eight steps past each start) and the home stretch are safe; two or more of
-  the same colour on one square form a block (safe, and others cannot land there). The
+  the same colour on one square form a block (safe, and others cannot land there). A block
+  shows as a tower: same-colour tokens stack on one another (lowest pawn at the bottom), and
+  colours sharing a safe square stand apart in the cell (`LudoBoard.tokenSpot`; owner,
+  2026-11-12). The
   board mesh shows those stars, home-entrance arrows (into each finish lane, not on the
   start squares), coloured yard pads and a four-triangle centre, matching a classic
   Ludo board. Non-play yard colour and inner cream are continuous slabs (not gapped
   tiles); only the four yard slot pads keep spacing, with cream padding between them.
 - Host options (same idea as ular tangga): no-6-to-enter, no extra roll on 6, no extra roll
-  on capture, first to finish ends the game. Quick match will use the defaults
+  on capture, first to finish ends the game, and "Tower blocks" (`blocksStopPassing`, off by
+  default; owner, 2026-11-12): opponents cannot pass a block, your own tokens can. Off is
+  the casual rule where a block is only safe from landing; rules vary by region, so it is a
+  choice. Quick match will use the defaults
   (`StandardRules.ludo`).
 - Pawn colours are the same four as ular tangga (red, blue, green, yellow), picked in room
   lobbies and when a lone person plays computers on this phone (switch with a computer).

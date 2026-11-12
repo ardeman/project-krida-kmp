@@ -164,6 +164,39 @@ object LudoBoard {
         return floatArrayOf(xz[0], y, xz[1])
     }
 
+    /** How far a stacked token sits above the one below: one token's height. */
+    const val PIECE_STEP = 1.3f * PIECE_SCALE
+
+    /** How far each colour's token or tower moves aside when colours share a track square. */
+    const val SHARE_OFFSET = CELL * 0.31f
+
+    /**
+     * Where [seat]'s [pawn] stands in [state], with shared squares laid out: tokens of one
+     * colour on one square stack into a tower (lowest pawn number at the bottom), so a block
+     * reads as a pile; when colours share a track square (safe squares), each colour's token
+     * or tower moves aside within the cell. Yard tokens keep their own slots.
+     */
+    fun tokenSpot(state: LudoState, seat: Int, pawn: Int): FloatArray {
+        val pos = state.tokens[seat][pawn]
+        val base = tokenAnchor(state.color(seat), pawn, pos)
+        if (pos == LudoGame.YARD) return base
+        val level = (0 until pawn).count { state.tokens[seat][it] == pos }
+        var dx = 0f
+        var dz = 0f
+        val square = LudoGame.absolute(state, seat, pos)
+        if (square != null) {
+            val sharing = state.tokens.indices.filter { s ->
+                state.tokens[s].any { LudoGame.absolute(state, s, it) == square }
+            }
+            if (sharing.size > 1) {
+                val i = sharing.indexOf(seat)
+                dx = if (i % 2 == 0) -SHARE_OFFSET else SHARE_OFFSET
+                if (sharing.size > 2) dz = if (i < 2) -SHARE_OFFSET else SHARE_OFFSET
+            }
+        }
+        return floatArrayOf(base[0] + dx, base[1] + level * PIECE_STEP, base[2] + dz)
+    }
+
     /** World position of absolute ring [square]. */
     fun trackAnchor(square: Int): FloatArray {
         val cell = TRACK_CELLS[square]

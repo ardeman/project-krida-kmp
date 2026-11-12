@@ -18,6 +18,7 @@ object LudoSettings {
     private const val KEY_SIX_AGAIN = "ludo.sixRollsAgain"
     private const val KEY_CAPTURE_AGAIN = "ludo.captureRollsAgain"
     private const val KEY_FIRST_ENDS = "ludo.firstFinishEnds"
+    private const val KEY_BLOCK_PASS = "ludo.blocksStopPassing"
 
     private lateinit var app: Context
 
@@ -38,6 +39,7 @@ object LudoSettings {
             sixRollsAgain = p.getBoolean(KEY_SIX_AGAIN, true),
             captureRollsAgain = p.getBoolean(KEY_CAPTURE_AGAIN, true),
             firstFinishEnds = p.getBoolean(KEY_FIRST_ENDS, false),
+            blocksStopPassing = p.getBoolean(KEY_BLOCK_PASS, false),
         )
     }
 
@@ -55,6 +57,7 @@ object LudoSettings {
             .putBoolean(KEY_SIX_AGAIN, value.sixRollsAgain)
             .putBoolean(KEY_CAPTURE_AGAIN, value.captureRollsAgain)
             .putBoolean(KEY_FIRST_ENDS, value.firstFinishEnds)
+            .putBoolean(KEY_BLOCK_PASS, value.blocksStopPassing)
             .apply()
     }
 

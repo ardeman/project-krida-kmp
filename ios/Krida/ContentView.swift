@@ -1241,6 +1241,7 @@ private struct LudoOptionChips: View {
     @AppStorage(LudoSettings.sixRollsAgainKey) private var sixRollsAgain = true
     @AppStorage(LudoSettings.captureRollsAgainKey) private var captureRollsAgain = true
     @AppStorage(LudoSettings.firstFinishEndsKey) private var firstFinishEnds = false
+    @AppStorage(LudoSettings.blocksStopPassingKey) private var blocksStopPassing = false
     /// The chip tapped last; its meaning shows under the chips. Same as Android.
     @State private var last: Int?
     @Environment(\.uiScale) private var s
@@ -1252,6 +1253,7 @@ private struct LudoOptionChips: View {
                 chip(1, "6 again", $sixRollsAgain)
                 chip(2, "Capture again", $captureRollsAgain)
                 chip(3, "First wins", $firstFinishEnds)
+                chip(4, "Tower blocks", $blocksStopPassing)
             }
             RuleHint(text: hint)
         }
@@ -1271,6 +1273,9 @@ private struct LudoOptionChips: View {
         case 3: firstFinishEnds
             ? "First wins: the game ends when the first player gets all four home."
             : "First wins off: play goes on until one player is left."
+        case 4: blocksStopPassing
+            ? "Tower blocks: opponents cannot pass a tower of two or more tokens."
+            : "Tower blocks off: opponents may jump over a tower."
         default: "Tap a rule to turn it on or off; it is explained here."
         }
     }

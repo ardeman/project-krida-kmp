@@ -158,8 +158,8 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     }
     val scope = lifetime.scope
 
-    fun spot(s: LudoState, seat: Int, pawn: Int) =
-        LudoBoard.tokenAnchor(s.color(seat), pawn, s.tokens[seat][pawn])
+    // Same-colour tokens on one square stack into a tower; colours sharing a square sit apart.
+    fun spot(s: LudoState, seat: Int, pawn: Int) = LudoBoard.tokenSpot(s, seat, pawn)
 
     fun placeAll(s: LudoState) {
         val r = renderer ?: return
@@ -212,15 +212,23 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             if (pawn != null && after.lastFrom != null && after.lastTo != null) {
                 val color = after.color(seat)
                 val fromPos = after.lastFrom!!
+                // Hop square by square; the last hop lands on top of a tower or beside another colour.
                 val path = LudoGame.walk(fromPos, after.lastTo!!).map {
                     LudoBoard.tokenAnchor(color, pawn, it)
-                }
+                }.dropLast(1) + listOf(spot(after, seat, pawn))
                 // Frame only the mover (start + hops). Capture yards used to pull the
                 // camera across the board away from the piece that moves.
-                val start = LudoBoard.tokenAnchor(color, pawn, fromPos)
+                val start = spot(before, seat, pawn)
                 r.watch(listOf(start) + path)
                 delay(180L)
                 r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
+                // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
+                val captured = after.lastCaptures.map { it.seat to it.pawn }.toSet()
+                for (s in after.tokens.indices) for (p in 0 until LudoGame.PAWNS) {
+                    if ((s == seat && p == pawn) || (s to p) in captured) continue
+                    val to = spot(after, s, p)
+                    if (!to.contentEquals(spot(before, s, p))) r.move(s, p, listOf(to), 0.25f, hop = 0.15f)
+                }
                 // The same tok on each square as ular tangga.
                 repeat(path.size) {
                     Sounds.play(Sounds.Effect.Step)
@@ -682,6 +690,7 @@ private fun RulesSheet(options: LudoOptions, onDismiss: () -> Unit) {
                     R.string.ludo_rule_exact,
                     R.string.ludo_rule_capture,
                     R.string.ludo_rule_block,
+                    if (options.blocksStopPassing) R.string.ludo_rule_block_pass else null,
                     R.string.ludo_rule_three_sixes,
                     if (options.sixRollsAgain) R.string.ludo_rule_six_again else null,
                     if (options.captureRollsAgain) R.string.ludo_rule_capture_again else null,

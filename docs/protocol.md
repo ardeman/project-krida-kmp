@@ -57,7 +57,9 @@ them again; the seats after a removed one move up, as when a guest leaves.
 `options` (optional) in `lobby` is the rule options the host chose, as game-specific JSON,
 so guests can show the rules before the game starts: congklak `{ "tembakAfterStore": true }`,
 ular tangga the `UlarTanggaOptions` fields (`bounceBack`, `sixToEnter`, `firstFinishEnds`,
-`sixRollsAgain`). Fields at their default may be left out. The game's `state` still carries
+`sixRollsAgain`), ludo the `LudoOptions` fields (`sixToEnter`, `sixRollsAgain`,
+`captureRollsAgain`, `firstFinishEnds`, `blocksStopPassing`; the last added 2026-11-12, and
+older guests ignore it, so they may ring a token the host then refuses). Fields at their default may be left out. The game's `state` still carries
 the options the game is played with. Older hosts leave it out (guests then show no rules in
 the lobby); older guests ignore it.
 

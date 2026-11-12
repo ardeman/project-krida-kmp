@@ -1,5 +1,6 @@
 package com.ardeman.krida.core
 
+import com.ardeman.krida.core.games.LudoBoard
 import com.ardeman.krida.core.games.LudoBot
 import com.ardeman.krida.core.games.LudoCapture
 import com.ardeman.krida.core.games.LudoGame
@@ -242,5 +243,48 @@ class LudoTest {
         // Only one token can use the roll: that is the move.
         val one = at(listOf(-1, 5, -1, -1), listOf(-1, -1, -1, -1), roll = 3)
         assertEquals(LudoMove(1), game.timeoutMove(one, 0, Random(3)))
+    }
+
+    @Test
+    fun stackedTokensFormATowerAndColoursMoveAside() {
+        val empty = listOf(-1, -1, -1, -1)
+        // A lone token stands on its square's anchor.
+        val lone = at(listOf(5, -1, -1, -1), empty)
+        assertTrue(LudoBoard.tokenAnchor(0, 0, 5).contentEquals(LudoBoard.tokenSpot(lone, 0, 0)))
+        // A block of three: same cell, one token's height apart, lowest pawn at the bottom.
+        val block = at(listOf(5, 9, 5, 5), empty)
+        val spots = listOf(0, 2, 3).map { LudoBoard.tokenSpot(block, 0, it) }
+        val anchor = LudoBoard.tokenAnchor(0, 0, 5)
+        spots.forEachIndexed { level, p ->
+            assertEquals(anchor[0], p[0])
+            assertEquals(anchor[2], p[2])
+            assertEquals(anchor[1] + level * LudoBoard.PIECE_STEP, p[1])
+        }
+        // Yard tokens keep their slots.
+        assertTrue(LudoBoard.tokenAnchor(0, 1, -1).contentEquals(LudoBoard.tokenSpot(at(listOf(5, -1, -1, -1), empty), 0, 1)))
+        // Two colours on one safe square (seat 1's start, 13 = seat 0's 13th step) sit apart.
+        val shared = at(listOf(13, -1, -1, -1), listOf(0, -1, -1, -1))
+        val a = LudoBoard.tokenSpot(shared, 0, 0)
+        val b = LudoBoard.tokenSpot(shared, 1, 0)
+        assertEquals(2 * LudoBoard.SHARE_OFFSET, b[0] - a[0], 1e-4f)
+        assertEquals(a[1], b[1])
+    }
+
+    @Test
+    fun blocksStopPassingOnlyWhenTheOptionIsOn() {
+        // Seat 1 (start 13) has a block on its relative 2 = absolute 15 = seat 0's relative 15.
+        val tokens = arrayOf(listOf(12, -1, -1, -1), listOf(2, 2, -1, -1))
+        val off = at(*tokens, roll = 5)
+        assertEquals(listOf(0), game.legalPawns(off, 0, 5)) // jumps from 12 to 17
+        assertEquals(emptyList(), game.legalPawns(off, 0, 3)) // lands on the block: never
+        val on = at(*tokens, roll = 5, options = LudoOptions(blocksStopPassing = true))
+        assertEquals(emptyList(), game.legalPawns(on, 0, 5))
+        assertEquals(listOf(0), game.legalPawns(on, 0, 2)) // stops short of it
+        // Your own block never stops you.
+        val own = at(listOf(12, 15, 15, -1), listOf(-1, -1, -1, -1), options = LudoOptions(blocksStopPassing = true))
+        assertTrue(0 in game.legalPawns(own, 0, 5))
+        // A lone opponent token can still be passed.
+        val lone = at(listOf(12, -1, -1, -1), listOf(2, -1, -1, -1), options = LudoOptions(blocksStopPassing = true))
+        assertEquals(listOf(0), game.legalPawns(lone, 0, 5))
     }
 }
