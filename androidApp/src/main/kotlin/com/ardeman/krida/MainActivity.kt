@@ -114,6 +114,11 @@ import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.core.games.LudoGame
 import com.ardeman.krida.core.games.PerangKapalGame
+import com.ardeman.krida.gaple.GapleHostTable
+import com.ardeman.krida.gaple.GaplePreview
+import com.ardeman.krida.gaple.GapleScreen
+import com.ardeman.krida.gaple.GapleSettings
+import com.ardeman.krida.gaple.GapleTable
 import com.ardeman.krida.ludo.LudoHostTable
 import com.ardeman.krida.ludo.LudoPreview
 import com.ardeman.krida.ludo.LudoScreen
@@ -185,6 +190,7 @@ class MainActivity : ComponentActivity() {
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
     private var ludoTable by mutableStateOf<LudoTable?>(null)
     private var perangKapalTable by mutableStateOf<PerangKapalTable?>(null)
+    private var gapleTable by mutableStateOf<GapleTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     /** A string resource under the join screen's code: the scanner failed or read another QR. */
     private var joinError by mutableStateOf<Int?>(null)
@@ -237,6 +243,7 @@ class MainActivity : ComponentActivity() {
         UlarTanggaSettings.init(this)
         LudoSettings.init(this)
         PerangKapalSettings.init(this)
+        GapleSettings.init(this)
         LastRoom.init(this)
         Account.init(this)
         // Language and theme changes recreate this activity with its original launch intent.
@@ -262,9 +269,10 @@ class MainActivity : ComponentActivity() {
                 val ular = ularTable ?: r?.ular
                 val ludo = ludoTable ?: r?.ludo
                 val perang = perangKapalTable ?: r?.perangKapal
+                val gaple = gapleTable
                 // Games and rooms can sit idle between turns / while waiting for a friend;
                 // keep the screen awake so the phone doesn't sleep mid-session.
-                val keepAwake = perang != null || ludo != null || ular != null || table != null || r != null
+                val keepAwake = gaple != null || perang != null || ludo != null || ular != null || table != null || r != null
                 DisposableEffect(keepAwake) {
                     val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                     if (keepAwake) window.addFlags(flag) else window.clearFlags(flag)
@@ -279,6 +287,7 @@ class MainActivity : ComponentActivity() {
                     onDispose { Invites.stop() }
                 }
                 when {
+                    gaple != null -> GapleScreen(gaple, onExit = { gapleTable = null })
                     perang != null -> PerangKapalScreen(perang, onExit = { perangKapalTable = null; room = null; joining = false })
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
@@ -594,10 +603,12 @@ class MainActivity : ComponentActivity() {
         val ular = game == Game.ULAR_TANGGA
         val ludo = game == Game.LUDO
         val kapal = game == Game.PERANG_KAPAL
+        // Gaple is on this phone only until its nearby and online rooms are wired.
+        val gaple = game == Game.GAPLE
         val multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
-        val nearby = place != Place.PHONE
-        val online = place == Place.ONLINE
+        val nearby = place != Place.PHONE && !gaple
+        val online = nearby && place == Place.ONLINE
         val lan = nearby && !online && nearbyLink == NearbyLink.WIFI
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
@@ -609,6 +620,7 @@ class MainActivity : ComponentActivity() {
             ular -> UlarTanggaSettings.seats
             ludo -> LudoSettings.seats
             kapal -> kapalSeatList
+            gaple -> GapleSettings.seats
             else -> congklak
         }
         val computers = seats.count { it == LocalSeat.COMPUTER }
@@ -634,7 +646,7 @@ class MainActivity : ComponentActivity() {
                 .padding(start = 18.dp, end = 14.dp, top = 14.dp, bottom = 14.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            SettingRow(stringResource(R.string.play_where)) {
+            if (!gaple) SettingRow(stringResource(R.string.play_where)) {
                 Segmented(
                     options = Place.entries.map { it to stringResource(it.label) },
                     current = place,
@@ -657,7 +669,16 @@ class MainActivity : ComponentActivity() {
             }
             // In a nearby room everyone who joins plays, up to 4. Perang kapal on this phone
             // has its own two tiles below (the second: computer or person).
-            if (!nearby && !kapal) SettingRow(stringResource(R.string.play_players)) {
+            if (gaple) SettingRow(stringResource(R.string.play_players)) {
+                SeatTiles(
+                    seats = seats,
+                    colors = seats.indices.map { if (seats[it] == LocalSeat.EMPTY) Theme.border else pawnColor(it) },
+                    // You are always the first seat; the others are a computer or empty.
+                    tappable = setOf(1, 2, 3),
+                    onTap = GapleSettings::tapSeat,
+                )
+            }
+            if (!nearby && !kapal && !gaple) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
                     colors = if (multi) {
@@ -700,7 +721,7 @@ class MainActivity : ComponentActivity() {
             // The action row: what this choice means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(if (!multi && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
+            SettingRow(if (!multi && !gaple && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
@@ -717,6 +738,7 @@ class MainActivity : ComponentActivity() {
                                 kapal -> R.string.perang_kapal_detail_nearby
                                 else -> R.string.nearby_detail
                             }))
+                            gaple -> Detail(stringResource(R.string.gaple_detail_computer))
                             kapal -> Detail(stringResource(if (computers > 0) R.string.perang_kapal_detail_computer else R.string.mode_pass_detail))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
                             !multi -> Detail(stringResource(R.string.mode_pass_detail))
@@ -774,6 +796,9 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                         if (lan) startHost() else withBlePermissions { startHost() }
+                                    }
+                                    gaple -> gapleTable = GapleHostTable.vsComputer(you, computers) { n ->
+                                        if (computers == 1) computer else computerN[n - 1]
                                     }
                                     kapal -> perangKapalTable = if (computers > 0) PerangKapalHostTable.vsComputer(you, computer)
                                     else PerangKapalHostTable.passAndPlay(names)
@@ -1013,6 +1038,7 @@ private enum class Game(val title: Int, val players: Int, val tagline: Int, val 
     ULAR_TANGGA(R.string.ular_title, R.string.ular_card_players, R.string.ular_card_tagline, Color(0xFF4F8A3B), Color(0xFF3B6A2B)),
     LUDO(R.string.ludo_title, R.string.ludo_card_players, R.string.ludo_card_tagline, Color(0xFF3D6EB5), Color(0xFF2A5085)),
     PERANG_KAPAL(R.string.perang_kapal_title, R.string.perang_kapal_card_players, R.string.perang_kapal_card_tagline, Color(0xFF1B4F72), Color(0xFF123A54)),
+    GAPLE(R.string.gaple_title, R.string.gaple_card_players, R.string.gaple_card_tagline, Color(0xFF7B2D3B), Color(0xFF5A1F2B)),
 }
 
 private fun nearbyGame(id: String) = when (id) {
@@ -1027,7 +1053,21 @@ private fun GameRoomOptions(game: Any) {
     val ular = game == Game.ULAR_TANGGA || game == UlarTanggaGame.id
     val ludo = game == Game.LUDO || game == LudoGame.id
     val kapal = game == Game.PERANG_KAPAL || game == PerangKapalGame.id
+    val gaple = game == Game.GAPLE
     when {
+        gaple -> {
+            // Partners only make sense with four at the table.
+            if (GapleSettings.players == 4) SettingRow(stringResource(R.string.gaple_partners)) {
+                Segmented(
+                    options = listOf(false to stringResource(R.string.gaple_partners_off), true to stringResource(R.string.gaple_partners_across)),
+                    current = GapleSettings.options.partners,
+                    label = stringResource(R.string.gaple_partners),
+                    onChange = GapleSettings::choosePartners,
+                    fill = true,
+                )
+            }
+            Hint(stringResource(R.string.gaple_hint))
+        }
         ular -> SettingRow(stringResource(R.string.play_rules)) { UlarTanggaOptionChips() }
         ludo -> SettingRow(stringResource(R.string.play_rules)) { LudoOptionChips() }
         kapal -> Hint(stringResource(R.string.perang_kapal_hint))
@@ -1251,6 +1291,7 @@ private fun GameCardFace(game: Game, onReady: () -> Unit, modifier: Modifier = M
                 }
                 Game.LUDO -> LudoPreview(preview, onReady = onReady)
                 Game.PERANG_KAPAL -> PerangKapalPreview(preview, onReady = onReady)
+                Game.GAPLE -> GaplePreview(preview, onReady = onReady)
             }
             Text(stringResource(game.tagline), style = Theme.font(13, FontWeight.SemiBold, cream), modifier = Modifier.padding(end = 6.dp))
         }

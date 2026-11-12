@@ -40,6 +40,9 @@ A change to one side usually needs the same change in the file on the same row.
 | Perang kapal screen | `perangkapal/PerangKapalScreen.kt` | `PerangKapal/PerangKapalView.swift` |
 | Perang kapal 3D | `perangkapal/PerangKapalRenderer.kt` | `PerangKapal/PerangKapalScene.swift`, `PerangKapalPreview.swift` |
 | Perang kapal table + settings | `perangkapal/PerangKapalTable.kt`, `PerangKapalSettings.kt` | `PerangKapal/PerangKapalTable.swift` |
+| Gaple screen (hand, round card) | `gaple/GapleScreen.kt` | not yet |
+| Gaple 3D (meshes in shared `GapleScene.kt`) | `gaple/GapleRenderer.kt` | not yet |
+| Gaple table + settings | `gaple/GapleTable.kt`, `GapleSettings.kt` | not yet |
 | Room state (nearby and online) | `nearby/NearbyRoom.kt` | `Nearby/NearbyRoom.swift` |
 | Lobby, join, QR, connecting screens | `nearby/NearbyScreens.kt` | `Nearby/NearbyScreens.swift` |
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |
