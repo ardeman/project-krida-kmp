@@ -27,6 +27,8 @@ final class GapleGameModel: ObservableObject {
     private var queue: [GapleUpdate] = []
     private var turnKey: String?
     private var roundKey: String?
+    /// Set once this round end deals (button or countdown), so an ad never shows twice.
+    private var dealing = false
 
     private static let botPause: Double = 0.65
     private static let settle: Double = 0.25
@@ -142,6 +144,7 @@ final class GapleGameModel: ObservableObject {
         let round = roundCard ? "\(state.round)" : nil
         if round != roundKey {
             roundKey = round
+            dealing = false
             lifetime.cancel("round")
             roundSeconds = 0
             if round != nil {
@@ -151,7 +154,7 @@ final class GapleGameModel: ObservableObject {
                         try await Task.sleep(for: .seconds(1))
                         roundSeconds -= 1
                     }
-                    if table.isHost { _ = table.nextRound() }
+                    nextRound()
                 }
             }
         }
@@ -187,9 +190,15 @@ final class GapleGameModel: ObservableObject {
         playEnd(hit.0)
     }
 
+    /// Deals the next round; against computers a (frequency-capped) interstitial may run first.
     func nextRound() {
-        guard lifetime.active, table.isHost else { return }
-        _ = table.nextRound()
+        guard lifetime.active, table.isHost, !dealing else { return }
+        dealing = true
+        let deal = { [weak self] in
+            guard let self, self.lifetime.active else { return }
+            _ = self.table.nextRound()
+        }
+        if table.isLocal { Ads.shared.afterGame(then: deal) } else { deal() }
     }
 
     func restart() {

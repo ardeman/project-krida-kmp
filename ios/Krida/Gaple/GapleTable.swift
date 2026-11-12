@@ -27,6 +27,8 @@ class GapleTable: ObservableObject {
     /// Deals the next round and restarts a finished match.
     var isHost: Bool { false }
     var canEmote: Bool { false }
+    /// Everyone else is a computer on this device, so nobody waits through an ad.
+    var isLocal: Bool { false }
 
     fileprivate init(first: GapleState, seq: Int32) {
         latest = first
@@ -100,6 +102,7 @@ final class GapleHostTable: GapleTable {
     override var mySeat: Int { seat }
     override var isHost: Bool { true }
     override var canEmote: Bool { !(transport is LocalTransport) }
+    override var isLocal: Bool { transport is LocalTransport }
 
     override func play(_ tile: GapleTile, end: Int?) -> Bool {
         let move = GapleMove(tile: tile, end: end.map { KotlinInt(int: Int32($0)) }, next: false)

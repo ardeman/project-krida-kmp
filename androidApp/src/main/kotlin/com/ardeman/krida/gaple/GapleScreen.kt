@@ -279,9 +279,19 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         GapleGame.timeoutMove(state, me, Random.Default)?.let { table.play(it.tile!!, it.end) }
     }
 
-    // Round end: the host deals on by itself after the same countdown.
+    // Round end: the host deals on by itself after the same countdown. Against computers an
+    // interstitial (frequency-capped) may run first; [dealing] keeps the button and the
+    // countdown from dealing (or showing an ad) twice.
     val roundCard = settled && state.roundOver && !state.finished
     var roundSeconds by remember { mutableIntStateOf(0) }
+    val activity = LocalActivity.current
+    var dealing by remember(state.round) { mutableStateOf(false) }
+    fun deal() {
+        if (dealing || !table.isHost) return
+        dealing = true
+        val a = activity
+        if (table.isLocal && a != null) Ads.afterGame(a) { table.nextRound() } else table.nextRound()
+    }
     LaunchedEffect(roundCard, state.round) {
         if (!roundCard) {
             roundSeconds = 0
@@ -292,7 +302,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             delay(1000L)
             roundSeconds -= 1
         }
-        if (table.isHost) table.nextRound()
+        deal()
     }
 
     fun exit() {
@@ -301,7 +311,6 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     }
 
     BackHandler(onBack = ::exit)
-    val activity = LocalActivity.current
     val turned = LocalStageTurned.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -454,7 +463,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             )
         }
 
-        if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onNext = { table.nextRound() })
+        if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onNext = ::deal)
         if (settled && state.finished) ResultCard(
             table, state,
             onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },

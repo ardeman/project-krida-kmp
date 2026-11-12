@@ -227,6 +227,9 @@ in the same commit as the code.
 
 - Fifth game (2026-11-12); game id `gaple`. Rules and mockup in
   [mockups/gaple.md](mockups/gaple.md).
+- **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
+  with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
+  "Remove ads".
 - **Turn timer in every game (owner, 2026-11-12):** no game may wait forever on a player.
   Each turn has a countdown and at 0 the phone moves for the player. Gaple: 15 s
   (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (what the easy computer would play,

@@ -53,6 +53,9 @@ abstract class GapleTable {
 
     open val canEmote: Boolean get() = false
 
+    /** Everyone else is a computer on this device, so nobody waits through an ad. */
+    open val isLocal: Boolean get() = false
+
     protected var active = true
         private set
 
@@ -112,6 +115,8 @@ class GapleHostTable(
     }
 
     override val canEmote: Boolean get() = transport !is LocalTransport
+
+    override val isLocal: Boolean get() = transport is LocalTransport
 
     override fun play(tile: GapleTile, end: Int?) =
         active && session.submitLocal(mySeat, GapleMove(tile, end)) == null
