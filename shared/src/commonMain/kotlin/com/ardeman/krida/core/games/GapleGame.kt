@@ -203,17 +203,15 @@ object GapleGame : GameRules<GapleState, GapleMove>, PrivateStateRules<GapleStat
 
     /**
      * What the phone plays for [seat] when its turn timer ([com.ardeman.krida.core.protocol.Krida.PLAY_TURN_MS])
-     * runs out: the heaviest fitting tile (it costs the most if left in hand), on the first
-     * end it fits; at a round end, the next deal. Deterministic, so a guest's phone sends the
-     * same intent the host would pick. Null when [seat] has nothing to do now.
+     * runs out: what the easy computer ([GapleBot.Level.EASY]) would play, any fitting tile on
+     * any end it fits, drawn from [random]; at a round end, the next deal. The phone of the
+     * player who timed out picks it and sends it like a tap. Null when [seat] has nothing to do now.
      */
-    fun timeoutMove(state: GapleState, seat: Int): GapleMove? {
+    fun timeoutMove(state: GapleState, seat: Int, random: Random): GapleMove? {
         if (state.finished) return null
         if (state.roundOver) return if (seat == 0) GapleMove(next = true) else null
-        if (seat != state.turn) return null
-        val tile = playable(state, seat).maxWithOrNull(compareBy({ it.pips }, { it.b })) ?: return null
-        val end = if (state.line.isEmpty()) null else endsFor(state, tile).first()
-        return GapleMove(tile, end)
+        if (seat != state.turn || playable(state, seat).isEmpty()) return null
+        return GapleBot(GapleBot.Level.EASY).chooseMove(state, seat, random)
     }
 
     /** Team (or seat) totals for display: one entry per team with partners, else per seat. */

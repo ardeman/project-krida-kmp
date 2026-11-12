@@ -207,11 +207,17 @@ in the same commit as the code.
   [mockups/gaple.md](mockups/gaple.md).
 - **Turn timer in every game (owner, 2026-11-12):** no game may wait forever on a player.
   Each turn has a countdown and at 0 the phone moves for the player. Gaple: 15 s
-  (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (heaviest fitting tile); the round-end
+  (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (what the easy computer would play,
+  owner 2026-11-12; first the heaviest fitting tile); the round-end
   card also counts down and the host deals on. Congklak: 15 s to pick a pit
   (`Krida.PLAY_TURN_MS`), then the phone plays what the easy computer would pick
   (`CongklakGame.timeoutMove`, a random hole with seeds) as if the player tapped it (owner,
-  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown. Ludo:
+  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown.
+  **Auto-play after a timeout (owner, 2026-11-12):** once a player on this phone lets a
+  timer run out, the phone plays that player's later turns (roll, pick, move) after a short
+  pause (`Krida.AUTO_PLAY_MS`, 0.8 s) with no countdown, as the easy computer would, until the
+  player acts themselves (taps or holds the die, taps a token, pit or tile). Every timed game,
+  on Android and iOS. The flag is per seat on this phone and is not sent to other phones. Ludo:
   after a roll with more than one token to choose, 15 s to pick (`Krida.PLAY_TURN_MS`), then
   the easy computer's pick (`LudoGame.timeoutMove`, any legal token); the ring sits above the
   die where the roll countdown was (owner, 2026-11-12). Perang

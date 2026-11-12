@@ -95,6 +95,7 @@ import com.ardeman.krida.ui.gameInsets
 import com.ardeman.krida.ui.rememberGameLifetime
 import com.ardeman.krida.ulartangga.pawnColor
 import kotlin.math.hypot
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -225,8 +226,13 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     LaunchedEffect(myTurn) { if (!myTurn) picking = null }
     LaunchedEffect(picking, renderer) { renderer?.pulseEnds(picking != null) }
 
+    // Once your timer runs out, the phone plays your turns after a short pause
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until you tap a tile yourself.
+    var auto by remember { mutableStateOf(false) }
+
     fun play(tile: GapleTile) {
         if (!myTurn || tile !in playable) return
+        auto = false
         val ends = GapleGame.endsFor(state, tile)
         if (state.line.isEmpty() || ends.size == 1) {
             picking = null
@@ -243,7 +249,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         table.play(tile, end)
     }
 
-    // Turn timer: at 0 the phone plays the heaviest fitting tile for you.
+    // Turn timer: at 0 the phone plays what the easy computer would (GapleGame.timeoutMove).
     val turnTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
     var turnSeconds by remember { mutableIntStateOf(0) }
     val myTurnNow by rememberUpdatedState(myTurn)
@@ -252,14 +258,21 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             turnSeconds = 0
             return@LaunchedEffect
         }
-        turnSeconds = turnTotal
-        while (turnSeconds > 0) {
-            delay(1000L)
-            if (!myTurnNow) return@LaunchedEffect
-            turnSeconds -= 1
+        if (auto) {
+            turnSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+        } else {
+            turnSeconds = turnTotal
+            while (turnSeconds > 0) {
+                delay(1000L)
+                if (!myTurnNow) return@LaunchedEffect
+                turnSeconds -= 1
+            }
+            auto = true
         }
+        if (!myTurnNow || !auto) return@LaunchedEffect
         picking = null
-        GapleGame.timeoutMove(state, me)?.let { table.play(it.tile!!, it.end) }
+        GapleGame.timeoutMove(state, me, Random.Default)?.let { table.play(it.tile!!, it.end) }
     }
 
     // Round end: the host deals on by itself after the same countdown.

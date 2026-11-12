@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -312,8 +313,13 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         }
     }
 
-    fun roll(toss: LudoRenderer.Toss) {
+    // Seats on this phone whose timer ran out: the phone plays their turns after a short pause
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player rolls or picks themselves.
+    val autoSeats = remember { mutableStateListOf<Int>() }
+
+    fun roll(toss: LudoRenderer.Toss, byPlayer: Boolean = true) {
         if (!canRoll) return
+        if (byPlayer) autoSeats.remove(state.turn)
         holdingDie = false
         rollSeconds = 0
         pendingToss[0] = toss
@@ -337,6 +343,12 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             rollSeconds = 0
             return@LaunchedEffect
         }
+        if (state.turn in autoSeats) {
+            rollSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+            if (canRollNow && !holdingNow && state.turn in autoSeats) roll(LudoRenderer.Toss.Short, byPlayer = false)
+            return@LaunchedEffect
+        }
         rollSeconds = rollTotal
         while (rollSeconds > 0) {
             delay(1000L)
@@ -344,7 +356,10 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             if (holdingNow) continue
             val next = rollSeconds - 1
             rollSeconds = next
-            if (next == 0 && canRollNow && !holdingNow) roll(LudoRenderer.Toss.Short)
+            if (next == 0 && canRollNow && !holdingNow) {
+                if (state.turn !in autoSeats) autoSeats.add(state.turn)
+                roll(LudoRenderer.Toss.Short, byPlayer = false)
+            }
         }
     }
 
@@ -360,12 +375,19 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             pickSeconds = 0
             return@LaunchedEffect
         }
-        pickSeconds = pickTotal
-        while (pickSeconds > 0) {
-            delay(1000L)
-            if (!pickingNow || !lifetime.active) return@LaunchedEffect
-            pickSeconds -= 1
+        if (state.turn in autoSeats) {
+            pickSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+        } else {
+            pickSeconds = pickTotal
+            while (pickSeconds > 0) {
+                delay(1000L)
+                if (!pickingNow || !lifetime.active) return@LaunchedEffect
+                pickSeconds -= 1
+            }
+            if (state.turn !in autoSeats) autoSeats.add(state.turn)
         }
+        if (!pickingNow || !lifetime.active || state.turn !in autoSeats) return@LaunchedEffect
         LudoGame.timeoutMove(state, state.turn, Random.Default)?.pawn?.let { table.movePawn(state.turn, it) }
     }
 
@@ -434,6 +456,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                             .minByOrNull { (_, xy) -> hypot(xy[0] - tap.x, xy[1] - tap.y) }
                             ?: return@detectTapGestures
                         if (hypot(hit.second[0] - tap.x, hit.second[1] - tap.y) <= reach) {
+                            autoSeats.remove(pickSeat)
                             table.movePawn(pickSeat, hit.first)
                         }
                     }
@@ -540,6 +563,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                                 val down = awaitFirstDown()
                                 down.consume()
                                 holdingDie = true
+                                autoSeats.remove(state.turn)
                                 renderer?.holdDie(true)
                                 var long = false
                                 var released = false

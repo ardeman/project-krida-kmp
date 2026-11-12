@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -300,10 +301,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     val holdingNow by rememberUpdatedState(holdingDie)
     val throwReadyNow by rememberUpdatedState(throwReady())
 
+    // Seats on this phone whose timer ran out: the phone throws for them after a short pause
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player throws themselves.
+    val autoSeats = remember { mutableStateListOf<Int>() }
+
     /** Throws the die for the local player whose turn it is; it shakes until the roll comes back. */
-    fun roll(toss: UlarTanggaRenderer.Toss) {
+    fun roll(toss: UlarTanggaRenderer.Toss, byPlayer: Boolean = true) {
         val r = renderer
         if (!canRoll() || pendingToss[0] != null) { r?.holdDie(false); return }
+        if (byPlayer) autoSeats.remove(state.turn)
         holdingDie = false
         rollSeconds = 0
         pendingToss[0] = toss
@@ -325,6 +331,12 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             rollSeconds = 0
             return@LaunchedEffect
         }
+        if (state.turn in autoSeats) {
+            rollSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+            if (throwReadyNow && !holdingNow && state.turn in autoSeats) roll(UlarTanggaRenderer.Toss.Short, byPlayer = false)
+            return@LaunchedEffect
+        }
         rollSeconds = rollTotal
         while (rollSeconds > 0) {
             delay(1000L)
@@ -332,7 +344,10 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             if (holdingNow) continue
             val next = rollSeconds - 1
             rollSeconds = next
-            if (next == 0 && throwReadyNow && !holdingNow) roll(UlarTanggaRenderer.Toss.Short)
+            if (next == 0 && throwReadyNow && !holdingNow) {
+                if (state.turn !in autoSeats) autoSeats.add(state.turn)
+                roll(UlarTanggaRenderer.Toss.Short, byPlayer = false)
+            }
         }
     }
 
@@ -487,6 +502,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                                 if (!canRoll() || pendingToss[0] != null) return@awaitEachGesture
                                 down.consume()
                                 holdingDie = true
+                                autoSeats.remove(state.turn)
                                 r.holdDie(true)
                                 var long = false
                                 var released = false

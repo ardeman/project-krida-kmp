@@ -226,9 +226,14 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     fun canPlay() = lifetime.active && !animating && !waiting && queue.isEmpty() && !state.finished &&
         (table.mySeat == null || table.mySeat == state.turn)
 
-    fun play(hole: Int) {
+    // Seats on this phone whose timer ran out: the phone picks for them after a short pause
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player picks a pit themselves.
+    val autoSeats = remember { mutableStateListOf<Int>() }
+
+    fun play(hole: Int, byPlayer: Boolean = true) {
         val seat = state.turn
         if (!canPlay() || CongklakGame.validate(state, seat, CongklakMove(hole)) != null) return
+        if (byPlayer) autoSeats.remove(seat)
         // Pass-and-play answers synchronously; a guest waits for the host's snapshot.
         if (table.play(seat, hole) && table is GuestTable) waiting = true
     }
@@ -250,13 +255,20 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             turnSeconds = 0
             return@LaunchedEffect
         }
-        turnSeconds = turnTotal
-        while (turnSeconds > 0) {
-            delay(1000L)
-            if (!localTurnNow || !lifetime.active) return@LaunchedEffect
-            turnSeconds -= 1
+        if (state.turn in autoSeats) {
+            turnSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+        } else {
+            turnSeconds = turnTotal
+            while (turnSeconds > 0) {
+                delay(1000L)
+                if (!localTurnNow || !lifetime.active) return@LaunchedEffect
+                turnSeconds -= 1
+            }
+            if (state.turn !in autoSeats) autoSeats.add(state.turn)
         }
-        CongklakGame.timeoutMove(state, state.turn, Random.Default)?.let { play(it.hole) }
+        if (!localTurnNow || !lifetime.active || state.turn !in autoSeats) return@LaunchedEffect
+        CongklakGame.timeoutMove(state, state.turn, Random.Default)?.let { play(it.hole, byPlayer = false) }
     }
 
     LaunchedEffect(table.notice) { if (table.notice != null) waiting = false }

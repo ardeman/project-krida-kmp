@@ -111,8 +111,9 @@ final class UlarTanggaGameModel: ObservableObject {
 
     /// Throws the die for the local player whose turn it is; it stays pressed (spinning, for a
     /// long throw) until the roll comes back.
-    func roll(_ toss: UlarTanggaScene.Toss) {
+    func roll(_ toss: UlarTanggaScene.Toss, byPlayer: Bool = true) {
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
+        if byPlayer { autoSeats.remove(turn) }
         rollSeconds = 0
         lifetime.cancel("rollTurn")
         pendingToss = toss
@@ -131,11 +132,23 @@ final class UlarTanggaGameModel: ObservableObject {
         }
     }
 
+    /// Seats on this phone whose timer ran out: the phone throws for them after a short pause
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player throws themselves.
+    private var autoSeats = Set<Int>()
+
     /// Starts or clears the throw countdown whenever roll availability changes (same as ludo).
     func syncRollTimer() {
         lifetime.cancel("rollTurn")
         guard ready else {
             rollSeconds = 0
+            return
+        }
+        if autoSeats.contains(turn) {
+            rollSeconds = 0
+            lifetime.launch("rollTurn") { [self] in
+                try await Task.sleep(for: .seconds(Double(Krida.shared.AUTO_PLAY_MS) / 1000))
+                if lifetime.active, ready, !pressing, autoSeats.contains(turn) { roll(.short, byPlayer: false) }
+            }
             return
         }
         rollSeconds = rollTotal
@@ -150,7 +163,8 @@ final class UlarTanggaGameModel: ObservableObject {
                 let next = rollSeconds - 1
                 rollSeconds = next
                 if next == 0, ready, !pressing {
-                    roll(.short)
+                    autoSeats.insert(turn)
+                    roll(.short, byPlayer: false)
                     return
                 }
             }
@@ -172,6 +186,7 @@ final class UlarTanggaGameModel: ObservableObject {
     func pressDie() {
         guard !pressing, canRoll, pendingToss == nil else { return }
         pressing = true
+        autoSeats.remove(turn)
         scene.holdDie(true)
         lifetime.launch("hold") { [self] in
             try await Task.sleep(for: .seconds(0.5))

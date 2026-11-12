@@ -109,8 +109,14 @@ final class LudoGameModel: ObservableObject {
         }
     }
 
-    func roll(_ toss: LudoScene.Toss) {
+    /// Seats on this phone whose timer ran out: the phone plays their turns after a short pause
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player rolls or picks themselves.
+    private var autoSeats = Set<Int>()
+    private var autoPause: Double { Double(Krida.shared.AUTO_PLAY_MS) / 1000 }
+
+    func roll(_ toss: LudoScene.Toss, byPlayer: Bool = true) {
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
+        if byPlayer { autoSeats.remove(turn) }
         rollSeconds = 0
         lifetime.cancel("rollTurn")
         pendingToss = toss
@@ -138,6 +144,14 @@ final class LudoGameModel: ObservableObject {
         }
         // Recover if a prior recall raced the throw frame and left the die on the board.
         recallDie(for: state)
+        if autoSeats.contains(turn) {
+            rollSeconds = 0
+            lifetime.launch("rollTurn") { [self] in
+                try await Task.sleep(for: .seconds(autoPause))
+                if lifetime.active, canRoll, !pressing, autoSeats.contains(turn) { roll(.short, byPlayer: false) }
+            }
+            return
+        }
         rollSeconds = rollTotal
         lifetime.launch("rollTurn") { [self] in
             while rollSeconds > 0 {
@@ -150,7 +164,8 @@ final class LudoGameModel: ObservableObject {
                 let next = rollSeconds - 1
                 rollSeconds = next
                 if next == 0, canRoll, !pressing {
-                    roll(.short)
+                    autoSeats.insert(turn)
+                    roll(.short, byPlayer: false)
                     return
                 }
             }
@@ -169,21 +184,29 @@ final class LudoGameModel: ObservableObject {
         lifetime.cancel("pickTurn")
         pickSeconds = 0
         guard key != nil else { return }
-        pickSeconds = pickTotal
+        let auto = autoSeats.contains(turn)
+        pickSeconds = auto ? 0 : pickTotal
         lifetime.launch("pickTurn") { [self] in
-            while pickSeconds > 0 {
-                try await Task.sleep(for: .seconds(1))
-                guard lifetime.active, picking else { pickSeconds = 0; return }
-                pickSeconds -= 1
+            if auto {
+                try await Task.sleep(for: .seconds(autoPause))
+            } else {
+                while pickSeconds > 0 {
+                    try await Task.sleep(for: .seconds(1))
+                    guard lifetime.active, picking else { pickSeconds = 0; return }
+                    pickSeconds -= 1
+                }
+                autoSeats.insert(turn)
             }
+            guard lifetime.active, picking, autoSeats.contains(turn) else { return }
             if let pawn = game.timeoutMove(state: state, seat: state.turn, random: KotlinRandom.companion)?.pawn?.intValue {
-                movePawn(pawn)
+                movePawn(pawn, byPlayer: false)
             }
         }
     }
 
-    func movePawn(_ pawn: Int) {
+    func movePawn(_ pawn: Int, byPlayer: Bool = true) {
         guard canPick, legal.contains(pawn) else { return }
+        if byPlayer { autoSeats.remove(turn) }
         _ = table.movePawn(seat: turn, pawn: pawn)
     }
 
@@ -226,6 +249,7 @@ final class LudoGameModel: ObservableObject {
     func pressDie() {
         guard !pressing, canRoll, pendingToss == nil else { return }
         pressing = true
+        autoSeats.remove(turn)
         scene.holdDie(true)
         lifetime.launch("hold") { [self] in
             try await Task.sleep(for: .seconds(0.5))

@@ -290,20 +290,23 @@ class GapleTest {
     }
 
     @Test
-    fun timeoutPlaysTheHeaviestFittingTileAndDealsAtRoundEnd() {
+    fun timeoutPlaysLikeTheEasyBotAndDealsAtRoundEnd() {
         val s = state(
             hands = listOf(listOf(t(2, 3), t(6, 1), t(5, 5)), listOf(t(2, 2))),
             line = listOf(GaplePlaced(2, 6), GaplePlaced(6, 3)),
         )
-        val move = assertNotNull(game.timeoutMove(s, 0))
-        assertEquals(t(2, 3), move.tile)
-        assertNull(game.validate(s, 0, move))
-        assertNull(game.timeoutMove(s, 1))
+        repeat(20) { i ->
+            val move = assertNotNull(game.timeoutMove(s, 0, Random(i)))
+            assertNull(game.validate(s, 0, move))
+            // Same draw as the easy bot with the same Random.
+            assertEquals(GapleBot(GapleBot.Level.EASY).chooseMove(s, 0, Random(i)), move)
+        }
+        assertNull(game.timeoutMove(s, 1, Random(0)))
         val opening = game.initialState(4, Random(2))
-        assertEquals(opening.mustPlay, game.timeoutMove(opening, opening.turn)?.tile)
+        assertEquals(opening.mustPlay, game.timeoutMove(opening, opening.turn, Random(0))?.tile)
         val over = s.copy(roundOver = true)
-        assertEquals(GapleMove(next = true), game.timeoutMove(over, 0))
-        assertNull(game.timeoutMove(over, 1))
+        assertEquals(GapleMove(next = true), game.timeoutMove(over, 0, Random(0)))
+        assertNull(game.timeoutMove(over, 1, Random(0)))
     }
 
     @Test

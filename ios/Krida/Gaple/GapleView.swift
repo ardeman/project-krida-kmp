@@ -103,8 +103,12 @@ final class GapleGameModel: ObservableObject {
     /// A dropped guest handed to the computer may have to act right away.
     func botsChanged() { if settled { idle() } }
 
-    /// The turn countdown (at 0 the phone plays the heaviest fitting tile for you) and the round
-    /// card's (at 0 the host deals on by itself).
+    /// Once your timer runs out, the phone plays your turns after a short pause
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until you tap a tile yourself.
+    private var auto = false
+
+    /// The turn countdown (at 0 the phone plays what the easy computer would,
+    /// `GapleGame.timeoutMove`) and the round card's (at 0 the host deals on by itself).
     private func syncTimers() {
         let turn = myTurn ? "\(state.turn)-\(state.line.count)-\(state.round)" : nil
         if turn != turnKey {
@@ -112,15 +116,22 @@ final class GapleGameModel: ObservableObject {
             lifetime.cancel("turn")
             turnSeconds = 0
             if turn != nil {
-                turnSeconds = total
+                let wasAuto = auto
+                turnSeconds = wasAuto ? 0 : total
                 lifetime.launch("turn") { [self] in
-                    while turnSeconds > 0 {
-                        try await Task.sleep(for: .seconds(1))
-                        guard myTurn else { turnSeconds = 0; return }
-                        turnSeconds -= 1
+                    if wasAuto {
+                        try await Task.sleep(for: .seconds(Double(Krida.shared.AUTO_PLAY_MS) / 1000))
+                    } else {
+                        while turnSeconds > 0 {
+                            try await Task.sleep(for: .seconds(1))
+                            guard myTurn else { turnSeconds = 0; return }
+                            turnSeconds -= 1
+                        }
+                        auto = true
                     }
+                    guard myTurn, auto else { return }
                     picking = nil
-                    if let move = game.timeoutMove(state: state, seat: Int32(me)), let tile = move.tile {
+                    if let move = game.timeoutMove(state: state, seat: Int32(me), random: KotlinRandom.companion), let tile = move.tile {
                         _ = table.play(tile, end: move.end?.intValue)
                     }
                 }
@@ -148,6 +159,7 @@ final class GapleGameModel: ObservableObject {
 
     func play(_ tile: GapleTile) {
         guard myTurn, playable.contains(tile) else { return }
+        auto = false
         let ends = game.endsFor(state: state, tile: tile).map(\.intValue)
         if state.line.isEmpty || ends.count == 1 {
             picking = nil

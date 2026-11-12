@@ -60,4 +60,10 @@ object Krida {
      * card waits before the host deals the next round.
      */
     const val PLAY_TURN_MS: Long = 15_000L
+    /**
+     * Once a player on this phone lets a turn timer run out, the phone plays their later turns
+     * (rolls, picks, moves) after this short pause instead of a full countdown, until that
+     * player acts again themselves.
+     */
+    const val AUTO_PLAY_MS: Long = 800L
 }

@@ -124,16 +124,27 @@ final class CongklakGameModel: ObservableObject {
         lifetime.cancel("turn")
         turnSeconds = 0
         guard key != nil else { return }
-        turnSeconds = turnTotal
+        let auto = autoSeats.contains(turn)
+        turnSeconds = auto ? 0 : turnTotal
         lifetime.launch("turn") { [self] in
-            while turnSeconds > 0 {
-                try await Task.sleep(for: .seconds(1))
-                guard localTurn else { turnSeconds = 0; return }
-                turnSeconds -= 1
+            if auto {
+                try await Task.sleep(for: .seconds(Double(Krida.shared.AUTO_PLAY_MS) / 1000))
+            } else {
+                while turnSeconds > 0 {
+                    try await Task.sleep(for: .seconds(1))
+                    guard localTurn else { turnSeconds = 0; return }
+                    turnSeconds -= 1
+                }
+                autoSeats.insert(turn)
             }
-            if let move = game.timeoutMove(state: state, seat: state.turn, random: KotlinRandom.companion) { play(hole: Int(move.hole)) }
+            guard localTurn, autoSeats.contains(turn) else { return }
+            if let move = game.timeoutMove(state: state, seat: state.turn, random: KotlinRandom.companion) { play(hole: Int(move.hole), byPlayer: false) }
         }
     }
+
+    /// Seats on this phone whose timer ran out: the phone picks for them after a short pause
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player picks a pit themselves.
+    private var autoSeats = Set<Int>()
 
     /// A tap at a view point: plays the nearest hole on the mover's side, if close enough.
     func tap(at point: CGPoint) {
@@ -151,9 +162,10 @@ final class CongklakGameModel: ObservableObject {
         return hypot(q.x - p.x, q.y - p.y)
     }
 
-    private func play(hole: Int) {
+    private func play(hole: Int, byPlayer: Bool = true) {
         let seat = state.turn
         guard canPlay, game.validate(state: state, seat: seat, move: CongklakMove(hole: Int32(hole))) == nil else { return }
+        if byPlayer { autoSeats.remove(Int(seat)) }
         // Pass-and-play and the host answer synchronously; a guest waits for the host's snapshot.
         if table.play(seat: seat, hole: Int32(hole)), table.isRemote {
             waiting = true
