@@ -1,0 +1,30 @@
+---
+description: Local Android AVD pitfalls on this Mac (Pixel_9a / dual-emu)
+alwaysApply: true
+---
+
+# Android emulators on this Mac
+
+Prefer physical phones (`docs/install.md`). The Mac overheats with long CLI emulator
+boots and dual-AVD runs.
+
+## Current AVDs
+
+- **Pixel_XL**: API 29 `google_apis` — the stable guest for scripts.
+- **Pixel_9a**: Android 16 (API 36) `google_apis_playstore`, skin `pixel_9a`,
+  `hw.device.name=pixel_9` (avdmanager has no `pixel_9a` device id), `hw.gpu.mode=auto`.
+  Device Manager must show API 36, not 0. A wrong `target` (e.g. `android-36.1` with old
+  cmdline-tools) shows as **API 0**.
+
+## Do / don't
+
+- Start AVDs from **Device Manager** when possible; let Play first boot finish.
+- If bootloop after a killed first boot: wipe `userdata-qemu.img*` / cache / snapshots
+  (or recreate), then one Device Manager start.
+- Do **not** force `-gpu swiftshader_indirect` or always `-no-snapshot` — that path hit
+  SurfaceFlinger `RegionSampling` / `hasReadColorBufferDma` crashes on API 36+ while
+  Studio/`auto` looked fine interactively.
+- Do **not** leave Play Store first boots running unattended in CLI; kill qemu if the Mac
+  heats up.
+- AOSP `default` is stable but looks wrong (no Pixel UI). Play / `google_apis` for UI.
+- Dual-emu LAN: scripts exist; expect flakiness. Prefer phone↔phone or one emu + iOS sim.

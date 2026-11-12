@@ -27,6 +27,7 @@ class LanHostTransport(
     private val roomCode: String,
 ) : Transport {
 
+    private val app = context.applicationContext
     private val nsd = context.getSystemService(NsdManager::class.java)
     private val main = Handler(Looper.getMainLooper())
     private val io = Executors.newCachedThreadPool()
@@ -58,6 +59,12 @@ class LanHostTransport(
                     return@execute
                 }
                 server = sock
+                // Emulator e2e (scripts/test-android-lan.mjs): adb reads port+code, then forwards TCP.
+                try {
+                    val dir = app.getExternalFilesDir(null) ?: app.filesDir
+                    java.io.File(dir, E2E_NAME).writeText("${sock.localPort}\n$roomCode\n")
+                } catch (_: Exception) {
+                }
                 val info = NsdServiceInfo().apply {
                     serviceName = RoomCode.advertisedName(roomCode)
                     serviceType = SERVICE_TYPE
@@ -153,5 +160,8 @@ class LanHostTransport(
         private const val TAG = "LanHost"
         /** Android NSD wants the trailing dot. */
         private const val SERVICE_TYPE = "_krida._tcp."
+        /** Filename under the app's external files dir for emulator e2e. */
+        const val E2E_NAME = "krida-lan-e2e"
+        const val E2E_DIR = "/sdcard/Android/data/com.ardeman.krida/files"
     }
 }

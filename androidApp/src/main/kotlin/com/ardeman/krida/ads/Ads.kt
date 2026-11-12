@@ -83,6 +83,12 @@ object Ads {
         removed = debugRemoved || prefs().getBoolean(KEY_REMOVED, false)
         Billing.connect(app, ::updateOwned)
 
+        // UI / emulator e2e (`--ez adsRemoved true`): no UMP sheet covering the play card.
+        if (removed) {
+            started = true
+            return
+        }
+
         val consent = UserMessagingPlatform.getConsentInformation(activity)
         consent.requestConsentInfoUpdate(
             activity,

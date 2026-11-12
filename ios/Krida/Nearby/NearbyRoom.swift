@@ -280,10 +280,12 @@ final class NearbyRoom: ObservableObject {
     }
 
     /// `invite`: the id of the friend invite this join answers, so the host sees "Joined".
-    static func join(code: String, online: Bool = false, lan: Bool = false, reservation: String? = nil, invite: String? = nil) -> NearbyRoom {
+    /// `lanHost`/`lanPort`: emulator e2e TCP (skip Bonjour), e.g. 127.0.0.1 after adb forward.
+    static func join(code: String, online: Bool = false, lan: Bool = false, reservation: String? = nil, invite: String? = nil,
+                     lanHost: String? = nil, lanPort: UInt16? = nil) -> NearbyRoom {
         let useLan = lan && !online
         let relay = online ? OnlineGuestTransport(code: code, reservation: reservation) : nil
-        let lanGuest = useLan ? LanGuestTransport(roomCode: code) : nil
+        let lanGuest = useLan ? LanGuestTransport(roomCode: code, host: lanHost, port: lanPort) : nil
         let ble = (!online && !useLan) ? BleGuestTransport(roomCode: code) : nil
         let transport: Transport = (relay as Transport?) ?? (lanGuest as Transport?) ?? ble!
         let room = NearbyRoom(code: code, isHost: false, online: online, lan: useLan, transport: transport)

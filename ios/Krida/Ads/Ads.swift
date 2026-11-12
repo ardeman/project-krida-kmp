@@ -38,6 +38,12 @@ final class Ads: NSObject, ObservableObject {
 
     /// Call once at launch: asks for consent where the rules require it, then starts AdMob.
     func start() {
+        // UI tests (`-skipAds`): no UMP sheet and no ad units, so taps hit the play card.
+        if ProcessInfo.processInfo.arguments.contains("-skipAds") {
+            removed = true
+            started = true
+            return
+        }
         // Consent given in an earlier session lets ads start without waiting for the update.
         startAds()
         Task {

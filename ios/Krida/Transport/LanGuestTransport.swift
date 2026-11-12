@@ -6,6 +6,9 @@ import Shared
 /// `KridaBle.hostPeer`. Callbacks on the main queue.
 final class LanGuestTransport: Transport {
     private let roomCode: String
+    /// Emulator / sim e2e: skip Bonjour and connect here (adb forward → 127.0.0.1).
+    private let directHost: String?
+    private let directPort: UInt16?
     private weak var listener: TransportListener?
     private var browser: NWBrowser?
     private var connection: NWConnection?
@@ -13,12 +16,19 @@ final class LanGuestTransport: Transport {
     private var closed = false
     private var connecting = false
 
-    init(roomCode: String) {
+    init(roomCode: String, host: String? = nil, port: UInt16? = nil) {
         self.roomCode = roomCode
+        self.directHost = host
+        self.directPort = port
     }
 
     func start() {
-        guard !closed, browser == nil else { return }
+        guard !closed, browser == nil, !connecting else { return }
+        if let host = directHost, let port = directPort, let nwPort = NWEndpoint.Port(rawValue: port) {
+            connecting = true
+            connect(.hostPort(host: host, port: nwPort))
+            return
+        }
         let wanted = RoomCode.shared.advertisedName(code: roomCode)
         let browser = NWBrowser(for: .bonjour(type: Krida.shared.BONJOUR_SERVICE_TYPE, domain: nil), using: .tcp)
         browser.browseResultsChangedHandler = { [weak self] results, _ in

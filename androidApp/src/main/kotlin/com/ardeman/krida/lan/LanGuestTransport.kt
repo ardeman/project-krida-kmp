@@ -22,6 +22,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 class LanGuestTransport(
     context: Context,
     private val roomCode: String,
+    /** Emulator e2e: skip NSD and TCP-connect here (adb forward → 10.0.2.2). */
+    private val directHost: String? = null,
+    private val directPort: Int = 0,
 ) : Transport {
 
     private val nsd = context.getSystemService(NsdManager::class.java)
@@ -63,20 +66,28 @@ class LanGuestTransport(
 
     fun start() {
         if (closed || browsing) return
+        if (directHost != null && directPort > 0) {
+            connect(directHost, directPort)
+            return
+        }
         browsing = true
         nsd.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discovery)
     }
 
     private fun connect(info: NsdServiceInfo) {
+        val host = info.host ?: run {
+            resolving.set(false)
+            return
+        }
+        connect(host.hostAddress ?: host.hostName, info.port)
+    }
+
+    private fun connect(host: String, port: Int) {
         io.execute {
             if (closed) return@execute
-            val host = info.host ?: run {
-                resolving.set(false)
-                return@execute
-            }
             try {
                 val sock = Socket()
-                sock.connect(InetSocketAddress(host, info.port), CONNECT_MS)
+                sock.connect(InetSocketAddress(host, port), CONNECT_MS)
                 if (closed) {
                     sock.close()
                     return@execute

@@ -7,8 +7,17 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 - Offline LAN (README roadmap 6): coded under Nearby (Bluetooth | Wi‑Fi control, default
   Bluetooth; decision in `docs/decisions.md`). Android and iOS host/guest transports,
-  play-card Link control, join/lobby copy. Open: phone checks (same Wi‑Fi and hotspot,
-  Android ↔ iOS, leave/rejoin).
+  play-card Link control, join/lobby copy. iOS dual-simulator e2e passes
+  (`node scripts/test-ios-lan.mjs`, 2026-11-12). Android dual-emulator and
+  Android↔iOS scripts are in (`scripts/test-android-lan.mjs`,
+  `scripts/test-cross-lan.mjs`; TCP via `adb forward` because emulator NSD is unreliable).
+  Local AVDs (2026-11-12): **Pixel_XL** = API 29 google_apis (stable); **Pixel_9a** =
+  Android 16 / API 36 Play Store + `pixel_9a` skin (recreated after a broken `target` that
+  showed as API 0 in Device Manager). Dual-AVD / long CLI cold boots overheat this Mac and
+  can leave Play images bootlooping if killed mid-first-boot — prefer Device Manager, one
+  AVD, wipe userdata if bootloop; do not force `-gpu swiftshader_indirect` (Studio uses
+  `auto`). Open: phone LAN checks (same Wi‑Fi and hotspot, Android ↔ iOS, leave/rejoin);
+  dual-emu / cross only if the Mac can hold two AVDs without thrashing.
 - Online step 10b, friends list: relay, web, Android and iOS are built
   (`docs/mockups/friends.md`); deploying the relay and web and the phone checks are open.
 - Online step 10c-1, in-app invites (`docs/mockups/invites.md`): the relay, Android and

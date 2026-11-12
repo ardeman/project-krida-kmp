@@ -235,7 +235,10 @@ struct ContentView: View {
         let valid = joinOnline ? RoomCode.shared.isValidOnline(code: roomCode) : RoomCode.shared.isValid(code: roomCode)
         guard valid else { return }
         joinError = nil
-        room = NearbyRoom.join(code: roomCode, online: joinOnline, lan: joinLan)
+        let args = ProcessInfo.processInfo.arguments
+        let e2eHost = args.firstIndex(of: "-e2eLanHost").flatMap { i in args.indices.contains(i + 1) ? args[i + 1] : nil }
+        let e2ePort = args.firstIndex(of: "-e2eLanPort").flatMap { i in args.indices.contains(i + 1) ? UInt16(args[i + 1]) : nil }
+        room = NearbyRoom.join(code: roomCode, online: joinOnline, lan: joinLan, lanHost: e2eHost, lanPort: e2ePort)
     }
 
     /// VisionKit's scanner, after asking for the camera if needed.

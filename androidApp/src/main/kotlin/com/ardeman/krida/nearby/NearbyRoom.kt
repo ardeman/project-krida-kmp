@@ -343,11 +343,23 @@ class NearbyRoom private constructor(
         }
 
         /** [invite]: the id of the friend invite this join answers, so the host sees "Joined". */
-        fun join(context: Context, code: String, name: String, online: Boolean = false, lan: Boolean = false, reservation: String? = null, invite: String? = null, avatar: String? = null): NearbyRoom {
+        fun join(
+            context: Context,
+            code: String,
+            name: String,
+            online: Boolean = false,
+            lan: Boolean = false,
+            reservation: String? = null,
+            invite: String? = null,
+            avatar: String? = null,
+            /** Emulator e2e: TCP host (e.g. 10.0.2.2) when NSD is unavailable. */
+            lanHost: String? = null,
+            lanPort: Int = 0,
+        ): NearbyRoom {
             val useLan = lan && !online
             val transport: Transport = when {
                 online -> OnlineGuestTransport(code, reservation)
-                useLan -> LanGuestTransport(context, code)
+                useLan -> LanGuestTransport(context, code, lanHost, lanPort)
                 else -> BleGuestTransport(context, code)
             }
             val room = NearbyRoom(code, isHost = false, online = online, lan = useLan, transport = transport)

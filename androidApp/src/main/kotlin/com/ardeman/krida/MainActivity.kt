@@ -776,7 +776,12 @@ class MainActivity : ComponentActivity() {
         }
         if (!RoomCode.isValid(roomCode)) return
         if (joinLan) {
-            room = NearbyRoom.join(this, roomCode, myName, lan = true, avatar = myAvatar)
+            val e2eHost = intent?.getStringExtra(EXTRA_E2E_LAN_HOST)
+            val e2ePort = intent?.getIntExtra(EXTRA_E2E_LAN_PORT, 0) ?: 0
+            room = NearbyRoom.join(
+                this, roomCode, myName, lan = true, avatar = myAvatar,
+                lanHost = e2eHost, lanPort = e2ePort,
+            )
             return
         }
         withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName, avatar = myAvatar) }
@@ -1213,3 +1218,7 @@ private fun SwitchArrow(icon: Int, label: String, onClick: () -> Unit) {
 
 private const val STARTUP_MIN_MS = 700L
 private const val STARTUP_MAX_MS = 3000L
+
+/** Emulator LAN e2e: TCP via adb forward (`scripts/test-android-lan.mjs`). */
+const val EXTRA_E2E_LAN_HOST = "e2eLanHost"
+const val EXTRA_E2E_LAN_PORT = "e2eLanPort"
