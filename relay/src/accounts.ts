@@ -1,7 +1,9 @@
 /**
- * Accounts (online steps 10a and 10b): sign in with Apple or Google, a session token, sign
- * out, account deletion, the friends list and (10c) invites. Users, sessions and friends
- * live in D1. Only the provider's user id and a display name are stored; no email. Endpoints are documented under "Accounts" in docs/protocol.md.
+ * Accounts (online steps 10a–10d): sign in with Apple or Google, a session token, sign out,
+ * account deletion, the friends list, invites, and the player's name and avatar. Users,
+ * sessions and friends live in D1. Only the provider's user id, a display name, the chosen
+ * avatar and (for Google) the picture URL are stored; no email. Endpoints are documented
+ * under "Accounts" in docs/protocol.md.
  *
  * Google runs as a browser flow through the relay (the client secret stays here), bound to
  * the app with a PKCE-style challenge so another app catching the krida:// redirect cannot
@@ -20,6 +22,8 @@ const APP_REDIRECT = "krida://auth";
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
+/** Only this host may appear as a Google picture URL returned to other phones. */
+const GOOGLE_PICTURE_HOST = "lh3.googleusercontent.com";
 const APPLE_ISSUER = "https://appleid.apple.com";
 const APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys";
 const APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token";
@@ -28,6 +32,10 @@ const JWKS_TTL_MS = 60 * 60_000;
 /** Same alphabet as RoomCode in shared/; friend codes are 8 chars. */
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const FRIEND_CODE_RE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{8}$/;
+/** Avatar mix: shape 0–11, colour 0–13, background ≠ symbol. Same rules as shared Avatar. */
+const AVATAR_MIX_RE = /^(\d{1,2})-(\d{1,2})-(\d{1,2})$/;
+const AVATAR_SHAPES = 12;
+const AVATAR_COLOURS = 14;
 const FRIENDS_MAX = 100;
 /** Adds by code per account in one window, so codes cannot be guessed in bulk. */
 const ADD_TRIES = 20;
@@ -42,7 +50,8 @@ const HOST_KEY_RE = /^[A-Za-z0-9_-]{16,64}$/;
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
      id TEXT PRIMARY KEY, provider TEXT NOT NULL, sub TEXT NOT NULL, name TEXT NOT NULL,
-     apple_refresh TEXT, created_at INTEGER NOT NULL, UNIQUE (provider, sub))`,
+     avatar TEXT NOT NULL DEFAULT '', picture TEXT, apple_refresh TEXT,
+     created_at INTEGER NOT NULL, UNIQUE (provider, sub))`,
   `CREATE TABLE IF NOT EXISTS sessions (
      token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user_id)`,
@@ -63,6 +72,8 @@ interface User {
   id: string;
   name: string;
   provider: string;
+  avatar: string;
+  picture: string | null;
 }
 
 let schemaReady: Promise<unknown> | undefined;
@@ -77,7 +88,7 @@ export async function handleAccounts(request: Request, env: Env, url: URL): Prom
   const db = env.DB;
   if (!db) return fail(503, "accounts_unavailable");
   try {
-    schemaReady ??= db.batch(SCHEMA.map((sql) => db.prepare(sql)));
+    schemaReady ??= ensureSchema(db);
     await schemaReady;
   } catch (e) {
     schemaReady = undefined;
@@ -92,8 +103,9 @@ export async function handleAccounts(request: Request, env: Env, url: URL): Prom
   if (path === "/v1/auth/signout" && method === "POST") return signOut(db, request);
   if (path === "/v1/me" && method === "GET") {
     const user = await authed(db, request);
-    return user ? json({ user }) : fail(401, "unauthorized");
+    return user ? json({ user: publicUser(user) }) : fail(401, "unauthorized");
   }
+  if (path === "/v1/me" && method === "PATCH") return patchMe(db, request, await body(request));
   if (path === "/v1/me" && method === "DELETE") return deleteAccount(env, db, request);
   if (friends) {
     const user = await authed(db, request);
@@ -170,7 +182,7 @@ async function googleCallback(env: Env, db: D1Database, url: URL): Promise<Respo
   ) {
     return backToApp({ error: "failed" });
   }
-  const user = await upsertUser(db, "google", claims.sub, claims.given_name ?? claims.name);
+  const user = await upsertUser(db, "google", claims.sub, claims.given_name ?? claims.name, claims.picture);
   const appCode = randomToken();
   await db.prepare("INSERT INTO auth_pending (id, kind, challenge, user_id, expires) VALUES (?, 'code', ?, ?, ?)")
     .bind(appCode, pending.challenge, user.id, Date.now() + CODE_MS).run();
@@ -185,8 +197,10 @@ async function exchange(db: D1Database, input: Record<string, unknown>): Promise
   if (!pending || !pending.user_id || (await sha256(verifier)) !== pending.challenge) {
     return fail(401, "bad_code");
   }
-  const user = await db.prepare("SELECT id, name, provider FROM users WHERE id = ?").bind(pending.user_id).first<User>();
-  return user ? json({ token: await newSession(db, user.id), user }) : fail(401, "bad_code");
+  const user = await db.prepare(
+    "SELECT id, name, provider, avatar, picture FROM users WHERE id = ?",
+  ).bind(pending.user_id).first<User>();
+  return user ? json({ token: await newSession(db, user.id), user: publicUser(user) }) : fail(401, "bad_code");
 }
 
 function googleRedirect(url: URL): string {
@@ -232,7 +246,7 @@ async function appleSignIn(env: Env, db: D1Database, input: Record<string, unkno
       // Sign-in still succeeds; only the revoke on deletion is skipped.
     }
   }
-  return json({ token: await newSession(db, user.id), user });
+  return json({ token: await newSession(db, user.id), user: publicUser(user) });
 }
 
 async function verifyAppleToken(env: Env, token: string): Promise<{ sub: string } | null> {
@@ -339,8 +353,41 @@ async function authed(db: D1Database, request: Request): Promise<User | null> {
   const token = bearer(request);
   if (!token) return null;
   return db.prepare(
-    "SELECT u.id, u.name, u.provider FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?",
+    "SELECT u.id, u.name, u.provider, u.avatar, u.picture FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?",
   ).bind(await sha256(token)).first<User>();
+}
+
+/** Saves name and/or avatar; both are optional. Empty name is refused. */
+async function patchMe(db: D1Database, request: Request, input: Record<string, unknown>): Promise<Response> {
+  const user = await authed(db, request);
+  if (!user) return fail(401, "unauthorized");
+  const hasName = Object.prototype.hasOwnProperty.call(input, "name");
+  const hasAvatar = Object.prototype.hasOwnProperty.call(input, "avatar");
+  if (!hasName && !hasAvatar) return fail(400, "bad_request");
+
+  let name = user.name;
+  if (hasName) {
+    name = cleanName(input.name);
+    if (!name) return fail(400, "bad_name");
+  }
+
+  let avatar = user.avatar ?? "";
+  if (hasAvatar) {
+    const raw = input.avatar;
+    if (raw === "g") {
+      if (user.provider !== "google" || !googlePicture(user.picture)) return fail(400, "bad_avatar");
+      avatar = "g";
+    } else if (typeof raw === "string" && parseMix(raw)) {
+      avatar = raw;
+    } else {
+      return fail(400, "bad_avatar");
+    }
+  }
+
+  const row = await db.prepare(
+    "UPDATE users SET name = ?, avatar = ? WHERE id = ? RETURNING id, name, provider, avatar, picture",
+  ).bind(name, avatar, user.id).first<User>();
+  return row ? json({ user: publicUser(row) }) : fail(500, "failed");
 }
 
 function bearer(request: Request): string | null {
@@ -356,14 +403,18 @@ async function newSession(db: D1Database, userId: string): Promise<string> {
   return token;
 }
 
-async function upsertUser(db: D1Database, provider: string, sub: string, rawName: unknown): Promise<User> {
+async function upsertUser(
+  db: D1Database, provider: string, sub: string, rawName: unknown, rawPicture?: unknown,
+): Promise<User> {
   const name = cleanName(rawName);
+  const picture = provider === "google" ? googlePicture(rawPicture) : null;
   const user = await db.prepare(
-    `INSERT INTO users (id, provider, sub, name, created_at) VALUES (?, ?, ?, ?, ?)
+    `INSERT INTO users (id, provider, sub, name, avatar, picture, created_at) VALUES (?, ?, ?, ?, '', ?, ?)
      ON CONFLICT (provider, sub) DO UPDATE SET
-       name = CASE WHEN excluded.name != '' THEN excluded.name ELSE users.name END
-     RETURNING id, name, provider`,
-  ).bind(randomToken(16), provider, sub, name, Date.now()).first<User>();
+       name = CASE WHEN excluded.name != '' THEN excluded.name ELSE users.name END,
+       picture = CASE WHEN excluded.picture IS NOT NULL THEN excluded.picture ELSE users.picture END
+     RETURNING id, name, provider, avatar, picture`,
+  ).bind(randomToken(16), provider, sub, name, picture, Date.now()).first<User>();
   if (!user) throw new Error("user upsert returned nothing");
   return user;
 }
@@ -376,17 +427,22 @@ async function takePending(db: D1Database, id: string, kind: string): Promise<{ 
 
 // Friends
 
-interface Friend {
+interface FriendRow {
   id: string;
   name: string;
+  avatar: string;
+  picture: string | null;
 }
 
 async function listFriends(db: D1Database, user: User): Promise<Response> {
   const rows = await db.prepare(
-    `SELECT u.id, u.name FROM friends f JOIN users u ON u.id = CASE WHEN f.a = ?1 THEN f.b ELSE f.a END
+    `SELECT u.id, u.name, u.avatar, u.picture FROM friends f JOIN users u ON u.id = CASE WHEN f.a = ?1 THEN f.b ELSE f.a END
      WHERE f.a = ?1 OR f.b = ?1 ORDER BY u.name COLLATE NOCASE, u.id`,
-  ).bind(user.id).all<Friend>();
-  return json({ code: await friendCode(db, user.id), friends: rows.results });
+  ).bind(user.id).all<FriendRow>();
+  return json({
+    code: await friendCode(db, user.id),
+    friends: (rows.results ?? []).map(publicFriend),
+  });
 }
 
 /** Adding is instant and mutual: one row makes each player the other's friend. */
@@ -404,8 +460,8 @@ async function addFriend(db: D1Database, user: User, input: Record<string, unkno
   if ((tries?.count ?? 0) > ADD_TRIES) return fail(429, "too_many_tries");
 
   const friend = await db.prepare(
-    "SELECT u.id, u.name FROM friend_codes c JOIN users u ON u.id = c.user_id WHERE c.code = ?",
-  ).bind(code).first<Friend>();
+    "SELECT u.id, u.name, u.avatar, u.picture FROM friend_codes c JOIN users u ON u.id = c.user_id WHERE c.code = ?",
+  ).bind(code).first<FriendRow>();
   if (!friend) return fail(404, "code_not_found");
   if (friend.id === user.id) return fail(400, "own_code");
   const [a, b] = user.id < friend.id ? [user.id, friend.id] : [friend.id, user.id];
@@ -416,7 +472,7 @@ async function addFriend(db: D1Database, user: User, input: Record<string, unkno
   ).bind(user.id, friend.id).first<{ mine: number; theirs: number }>();
   if (!counts || counts.mine >= FRIENDS_MAX || counts.theirs >= FRIENDS_MAX) return fail(409, "friends_full");
   await db.prepare("INSERT OR IGNORE INTO friends (a, b, created_at) VALUES (?, ?, ?)").bind(a, b, now).run();
-  return json({ friend });
+  return json({ friend: publicFriend(friend) });
 }
 
 /** Removes the pair for both players; removing someone who is not a friend also answers 204. */
@@ -472,8 +528,9 @@ async function sendInvite(env: Env, db: D1Database, user: User, input: Record<st
   }));
   const room = (await reply.json()) as { error?: string; game: string; seats: number; players: number };
   if (room.error) return fail(room.error === "not_host" ? 403 : 409, room.error);
+  const from = publicFriend(user);
   const invite: Invite = {
-    id, from: { id: user.id, name: user.name }, code,
+    id, from: { id: from.id, name: from.name, ...(from.avatar ? { avatar: from.avatar } : {}) }, code,
     game: room.game, seats: room.seats, players: room.players, expires: now + INVITE_MS,
   };
   await inbox(env, friendId).fetch(new Request("https://internal/deliver", { method: "POST", body: JSON.stringify(invite) }));
@@ -482,6 +539,60 @@ async function sendInvite(env: Env, db: D1Database, user: User, input: Record<st
 }
 
 // Helpers
+
+/** Creates tables, then adds avatar/picture on older D1 databases that predate them. */
+async function ensureSchema(db: D1Database): Promise<void> {
+  await db.batch(SCHEMA.map((sql) => db.prepare(sql)));
+  const info = await db.prepare("PRAGMA table_info(users)").all<{ name: string }>();
+  const cols = new Set((info.results ?? []).map((r) => r.name));
+  if (!cols.has("avatar")) await db.prepare("ALTER TABLE users ADD COLUMN avatar TEXT NOT NULL DEFAULT ''").run();
+  if (!cols.has("picture")) await db.prepare("ALTER TABLE users ADD COLUMN picture TEXT").run();
+}
+
+/** API shape for the signed-in user: resolved avatar, plus picture for the Google picker. */
+function publicUser(user: User): Record<string, string> {
+  const out: Record<string, string> = { id: user.id, name: user.name, provider: user.provider };
+  const avatar = resolvedAvatar(user.avatar, user.picture);
+  if (avatar) out.avatar = avatar;
+  const picture = googlePicture(user.picture);
+  if (user.provider === "google" && picture) out.picture = picture;
+  return out;
+}
+
+/** Friend / invite `from`: id, name, and resolved avatar when set. */
+function publicFriend(row: { id: string; name: string; avatar?: string; picture?: string | null }): { id: string; name: string; avatar?: string } {
+  const out: { id: string; name: string; avatar?: string } = { id: row.id, name: row.name };
+  const avatar = resolvedAvatar(row.avatar ?? "", row.picture ?? null);
+  if (avatar) out.avatar = avatar;
+  return out;
+}
+
+/** Wire avatar: the mix string, or the Google picture URL when the player chose `g`. */
+function resolvedAvatar(avatar: string, picture: string | null): string | undefined {
+  if (avatar === "g") return googlePicture(picture) ?? undefined;
+  return parseMix(avatar) ? avatar : undefined;
+}
+
+function parseMix(value: string): string | null {
+  const m = AVATAR_MIX_RE.exec(value);
+  if (!m) return null;
+  const shape = Number(m[1]);
+  const background = Number(m[2]);
+  const symbol = Number(m[3]);
+  if (shape >= AVATAR_SHAPES || background >= AVATAR_COLOURS || symbol >= AVATAR_COLOURS) return null;
+  if (background === symbol) return null;
+  return value;
+}
+
+function googlePicture(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw.startsWith("https://")) return null;
+  try {
+    if (new URL(raw).hostname !== GOOGLE_PICTURE_HOST) return null;
+  } catch {
+    return null;
+  }
+  return raw;
+}
 
 function cleanName(raw: unknown): string {
   if (typeof raw !== "string") return "";

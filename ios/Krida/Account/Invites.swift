@@ -11,6 +11,7 @@ final class Invites: ObservableObject {
     struct Invite: Equatable, Identifiable {
         let id: String
         let from: String
+        let fromAvatar: String?
         let code: String
         let game: String
         let seats: Int
@@ -26,7 +27,10 @@ final class Invites: ObservableObject {
     }
 
     private struct Message: Decodable {
-        struct From: Decodable { let name: String }
+        struct From: Decodable {
+            let name: String
+            let avatar: String?
+        }
         let type: String
         let id: String
         let from: From?
@@ -149,8 +153,11 @@ final class Invites: ObservableObject {
         case "invite":
             guard let from = message.from, let code = message.code, let game = message.game,
                   let seats = message.seats, let players = message.players, let ttl = message.ttlMs else { return }
-            let invite = Invite(id: message.id, from: from.name, code: code, game: game, seats: seats, players: players,
-                                until: Date().addingTimeInterval(ttl / 1000))
+            let invite = Invite(
+                id: message.id, from: from.name, fromAvatar: from.avatar,
+                code: code, game: game, seats: seats, players: players,
+                until: Date().addingTimeInterval(ttl / 1000)
+            )
             received = received.filter { $0.id != invite.id } + [invite]
         case "invite_end":
             expire(message.id)

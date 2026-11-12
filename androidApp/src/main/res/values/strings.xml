@@ -348,6 +348,16 @@
     <string name="account_friend_already">You\'re already friends.</string>
     <string name="account_friend_full">The friends list is full.</string>
     <string name="account_friend_too_many">Too many tries. Wait a few minutes.</string>
+    <string name="account_edit">Edit</string>
+    <string name="account_edit_save">Save</string>
+    <string name="account_edit_hint">Friends and players in your rooms see this.</string>
+    <string name="account_edit_bad_name">Enter a name of at most 24 characters.</string>
+    <string name="account_edit_bad_avatar">That avatar couldn\'t be saved. Try another.</string>
+    <string name="account_avatar">Avatar</string>
+    <string name="account_avatar_shape">Shape</string>
+    <string name="account_avatar_background">Background</string>
+    <string name="account_avatar_symbol">Symbol</string>
+    <string name="account_avatar_google">Use my Google picture</string>
     <string name="invite_friends">Invite friends</string>
     <string name="invite_action">Invite</string>
     <string name="invite_sent">Invite sent</string>

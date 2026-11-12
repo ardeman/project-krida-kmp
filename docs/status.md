@@ -17,8 +17,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
   tap to join; sign out and confirm no notification comes), and production APNs with a
   TestFlight build. Android's in-app invite card has not been checked on a phone; iOS had
   a bug there (the inbox closed after the Account screen was opened), fixed 2026-11-12.
-- Online step 10d, name and avatar: decided, not started; begins with a mockup
-  (`docs/online.md`).
+- Online step 10d, name and avatar: mockup approved; relay, shared, Account edit /
+  friends / invites, and room seat name + avatar are coded on Android and iOS. Open:
+  deploy relay + privacy, then phone checks.
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
   check.
 

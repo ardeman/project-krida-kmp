@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1796" height="948" viewBox="0 0 1796 948">
+<rect x="0" y="0" width="1796" height="948" rx="0" fill="#191512" stroke="none" stroke-width="1.5"/>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Account, signed in / Light</text>
+<g transform="translate(16,52)">
+<defs><radialGradient id="bg1" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg1)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="227" cy="128" r="26" fill="#2B1D14"/><g transform="translate(227,128) scale(1.182)"><path d="M0,-12 L8,-2 L0,8 L-8,-2 Z" fill="#E0A82E"/><path d="M0,8 Q4,11 0,14" stroke="#E0A82E" stroke-width="2" fill="none"/></g>
+<rect x="338" y="96" width="72" height="44" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="374" y="124" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Edit</text>
+<text x="227" y="180" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle">Ardeman</text>
+<text x="227" y="202" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Signed in with Google</text>
+<text x="44" y="236" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Your friend code</text>
+<rect x="44" y="246" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="170" y="275" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="middle" letter-spacing="2">K7M2 XQ4D</text>
+<rect x="306" y="246" width="104" height="44" rx="14" fill="#FFFFFF" stroke="#A65A26" stroke-width="1.5"/>
+<text x="358" y="274" fill="#A65A26" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Share</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="133" y="342" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Delete account</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Sign out</text>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Friends</text>
+<rect x="464" y="132" width="252" height="44" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="480" y="160" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Friend's code</text>
+<rect x="726" y="132" width="104" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="778" y="160" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Add</text>
+<rect x="464" y="190" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="488" cy="210" r="13" fill="#FFFFFF"/><g transform="translate(488,210) scale(0.591)"><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(0)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(72)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(144)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(216)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(288)"/><circle r="3.2" fill="{B}"/></g>
+<text x="510" y="215" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Sari</text>
+<text x="812" y="216" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="236" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<clipPath id="c2"><circle cx="488" cy="256" r="13"/></clipPath><circle cx="488" cy="256" r="13" fill="#9DB7C9"/><g clip-path="url(#c2)" fill="#F3E3D3"><circle cx="488" cy="253.4" r="4.68"/><ellipse cx="488" cy="268.35" rx="9.36" ry="7.8"/></g>
+<circle cx="497.1" cy="265.1" r="6" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1"/>
+<text x="497.1" y="267.8" fill="#4285F4" font-family="ui-rounded, system-ui, sans-serif" font-size="8" font-weight="800" text-anchor="middle">G</text>
+<text x="510" y="261" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Budi Santoso</text>
+<text x="812" y="262" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+<rect x="464" y="282" width="366" height="40" rx="12" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="488" cy="302" r="13" fill="#2E9E8F"/><g transform="translate(488,302) scale(0.591)"><path d="M0,-12 C6,-3 9,1 9,5 A9,9 0 0 1 -9,5 C-9,1 -6,-3 0,-12 Z" fill="#FFFFFF"/></g>
+<text x="510" y="307" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Player</text>
+<text x="812" y="308" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="middle">×</text>
+</g>
+<text x="906" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Edit, Shape tab, Google account / Light</text>
+<g transform="translate(906,52)">
+<defs><radialGradient id="bg3" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient></defs>
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg3)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="227" cy="130" r="32" fill="#2B1D14"/><g transform="translate(227,130) scale(1.455)"><path d="M0,-12 L8,-2 L0,8 L-8,-2 Z" fill="#E0A82E"/><path d="M0,8 Q4,11 0,14" stroke="#E0A82E" stroke-width="2" fill="none"/></g>
+<rect x="44" y="180" width="366" height="44" rx="12" fill="#F6E6D3" stroke="#A65A26" stroke-width="2"/>
+<text x="60" y="208" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Ardeman</text>
+<text x="394" y="208" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="end">7/24</text>
+<text x="227" y="252" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Friends and players in your rooms see this.</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="133" y="342" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Cancel</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Save</text>
+<text x="464" y="116" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Avatar</text>
+<rect x="464" y="128" width="118" height="40" rx="20" fill="#A65A26" stroke="#A65A26" stroke-width="1.5"/>
+<text x="523" y="153" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Shape</text>
+<rect x="588" y="128" width="118" height="40" rx="20" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="647" y="153" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Background</text>
+<rect x="712" y="128" width="118" height="40" rx="20" fill="#F6E6D3" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="771" y="153" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Symbol</text>
+<circle cx="486" cy="206" r="22" fill="#2B1D14"/><g transform="translate(486,206) scale(1.000)"><ellipse cx="0" cy="0" rx="8" ry="11" fill="#E0A82E" transform="rotate(25)"/><path d="M-2,-8 Q3,0 -1,8" stroke="#2B1D14" stroke-width="2" fill="none" transform="rotate(25)"/></g>
+<circle cx="539.667" cy="206" r="22" fill="#2B1D14"/><g transform="translate(539.667,206) scale(1.000)"><rect x="-10" y="-10" width="20" height="20" rx="5" fill="#E0A82E"/><circle cx="-5" cy="-5" r="2.2" fill="#2B1D14"/><circle cx="5" cy="-5" r="2.2" fill="#2B1D14"/><circle cx="0" cy="0" r="2.2" fill="#2B1D14"/><circle cx="-5" cy="5" r="2.2" fill="#2B1D14"/><circle cx="5" cy="5" r="2.2" fill="#2B1D14"/></g>
+<circle cx="593.333" cy="206" r="25.5" fill="none" stroke="#A65A26" stroke-width="3"/>
+<circle cx="593.333" cy="206" r="19" fill="#2B1D14"/><g transform="translate(593.333,206) scale(0.864)"><path d="M0,-12 L8,-2 L0,8 L-8,-2 Z" fill="#E0A82E"/><path d="M0,8 Q4,11 0,14" stroke="#E0A82E" stroke-width="2" fill="none"/></g>
+<circle cx="647" cy="206" r="22" fill="#2B1D14"/><g transform="translate(647,206) scale(1.000)"><polygon points="0.0,-12.0 3.1,-4.2 11.4,-3.7 4.9,1.6 7.1,9.7 0.0,5.2 -7.1,9.7 -4.9,1.6 -11.4,-3.7 -3.1,-4.2" fill="#E0A82E"/></g>
+<circle cx="700.667" cy="206" r="22" fill="#2B1D14"/><g transform="translate(700.667,206) scale(1.000)"><path d="M4,-11 A11,11 0 1 0 10,6 A9,9 0 1 1 4,-11 Z" fill="#E0A82E"/></g>
+<circle cx="754.333" cy="206" r="22" fill="#2B1D14"/><g transform="translate(754.333,206) scale(1.000)"><circle r="6" fill="#E0A82E"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(45)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(135)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(225)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-9" x2="0" y2="-12.5" stroke="#E0A82E" stroke-width="2.4" stroke-linecap="round" transform="rotate(315)"/></g>
+<circle cx="808" cy="206" r="22" fill="#2B1D14"/><g transform="translate(808,206) scale(1.000)"><circle cx="0" cy="-6.5" r="5" fill="#E0A82E" transform="rotate(0)"/><circle cx="0" cy="-6.5" r="5" fill="#E0A82E" transform="rotate(72)"/><circle cx="0" cy="-6.5" r="5" fill="#E0A82E" transform="rotate(144)"/><circle cx="0" cy="-6.5" r="5" fill="#E0A82E" transform="rotate(216)"/><circle cx="0" cy="-6.5" r="5" fill="#E0A82E" transform="rotate(288)"/><circle r="3.2" fill="{B}"/></g>
+<circle cx="486" cy="258" r="22" fill="#2B1D14"/><g transform="translate(486,258) scale(1.000)"><path d="M-9,9 Q-10,-9 9,-10 Q10,9 -9,9 Z" fill="#E0A82E"/><path d="M-9,9 L4,-4" stroke="#2B1D14" stroke-width="2"/></g>
+<circle cx="539.667" cy="258" r="22" fill="#2B1D14"/><g transform="translate(539.667,258) scale(1.000)"><path d="M0,10 C-14,0 -10,-11 -4,-10 C-1,-10 0,-7 0,-6 C0,-7 1,-10 4,-10 C10,-11 14,0 0,10 Z" fill="#E0A82E"/></g>
+<circle cx="593.333" cy="258" r="22" fill="#2B1D14"/><g transform="translate(593.333,258) scale(1.000)"><path d="M-11,8 L-12,-6 L-5,0 L0,-9 L5,0 L12,-6 L11,8 Z" fill="#E0A82E"/></g>
+<circle cx="647" cy="258" r="22" fill="#2B1D14"/><g transform="translate(647,258) scale(1.000)"><path d="M0,-12 C6,-3 9,1 9,5 A9,9 0 0 1 -9,5 C-9,1 -6,-3 0,-12 Z" fill="#E0A82E"/></g>
+<circle cx="700.667" cy="258" r="22" fill="#2B1D14"/><g transform="translate(700.667,258) scale(1.000)"><path d="M-13,9 L-4,-7 L1,1 L5,-4 L13,9 Z" fill="#E0A82E"/></g>
+<rect x="464" y="314" width="366" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<clipPath id="c4"><circle cx="492" cy="336" r="14"/></clipPath><circle cx="492" cy="336" r="14" fill="#9DB7C9"/><g clip-path="url(#c4)" fill="#F3E3D3"><circle cx="492" cy="333.2" r="5.04"/><ellipse cx="492" cy="349.3" rx="10.08" ry="8.4"/></g>
+<circle cx="501.8" cy="345.8" r="6" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1"/>
+<text x="501.8" y="348.5" fill="#4285F4" font-family="ui-rounded, system-ui, sans-serif" font-size="8" font-weight="800" text-anchor="middle">G</text>
+<text x="516" y="342" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Use my Google picture</text>
+</g>
+<text x="16" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Edit, Background tab, Apple account / Dark</text>
+<g transform="translate(16,510)">
+<defs><radialGradient id="bg5" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg5)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Account</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Online · over the internet</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="227" cy="130" r="32" fill="#2B1D14"/><g transform="translate(227,130) scale(1.455)"><path d="M0,-12 L8,-2 L0,8 L-8,-2 Z" fill="#E0A82E"/><path d="M0,8 Q4,11 0,14" stroke="#E0A82E" stroke-width="2" fill="none"/></g>
+<rect x="44" y="180" width="366" height="44" rx="12" fill="#3A2C20" stroke="#C9783A" stroke-width="2"/>
+<text x="60" y="208" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Ardeman</text>
+<text x="394" y="208" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="end">7/24</text>
+<text x="227" y="252" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Friends and players in your rooms see this.</text>
+<rect x="44" y="314" width="178" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="133" y="342" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Cancel</text>
+<rect x="232" y="314" width="178" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="321" y="342" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Save</text>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Avatar</text>
+<rect x="464" y="128" width="118" height="40" rx="20" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="523" y="153" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Shape</text>
+<rect x="588" y="128" width="118" height="40" rx="20" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="647" y="153" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Background</text>
+<rect x="712" y="128" width="118" height="40" rx="20" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<text x="771" y="153" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700" text-anchor="middle">Symbol</text>
+<circle cx="486" cy="206" r="22" fill="#C9783A" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="539.667" cy="206" r="22" fill="#D9534F" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="593.333" cy="206" r="22" fill="#3B8FD9" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="647" cy="206" r="22" fill="#E0A82E" stroke="#3A3027" stroke-width="1.5" opacity="0.25"/>
+<circle cx="700.667" cy="206" r="22" fill="#5B6BD6" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="754.333" cy="206" r="22" fill="#E8833A" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="808" cy="206" r="22" fill="#D65BA6" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="486" cy="258" r="22" fill="#6DAA3C" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="539.667" cy="258" r="22" fill="#C8475B" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="593.333" cy="258" r="22" fill="#9A5BD0" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="647" cy="258" r="22" fill="#2E9E8F" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="700.667" cy="258" r="22" fill="#5F7480" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="754.333" cy="258" r="25.5" fill="none" stroke="#C9783A" stroke-width="3"/>
+<circle cx="754.333" cy="258" r="19" fill="#2B1D14" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+<circle cx="808" cy="258" r="22" fill="#FFFFFF" stroke="#3A3027" stroke-width="1.5" opacity="1"/>
+</g>
+<text x="906" y="496" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Where it shows: room, invite, seat / Dark</text>
+<g transform="translate(906,510)">
+<defs><radialGradient id="bg6" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<rect x="0" y="0" width="874" height="402" rx="12" fill="url(#bg6)" stroke="none" stroke-width="1.5"/>
+<rect x="24" y="16" width="44" height="44" rx="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Congklak</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Room K7M2 · 3 of 4 players</text>
+<rect x="24" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="444" y="82" width="406" height="296" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="44" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Players</text>
+<rect x="44" y="132" width="366" height="48" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="68" cy="156" r="15" fill="#2B1D14"/><g transform="translate(68,156) scale(0.682)"><path d="M0,-12 L8,-2 L0,8 L-8,-2 Z" fill="#E0A82E"/><path d="M0,8 Q4,11 0,14" stroke="#E0A82E" stroke-width="2" fill="none"/></g>
+<text x="94" y="154" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Ardeman</text>
+<text x="94" y="171" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">Host · you</text>
+<rect x="44" y="188" width="366" height="48" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="68" cy="212" r="15" fill="#FFFFFF"/><g transform="translate(68,212) scale(0.682)"><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(0)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(72)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(144)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(216)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(288)"/><circle r="3.2" fill="{B}"/></g>
+<text x="94" y="210" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Sari</text>
+<text x="94" y="227" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">iPhone</text>
+<rect x="44" y="244" width="366" height="48" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<clipPath id="c7"><circle cx="68" cy="268" r="15"/></clipPath><circle cx="68" cy="268" r="15" fill="#9DB7C9"/><g clip-path="url(#c7)" fill="#F3E3D3"><circle cx="68" cy="265" r="5.4"/><ellipse cx="68" cy="282.25" rx="10.8" ry="9"/></g>
+<circle cx="78.5" cy="278.5" r="6" fill="#FFFFFF" stroke="#3A3027" stroke-width="1"/>
+<text x="78.5" y="281.2" fill="#4285F4" font-family="ui-rounded, system-ui, sans-serif" font-size="8" font-weight="800" text-anchor="middle">G</text>
+<text x="94" y="266" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Budi Santoso</text>
+<text x="94" y="283" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">Android</text>
+<rect x="44" y="300" width="366" height="48" rx="12" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<clipPath id="c8"><circle cx="68" cy="324" r="15"/></clipPath><circle cx="68" cy="324" r="15" fill="#3A3027"/><g clip-path="url(#c8)" fill="#B7A593"><circle cx="68" cy="321" r="5.4"/><ellipse cx="68" cy="338.25" rx="10.8" ry="9"/></g>
+<text x="94" y="322" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Pixel 8</text>
+<text x="94" y="339" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700" text-anchor="start">Android · not signed in</text>
+<text x="464" y="116" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="700" text-anchor="start">Invite</text>
+<rect x="464" y="132" width="366" height="132" rx="16" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="500" cy="172" r="20" fill="#FFFFFF"/><g transform="translate(500,172) scale(0.909)"><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(0)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(72)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(144)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(216)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(288)"/><circle r="3.2" fill="{B}"/></g>
+<text x="532" y="168" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800" text-anchor="start">Sari invites you</text>
+<text x="532" y="188" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="start">Congklak · 2 of 4 players</text>
+<rect x="480" y="206" width="162" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="561" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Not now</text>
+<rect x="652" y="206" width="162" height="44" rx="14" fill="#C9783A" stroke="#C9783A" stroke-width="1.5"/>
+<text x="733" y="234" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">Join</text>
+<text x="464" y="292" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800" text-anchor="start">Seat name on the board</text>
+<rect x="464" y="302" width="170" height="40" rx="20" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="484" cy="322" r="13" fill="#FFFFFF"/><g transform="translate(484,322) scale(0.591)"><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(0)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(72)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(144)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(216)"/><circle cx="0" cy="-6.5" r="5" fill="#D65BA6" transform="rotate(288)"/><circle r="3.2" fill="{B}"/></g>
+<text x="504" y="327" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Sari</text>
+<rect x="644" y="302" width="186" height="40" rx="20" fill="#3A2C20" stroke="#3A3027" stroke-width="1.5"/>
+<clipPath id="c9"><circle cx="664" cy="322" r="13"/></clipPath><circle cx="664" cy="322" r="13" fill="#3A3027"/><g clip-path="url(#c9)" fill="#B7A593"><circle cx="664" cy="319.4" r="4.68"/><ellipse cx="664" cy="334.35" rx="9.36" ry="7.8"/></g>
+<text x="684" y="327" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="start">Pixel 8</text>
+</g>
+</svg>

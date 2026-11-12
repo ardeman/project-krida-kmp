@@ -31,7 +31,7 @@ opaque JSON value owned by each game's `GameRules`.
 
 | type | Direction | Fields |
 |---|---|---|
-| `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?`, `invite?` |
+| `hello` | guest → host | `protocol`, `name`, `platform`, `rejoinToken?`, `invite?`, `avatar?` |
 | `welcome` | host → guest | `seat`, `roomCode`, `game`, `rejoinToken` |
 | `reject` | host → guest | `reason` (`version`, `full`, `started`) |
 | `lobby` | host → each guest | `players`, `you` (receiver's seat; seats compact when someone leaves), `capacity?` (selected lobby size; absent = game maximum), `options?` (the host's rule options; see below) |
@@ -48,7 +48,7 @@ opaque JSON value owned by each game's `GameRules`.
 A guest that sees a gap simply waits for the next full `state` — every `state` is a full
 snapshot, so there is no diffing to get wrong.
 
-Each entry in `players` is `{seat, name, platform, connected?, local?, bot?, color?}`. `bot: true`
+Each entry in `players` is `{seat, name, platform, connected?, local?, bot?, color?, avatar?}`. `bot: true`
 marks a computer player; bots run only on the host, which moves for them like any other
 seat, so guests just show them (e.g. as "Komputer") and never act for them. Older guests
 ignore the field. The host may add bots to the lobby before the game starts and remove
@@ -68,6 +68,11 @@ grants it when no other seat holds it and the game has not started, and answers 
 `lobby` either way, so a refused guest sees the colour it still has. The colours go into the
 game's state when it starts. Older guests ignore the field; older hosts drop the `color`
 message, so the guest keeps its colour.
+
+`avatar` (optional) is the signed-in player's drawn mix (`{shape}-{bg}-{fg}`) or Google
+picture URL, sent in `hello` and copied onto that seat in `players`. Unsigned seats, bots and
+older peers leave it out; phones then show the numbered seat mark. On rejoin the host takes
+the latest name and avatar from `hello`.
 
 The host also sends a `state` with the same `seq` when only `players` changed during a
 game: a guest dropped out (`connected: false`), rejoined, or was handed to the computer.
@@ -303,7 +308,8 @@ manual Start; matching into an existing room does not elect another host.
 Optional sign-in, served by the relay over HTTPS (`relay/src/accounts.ts`). JSON bodies; an
 error is `{"error":"<code>"}` with a 4xx/5xx status. Rooms and matchmaking do not use
 accounts. Users and sessions live in Cloudflare D1: the provider's user id, a display name
-(at most 24 characters), the creation time; no email.
+(at most 24 characters), the chosen avatar, for Google accounts the picture URL, and the
+creation time; no email.
 
 | Request | Body / query | Reply |
 |---|---|---|
@@ -312,6 +318,7 @@ accounts. Users and sessions live in Cloudflare D1: the provider's user id, a di
 | `GET /v1/auth/google/callback` | Google's `code` and `state` | a page that opens `krida://auth?code=…` (or `?error=cancelled\|expired\|failed`) |
 | `POST /v1/auth/exchange` | `{code, verifier}` | `{token, user}` |
 | `GET /v1/me` | `Authorization: Bearer <token>` | `{user}`, or 401 |
+| `PATCH /v1/me` | Bearer, `{name?, avatar?}` | `{user}`; or `bad_name` / `bad_avatar` (400) |
 | `POST /v1/auth/signout` | Bearer | 204; ends that session |
 | `DELETE /v1/me` | Bearer | 204; deletes the account, its sessions, friend code and friendships |
 | `GET /v1/friends` | Bearer | `{code, friends}`: the account's friend code and its friends |
@@ -321,21 +328,29 @@ accounts. Users and sessions live in Cloudflare D1: the provider's user id, a di
 | `GET /v1/inbox` | Bearer, WebSocket upgrade | the account's invites inbox (below) |
 | `POST /v1/push-token` | Bearer, `{token, env?, lang?}` | 204; stores an iPhone's APNs device token with that session (below) |
 
-`user` is `{id, name, provider}` with `provider` `"apple"` or `"google"`; `name` may be empty
-(the apps then show "Player"). `token` is 32 random bytes, base64url; the relay stores only
-its hash. The Apple identity token is checked against Apple's keys (issuer, audience = the
-bundle id, expiry). The Google flow runs in the browser with the relay as the OAuth client;
-the app's code works once, for two minutes, and only together with the verifier, so another
-app receiving the `krida://auth` redirect cannot use it. With the Sign in with Apple key
-configured, deletion also revokes the app's access at Apple.
+`user` is `{id, name, provider, avatar?, picture?}` with `provider` `"apple"` or `"google"`;
+`name` may be empty (the apps then show "Player"). `avatar` is absent until the player picks
+one: then it is a mix `{shape}-{bg}-{fg}` (shape `0`–`11`, colour `0`–`13`, background ≠
+symbol) or, when they chose the Google picture, that picture's URL. `picture` is only for
+Google accounts (the current Google profile picture URL) so the edit screen can offer it;
+clients load a picture only from `https://lh3.googleusercontent.com/`. `PATCH /v1/me` takes
+`avatar` as the mix string or `"g"` (Google picture; refused for Apple, or when no picture
+is stored); `name` is trimmed and cut to 24 characters and may not be empty. `token` is 32
+random bytes, base64url; the relay stores only its hash. The Apple identity token is checked
+against Apple's keys (issuer, audience = the bundle id, expiry). The Google flow runs in the
+browser with the relay as the OAuth client; the app's code works once, for two minutes, and
+only together with the verifier, so another app receiving the `krida://auth` redirect cannot
+use it. With the Sign in with Apple key configured, deletion also revokes the app's access at
+Apple.
 
 Friends (step 10b): every account has one friend code, 8 chars from the `RoomCode` alphabet,
 made on the first `GET /v1/friends` and never changed. `POST /v1/friends` accepts the code in
 any case, with spaces or hyphens. Adding is instant and mutual: one stored pair puts each
 player in the other's list, and either can remove it. `friend` and each entry of `friends` is
-`{id, name}`; the list is sorted by name. An account has at most 100 friends, and may send 20
-well-formed codes per ten minutes. The share link is `https://krida.ardeman.com/f/CODE`; the
-web page behind it opens `krida://friend?code=CODE`.
+`{id, name, avatar?}` with the same resolved `avatar` as on `user`; the list is sorted by
+name. An account has at most 100 friends, and may send 20 well-formed codes per ten minutes.
+The share link is `https://krida.ardeman.com/f/CODE`; the web page behind it opens
+`krida://friend?code=CODE`.
 
 Invites (step 10c, `relay/src/inbox.ts`): the host of an online room invites a friend with
 `POST /v1/invites`: `code` is the room, `key` the room's host key (so only the host can
@@ -349,7 +364,7 @@ carries JSON text frames. Relay → app:
 
 | Message | Fields | Meaning |
 |---|---|---|
-| `invite` | `id`, `from` (`{id, name}`), `code`, `game`, `seats`, `players`, `ttlMs` | a friend invites this account to room `code`; `players` of `seats` are taken; valid for `ttlMs` more milliseconds. Invites still open are sent again on every connect |
+| `invite` | `id`, `from` (`{id, name, avatar?}`), `code`, `game`, `seats`, `players`, `ttlMs` | a friend invites this account to room `code`; `players` of `seats` are taken; valid for `ttlMs` more milliseconds. Invites still open are sent again on every connect |
 | `invite_end` | `id` | the invite is over (answered on another device, or its room started, filled or closed) |
 
 App → relay: `{"type":"dismiss","id":…}` when the player answers (Not now or Join); the

@@ -137,21 +137,19 @@ and the Pixel on different networks (one on mobile data).
       each tapped into its room (passed 2026-11-12). Open: a check on the real iPhone, and
       production APNs, which only a TestFlight or App Store build uses.
 
-    - [ ] **10d Name and avatar.** Decided by the owner 2026-11-12, not started. Needs a
-      mockup first (Account screen edit state and avatar picker; avatar on friend rows,
-      invites and seats).
+    - [ ] **10d Name and avatar.** Approved mockup ([profile.md](mockups/profile.md),
+      2026-11-12). Relay, shared, Account edit / friends / invites, and room seat name +
+      avatar (`hello` / `players`) on Android and iOS are built; open: deploy the relay and
+      privacy pages, then phone checks.
       - Name: the player sets and changes it on the Account screen (at most 24 characters,
-        the relay's limit); a new relay endpoint saves it. It shows to friends, on invites
-        and notifications, and replaces the device name on the player's seat in rooms when
+        the relay's limit); `PATCH /v1/me` saves it. It shows to friends, on invites and
+        notifications, and replaces the device name on the player's seat in rooms when
         signed in (signed out keeps the device name).
-      - Avatar: a preset picked in the app, drawn in code (no image assets, no uploads), or
-        the Google account's profile picture (the `picture` claim; the `profile` scope is
-        already requested). Apple gives no picture, so Apple accounts use presets only.
-      - To settle in the mockup: the preset set; whether the Google picture is the default
-        or an option; whether strangers in quick match see it or only friends; how the
-        seat name and avatar travel (`hello` gets optional fields, see the compatibility
-        rule in `docs/protocol.md`). The Google picture is a URL to Google's servers:
-        the privacy page and store answers need a line for it.
+      - Avatar: a shape + colour mix (12 shapes, 14 colours for background and for the
+        symbol, drawn in code; no image assets, no uploads), or the Google account's
+        profile picture. Google picture is an option never the default; everyone in the
+        room sees name and avatar; wire form `{shape}-{bg}-{fg}` or `g` (optional fields
+        on `hello` / `players`, `protocol` stays 1).
 
     Owner setup for 10a (1 and 2 done; the optional key in 3 still open): (1) Google Cloud: an OAuth client of type "Web application" with
     redirect URI `https://krida-relay.ardeman.com/v1/auth/google/callback`, then

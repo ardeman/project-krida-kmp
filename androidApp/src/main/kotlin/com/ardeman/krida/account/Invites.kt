@@ -29,7 +29,16 @@ import java.util.concurrent.TimeUnit
  */
 object Invites {
     /** [until] is on the `SystemClock.elapsedRealtime` clock. */
-    data class Invite(val id: String, val from: String, val code: String, val game: String, val seats: Int, val players: Int, val until: Long)
+    data class Invite(
+        val id: String,
+        val from: String,
+        val fromAvatar: String? = null,
+        val code: String,
+        val game: String,
+        val seats: Int,
+        val players: Int,
+        val until: Long,
+    )
 
     /** An invite this phone sent from room [code]; [id] is what the friend's join carries. */
     data class Sent(val id: String, val code: String, val until: Long)
@@ -138,9 +147,11 @@ object Invites {
             val id = o.getValue("id").jsonPrimitive.content
             when (o.getValue("type").jsonPrimitive.content) {
                 "invite" -> {
+                    val from = o.getValue("from").jsonObject
                     val invite = Invite(
                         id = id,
-                        from = o.getValue("from").jsonObject.getValue("name").jsonPrimitive.content,
+                        from = from.getValue("name").jsonPrimitive.content,
+                        fromAvatar = from["avatar"]?.jsonPrimitive?.content,
                         code = o.getValue("code").jsonPrimitive.content,
                         game = o.getValue("game").jsonPrimitive.content,
                         seats = o.getValue("seats").jsonPrimitive.int,

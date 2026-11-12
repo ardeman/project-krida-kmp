@@ -338,6 +338,16 @@
     <string name="account_friend_already">Kalian sudah berteman.</string>
     <string name="account_friend_full">Daftar teman sudah penuh.</string>
     <string name="account_friend_too_many">Terlalu banyak percobaan. Tunggu beberapa menit.</string>
+    <string name="account_edit">Ubah</string>
+    <string name="account_edit_save">Simpan</string>
+    <string name="account_edit_hint">Teman dan pemain di room-mu melihat ini.</string>
+    <string name="account_edit_bad_name">Isi nama paling banyak 24 karakter.</string>
+    <string name="account_edit_bad_avatar">Avatar itu tidak bisa disimpan. Coba yang lain.</string>
+    <string name="account_avatar">Avatar</string>
+    <string name="account_avatar_shape">Bentuk</string>
+    <string name="account_avatar_background">Latar</string>
+    <string name="account_avatar_symbol">Simbol</string>
+    <string name="account_avatar_google">Pakai foto Google saya</string>
     <string name="invite_friends">Undang teman</string>
     <string name="invite_action">Undang</string>
     <string name="invite_sent">Undangan terkirim</string>

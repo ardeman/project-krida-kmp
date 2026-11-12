@@ -32,17 +32,18 @@ private struct AppleButtonStyle: ButtonStyle {
 }
 
 /// Sign in, or see the signed-in account with sign out and delete: one status card. Signed in,
-/// the Friends card sits beside it (docs/mockups/friends.md).
+/// the Friends card sits beside it; Edit opens the name and avatar picker (docs/mockups/profile.md).
 struct AccountScreen: View {
     let onBack: () -> Void
     @ObservedObject private var account = Account.shared
     @State private var confirmingDelete = false
+    @State private var editing = false
     @Environment(\.uiScale) private var s
     @Environment(\.colorScheme) private var scheme
 
     /// The question only makes sense while signed in and idle.
     private var confirming: Bool { confirmingDelete && account.user != nil && !account.busy }
-    /// The friends card shows while signed in, except over the delete question.
+    /// Friends (or the avatar picker while editing) show while signed in, except over delete.
     private var withFriends: Bool { account.user != nil && !confirming }
 
     private var title: Text {
@@ -59,9 +60,13 @@ struct AccountScreen: View {
 
     var body: some View {
         NearbyFrame(title: Text("Account"), subtitle: placeLine(true), online: true, backLabel: "Back", onBack: {
-            if confirming { confirmingDelete = false } else { onBack() }
+            if confirming { confirmingDelete = false }
+            else if editing { editing = false }
+            else { onBack() }
         }) {
-            if withFriends {
+            if editing, let user = account.user {
+                AccountEdit(user: user, onDone: { editing = false })
+            } else if withFriends {
                 // Scrolls only when the card is too short for it (large text, small phones).
                 ViewThatFits(in: .vertical) {
                     card
@@ -77,27 +82,42 @@ struct AccountScreen: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task(id: account.user?.id) { account.loadFriends() }
+        .task(id: account.user?.id) {
+            account.loadFriends()
+            editing = false
+        }
     }
 
     private var card: some View {
         let avatar: CGFloat = withFriends ? 48 : 64
         return VStack(spacing: (withFriends ? 8 : 12) * s) {
-                Group {
-                    if account.busy {
-                        LoadingIndicator()
-                    } else if confirming {
-                        Image(systemName: "exclamationmark.circle.fill")
-                            .font(.system(size: 30 * s, weight: .bold))
-                            .foregroundStyle(Theme.error)
-                    } else {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: avatar * 0.44 * s, weight: .bold))
-                            .foregroundStyle(Theme.muted)
+                ZStack(alignment: .topTrailing) {
+                    Group {
+                        if account.busy {
+                            LoadingIndicator()
+                                .frame(width: avatar * s, height: avatar * s)
+                        } else if confirming {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .font(.system(size: 30 * s, weight: .bold))
+                                .foregroundStyle(Theme.error)
+                                .frame(width: avatar * s, height: avatar * s)
+                                .background(Theme.error.opacity(0.14), in: Circle())
+                        } else if let user = account.user {
+                            AvatarBadge(avatar: user.avatar, accountId: user.id, picture: user.picture, size: avatar)
+                        } else {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: avatar * 0.44 * s, weight: .bold))
+                                .foregroundStyle(Theme.muted)
+                                .frame(width: avatar * s, height: avatar * s)
+                                .background(Theme.chip, in: Circle())
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    if withFriends, !account.busy {
+                        Button { editing = true } label: { Text("Edit") }
+                            .buttonStyle(SecondaryButtonStyle())
                     }
                 }
-                .frame(width: avatar * s, height: avatar * s)
-                .background(account.busy ? Color.clear : confirming ? Theme.error.opacity(0.14) : Theme.chip, in: Circle())
                 title.font(Theme.font(22 * s, .black)).lineLimit(1)
                 Text(detail).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
@@ -293,7 +313,7 @@ private struct FriendRow: View {
                 action("Cancel", Theme.muted, onCancel)
                 action("Remove", Theme.error, onRemove)
             } else {
-                Image(systemName: "person.fill").font(.system(size: 15 * s, weight: .bold)).foregroundStyle(Theme.muted)
+                AvatarBadge(avatar: friend.avatar, accountId: friend.id, size: 26)
                 Text(verbatim: name).font(Theme.font(16 * s, .bold)).lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Button {

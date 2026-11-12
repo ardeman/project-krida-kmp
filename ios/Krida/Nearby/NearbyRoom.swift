@@ -136,7 +136,8 @@ final class NearbyRoom: ObservableObject {
         return Self.join(code: code, online: online)
     }
 
-    private static var deviceName: String { UIDevice.current.name }
+    private static var seatName: String { Account.shared.seatName(UIDevice.current.name) }
+    private static var seatAvatar: String? { Account.shared.seatAvatar() }
 
     private func hostSession<S: AnyObject, M: AnyObject>(_ rules: any GameRules, transport: Transport) -> HostSession<S, M> {
         game = rules.id
@@ -153,7 +154,7 @@ final class NearbyRoom: ObservableObject {
                 self.players.count == self.quickMatchTarget &&
                 self.players.filter { !$0.bot }.count >= self.quickMatchExpectedHumans)
         }
-        _ = session.addLocalPlayer(name: Self.deviceName, platform: .ios)
+        _ = session.addLocalPlayer(name: Self.seatName, platform: .ios, avatar: Self.seatAvatar)
         pickColorAction = { [weak session] in _ = session?.setColor(seat: 0, color: Int32($0)) }
         return session
     }
@@ -279,8 +280,9 @@ final class NearbyRoom: ObservableObject {
         let transport: Transport = (relay as Transport?) ?? ble!
         let room = NearbyRoom(code: code, isHost: false, online: online, transport: transport)
         // Joining a room this device has a seat in asks for that seat back.
-        let join = GuestJoin(transport: transport, name: deviceName, platform: .ios,
-                             rejoinToken: LastRoom.shared.token(for: code, online: online))
+        let join = GuestJoin(transport: transport, name: seatName, platform: .ios,
+                             rejoinToken: LastRoom.shared.token(for: code, online: online),
+                             avatar: seatAvatar)
         room.join = join
         join.invite = invite
         join.onConnected = { [weak room] in if room?.stage == .searching { room?.stage = .connecting } }

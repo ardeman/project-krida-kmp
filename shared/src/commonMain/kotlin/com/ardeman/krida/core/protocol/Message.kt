@@ -26,6 +26,11 @@ data class PlayerInfo(
      * Optional: older guests ignore it.
      */
     val color: Int? = null,
+    /**
+     * Drawn avatar mix (`{shape}-{bg}-{fg}`) or a Google picture URL. Absent for unsigned
+     * seats, bots and older peers. Optional: older guests ignore it.
+     */
+    val avatar: String? = null,
 )
 
 /** A move as applied by the host: who made it and the game-specific move JSON. */
@@ -46,6 +51,11 @@ sealed class Message {
         val rejoinToken: String? = null,
         /** The id of the friend invite this join answers, so the host's picker shows "Joined". */
         val invite: String? = null,
+        /**
+         * Drawn avatar mix or Google picture URL from a signed-in account. Optional: older
+         * hosts ignore it and show the neutral seat mark.
+         */
+        val avatar: String? = null,
     ) : Message()
 
     /** host -> guest: you got a seat. Keep [rejoinToken] to reconnect. */

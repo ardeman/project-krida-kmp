@@ -3975,350 +3975,930 @@
     },
     "%@ wins": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "%@ wins" } },
-        "id": { "stringUnit": { "state": "translated", "value": "%@ menang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ wins"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ menang"
+          }
+        }
       }
     },
     "6 again": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 again" } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 lagi" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 again"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lagi"
+          }
+        }
       }
     },
     "6 again off: a 6 ends your turn like any roll.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 again off: a 6 ends your turn like any roll." } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 lagi mati: dapat 6, giliran tetap pindah." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 again off: a 6 ends your turn like any roll."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lagi mati: dapat 6, giliran tetap pindah."
+          }
+        }
       }
     },
     "6 again: roll a 6 and you roll once more.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 again: roll a 6 and you roll once more." } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 lagi: dapat 6, lempar dadu sekali lagi." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 again: roll a 6 and you roll once more."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 lagi: dapat 6, lempar dadu sekali lagi."
+          }
+        }
       }
     },
     "6 to enter": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 to enter" } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to enter"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk masuk"
+          }
+        }
       }
     },
     "6 to enter off: any roll can leave the yard and walk.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 to enter off: any roll can leave the yard and walk." } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk mati: dadu berapa pun bisa keluar dan jalan." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to enter off: any roll can leave the yard and walk."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk masuk mati: dadu berapa pun bisa keluar dan jalan."
+          }
+        }
       }
     },
     "6 to enter: a token leaves the yard only with a 6.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "6 to enter: a token leaves the yard only with a 6." } },
-        "id": { "stringUnit": { "state": "translated", "value": "6 untuk masuk: bidak keluar dari rumah hanya dengan dadu 6." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 to enter: a token leaves the yard only with a 6."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6 untuk masuk: bidak keluar dari rumah hanya dengan dadu 6."
+          }
+        }
       }
     },
     "A 6 leaves the yard onto your colour's start square.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "A 6 leaves the yard onto your colour's start square." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Dadu 6 mengeluarkan bidak ke kotak start warnamu." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A 6 leaves the yard onto your colour's start square."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dadu 6 mengeluarkan bidak ke kotak start warnamu."
+          }
+        }
       }
     },
     "A capture rolls again.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "A capture rolls again." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Setelah menangkap, lempar lagi." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A capture rolls again."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setelah menangkap, lempar lagi."
+          }
+        }
       }
     },
     "All four tokens home.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "All four tokens home." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Keempat bidak sudah di rumah." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All four tokens home."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keempat bidak sudah di rumah."
+          }
+        }
       }
     },
     "Any roll can leave the yard and walk that many steps.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Any roll can leave the yard and walk that many steps." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Dadu berapa pun bisa keluar dari rumah dan jalan sejauh itu." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Any roll can leave the yard and walk that many steps."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dadu berapa pun bisa keluar dari rumah dan jalan sejauh itu."
+          }
+        }
       }
     },
     "Capture · roll again": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Capture · roll again" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tangkap · lempar lagi" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture · roll again"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangkap · lempar lagi"
+          }
+        }
       }
     },
     "Capture again": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Capture again" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture again"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangkap lagi"
+          }
+        }
       }
     },
     "Capture again off: a capture ends your turn.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Capture again off: a capture ends your turn." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi mati: setelah menangkap, giliran pindah." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture again off: a capture ends your turn."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangkap lagi mati: setelah menangkap, giliran pindah."
+          }
+        }
       }
     },
     "Capture again: sending an opponent home grants another roll.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Capture again: sending an opponent home grants another roll." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tangkap lagi: mengirim lawan ke rumah memberi lemparan lagi." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture again: sending an opponent home grants another roll."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tangkap lagi: mengirim lawan ke rumah memberi lemparan lagi."
+          }
+        }
       }
     },
     "First wins": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "First wins" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First wins"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai"
+          }
+        }
       }
     },
     "First wins off: play goes on until one player is left.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "First wins off: play goes on until one player is left." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai mati: main terus sampai tinggal satu pemain." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First wins off: play goes on until one player is left."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai mati: main terus sampai tinggal satu pemain."
+          }
+        }
       }
     },
     "First wins: the game ends when the first player gets all four home.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "First wins: the game ends when the first player gets all four home." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Juara 1 selesai: permainan berakhir saat pemain pertama membawa semua bidak pulang." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First wins: the game ends when the first player gets all four home."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Juara 1 selesai: permainan berakhir saat pemain pertama membawa semua bidak pulang."
+          }
+        }
       }
     },
     "Landing on a lone opponent sends it to the yard.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Landing on a lone opponent sends it to the yard." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Mendarat di bidak lawan sendirian mengirimnya ke rumah." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Landing on a lone opponent sends it to the yard."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mendarat di bidak lawan sendirian mengirimnya ke rumah."
+          }
+        }
       }
     },
     "Ludo": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Ludo" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Ludo" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ludo"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ludo"
+          }
+        }
       }
     },
     "Players who finish leave the board in order; play goes on until one is left.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Players who finish leave the board in order; play goes on until one is left." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Yang selesai keluar berurutan; permainan lanjut sampai tersisa satu pemain." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Players who finish leave the board in order; play goes on until one is left."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yang selesai keluar berurutan; permainan lanjut sampai tersisa satu pemain."
+          }
+        }
       }
     },
     "Race your four tokens home.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Race your four tokens home." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pacu empat bidakmu ke rumah." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Race your four tokens home."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pacu empat bidakmu ke rumah."
+          }
+        }
       }
     },
     "Tap a token to move": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Tap a token to move" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Ketuk bidak yang mau jalan" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a token to move"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketuk bidak yang mau jalan"
+          }
+        }
       }
     },
     "The first player to get all four home wins and the game ends.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "The first player to get all four home wins and the game ends." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Yang pertama membawa keempat bidak pulang menang dan permainan selesai." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first player to get all four home wins and the game ends."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yang pertama membawa keempat bidak pulang menang dan permainan selesai."
+          }
+        }
       }
     },
     "Three 6s in a row burn the third roll and end the turn.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Three 6s in a row burn the third roll and end the turn." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tiga kali 6 beruntun membatalkan lemparan ketiga dan mengakhiri giliran." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three 6s in a row burn the third roll and end the turn."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiga kali 6 beruntun membatalkan lemparan ketiga dan mengakhiri giliran."
+          }
+        }
       }
     },
     "Three sixes · turn ends": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Three sixes · turn ends" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tiga kali 6 · giliran habis" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three sixes · turn ends"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiga kali 6 · giliran habis"
+          }
+        }
       }
     },
     "Token %1$d": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Token %1$d" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Bidak %1$d" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Token %1$d"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bidak %1$d"
+          }
+        }
       }
     },
     "Tokens walk clockwise around the board, then up your home stretch.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Tokens walk clockwise around the board, then up your home stretch." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Bidak jalan searah jarum jam, lalu naik jalur rumahmu." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens walk clockwise around the board, then up your home stretch."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bidak jalan searah jarum jam, lalu naik jalur rumahmu."
+          }
+        }
       }
     },
     "Two of your tokens on one square are safe; others cannot land there.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Two of your tokens on one square are safe; others cannot land there." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Dua bidakmu di kotak yang sama aman; lawan tidak bisa mendarat di situ." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two of your tokens on one square are safe; others cannot land there."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dua bidakmu di kotak yang sama aman; lawan tidak bisa mendarat di situ."
+          }
+        }
       }
     },
     "You must finish exactly; a roll that goes past stays put.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "You must finish exactly; a roll that goes past stays put." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Harus pas sampai finish; lemparan yang lewat membuat bidak diam." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You must finish exactly; a roll that goes past stays put."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Harus pas sampai finish; lemparan yang lewat membuat bidak diam."
+          }
+        }
       }
     },
     "Account": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Account" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Akun" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Account"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akun"
+          }
+        }
       }
     },
     "Delete account": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Delete account" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hapus akun" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete account"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus akun"
+          }
+        }
       }
     },
     "Delete your account?": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Delete your account?" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hapus akunmu?" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your account?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus akunmu?"
+          }
+        }
       }
     },
     "Player": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Player" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pemain" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Player"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain"
+          }
+        }
       }
     },
     "Sign in to Krida": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign in to Krida" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk ke Krida" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to Krida"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk ke Krida"
+          }
+        }
       }
     },
     "Sign in with Google": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign in with Google" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Google" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Google"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk dengan Google"
+          }
+        }
       }
     },
     "Sign out": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign out" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Keluar" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keluar"
+          }
+        }
       }
     },
     "Signed in with Apple": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Signed in with Apple" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Apple" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with Apple"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk dengan Apple"
+          }
+        }
       }
     },
     "Signed in with Google": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Signed in with Google" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Google" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signed in with Google"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk dengan Google"
+          }
+        }
       }
     },
     "That didn't work. Check your connection and try again.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "That didn't work. Check your connection and try again." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Belum berhasil. Cek koneksimu lalu coba lagi." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That didn't work. Check your connection and try again."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum berhasil. Cek koneksimu lalu coba lagi."
+          }
+        }
       }
     },
     "Your account and name are removed from Krida. This can't be undone.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Your account and name are removed from Krida. This can't be undone." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Akun dan namamu dihapus dari Krida. Ini tidak bisa dibatalkan." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your account and name are removed from Krida. This can't be undone."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akun dan namamu dihapus dari Krida. Ini tidak bisa dibatalkan."
+          }
+        }
       }
     },
     "Sign in with Apple": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign in with Apple" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk dengan Apple" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with Apple"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk dengan Apple"
+          }
+        }
       }
     },
     "Sign in to add friends. Playing never needs an account.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sign in to add friends. Playing never needs an account." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Masuk untuk menambah teman. Main tidak pernah butuh akun." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in to add friends. Playing never needs an account."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Masuk untuk menambah teman. Main tidak pernah butuh akun."
+          }
+        }
       }
     },
     "Friends": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Friends" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Teman" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Friends"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman"
+          }
+        }
       }
     },
     "Your friend code": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Your friend code" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Kode temanmu" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your friend code"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kode temanmu"
+          }
+        }
       }
     },
     "Add me as a friend on Krida!": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Add me as a friend on Krida!" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tambahkan aku jadi teman di Krida!" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add me as a friend on Krida!"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tambahkan aku jadi teman di Krida!"
+          }
+        }
       }
     },
     "Friend's code": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Friend's code" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Kode teman" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Friend's code"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kode teman"
+          }
+        }
       }
     },
     "Add": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Add" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tambah" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tambah"
+          }
+        }
       }
     },
     "No friends yet": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No friends yet" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Belum ada teman" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No friends yet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum ada teman"
+          }
+        }
       }
     },
     "Share your code, or type a friend's code.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Share your code, or type a friend's code." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Bagikan kodemu, atau ketik kode teman." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share your code, or type a friend's code."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bagikan kodemu, atau ketik kode teman."
+          }
+        }
       }
     },
     "Remove": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Remove" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hapus" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus"
+          }
+        }
       }
     },
     "Remove %@": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Remove %@" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hapus %@" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus %@"
+          }
+        }
       }
     },
     "Remove %@?": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Remove %@?" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hapus %@?" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove %@?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus %@?"
+          }
+        }
       }
     },
     "No player has that code.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No player has that code." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tidak ada pemain dengan kode itu." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No player has that code."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak ada pemain dengan kode itu."
+          }
+        }
       }
     },
     "That's your own code.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "That's your own code." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Itu kodemu sendiri." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That's your own code."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Itu kodemu sendiri."
+          }
+        }
       }
     },
     "You're already friends.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "You're already friends." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Kalian sudah berteman." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're already friends."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kalian sudah berteman."
+          }
+        }
       }
     },
     "The friends list is full.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "The friends list is full." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Daftar teman sudah penuh." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The friends list is full."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daftar teman sudah penuh."
+          }
+        }
       }
     },
     "Too many tries. Wait a few minutes.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Too many tries. Wait a few minutes." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Terlalu banyak percobaan. Tunggu beberapa menit." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many tries. Wait a few minutes."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terlalu banyak percobaan. Tunggu beberapa menit."
+          }
+        }
       }
     },
     "Invite friends": {
@@ -4557,6 +5137,166 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nanti saja"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ubah"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simpan"
+          }
+        }
+      }
+    },
+    "Avatar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avatar"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avatar"
+          }
+        }
+      }
+    },
+    "Shape": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shape"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bentuk"
+          }
+        }
+      }
+    },
+    "Background": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Background"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Latar"
+          }
+        }
+      }
+    },
+    "Symbol": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symbol"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simbol"
+          }
+        }
+      }
+    },
+    "Use my Google picture": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use my Google picture"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pakai foto Google saya"
+          }
+        }
+      }
+    },
+    "Friends and players in your rooms see this.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Friends and players in your rooms see this."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teman dan pemain di room-mu melihat ini."
+          }
+        }
+      }
+    },
+    "Enter a name of at most 24 characters.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a name of at most 24 characters."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Isi nama paling banyak 24 karakter."
+          }
+        }
+      }
+    },
+    "That avatar couldn't be saved. Try another.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That avatar couldn't be saved. Try another."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avatar itu tidak bisa disimpan. Coba yang lain."
           }
         }
       }

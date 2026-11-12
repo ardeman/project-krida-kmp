@@ -31,8 +31,9 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2>In short</h2>
       <ul>
         <li>Krida can be played without an account, and does not ask for your email, phone number, or contacts.</li>
-        <li>An account is optional (Sign in with Apple or Google). We keep only the account ID Apple or Google
-          gives us and your display name, and you can delete it from the app at any time.</li>
+        <li>An account is optional (Sign in with Apple or Google). We keep the account ID Apple or Google gives us,
+          your display name and avatar choice (and for Google, the picture URL when you use that photo), and you can
+          delete the account from the app at any time.</li>
         <li>Online play goes through a relay that only forwards game traffic while a room is open; it does not keep
           a history of games.</li>
         <li>Ads in Krida are provided by Google AdMob, which collects some device data as described below.</li>
@@ -120,14 +121,16 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2 id="account">Account (optional)</h2>
       <p>
         You can sign in with Apple or Google from the account button in the menu. When you do, we store in the
-        relay's database (Cloudflare D1): the account ID Apple or Google gives Krida, your display name, and when
-        the account was created. We do not receive or store your email, password, photo, or contacts. Your phone
-        keeps a session token so you stay signed in.
+        relay's database (Cloudflare D1): the account ID Apple or Google gives Krida, your display name, the
+        avatar you choose (a shape and colours drawn in the app, or your Google profile picture), and when the
+        account was created. For Google accounts we also keep the picture URL Google provides, so other players'
+        phones can load that picture from Google when you pick it; we do not host the photo. We do not receive or
+        store your email, password, or contacts. Your phone keeps a session token so you stay signed in.
       </p>
       <p>
         A signed-in account gets a friend code. When you or another player adds the other by code or friend link,
-        we store that the two accounts are friends, and each of you sees the other's display name in the friends
-        list. Either of you can remove the other at any time, which removes it for both.
+        we store that the two accounts are friends, and each of you sees the other's display name and avatar in
+        the friends list. Either of you can remove the other at any time, which removes it for both.
       </p>
       <p>
         A friend hosting an online room can invite you. The invite (their name, the room and the game) is kept for
@@ -137,8 +140,9 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       </p>
       <p>
         To delete your account, open the account button in the menu and choose "Delete account". The account, name,
-        friend code, friends list, notification tokens and every session are removed from our database right away; for Apple accounts, Krida's access at Apple is
-        revoked too. If you can't open the app, email the address under Contact and we will delete the account.
+        avatar, Google picture URL, friend code, friends list, notification tokens and every session are removed
+        from our database right away; for Apple accounts, Krida's access at Apple is revoked too. If you can't open
+        the app, email the address under Contact and we will delete the account.
       </p>
 
       <h2>Deleting data</h2>

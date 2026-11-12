@@ -189,13 +189,17 @@ class NearbyRoom private constructor(
     }
 
     /** Leaves and opens the same kind of room again: a new one for a host, the same code for a guest. */
-    fun retry(context: Context, name: String): NearbyRoom {
+    fun retry(context: Context, name: String, avatar: String? = null): NearbyRoom {
         leave()
         val game = hostGame
-        return if (isHost && game != null) host(context, name, game, online, publicRoom = publicRoom, seats = hostSeats) else join(context, code, name, online)
+        return if (isHost && game != null) {
+            host(context, name, game, online, publicRoom = publicRoom, seats = hostSeats, avatar = avatar)
+        } else {
+            join(context, code, name, online, avatar = avatar)
+        }
     }
 
-    private fun <S, M> hostSession(rules: GameRules<S, M>, name: String, transport: Transport): HostSession<S, M> {
+    private fun <S, M> hostSession(rules: GameRules<S, M>, name: String, transport: Transport, avatar: String?): HostSession<S, M> {
         game = rules.id
         maxPlayers = hostSeats ?: rules.maxPlayers
         val session = HostSession(rules, transport, roomCode = code, maxSeats = maxPlayers)
@@ -208,7 +212,7 @@ class NearbyRoom private constructor(
             canStart = session.canStart() && (quickMatchTarget == 0 ||
                 players.size == quickMatchTarget && players.count { !it.bot } >= quickMatchExpectedHumans)
         }
-        session.addLocalPlayer(name, Platform.ANDROID)
+        session.addLocalPlayer(name, Platform.ANDROID, avatar)
         pickColor = { session.setColor(0, it) }
         return session
     }
@@ -270,7 +274,7 @@ class NearbyRoom private constructor(
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
         private const val NOT_FOUND_MS = 20_000L
 
-        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false): NearbyRoom {
+        fun host(context: Context, name: String, game: Game, online: Boolean = false, code: String? = null, onOnlineReady: (() -> Unit)? = null, publicRoom: Boolean = false, seats: Int? = null, standardRules: Boolean = false, avatar: String? = null): NearbyRoom {
             val roomCode = code ?: if (online) RoomCode.generateOnline() else RoomCode.generate()
             val gameId = when (game) {
                 Game.ULAR_TANGGA -> UlarTanggaGame.id
@@ -283,7 +287,7 @@ class NearbyRoom private constructor(
             room.hostGame = game
             when (game) {
                 Game.CONGKLAK -> {
-                    val session = room.hostSession(if (standardRules) StandardRules.congklak else CongklakSettings.rules, name, transport)
+                    val session = room.hostSession(if (standardRules) StandardRules.congklak else CongklakSettings.rules, name, transport, avatar)
                     room.begin = {
                         if (session.canStart()) {
                             session.start()
@@ -292,7 +296,7 @@ class NearbyRoom private constructor(
                     }
                 }
                 Game.ULAR_TANGGA -> {
-                    val session = room.hostSession(if (standardRules) StandardRules.ularTangga else UlarTanggaSettings.rules, name, transport)
+                    val session = room.hostSession(if (standardRules) StandardRules.ularTangga else UlarTanggaSettings.rules, name, transport, avatar)
                     room.canAddBots = true
                     room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, UlarTanggaBot) }
                     room.removeBot = { seat -> session.removeBot(seat) }
@@ -304,7 +308,7 @@ class NearbyRoom private constructor(
                     }
                 }
                 Game.LUDO -> {
-                    val session = room.hostSession(if (standardRules) StandardRules.ludo else LudoSettings.rules, name, transport)
+                    val session = room.hostSession(if (standardRules) StandardRules.ludo else LudoSettings.rules, name, transport, avatar)
                     room.canAddBots = true
                     room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, LudoBot()) }
                     room.removeBot = { seat -> session.removeBot(seat) }
@@ -329,11 +333,11 @@ class NearbyRoom private constructor(
         }
 
         /** [invite]: the id of the friend invite this join answers, so the host sees "Joined". */
-        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null, invite: String? = null): NearbyRoom {
+        fun join(context: Context, code: String, name: String, online: Boolean = false, reservation: String? = null, invite: String? = null, avatar: String? = null): NearbyRoom {
             val transport: Transport = if (online) OnlineGuestTransport(code, reservation) else BleGuestTransport(context, code)
             val room = NearbyRoom(code, isHost = false, online = online, transport = transport)
             // Joining a room this device has a seat in asks for that seat back.
-            val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online))
+            val join = GuestJoin(transport, name, Platform.ANDROID, LastRoom.tokenFor(code, online), avatar)
             room.join = join
             join.invite = invite
             join.onConnected = { if (room.stage == Stage.SEARCHING) room.stage = Stage.CONNECTING }

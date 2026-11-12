@@ -6,16 +6,21 @@ import Shared
 import UIKit
 
 /// The signed-in Krida account ("Accounts" in docs/protocol.md): Sign in with Apple, Google
-/// sign-in through the browser and the relay, the session token, sign out, account
-/// deletion and the friends list. Same endpoints and stored fields as Android (`account/Account.kt`).
+/// sign-in through the browser and the relay, the session token, name and avatar, sign out,
+/// account deletion and the friends list. Same endpoints and stored fields as Android
+/// (`account/Account.kt`).
 @MainActor
 final class Account: NSObject, ObservableObject {
     static let shared = Account()
 
+    /// `avatar` is the resolved wire value (mix or Google picture URL), or nil when unset.
+    /// `picture` is the Google profile URL for the picker (Google accounts only).
     struct User: Codable, Equatable {
         let id: String
         let name: String
         let provider: String
+        let avatar: String?
+        let picture: String?
     }
 
     private struct SignedIn: Decodable {
@@ -30,11 +35,17 @@ final class Account: NSObject, ObservableObject {
     struct Friend: Decodable, Equatable, Identifiable {
         let id: String
         let name: String
+        let avatar: String?
     }
 
     /// Why the last add was refused; `failed` also covers an unreachable relay.
     enum FriendError {
         case notFound, own, already, full, tooMany, failed
+    }
+
+    /// Why a profile save was refused.
+    enum ProfileError {
+        case badName, badAvatar, failed
     }
 
     private struct FriendList: Decodable {
@@ -69,6 +80,9 @@ final class Account: NSObject, ObservableObject {
     /// An add is running.
     @Published private(set) var addingFriend = false
     @Published var friendError: FriendError?
+    @Published var profileError: ProfileError?
+    /// A profile save is running.
+    @Published private(set) var savingProfile = false
 
     private var token: String?
     /// The session token, for `Invites`; nil when signed out.
@@ -196,6 +210,19 @@ final class Account: NSObject, ObservableObject {
         String(text.uppercased().filter { $0.isASCII && ($0.isLetter || $0.isNumber) }.prefix(Int(Krida.shared.FRIEND_CODE_LENGTH)))
     }
 
+    /// Name for a room seat: the account name when signed in, otherwise `fallback`.
+    func seatName(_ fallback: String) -> String {
+        if let name = user?.name, !name.isEmpty { return name }
+        return fallback
+    }
+
+    /// Avatar for a room seat: chosen mix/URL, or a default mix from the account id. Nil when signed out.
+    func seatAvatar() -> String? {
+        guard let user else { return nil }
+        if let avatar = user.avatar { return avatar }
+        return Avatar.shared.defaultMix(accountId: user.id).encode()
+    }
+
     /// Fetches the friend code and the list; the screen calls it when it opens.
     func loadFriends() {
         guard let saved = token else { return }
@@ -251,6 +278,28 @@ final class Account: NSObject, ObservableObject {
         }
     }
 
+    /// Saves `name` and `avatar` together (`PATCH /v1/me`). `avatar` is a mix string or
+    /// `Avatar.shared.GOOGLE`. Returns true when the relay accepted it.
+    @discardableResult
+    func saveProfile(name: String, avatar: String) async -> Bool {
+        guard let saved = token, !savingProfile else { return false }
+        profileError = nil
+        savingProfile = true
+        let reply = await send("PATCH", "/v1/me", token: saved, body: ["name": name, "avatar": avatar])
+        guard token == saved else { return false }
+        savingProfile = false
+        if let (status, data) = reply, status == 200, let me = try? JSONDecoder().decode(Me.self, from: data) {
+            store(token: saved, user: me.user)
+            return true
+        }
+        switch reply.flatMap({ try? JSONDecoder().decode(Refused.self, from: $0.1) })?.error {
+        case "bad_name": profileError = .badName
+        case "bad_avatar": profileError = .badAvatar
+        default: profileError = .failed
+        }
+        return false
+    }
+
     private func signIn(path: String, body: [String: String]) async {
         busy = true
         let reply = await send("POST", path, body: body)
@@ -278,6 +327,8 @@ final class Account: NSObject, ObservableObject {
         friends = []
         addingFriend = false
         friendError = nil
+        profileError = nil
+        savingProfile = false
         Self.saveToken(nil)
         UserDefaults.standard.removeObject(forKey: Self.userKey)
     }

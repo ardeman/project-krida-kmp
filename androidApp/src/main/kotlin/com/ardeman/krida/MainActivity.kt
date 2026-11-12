@@ -185,7 +185,8 @@ class MainActivity : ComponentActivity() {
     /** Between onStart and onStop: the invites inbox is only open then. */
     private var foreground by mutableStateOf(false)
 
-    private val myName: String get() = Build.MODEL ?: "Android"
+    private val myName: String get() = Account.seatName(Build.MODEL ?: "Android")
+    private val myAvatar: String? get() = Account.seatAvatar()
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -276,7 +277,7 @@ class MainActivity : ComponentActivity() {
                         onCreate = { public, seats ->
                             room = NearbyRoom.host(this@MainActivity, myName,
                                 when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
-                                online = true, publicRoom = public, seats = seats)
+                                online = true, publicRoom = public, seats = seats, avatar = myAvatar)
                             creatingOnlineRoom = false
                         },
                         options = { GameRoomOptions(quickMatchGame) },
@@ -288,12 +289,12 @@ class MainActivity : ComponentActivity() {
                         createHost = { code, humans, bots, onReady ->
                             NearbyRoom.host(this@MainActivity, myName,
                                 when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
-                                online = true, code = code, onOnlineReady = onReady, standardRules = true,
+                                online = true, code = code, onOnlineReady = onReady, standardRules = true, avatar = myAvatar,
                             ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
                         },
                         onHost = { matchedRoom -> room = matchedRoom; playingQuickMatch = false },
                         onJoin = { code, reservation ->
-                            room = NearbyRoom.join(this@MainActivity, code, myName, online = true, reservation = reservation)
+                            room = NearbyRoom.join(this@MainActivity, code, myName, online = true, reservation = reservation, avatar = myAvatar)
                             playingQuickMatch = false
                         },
                         onComputer = { count ->
@@ -361,7 +362,7 @@ class MainActivity : ComponentActivity() {
         joining = false
         creatingOnlineRoom = false
         joinError = null
-        room = NearbyRoom.join(this, invite.code, myName, online = true, invite = invite.id)
+        room = NearbyRoom.join(this, invite.code, myName, online = true, invite = invite.id, avatar = myAvatar)
     }
 
     /** Opens the join screen for "krida://join?room=ABCD" or "https://krida.ardeman.com/r/ABC234". */
@@ -678,6 +679,7 @@ class MainActivity : ComponentActivity() {
                                                 ludo -> NearbyRoom.Game.LUDO
                                                 else -> NearbyRoom.Game.CONGKLAK
                                             },
+                                            avatar = myAvatar,
                                         )
                                     }
                                     multi -> {
@@ -716,11 +718,11 @@ class MainActivity : ComponentActivity() {
     private fun joinRoom() {
         joinError = null
         if (joinOnline) {
-            if (RoomCode.isValidOnline(roomCode)) room = NearbyRoom.join(this, roomCode, myName, online = true)
+            if (RoomCode.isValidOnline(roomCode)) room = NearbyRoom.join(this, roomCode, myName, online = true, avatar = myAvatar)
             return
         }
         if (!RoomCode.isValid(roomCode)) return
-        withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName) }
+        withBlePermissions { room = NearbyRoom.join(this@MainActivity, roomCode, myName, avatar = myAvatar) }
     }
 
     /** Google's code scanner (no camera permission; Play services shows the camera). */
@@ -756,7 +758,7 @@ class MainActivity : ComponentActivity() {
         if ((r.isHost && !r.failed) || r.stage == NearbyRoom.Stage.LOBBY) {
             RoomLobby(r, onLeave = ::leave)
         } else {
-            ConnectingScreen(r, onCancel = ::leave, onRetry = { room = r.retry(this@MainActivity, myName) })
+            ConnectingScreen(r, onCancel = ::leave, onRetry = { room = r.retry(this@MainActivity, myName, myAvatar) })
         }
     }
 

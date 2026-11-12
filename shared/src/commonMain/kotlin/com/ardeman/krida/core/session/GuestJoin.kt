@@ -19,8 +19,14 @@ class GuestJoin(
     val platform: Platform,
     /** From a [SavedRoom]: asks the host for the seat this device had (rejoin). */
     rejoinToken: String?,
+    /** Drawn avatar mix or Google picture URL; null when signed out. */
+    val avatar: String?,
 ) : TransportListener {
-    constructor(transport: Transport, name: String, platform: Platform) : this(transport, name, platform, null)
+    constructor(transport: Transport, name: String, platform: Platform) :
+        this(transport, name, platform, null, null)
+
+    constructor(transport: Transport, name: String, platform: Platform, rejoinToken: String?) :
+        this(transport, name, platform, rejoinToken, null)
 
     private val received = mutableListOf<Pair<String, ByteArray>>()
     private var handedOver = false
@@ -66,7 +72,7 @@ class GuestJoin(
     }
 
     override fun onPeerConnected(peer: String) {
-        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, rejoinToken, invite)))
+        transport.send(null, Codec.encode(Message.Hello(Krida.PROTOCOL_VERSION, name, platform, rejoinToken, invite, avatar)))
         onConnected?.invoke()
     }
 

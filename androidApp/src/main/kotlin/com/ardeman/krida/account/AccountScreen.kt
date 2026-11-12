@@ -95,21 +95,32 @@ private fun GoogleButton(onClick: () -> Unit, enabled: Boolean) {
 
 /**
  * Sign in, or see the signed-in account with sign out and delete: one status card. Signed in,
- * the Friends card sits beside it (docs/mockups/friends.md).
+ * the Friends card sits beside it; Edit opens the name and avatar picker (docs/mockups/profile.md).
  */
 @Composable
 fun AccountScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val user = Account.user
     var confirmingDelete by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(false) }
     // The question only makes sense while signed in and idle.
     val confirming = confirmingDelete && user != null && !Account.busy
     val back = stringResource(R.string.congklak_back)
-    val leave = { if (confirming) confirmingDelete = false else onBack() }
-    // The friends card shows while signed in, except over the delete question.
+    val leave = {
+        when {
+            confirming -> confirmingDelete = false
+            editing -> editing = false
+            else -> onBack()
+        }
+    }
+    // Friends (or the avatar picker while editing) show while signed in, except over delete.
     val withFriends = user != null && !confirming
-    LaunchedEffect(user?.id) { Account.loadFriends() }
+    LaunchedEffect(user?.id) { Account.loadFriends(); editing = false }
     NearbyFrame(stringResource(R.string.account_title), subtitle(true), true, back, leave) {
+        if (editing && user != null) {
+            AccountEdit(user, onDone = { editing = false })
+            return@NearbyFrame
+        }
         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
             Column(
                 (if (withFriends) Modifier.fillMaxSize().card().verticalScroll(rememberScrollState()) else Modifier.width(480.dp).card())
@@ -118,21 +129,31 @@ fun AccountScreen(onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(if (withFriends) 8.dp else 12.dp, Alignment.CenterVertically),
             ) {
                 val avatar = if (withFriends) 48.dp else 64.dp
-                Box(
-                    Modifier.size(avatar).background(
+                Box(Modifier.fillMaxWidth()) {
+                    Box(
+                        Modifier.size(avatar).align(Alignment.Center).background(
+                            when {
+                                Account.busy -> Color.Transparent
+                                confirming -> Theme.error.copy(alpha = 0.14f)
+                                else -> Theme.chip
+                            },
+                            CircleShape,
+                        ),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         when {
-                            Account.busy -> Color.Transparent
-                            confirming -> Theme.error.copy(alpha = 0.14f)
-                            else -> Theme.chip
-                        },
-                        CircleShape,
-                    ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    when {
-                        Account.busy -> LoadingIndicator()
-                        confirming -> Icon(painterResource(R.drawable.ic_error), contentDescription = null, tint = Theme.error, modifier = Modifier.size(34.dp))
-                        else -> Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(avatar * 0.53f))
+                            Account.busy -> LoadingIndicator()
+                            confirming -> Icon(painterResource(R.drawable.ic_error), contentDescription = null, tint = Theme.error, modifier = Modifier.size(34.dp))
+                            user != null -> AvatarBadge(user.avatar, user.id, user.picture, avatar)
+                            else -> Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(avatar * 0.53f))
+                        }
+                    }
+                    if (withFriends && !Account.busy) {
+                        SecondaryButton(
+                            stringResource(R.string.account_edit),
+                            onClick = { editing = true },
+                            modifier = Modifier.align(Alignment.TopEnd),
+                        )
                     }
                 }
                 val title = when {
@@ -298,7 +319,7 @@ private fun FriendRow(friend: Account.Friend, asking: Boolean, onAsk: () -> Unit
             RowAction(stringResource(R.string.nearby_cancel), Theme.muted, onCancel)
             RowAction(stringResource(R.string.account_friend_remove), Theme.error, onRemove)
         } else {
-            Icon(painterResource(R.drawable.ic_person), contentDescription = null, tint = Theme.muted, modifier = Modifier.size(20.dp))
+            AvatarBadge(friend.avatar, friend.id, size = 26.dp)
             Text(name, style = Theme.font(16, FontWeight.Bold, Theme.ink), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
             val label = stringResource(R.string.account_friend_remove_named, name)
             Box(

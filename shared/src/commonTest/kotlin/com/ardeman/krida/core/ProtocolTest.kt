@@ -57,6 +57,16 @@ class ProtocolTest {
     }
 
     @Test
+    fun helloAndPlayersCarryOptionalAvatar() {
+        val hello = Message.Hello(1, "Ayu", Platform.IOS, avatar = "2-12-3")
+        assertEquals(hello, Codec.decode(Codec.encode(hello)))
+        assertTrue(Codec.encode(hello).decodeToString().contains("\"avatar\":\"2-12-3\""))
+        val players = listOf(PlayerInfo(0, "Ayu", Platform.IOS, avatar = "2-12-3"))
+        val lobby = Message.Lobby(players, you = 0)
+        assertEquals(lobby, Codec.decode(Codec.encode(lobby)))
+    }
+
+    @Test
     fun decoderIgnoresUnknownFieldsAndGarbage() {
         val future = """{"type":"ping","t":5,"addedInV2":true}""".encodeToByteArray()
         assertEquals(Message.Ping(5), Codec.decode(future))

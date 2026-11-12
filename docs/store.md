@@ -162,19 +162,24 @@ when the room ends or after a short idle period — not a lasting player profile
 With an **optional account** (step 10a) add, as collected, not shared, **Optional**, for App
 functionality and Account management: Personal info → Name (the display name from Apple or
 Google) and Personal info → User IDs (the provider's account id). Stored in Cloudflare D1
-until the player deletes the account. The friends list (step 10b: a friend code and which
-accounts are friends) is kept with the account and deleted with it; it uses the same name and
-user id, so it adds no new data type (agent's reading of the forms, not checked with a store).
-Invite notifications (step 10c-2, iPhone only): the APNs device token is stored with the
-session until sign-out or account deletion. On the App Store label add Identifiers → Device ID
-under **Data Linked to You**, App Functionality (agent's reading; Android stores no token, so
-the Play form does not change).
+until the player deletes the account. Name and avatar (step 10d): the chosen name and avatar
+(a drawn shape+colour mix, or for Google accounts the profile picture URL from Google) are
+kept with the account; other players' phones may load that Google picture from Google's
+servers when the player picked it. If the Console asks about photos for that URL, mark Photos
+as collected optional for App functionality (URL only; we do not host the file). The friends
+list (step 10b: a friend code and which accounts are friends) is kept with the account and
+deleted with it; it uses the same name, avatar and user id, so it adds no new data type
+(agent's reading of the forms, not checked with a store). Invite notifications (step 10c-2,
+iPhone only): the APNs device token is stored with the session until sign-out or account
+deletion. On the App Store label add Identifiers → Device ID under **Data Linked to You**,
+App Functionality (agent's reading; Android stores no token, so the Play form does not change).
 
-Not collected by us: personal info other than the optional account's name and id (no email, phone), financial info (Play Billing handles
-payment; the app keeps only an on-device "ads removed" flag), messages/chat, contacts, photos,
-files, health, web history, precise location, device IDs for the relay. Game data sent over
-Bluetooth or Wi-Fi for nearby play goes device to device and never leaves the players'
-devices, so nearby play is not "collected".
+Not collected by us: personal info other than the optional account's name, id and avatar
+choice (no email, phone), financial info (Play Billing handles payment; the app keeps only an
+on-device "ads removed" flag), messages/chat, contacts, uploaded photos or files, health, web
+history, precise location, device IDs for the relay. Game data sent over Bluetooth or Wi-Fi
+for nearby play goes device to device and never leaves the players' devices, so nearby play
+is not "collected".
 
 Before submitting, check the AdMob rows against Google's current
 [Google Mobile Ads SDK data disclosure](https://developers.google.com/admob/android/privacy/play-data-disclosure);

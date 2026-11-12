@@ -10,6 +10,7 @@ import android.util.Base64
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.ardeman.krida.core.account.Avatar
 import com.ardeman.krida.core.protocol.Krida
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -31,16 +32,23 @@ import java.security.SecureRandom
 
 /**
  * The signed-in Krida account ("Accounts" in docs/protocol.md): Google sign-in through the
- * browser and the relay, the session token, sign out, account deletion and the friends list. Same endpoints
- * and stored fields as iOS (`Account/Account.swift`).
+ * browser and the relay, the session token, name and avatar, sign out, account deletion and
+ * the friends list. Same endpoints and stored fields as iOS (`Account/Account.swift`).
  */
 object Account {
-    data class User(val id: String, val name: String, val provider: String)
+    /**
+     * [avatar] is the resolved wire value (mix or Google picture URL), or null when unset.
+     * [picture] is the Google profile URL for the picker (Google accounts only).
+     */
+    data class User(val id: String, val name: String, val provider: String, val avatar: String? = null, val picture: String? = null)
 
-    data class Friend(val id: String, val name: String)
+    data class Friend(val id: String, val name: String, val avatar: String? = null)
 
     /** Why the last add was refused; [Failed] also covers an unreachable relay. */
     enum class FriendError { NotFound, Own, Already, Full, TooMany, Failed }
+
+    /** Why a profile save was refused. */
+    enum class ProfileError { BadName, BadAvatar, Failed }
 
     private const val PREFS = "account"
     private const val KEY_TOKEN = "account.token"
@@ -84,6 +92,12 @@ object Account {
         private set
 
     var friendError by mutableStateOf<FriendError?>(null)
+
+    var profileError by mutableStateOf<ProfileError?>(null)
+
+    /** A profile save is running. */
+    var savingProfile by mutableStateOf(false)
+        private set
 
     fun init(context: Context) {
         app = context.applicationContext
@@ -151,6 +165,18 @@ object Account {
     /** Upper-case letters and digits only, at most the code's length. */
     fun cleanFriendCode(text: String) = text.uppercase().filter(Char::isLetterOrDigit).take(Krida.FRIEND_CODE_LENGTH)
 
+    /** Name for a room seat: the account name when signed in, otherwise [fallback]. */
+    fun seatName(fallback: String): String = user?.name?.takeIf { it.isNotEmpty() } ?: fallback
+
+    /**
+     * Avatar for a room seat: the chosen mix or Google picture URL, or a default mix from
+     * the account id when still unset. Null when signed out.
+     */
+    fun seatAvatar(): String? {
+        val u = user ?: return null
+        return u.avatar ?: Avatar.defaultMix(u.id).encode()
+    }
+
     /** Fetches the friend code and the list; the screen calls it when it opens. */
     fun loadFriends() {
         val saved = token ?: return
@@ -205,7 +231,39 @@ object Account {
         }
     }
 
-    private fun friend(o: JsonObject) = Friend(o.getValue("id").jsonPrimitive.content, o.getValue("name").jsonPrimitive.content)
+    private fun friend(o: JsonObject) = Friend(
+        o.getValue("id").jsonPrimitive.content,
+        o.getValue("name").jsonPrimitive.content,
+        o["avatar"]?.jsonPrimitive?.content,
+    )
+
+    /**
+     * Saves [name] and [avatar] together (`PATCH /v1/me`). [avatar] is a mix string or
+     * [com.ardeman.krida.core.account.Avatar.GOOGLE]. [done] is true when the relay accepted it.
+     */
+    fun saveProfile(name: String, avatar: String, done: (Boolean) -> Unit = {}) {
+        val saved = token ?: return done(false)
+        if (savingProfile) return
+        profileError = null
+        savingProfile = true
+        val payload = buildJsonObject { put("name", name); put("avatar", avatar) }.toString()
+        send(Request.Builder().url("$API/v1/me").header("Authorization", "Bearer $saved").patch(payload.toRequestBody(JSON_TYPE)).build()) { status, body ->
+            if (token != saved) return@send
+            savingProfile = false
+            val updated = try { body?.get("user")?.jsonObject } catch (e: Exception) { null }
+            if (status == 200 && updated != null) {
+                store(saved, updated)
+                done(true)
+            } else {
+                profileError = when (body?.get("error")?.jsonPrimitive?.content) {
+                    "bad_name" -> ProfileError.BadName
+                    "bad_avatar" -> ProfileError.BadAvatar
+                    else -> ProfileError.Failed
+                }
+                done(false)
+            }
+        }
+    }
 
     fun signOut() {
         val saved = token ?: return
@@ -241,12 +299,20 @@ object Account {
         friends = emptyList()
         addingFriend = false
         friendError = null
+        profileError = null
+        savingProfile = false
         prefs().edit().remove(KEY_TOKEN).remove(KEY_USER).apply()
     }
 
     private fun decodeUser(text: String?): User? = try {
         val o = Json.parseToJsonElement(text ?: "").jsonObject
-        User(o.getValue("id").jsonPrimitive.content, o.getValue("name").jsonPrimitive.content, o.getValue("provider").jsonPrimitive.content)
+        User(
+            o.getValue("id").jsonPrimitive.content,
+            o.getValue("name").jsonPrimitive.content,
+            o.getValue("provider").jsonPrimitive.content,
+            o["avatar"]?.jsonPrimitive?.content,
+            o["picture"]?.jsonPrimitive?.content,
+        )
     } catch (e: Exception) {
         null
     }

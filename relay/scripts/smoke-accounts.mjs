@@ -43,7 +43,10 @@ const server = createServer((req, res) => {
   } else if (req.url === "/keys") {
     res.end(JSON.stringify({ keys: [{ ...publicKey.export({ format: "jwk" }), kid: "k1", alg: "RS256", use: "sig" }] }));
   } else if (req.url === "/token") {
-    const idToken = `${b64({ alg: "none" })}.${b64({ iss: "https://accounts.google.com", aud: GOOGLE_CLIENT, sub: googleSub, given_name: "Budi" })}.x`;
+    const idToken = `${b64({ alg: "none" })}.${b64({
+      iss: "https://accounts.google.com", aud: GOOGLE_CLIENT, sub: googleSub, given_name: "Budi",
+      picture: "https://lh3.googleusercontent.com/a/budi",
+    })}.x`;
     res.end(JSON.stringify({ id_token: idToken }));
   } else {
     res.statusCode = 404;
@@ -119,6 +122,16 @@ async function run() {
   assert.notEqual(appleAgain.data.token, apple.data.token);
   assert.equal((await call("GET", "/v1/me", { token: apple.data.token })).data.user.id, apple.data.user.id);
 
+  // Name and avatar (10d): Apple can set a mix, not Google's picture.
+  assert.equal((await call("PATCH", "/v1/me", { token: appleAgain.data.token, json: { name: "" } })).data.error, "bad_name");
+  assert.equal((await call("PATCH", "/v1/me", { token: appleAgain.data.token, json: { avatar: "g" } })).data.error, "bad_avatar");
+  assert.equal((await call("PATCH", "/v1/me", { token: appleAgain.data.token, json: { avatar: "2-12-12" } })).data.error, "bad_avatar");
+  const ayuProfile = await call("PATCH", "/v1/me", { token: appleAgain.data.token, json: { name: "Ayu W", avatar: "2-12-3" } });
+  assert.equal(ayuProfile.status, 200);
+  assert.equal(ayuProfile.data.user.name, "Ayu W");
+  assert.equal(ayuProfile.data.user.avatar, "2-12-3");
+  assert.equal((await call("GET", "/v1/me", { token: appleAgain.data.token })).data.user.avatar, "2-12-3");
+
   // Sign out ends that session only.
   assert.equal((await call("POST", "/v1/auth/signout", { token: apple.data.token })).status, 204);
   assert.equal((await call("GET", "/v1/me", { token: apple.data.token })).status, 401);
@@ -137,7 +150,12 @@ async function run() {
   assert.equal(google.status, 200);
   assert.equal(google.data.user.name, "Budi");
   assert.equal(google.data.user.provider, "google");
+  assert.equal(google.data.user.picture, "https://lh3.googleusercontent.com/a/budi");
+  assert.equal(google.data.user.avatar, undefined);
   assert.notEqual(google.data.user.id, apple.data.user.id);
+  const budiPic = await call("PATCH", "/v1/me", { token: google.data.token, json: { avatar: "g" } });
+  assert.equal(budiPic.status, 200);
+  assert.equal(budiPic.data.user.avatar, "https://lh3.googleusercontent.com/a/budi");
   assert.equal((await call("POST", "/v1/auth/exchange", { json: { code, verifier } })).status, 401, "a code works once");
 
   // Delete: the account and every session go; signing in again makes a new account.
@@ -168,7 +186,9 @@ async function run() {
   assert.equal(added.status, 200);
   assert.deepEqual(added.data.friend, { id: reborn.data.user.id, name: "Budi" });
   assert.equal((await call("POST", "/v1/friends", { token: budi, json: { code: mine.data.code } })).data.error, "already_friends");
-  assert.deepEqual((await call("GET", "/v1/friends", { token: budi })).data.friends, [{ id: apple.data.user.id, name: "Ayu" }]);
+  assert.deepEqual((await call("GET", "/v1/friends", { token: budi })).data.friends, [
+    { id: apple.data.user.id, name: "Ayu W", avatar: "2-12-3" },
+  ]);
   assert.equal((await call("DELETE", `/v1/friends/${apple.data.user.id}`, { token: budi })).status, 204);
   assert.deepEqual((await call("GET", "/v1/friends", { token: ayu })).data.friends, []);
   // Deleting an account takes it out of its friends' lists and frees nothing for reuse.
@@ -272,7 +292,7 @@ async function invites(ayu, budi, ayuId, budiId) {
   assert.equal(sent.status, 200);
   assert.deepEqual(pushes.map((p) => p.token).sort(), [iphone, gone]);
   const push = pushes.find((p) => p.token === iphone);
-  assert.deepEqual(push.body, { aps: { alert: { body: "Ayu mengajakmu main Ludo" }, sound: "default" }, code: "ABC234", invite: sent.data.id });
+  assert.deepEqual(push.body, { aps: { alert: { body: "Ayu W mengajakmu main Ludo" }, sound: "default" }, code: "ABC234", invite: sent.data.id });
   assert.equal(push.headers["apns-topic"], BUNDLE);
   assert.equal(push.headers["apns-push-type"], "alert");
   assert.equal(push.headers["apns-collapse-id"], sent.data.id);
@@ -283,7 +303,11 @@ async function invites(ayu, budi, ayuId, budiId) {
   const got = await phone.next();
   assert.ok(got.ttlMs > 100_000 && got.ttlMs <= 120_000);
   delete got.ttlMs;
-  assert.deepEqual(got, { type: "invite", id: sent.data.id, from: { id: ayuId, name: "Ayu" }, code: "ABC234", game: "ludo", seats: 3, players: 1 });
+  assert.deepEqual(got, {
+    type: "invite", id: sent.data.id,
+    from: { id: ayuId, name: "Ayu W", avatar: "2-12-3" },
+    code: "ABC234", game: "ludo", seats: 3, players: 1,
+  });
   assert.equal((await invite(ayu, { friendId: budiId, code: "ABC234", key })).data.error, "already_invited");
   // A second device gets the waiting invite on connect; answering on one ends it on the other.
   const tablet = await inboxSocket(budi);
@@ -297,7 +321,7 @@ async function invites(ayu, budi, ayuId, budiId) {
   pushes.length = 0;
   const second = await invite(ayu, { friendId: budiId, code: "ABC235", key });
   assert.deepEqual(pushes.map((p) => p.token), [iphone], "a token APNs calls unregistered is dropped");
-  assert.equal(pushes[0].body.aps.alert.body, "Ayu mengajakmu main Congklak");
+  assert.equal(pushes[0].body.aps.alert.body, "Ayu W mengajakmu main Congklak");
   assert.equal((await phone.next()).id, second.data.id);
   const guest = await roomSocket("ABC235?role=guest");
   assert.deepEqual(await phone.next(), { type: "invite_end", id: second.data.id });

@@ -122,8 +122,10 @@ in the same commit as the code.
 - **No Firebase** (2026-11-11): Android gets no FCM push. Invites on Android show while the
   app is open (over the relay) or come as a share link; iOS may use APNs.
 - **Name and avatar** (2026-11-12): a signed-in player can set and change their name, and
-  it replaces the device name on their seat in rooms. Avatars are presets drawn in code or
-  the Google profile picture; no photo uploads. Plan: step 10d in [online.md](online.md).
+  it replaces the device name on their seat in rooms. Avatars are a shape + colour mix
+  drawn in code (any of 12 shapes with independent background and symbol colours) or the
+  Google profile picture; no photo uploads. Plan: step 10d in [online.md](online.md).
+  Approved [mockup](mockups/profile.md).
 - **Notification permission** (iPhone, 2026-11-12): asked right after sign-in, never at
   launch. The app shows its own card first (what the notifications are for, Not now /
   Allow); the iOS question comes only after Allow, so a Not now does not use it up.

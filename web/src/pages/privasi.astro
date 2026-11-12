@@ -31,8 +31,9 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2>Singkatnya</h2>
       <ul>
         <li>Krida bisa dimainkan tanpa akun, dan tidak meminta email, nomor telepon, atau kontak.</li>
-        <li>Akun itu pilihan (masuk dengan Apple atau Google). Kami hanya menyimpan ID akun dari Apple atau Google
-          dan nama panggilanmu, dan kamu bisa menghapusnya kapan saja dari aplikasi.</li>
+        <li>Akun itu pilihan (masuk dengan Apple atau Google). Kami menyimpan ID akun dari Apple atau Google, nama
+          panggilan dan pilihan avatarmu (dan untuk Google, URL foto jika kamu memakainya), dan kamu bisa menghapus
+          akun kapan saja dari aplikasi.</li>
         <li>Main online lewat relay yang hanya meneruskan lalu lintas permainan selama room terbuka; relay tidak
           menyimpan riwayat permainan.</li>
         <li>Iklan di Krida disediakan oleh Google AdMob, yang mengumpulkan sebagian data perangkat seperti dijelaskan di bawah.</li>
@@ -122,14 +123,16 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
       <h2 id="akun">Akun (pilihan)</h2>
       <p>
         Kamu bisa masuk dengan Apple atau Google dari tombol akun di menu. Saat masuk, kami menyimpan di database
-        relay (Cloudflare D1): ID akun yang diberikan Apple atau Google untuk Krida, nama panggilanmu, dan waktu akun
-        dibuat. Kami tidak menerima atau menyimpan email, kata sandi, foto, atau kontakmu. Ponselmu menyimpan token
-        sesi supaya kamu tetap masuk.
+        relay (Cloudflare D1): ID akun yang diberikan Apple atau Google untuk Krida, nama panggilanmu, avatar yang
+        kamu pilih (bentuk dan warna yang digambar di aplikasi, atau foto profil Google-mu), dan waktu akun
+        dibuat. Untuk akun Google kami juga menyimpan URL foto yang diberikan Google, supaya ponsel pemain lain bisa
+        memuat foto itu dari Google saat kamu memilihnya; kami tidak menyimpan filenya. Kami tidak menerima atau
+        menyimpan email, kata sandi, atau kontakmu. Ponselmu menyimpan token sesi supaya kamu tetap masuk.
       </p>
       <p>
         Akun yang sudah masuk mendapat kode teman. Saat kamu atau pemain lain menambahkan satu sama lain lewat kode
-        atau tautan teman, kami menyimpan bahwa kedua akun berteman, dan masing-masing melihat nama panggilan yang
-        lain di daftar teman. Kalian bisa saling menghapus kapan saja, dan itu berlaku untuk keduanya.
+        atau tautan teman, kami menyimpan bahwa kedua akun berteman, dan masing-masing melihat nama panggilan dan
+        avatar yang lain di daftar teman. Kalian bisa saling menghapus kapan saja, dan itu berlaku untuk keduanya.
       </p>
       <p>
         Teman yang membuat room online bisa mengundangmu. Undangan (nama teman, room, dan permainannya) disimpan
@@ -138,9 +141,10 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
         dihapus saat kamu keluar atau menghapus akun; notifikasi bisa dimatikan di Pengaturan iOS.
       </p>
       <p>
-        Untuk menghapus akun, buka tombol akun di menu, lalu pilih "Hapus akun". Akun, nama, kode teman, daftar teman, token notifikasi, dan semua sesi langsung
-        dihapus dari database kami; untuk akun Apple, akses Krida di Apple ikut dicabut. Kalau kamu tidak bisa
-        membuka aplikasinya, kirim email ke alamat di bagian Kontak dan kami hapus akunmu.
+        Untuk menghapus akun, buka tombol akun di menu, lalu pilih "Hapus akun". Akun, nama, avatar, URL foto Google,
+        kode teman, daftar teman, token notifikasi, dan semua sesi langsung dihapus dari database kami; untuk akun
+        Apple, akses Krida di Apple ikut dicabut. Kalau kamu tidak bisa membuka aplikasinya, kirim email ke alamat
+        di bagian Kontak dan kami hapus akunmu.
       </p>
 
       <h2>Menghapus data</h2>

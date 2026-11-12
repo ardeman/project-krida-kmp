@@ -14,7 +14,7 @@ const MAX_MESSAGE = 256;
 
 export interface Invite {
   id: string;
-  from: { id: string; name: string };
+  from: { id: string; name: string; avatar?: string };
   code: string;
   game: string;
   seats: number;

@@ -54,6 +54,7 @@ class HostSession<S, M>(
         var disconnectedAt: Long = 0,
         var color: Int = -1,        // -1 = the game has no colours
         var invite: String? = null, // the friend invite this guest answered, if any
+        var avatar: String? = null, // mix or Google picture URL; null = neutral
     )
 
     private val seats = mutableListOf<Seat>()
@@ -94,16 +95,19 @@ class HostSession<S, M>(
         get() = seats.mapIndexed { i, s ->
             PlayerInfo(seat = i, name = s.name, platform = s.platform, connected = s.connected || s.bot != null,
                 local = s.peer == null && s.bot == null, bot = s.bot != null,
-                color = s.color.takeIf { it >= 0 })
+                color = s.color.takeIf { it >= 0 }, avatar = s.avatar)
         }
 
     /** Ids of the friend invites whose guests hold a seat now. Read it in [onPlayersChanged]. */
     val joinedInvites: List<String> get() = seats.mapNotNull { it.invite }
 
     /** Adds a player sitting at this device. Returns the seat, or null if full/started. */
-    fun addLocalPlayer(name: String, platform: Platform): Int? {
+    fun addLocalPlayer(name: String, platform: Platform): Int? = addLocalPlayer(name, platform, null)
+
+    /** Like [addLocalPlayer] with an optional drawn avatar or Google picture URL. */
+    fun addLocalPlayer(name: String, platform: Platform, avatar: String?): Int? {
         if (started || seats.size >= capacity()) return null
-        seat(Seat(name, platform, peer = null, token = newToken()))
+        seat(Seat(name, platform, peer = null, token = newToken(), avatar = avatar?.take(AVATAR_MAX)))
         lobbyChanged()
         return seats.lastIndex
     }
@@ -280,6 +284,9 @@ class HostSession<S, M>(
             seat.peer = peer
             seat.connected = true
             seat.bot = null   // takes the seat back from a stand-in bot
+            // Refresh the name and avatar the player shows now (profile may have changed).
+            seat.name = hello.name.take(24)
+            seat.avatar = hello.avatar?.take(AVATAR_MAX)
             send(peer, Message.Welcome(rejoin, roomCode, rules.id, seat.token))
             if (started) broadcastState() else lobbyChanged()
             return
@@ -288,7 +295,10 @@ class HostSession<S, M>(
         if (started) return reject(peer, RejectReason.STARTED)
         if (seats.size >= capacity()) return reject(peer, RejectReason.FULL)
 
-        val seat = seat(Seat(hello.name.take(24), hello.platform, peer, newToken(), invite = hello.invite?.take(64)))
+        val seat = seat(Seat(
+            hello.name.take(24), hello.platform, peer, newToken(),
+            invite = hello.invite?.take(64), avatar = hello.avatar?.take(AVATAR_MAX),
+        ))
         send(peer, Message.Welcome(seats.lastIndex, roomCode, rules.id, seat.token))
         lobbyChanged()
     }
@@ -410,6 +420,9 @@ class HostSession<S, M>(
         buildString { repeat(16) { append("0123456789abcdef"[random.nextInt(16)]) } }
 
     companion object {
+        /** Caps a Google picture URL or mix string on the wire. */
+        private const val AVATAR_MAX = 256
+
         fun defaultClock(): () -> Long {
             val start = TimeSource.Monotonic.markNow()
             return { start.elapsedNow().inWholeMilliseconds }

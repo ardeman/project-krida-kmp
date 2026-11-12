@@ -61,11 +61,7 @@ private struct InviteCard: View {
             // The scrim takes the taps, so the menu underneath can't be used by accident.
             Color.black.opacity(0.45).ignoresSafeArea().contentShape(Rectangle()).onTapGesture {}
             VStack(spacing: 12 * s) {
-                Image(systemName: "person.2.fill")
-                    .font(.system(size: 22 * s, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                    .frame(width: 48 * s, height: 48 * s)
-                    .background(Theme.chip, in: Circle())
+                AvatarBadge(avatar: invite.fromAvatar, size: 48)
                     .accessibilityHidden(true)
                 Text("\(name) invites you")
                     .font(Theme.font(22 * s, .black))

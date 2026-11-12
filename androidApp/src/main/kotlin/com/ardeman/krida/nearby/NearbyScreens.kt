@@ -1,5 +1,6 @@
 package com.ardeman.krida.nearby
 
+import com.ardeman.krida.account.AvatarBadge
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
@@ -455,11 +456,15 @@ private fun FilledSeat(room: NearbyRoom, p: PlayerInfo, ular: Boolean, names: Li
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(Modifier.size(40.dp).clip(CircleShape).background(circle), contentAlignment = Alignment.Center) {
-            if (p.bot) {
-                Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = inkOn(circle), modifier = Modifier.size(22.dp))
-            } else {
-                Text("${p.seat + 1}", style = Theme.font(18, FontWeight.Black, inkOn(circle)))
+        if (!p.bot && p.avatar != null) {
+            AvatarBadge(p.avatar, size = 40.dp)
+        } else {
+            Box(Modifier.size(40.dp).clip(CircleShape).background(circle), contentAlignment = Alignment.Center) {
+                if (p.bot) {
+                    Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = inkOn(circle), modifier = Modifier.size(22.dp))
+                } else {
+                    Text("${p.seat + 1}", style = Theme.font(18, FontWeight.Black, inkOn(circle)))
+                }
             }
         }
         Column(Modifier.weight(1f)) {
