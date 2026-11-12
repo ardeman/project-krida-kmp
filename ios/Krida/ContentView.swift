@@ -1050,34 +1050,84 @@ private struct GameCard: View {
     /// Called once the first board snapshot is on screen.
     let onReady: () -> Void
     @Environment(\.uiScale) private var s
+    /// The card on screen, counted without wrapping: it only grows or shrinks by one per
+    /// slide, so the carousel loops past the last game smoothly, same as Android's pager.
+    @State private var pos = 0
+    /// How far the finger has dragged the cards.
+    @State private var drag: CGFloat = 0
+    /// True while a drag is live; it also resets when the system cancels the drag, which
+    /// skips `onEnded`, so the cards can be put back.
+    @GestureState private var dragging = false
+
+    private static let all = MenuGame.allCases
+    private static func game(at p: Int) -> MenuGame { all[((p % all.count) + all.count) % all.count] }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // Page-style TabView so a swipe follows the finger, same feel as Android's pager.
-            TabView(selection: $game) {
-                ForEach(MenuGame.allCases, id: \.self) { g in
-                    GameCardFace(game: g, onReady: onReady)
-                        .tag(g)
+            GeometryReader { geo in
+                let stride = geo.size.width + 14 * s
+                // The current card and its neighbours. Each keeps its identity (its position)
+                // while it slides, so a slide is a plain offset animation. `game` is passed on
+                // only when the slide has finished: changing it rebuilds the play card beside
+                // it, which must not happen in the middle of the animation.
+                ZStack {
+                    ForEach(pos - 1...pos + 1, id: \.self) { p in
+                        let t = min(abs(CGFloat(p - pos) + drag / stride), 1)
+                        GameCardFace(game: Self.game(at: p), onReady: onReady)
+                            .frame(width: geo.size.width, height: geo.size.height)
+                            // Neighbours ease smaller and fade a little, as on Android.
+                            .scaleEffect(1 - 0.06 * t)
+                            .opacity(1 - 0.28 * t)
+                            .offset(x: CGFloat(p - pos) * stride + drag)
+                    }
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 10)
+                        .updating($dragging) { _, live, _ in live = true }
+                        .onChanged { drag = $0.translation.width }
+                        .onEnded { value in
+                            let flick = value.predictedEndTranslation.width
+                            let d = flick < -stride / 2 ? 1 : flick > stride / 2 ? -1 : 0
+                            slide(d)
+                        }
+                )
+                .onChange(of: dragging) { _, live in if !live && drag != 0 { slide(0) } }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.easeInOut(duration: 0.42), value: game)
             // The arrows stay put above the sliding cards.
             HStack(spacing: 6 * s) {
-                arrow("chevron.left", label: "Previous game") { step(-1) }
-                arrow("chevron.right", label: "Next game") { step(1) }
+                arrow("chevron.left", label: "Previous game") { slide(-1) }
+                arrow("chevron.right", label: "Next game") { slide(1) }
             }
             .padding(.top, 12 * s)
             .padding(.trailing, 10 * s)
         }
         .clipShape(RoundedRectangle(cornerRadius: 22 * s))
         .frame(maxHeight: .infinity)
+        .onAppear { pos = Self.all.firstIndex(of: game)! }
+        // A change from outside: slide the short way to it.
+        .onChange(of: game) { _, g in
+            let here = Self.game(at: pos)
+            guard g != here else { return }
+            let n = Self.all.count
+            var d = (Self.all.firstIndex(of: g)! - Self.all.firstIndex(of: here)! + n) % n
+            if d > n / 2 { d -= n }
+            withAnimation(.easeInOut(duration: 0.42)) { pos += d }
+        }
     }
 
-    private func step(_ d: Int) {
-        let all = MenuGame.allCases
-        let i = all.firstIndex(of: game)!
-        withAnimation(.easeInOut(duration: 0.42)) { game = all[(i + d + all.count) % all.count] }
+    /// Slides `d` cards (or back to rest for 0), then hands the new game to the menu.
+    private func slide(_ d: Int) {
+        let target = pos + d
+        withAnimation(.easeInOut(duration: 0.42)) {
+            pos = target
+            drag = 0
+        } completion: {
+            // A later tap owns the update once it has started its own slide.
+            guard pos == target else { return }
+            let g = Self.game(at: target)
+            if g != game { game = g }
+        }
     }
 
     private func arrow(_ icon: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
