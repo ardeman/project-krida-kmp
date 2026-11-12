@@ -12,4 +12,6 @@ object StandardRules {
     val ludo: LudoRules get() = LudoRules(LudoOptions())
     /** Perang kapal has no host options in v1; this is the game object itself. */
     val perangKapal: PerangKapalGame get() = PerangKapalGame
+    /** Gaple without partners: matchmaking never pairs strangers into teams in v1. */
+    val gaple: GapleRules get() = GapleRules(GapleOptions())
 }

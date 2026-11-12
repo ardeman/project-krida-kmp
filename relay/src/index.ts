@@ -82,7 +82,7 @@ export default {
       if (url.searchParams.get("flow") === "group") {
         if (!(
           (game === "congklak" || game === "perang_kapal") && playerCount === 2 ||
-          (game === "ular_tangga" || game === "ludo") && playerCount >= 2 && playerCount <= 4
+          (game === "ular_tangga" || game === "ludo" || game === "gaple") && playerCount >= 2 && playerCount <= 4
         )) {
           return new Response("invalid game or player count\n", { status: 400 });
         }
@@ -224,7 +224,7 @@ export class Room implements DurableObject {
       const seats = Number(url.searchParams.get("seats"));
       if (game !== null && !(
         (game === "congklak" || game === "perang_kapal") && seats === 2 ||
-        (game === "ular_tangga" || game === "ludo") && seats >= 2 && seats <= 4 && Number.isInteger(seats)
+        (game === "ular_tangga" || game === "ludo" || game === "gaple") && seats >= 2 && seats <= 4 && Number.isInteger(seats)
       )) {
         return rejectSocket(CLOSE.badRequest, "bad room setup");
       }

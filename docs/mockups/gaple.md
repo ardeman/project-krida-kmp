@@ -60,6 +60,10 @@ Picked by the owner, 2026-11-12.
   dashed gold rings. Opponents' hands are face-down voxel tiles at their table sides.
 - **Bottom:** your hand, face up and upright. Tiles that fit are raised with a gold ring.
   Tap a tile to play it; if it fits both ends, both end rings pulse and you tap one.
+- **Turn timer:** a 15 s countdown ring (`Krida.PLAY_TURN_MS`, the same `CountdownRing` as
+  the ludo die) next to "Your turn". At 0 the phone plays `GapleGame.timeoutMove`: the
+  heaviest fitting tile on the first end it fits. Passing needs no timer: the host skips a
+  seat with no fitting tile by itself.
 - **Status pills** on the felt: "Your turn" and the last event ("Bot 3: Pass", "Bot 1
   plays 6|4"). A pass also gets a short "Pas!" voice line.
 - **Right:** sound, rules help, emote (nearby / online). No die.
@@ -69,7 +73,7 @@ Picked by the owner, 2026-11-12.
 A card over the table: the headline ("Domino! You went out" / "Gaple! Nobody can play"), then
 one row per seat (or per team with partners) with pips left, points this round and total.
 The round winner's row is gold. **Next round** (host only in a room; guests see "Waiting for
-the host").
+the host") with the same 15 s countdown; at 0 the host deals the next round by itself.
 
 ## Result
 
@@ -87,7 +91,7 @@ and **Play again** (host only in a room).
 ## Implementation order
 
 1. [x] Rules + SVG mockup approved.
-2. [ ] Shared: `GapleGame` / board layout (`GapleBoard`, line turns at the edges) / bot +
+2. [x] Shared: `GapleGame` / board layout (`GapleBoard`, line turns at the edges) / bot +
    tests; `StandardRules.gaple`; protocol + relay allow `gaple` / 2–4; hidden-hand views in
    `HostSession` (like perang kapal's fog of war); partners as a game option.
 3. [ ] Android screen + menu + table + nearby/online wiring.

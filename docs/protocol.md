@@ -95,6 +95,12 @@ guest's `state` payload is a **per-seat view**: opponent ships are omitted until
 the same view for the local seat before drawing. Older peers that somehow joined a perang
 kapal room would see the filtered JSON only; the `protocol` version is unchanged.
 
+Gaple uses the same per-seat views: each guest's `state` carries only its own hand in
+`hands` (the others are empty lists until `roundOver`, when every hand is shown), `handCounts`
+for everyone, and never the set-aside tiles (`aside`). Every played tile is public, so `last`
+is sent unchanged. Seats with no fitting tile are skipped by the host and listed in
+`lastPasses`; there is no pass intent. `{"next":true}` from seat 0 deals the next round.
+
 Congklak's `state` carries `tembakAfterStore` (optional, default `false`): the host's choice
 of the Indonesian tembak rule, under which a tembak only counts once the turn's sowing has
 passed the mover's own store. Guests play and animate by the flag in the state. A guest from
@@ -212,7 +218,8 @@ Players that cancel during the wait (close the WebSocket) are removed from the q
 
 Android and iOS clients add `?flow=group` to the same match URL. It uses a separate
 `GroupMatchmaker` Durable Object namespace so legacy clients keep their existing flow.
-Valid selections are `congklak/2`, `perang_kapal/2`, `ular_tangga/2`–`/4`, and `ludo/2`–`/4`,
+Valid selections are `congklak/2`, `perang_kapal/2`, `ular_tangga/2`–`/4`, `ludo/2`–`/4` and
+`gaple/2`–`/4`,
 using the shared game IDs. All group events are JSON text WebSocket frames, independent of
 game-session messages and binary room framing. Clients close the socket to cancel.
 
@@ -275,8 +282,8 @@ group never admits new queued players.
 ## Public online rooms (optional discovery extension)
 
 A new host may add `game=<GAME>&seats=<TOTAL>&public=1` to its existing authenticated
-room WebSocket query. Valid combinations are congklak/2, perang_kapal/2, ular_tangga/2–4 and
-ludo/2–4. Omitting
+room WebSocket query. Valid combinations are congklak/2, perang_kapal/2, ular_tangga/2–4,
+ludo/2–4 and gaple/2–4. Omitting
 `public=1` keeps the room private; omitting all metadata retains legacy room behavior.
 Metadata is fixed on the first authenticated host connection; another key cannot publish
 or change the room. Public/private controls discovery, not access by code or QR.

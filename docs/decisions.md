@@ -195,6 +195,20 @@ in the same commit as the code.
   selects the next ship not yet on the ocean; a gold ring marks the last shot; a peg on a
   ship stands on its deck so hits on your own ships show.
 
+## Gaple
+
+- Fifth game (2026-11-12); game id `gaple`. Rules and mockup in
+  [mockups/gaple.md](mockups/gaple.md).
+- **Turn timer in every game (owner, 2026-11-12):** no game may wait forever on a player.
+  Each turn has a countdown and at 0 the phone moves for the player. Gaple: 15 s
+  (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (heaviest fitting tile); the round-end
+  card also counts down and the host deals on. Congklak and perang kapal still need theirs
+  (see `status.md`).
+- Added by the agent, not asked for: passes are automatic (the host skips a seat with no
+  fitting tile and lists it in `lastPasses`), so there is no Pass button. A double at a turn
+  of the line lies lengthwise in the L-shaped corner instead of across. If no double is dealt
+  in round 1 (possible with 2–3 seats), the heaviest tile opens.
+
 ## Game lineup
 
 - Dam-daman and macanan are dropped from the web page and the plan (owner, 2026-11-12).

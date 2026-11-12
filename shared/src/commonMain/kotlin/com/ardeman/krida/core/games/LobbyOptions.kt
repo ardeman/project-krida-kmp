@@ -16,6 +16,8 @@ object LobbyOptions {
 
     fun ludo(options: JsonElement?): LudoOptions? = decode(LudoOptions.serializer(), options)
 
+    fun gaple(options: JsonElement?): GapleOptions? = decode(GapleOptions.serializer(), options)
+
     private fun <T> decode(serializer: KSerializer<T>, options: JsonElement?): T? =
         options?.let { runCatching { Codec.json.decodeFromJsonElement(serializer, it) }.getOrNull() }
 }
