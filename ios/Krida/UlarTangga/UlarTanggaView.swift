@@ -133,8 +133,19 @@ final class UlarTanggaGameModel: ObservableObject {
     }
 
     /// Seats on this phone whose timer ran out: the phone throws for them after a short pause
-    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player throws themselves.
-    private var autoSeats = Set<Int>()
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player throws or taps autopilot.
+    @Published private(set) var autoSeats = Set<Int>()
+
+    /// True while any seat on this phone is on autopilot (stays up during opponents' turns).
+    var onAutopilot: Bool { autoSeats.contains { table.isLocal($0) } }
+
+    /// Leave autopilot without throwing: the next local turn gets a normal countdown again.
+    func resumeManual() {
+        let local = autoSeats.filter { table.isLocal($0) }
+        guard !local.isEmpty else { return }
+        autoSeats.subtract(local)
+        if ready { syncRollTimer() }
+    }
 
     /// Starts or clears the throw countdown whenever roll availability changes (same as ludo).
     func syncRollTimer() {
@@ -467,7 +478,6 @@ private struct UlarTanggaBoardView: View {
         let margin = 12 * s
         // The notice (a dropped player, the host lost) only while it shows.
         var keys = Self.hudKeys
-        if model.ready && model.rollSeconds > 0 { keys.append("rollTimer") }
         if table.waiting != nil || table.notice != nil { keys.append("notice") }
         if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
@@ -552,13 +562,31 @@ private struct UlarTanggaBoardView: View {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
+                // Two tiles a row; each local seat keeps its timer / autopilot under the tile
+                // (same slot as congklak's pill), so the die column does not jump.
                 let rows = stride(from: 0, to: tileOrder.count, by: 2).map { Array(tileOrder[$0..<min($0 + 2, tileOrder.count)]) }
                 VStack(spacing: 8 * s) {
                     ForEach(rows, id: \.self) { pair in
-                        HStack(spacing: 8 * s) {
+                        HStack(alignment: .top, spacing: 8 * s) {
                             ForEach(pair, id: \.self) { seat in
-                                tile(seat, on: seat == highlighted, roll: offRoll(seat), out: model.state.opening && !throwing.contains(seat))
-                                    .modifier(hudBox("seat-\(seat)"))
+                                VStack(spacing: 6 * s) {
+                                    tile(seat, on: seat == highlighted, roll: offRoll(seat), out: model.state.opening && !throwing.contains(seat))
+                                        .modifier(hudBox("seat-\(seat)"))
+                                    ZStack {
+                                        Color.clear.frame(width: 36 * s, height: 36 * s)
+                                        if table.isLocal(seat) {
+                                            let seatAuto = model.autoSeats.contains(seat)
+                                            TurnTimer(
+                                                seconds: seatAuto ? 0 : (seat == model.turn && model.ready ? model.rollSeconds : 0),
+                                                total: model.rollTotal,
+                                                auto: seatAuto,
+                                                size: 36,
+                                                onResume: model.resumeManual
+                                            )
+                                        }
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
                             }
                             if pair.count == 1 { Color.clear.aspectRatio(1, contentMode: .fit) }
                         }
@@ -593,11 +621,6 @@ private struct UlarTanggaBoardView: View {
                 .modifier(hudBox("emote"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
-                if model.ready && model.rollSeconds > 0 {
-                    CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
-                        .modifier(hudBox("rollTimer"))
-                        .padding(.bottom, 6 * s)
-                }
                 // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
                 // hold it to spin it and let go to throw it.
                 Color.clear

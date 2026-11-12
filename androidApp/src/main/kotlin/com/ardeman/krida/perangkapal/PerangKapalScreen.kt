@@ -82,6 +82,7 @@ import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.CountdownRing
+import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -254,8 +255,19 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
     }
 
     // Seats on this phone whose timer ran out: the phone fires for them after a short pause
-    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player fires themselves.
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player fires themselves or taps
+    // the autopilot button in the timer slot.
     val autoSeats = remember { mutableStateListOf<Int>() }
+    // Bumped when the player taps autopilot to leave it, so the fire timer restarts a
+    // normal countdown without keying the effect on autoSeats (which would cancel the shot
+    // that runs right after a timeout).
+    var autoResume by remember { mutableIntStateOf(0) }
+
+    fun resumeManual() {
+        if (viewer !in autoSeats) return
+        autoSeats.remove(viewer)
+        autoResume += 1
+    }
 
     fun tap(at: Offset) {
         val r = renderer ?: return
@@ -317,11 +329,11 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
 
     // Firing timer: on a local player's shot a countdown runs; at 0 the phone fires the easy
     // computer's shot (PerangKapalGame.timeoutMove), and keeps firing for that player after a
-    // short pause until they tap the radar themselves.
+    // short pause until they tap the radar or the autopilot button.
     val fireTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
     var fireSeconds by remember { mutableIntStateOf(0) }
     val canFireNow by rememberUpdatedState(canFire)
-    LaunchedEffect(canFire, state, viewer) {
+    LaunchedEffect(canFire, state, viewer, autoResume) {
         if (!canFire) {
             fireSeconds = 0
             return@LaunchedEffect
@@ -548,8 +560,16 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    PlayerPill(pill(near), on(near), status(near))
-                    if (fireSeconds > 0) CountdownRing(fireSeconds, fireTotal, size = 40.dp)
+                    PlayerPill(pill(near), on(near), status(near), Modifier.weight(1f, fill = false))
+                    // Fixed timer slot so the pill does not jump when the countdown / autopilot appears.
+                    if (!state.placing && !state.finished && table.isLocal(near)) {
+                        TurnTimer(
+                            fireSeconds, fireTotal,
+                            auto = near in autoSeats,
+                            onResume = ::resumeManual,
+                            size = 40.dp,
+                        )
+                    }
                 }
             }
         }

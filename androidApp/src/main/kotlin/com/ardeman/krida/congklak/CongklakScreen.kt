@@ -82,7 +82,7 @@ import com.ardeman.krida.core.games.CongklakSeeds
 import com.ardeman.krida.core.games.CongklakState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
-import com.ardeman.krida.ui.CountdownRing
+import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.SoundToggles
@@ -238,6 +238,14 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     // Seats on this phone whose timer ran out: the phone picks for them after a short pause
     // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player picks a pit themselves.
     val autoSeats = remember { mutableStateListOf<Int>() }
+    // Bumped when leaving autopilot so the turn timer restarts a normal countdown.
+    var autoResume by remember { mutableIntStateOf(0) }
+
+    fun resumeManual(seat: Int = state.turn) {
+        if (seat !in autoSeats) return
+        autoSeats.remove(seat)
+        autoResume += 1
+    }
 
     fun play(hole: Int, byPlayer: Boolean = true) {
         val seat = state.turn
@@ -259,7 +267,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
     var turnSeconds by remember { mutableIntStateOf(0) }
     val localTurn = canPlay() && Seats(table, viewSeat).isLocal(state.turn)
     val localTurnNow by rememberUpdatedState(localTurn)
-    LaunchedEffect(localTurn, state) {
+    LaunchedEffect(localTurn, state, autoResume) {
         if (!localTurn) {
             turnSeconds = 0
             return@LaunchedEffect
@@ -395,17 +403,25 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             Column(Modifier.fillMaxSize()) {
                 PillTopBar(gap = 12.dp) {
                     CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        OpponentPill(
-                            seat = seats.pill(seats.far),
-                            on = active(seats.far),
-                            detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
-                            modifier = Modifier,
-                        )
-                        // Pass-and-play: the far player's countdown sits by their pill.
-                        if (turnSeconds > 0 && state.turn == seats.far) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OpponentPill(
+                        seat = seats.pill(seats.far),
+                        on = active(seats.far),
+                        detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
+                        modifier = Modifier,
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        // Pass-and-play: far seat's timer sits by the speaker on the far right.
+                        if (seats.isLocal(seats.far)) {
+                            TurnTimer(
+                                if (state.turn == seats.far) turnSeconds else 0, turnTotal,
+                                auto = seats.far in autoSeats,
+                                onResume = { resumeManual(seats.far) },
+                                size = 40.dp,
+                            )
+                        }
                         SoundToggles()
                         if (canPlay() && seats.isLocal(state.turn) && hint == null) {
                             CircleIconButton(R.drawable.ic_hint, stringResource(if (Ads.removed) R.string.hint_free else R.string.hint), ::showHint)
@@ -427,9 +443,22 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
                             Text(stringResource(R.string.congklak_direction), style = Theme.font(13, FontWeight.Bold, Theme.muted))
                         }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        PlayerPill(seats.pill(seats.near), active(seats.near), status(seats.near))
-                        if (turnSeconds > 0 && state.turn == seats.near) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
+                    // Pill stays centred; near seat's timer / autopilot sits on the far right.
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        PlayerPill(
+                            seats.pill(seats.near),
+                            active(seats.near),
+                            status(seats.near),
+                        )
+                        if (seats.isLocal(seats.near)) {
+                            TurnTimer(
+                                if (state.turn == seats.near) turnSeconds else 0, turnTotal,
+                                auto = seats.near in autoSeats,
+                                onResume = { resumeManual(seats.near) },
+                                Modifier.align(Alignment.CenterEnd),
+                                size = 40.dp,
+                            )
+                        }
                     }
                 }
             }

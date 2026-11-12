@@ -67,8 +67,8 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
 
     /** Ring centres on the felt, for taps; null when an end has no ring. */
     private val ringAt = arrayOfNulls<FloatArray>(2)
-    /** Both rings pulse while you choose an end. */
-    private var pulsing = false
+    /** Ends whose rings are shown and pulsing while the player picks; empty when idle. */
+    private var activeEnds: Set<Int> = emptySet()
     private var pulseTime = 0f
 
     /** Gameplay zoom onto the open ends while a tile is picked; null = whole table. */
@@ -119,9 +119,9 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         }
     }
 
-    /** Zoom onto the end rings while [on], or ease back out. */
+    /** Zoom onto the highlighted end rings, or ease back out when none. */
     fun watchPicking(on: Boolean) {
-        val pts = if (on) ringAt.filterNotNull() else null
+        val pts = if (on) activeEnds.mapNotNull { ringAt.getOrNull(it) } else null
         watch(pts?.takeIf { it.isNotEmpty() })
     }
 
@@ -174,29 +174,41 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
 
         val ends = if (state.roundOver || state.line.isEmpty()) listOf(null, null) else listOf(layout.left, layout.right)
         ends.forEachIndexed { end, pose ->
-            val c = pose?.let(GapleScene::ringCenter)
-            ringAt[end] = c
-            if (c == null) show(rings[end], false) else {
+            ringAt[end] = pose?.let(GapleScene::ringCenter)
+        }
+        refreshRings()
+    }
+
+    /**
+     * Shows and pulses only the given end rings (0 left, 1 right) so a picked tile's legal
+     * spots are clear. Pass an empty list to hide them (idle / not picking).
+     */
+    fun highlightEnds(ends: Collection<Int>) {
+        activeEnds = ends.toSet()
+        pulseTime = 0f
+        refreshRings()
+        if (activeEnds.isNotEmpty()) watchPicking(true)
+    }
+
+    private fun refreshRings() {
+        for (end in 0..1) {
+            val c = ringAt[end]
+            if (c != null && end in activeEnds) {
                 setTransform(rings[end], scaled(c, 1f))
                 show(rings[end], true)
+            } else {
+                show(rings[end], false)
             }
         }
         invalidate()
     }
 
-    /** Pulses both end rings while the player picks an end. */
-    fun pulseEnds(on: Boolean) {
-        if (pulsing == on) return
-        pulsing = on
-        pulseTime = 0f
-        if (!on) ringAt.forEachIndexed { end, c -> if (c != null) setTransform(rings[end], scaled(c, 1f)) }
-        invalidate()
-    }
-
-    /** Screen point of [end]'s ring (0 left, 1 right), or null when it has none. */
-    fun endOnScreen(end: Int): FloatArray? = ringAt[end]?.let {
-        val p = project(it[0], 0f, it[2])
-        if (shiftInProjection()) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
+    /** Screen point of [end]'s ring (0 left, 1 right), or null when that end is not highlighted. */
+    fun endOnScreen(end: Int): FloatArray? {
+        if (end !in activeEnds) return null
+        val at = ringAt[end] ?: return null
+        val p = project(at[0], 0f, at[2])
+        return if (shiftInProjection()) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
     }
 
     /** Whether Filament's projection matrix already carries the shift (a symmetric one has 0 there). */
@@ -220,10 +232,13 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             }
             moving = true
         }
-        if (pulsing) {
+        if (activeEnds.isNotEmpty()) {
             pulseTime += dt
             val s = 1f + 0.12f * sin(pulseTime * 6f)
-            ringAt.forEachIndexed { end, c -> if (c != null) setTransform(rings[end], scaled(c, s)) }
+            for (end in activeEnds) {
+                val c = ringAt.getOrNull(end) ?: continue
+                setTransform(rings[end], scaled(c, s))
+            }
             moving = true
         }
         return moving || !camSettled
@@ -319,6 +334,10 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
      * Vertical FOV and pixel shift that frames [points] (or the whole table) in the free box.
      * Returns floatArrayOf(fov, shiftX, shiftY). Projects at the base FOV in code — never
      * through Filament's live matrix — so a zoomed-in camera cannot bake into the next fit.
+     *
+     * Overview fits around the look-at (screen centre) then shifts that centre into the free
+     * box. The projected AABB mid sits below the look-at under perspective; centering on that
+     * mid lifts the table and clips the far edge.
      */
     private fun computeView(points: List<FloatArray>?): FloatArray {
         val base = GapleScene.CAMERA_VERTICAL_FOV_DEGREES
@@ -330,7 +349,6 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         if (halfW <= 1f || halfH <= 1f || width <= 1) {
             return floatArrayOf(base, 0f, 0f)
         }
-        val framed = points?.takeIf { it.isNotEmpty() } ?: GapleScene.bounds()
         val tanBase = tan(base * PI.toFloat() / 360f)
         val aspect = width.toFloat() / height
         val eye = GapleScene.cameraEye
@@ -351,23 +369,31 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             val ny = (dx * up[0] + dy * up[1] + dz * up[2]) / (depth * tanBase)
             return floatArrayOf(cx * (1 + nx), cy * (1 - ny))
         }
-        val shot = framed.map(::screen)
+        val freeMidX = (left + right) / 2
+        val freeMidY = (top + bottom) / 2
+        if (points == null || points.isEmpty()) {
+            val shot = GapleScene.bounds().map(::screen)
+            val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
+            val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)
+            val k = min(halfW / needW, halfH / needH).coerceAtLeast(1e-3f)
+            // May be wider than [base]: the whole table has to fit the free box.
+            val fov = (atan(tanBase / k) * 360f / PI.toFloat()).coerceAtLeast(MIN_FOV)
+            return floatArrayOf(fov, freeMidX - cx, freeMidY - cy)
+        }
+        val shot = points.map(::screen)
         val midX = (shot.minOf { it[0] } + shot.maxOf { it[0] }) / 2
         val midY = (shot.minOf { it[1] } + shot.maxOf { it[1] }) / 2
         val needW = shot.maxOf { abs(it[0] - midX) }.coerceAtLeast(1f)
         val needH = shot.maxOf { abs(it[1] - midY) }.coerceAtLeast(1f)
-        val fill = if (points != null) FRAME_FILL else 1f
-        val k = (fill * min(halfW / needW, halfH / needH)).coerceAtLeast(1f)
+        val k = FRAME_FILL * min(halfW / needW, halfH / needH)
+        val overview = computeView(null)
+        val overviewK = tanBase / tan(overview[0] * PI.toFloat() / 360f)
         // Never zoom out past the whole-table fit: a wide shot uses that view instead.
-        if (points != null) {
-            val overview = computeView(null)
-            val overviewK = tanBase / tan(overview[0] * PI.toFloat() / 360f)
-            if (k <= overviewK) return overview
-        }
-        val fov = (atan(tanBase / k) * 360f / PI.toFloat())
-            .coerceIn(MIN_FOV, base)
-        val sx = (left + right) / 2 - (cx + (midX - cx) * (tanBase / tan(fov * PI.toFloat() / 360f)))
-        val sy = (top + bottom) / 2 - (cy + (midY - cy) * (tanBase / tan(fov * PI.toFloat() / 360f)))
+        if (k <= overviewK) return overview
+        val fov = (atan(tanBase / k) * 360f / PI.toFloat()).coerceIn(MIN_FOV, base)
+        val scale = tanBase / tan(fov * PI.toFloat() / 360f)
+        val sx = freeMidX - (cx + (midX - cx) * scale)
+        val sy = freeMidY - (cy + (midY - cy) * scale)
         return floatArrayOf(fov, sx, sy)
     }
 

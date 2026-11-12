@@ -28,7 +28,9 @@ reuse the existing room screens once the game's table exists — no new lobby la
 
 Reuse the ular tangga HUD pattern: transparent 3D board on the brand backdrop.
 
-- Left: back, then player tiles (colour swatch + name; current seat highlighted).
+- Left: back, then player tiles (colour swatch + name; current seat highlighted). Each
+  local seat keeps its turn countdown / autopilot under its tile (reserved slot), not
+  above the die.
 - Centre: voxel Ludo board from `LudoBoard` path anchors (yards, ring, home stretches).
 - Right: sound toggles, rules help, emote (nearby/online), and the 3D die.
 - **Your turn · roll:** tap / hold the die as in ular tangga; gold rings only after a roll

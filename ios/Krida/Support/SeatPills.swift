@@ -19,8 +19,10 @@ struct OpponentPill: View {
     var body: some View {
         HStack(spacing: 10 * s) {
             PillAvatar(seat: seat, on: on, size: 30 * s, s: s)
-            Text(seat.name).font(Theme.font(16 * s))
+            Text(seat.name).font(Theme.font(16 * s)).layoutPriority(1)
+            // Shrinks first so a long detail never covers a countdown beside the pill.
             Text(detail).font(Theme.font(13 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
+                .lineLimit(1).truncationMode(.tail).layoutPriority(-1)
         }
         .lineLimit(1)
         .padding(.leading, 6 * s)
@@ -44,8 +46,10 @@ struct PlayerPill: View {
     var body: some View {
         HStack(spacing: 10 * s) {
             PillAvatar(seat: seat, on: on, size: 34 * s, s: s)
-            Text(seat.name).font(Theme.font(17 * s, .black))
+            Text(seat.name).font(Theme.font(17 * s, .black)).layoutPriority(1)
+            // Shrinks first so long status ("Your turn · …") never covers the timer.
             Text(status).font(Theme.font(15 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
+                .lineLimit(1).truncationMode(.tail).layoutPriority(-1)
         }
         .lineLimit(1)
         .padding(.leading, 6 * s)

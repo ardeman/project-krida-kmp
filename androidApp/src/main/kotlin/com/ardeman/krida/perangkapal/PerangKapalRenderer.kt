@@ -66,6 +66,9 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
 
     private var battle = false
     private var room: FloatArray? = null
+    /** Pixel shift so the look-at lands in the free HUD box (Filament's matrix omits setShift). */
+    private var shiftX = 0f
+    private var shiftY = 0f
 
     /**
      * Points (x, y, z) to fit instead of the whole grid, for the menu preview. The fit is
@@ -122,7 +125,9 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         val origin = if (onRadar) PerangKapalBoard.RADAR_OFFSET_X else 0f
         fun center(cell: Int): FloatArray {
             val c = PerangKapalBoard.cellCenter(cell, origin)
-            return project(c[0], PerangKapalBoard.TOP, c[2])
+            val p = project(c[0], PerangKapalBoard.TOP, c[2])
+            // Filament's projection matrix leaves out setShift; add it by hand (see Gaple/Congklak).
+            return if (shiftInProjection()) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
         }
         // Within three quarters of a cell of its centre, so a tap beside the grid is ignored.
         val a = center(0)
@@ -138,6 +143,12 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
             }
         }
         return best.takeIf { it >= 0 }
+    }
+
+    /** Whether Filament's projection matrix already carries the shift. */
+    private fun shiftInProjection(): Boolean {
+        val m = camera.getProjectionMatrix(DoubleArray(16))
+        return abs(m[8]) > 1e-6 || abs(m[9]) > 1e-6
     }
 
     private fun showBattle(on: Boolean) {
@@ -223,11 +234,13 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         )
         val aspect = width.toDouble() / height.coerceAtLeast(1)
         val base = PerangKapalBoard.CAMERA_VERTICAL_FOV_DEGREES.toDouble()
+        camera.setShift(0.0, 0.0)
         camera.setProjection(base, aspect, 0.5, 80.0, Camera.Fov.VERTICAL)
 
-        // The narrowest field of view that keeps the grid to play on between the HUD columns:
-        // the free space is taken evenly around the screen centre, where the camera looks. In
-        // battle that grid is the radar; the small ocean may reach under the left column.
+        // Fit the play grid into the free HUD box (iOS shifts the view the same way). Horizontally
+        // the free strip is centred on the screen; vertically the whole band between top and
+        // bottom HUD is used, with a camera shift so the look-at sits on the free mid-point.
+        // In battle that grid is the radar; the small ocean may reach under the left column.
         // The menu preview has no HUD: its focus fills the whole view.
         val room = room ?: focus?.let { floatArrayOf(0f, 0f, width.toFloat(), height.toFloat()) } ?: return
         val cx = width / 2f
@@ -238,8 +251,12 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
             if ((o[0] + o[2]) / 2 < cx) left = max(left, o[2]) else right = min(right, o[0])
         }
         val halfW = min(cx - left, right - cx)
-        val halfH = min(cy - room[1], room[3] - cy)
+        val freeTop = room[1]
+        val freeBottom = room[3]
+        val halfH = (freeBottom - freeTop) / 2f
         if (halfW <= 1f || halfH <= 1f) return
+        val freeMidX = cx
+        val freeMidY = (freeTop + freeBottom) / 2f
         val corners = focus ?: PerangKapalBoard.bounds(if (battle) PerangKapalBoard.RADAR_OFFSET_X else 0f)
         val shot = corners.map { project(it[0], it[1], it[2]) }
         val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
@@ -249,9 +266,12 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         if (battle) {
             // The small ocean must not leave the room on the left.
             val reach = cx - PerangKapalBoard.miniBounds().minOf { project(it[0], it[1], it[2])[0] }
-            if (reach > 0f) k = min(k, (cx - room[0]) / reach)
+            if (reach > 0f) k = min(k, (freeMidX - room[0]) / reach)
         }
         val fov = Math.toDegrees(2 * atan(tan(Math.toRadians(base / 2)) / k))
+        shiftX = freeMidX - cx
+        shiftY = freeMidY - cy
         camera.setProjection(fov, aspect, 0.5, 80.0, Camera.Fov.VERTICAL)
+        camera.setShift((shiftX / (width / 2f)).toDouble(), (-shiftY / (height / 2f)).toDouble())
     }
 }

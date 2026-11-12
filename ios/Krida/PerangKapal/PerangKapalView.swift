@@ -41,8 +41,9 @@ final class PerangKapalGameModel: ObservableObject {
     /// Counts snapshots, so each new shot to make restarts the firing countdown.
     private var version = 0
     /// Seats on this phone whose timer ran out: the phone fires for them after a short pause
-    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player fires themselves.
-    private var autoSeats = Set<Int>()
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player fires themselves or
+    /// taps the autopilot button in the timer slot.
+    @Published private(set) var autoSeats = Set<Int>()
 
     private static let botFirst: Double = 0.32
     private static let botNext: Double = 0.26
@@ -149,7 +150,7 @@ final class PerangKapalGameModel: ObservableObject {
 
     /// On a local player's shot a countdown runs; at 0 the phone fires the easy computer's shot
     /// (`PerangKapalGame.timeoutMove`), and keeps firing for that player after a short pause
-    /// until they tap the radar themselves.
+    /// until they tap the radar or the autopilot button.
     private func syncFireTimer() {
         let key = canFire ? "\(viewer)-\(version)" : nil
         guard key != fireKey else { return }
@@ -316,6 +317,15 @@ final class PerangKapalGameModel: ObservableObject {
         dragCell = nil
         sounds.play(.tap)
         selectNext()
+    }
+
+    /// Leave autopilot without firing: the next local turn gets a normal countdown again.
+    func resumeManual() {
+        guard autoSeats.contains(viewer) else { return }
+        autoSeats.remove(viewer)
+        guard canFire else { return }
+        fireKey = nil
+        syncFireTimer()
     }
 
     private func tap(at point: CGPoint) {
@@ -644,8 +654,17 @@ private struct PerangKapalBoardView: View {
                 .frame(minHeight: 20 * s)
                 HStack(spacing: 10 * s) {
                     PlayerPill(seat: pill(near), on: model.acting(near), status: seatStatus(near), s: s)
-                    if model.fireSeconds > 0 {
-                        CountdownRing(seconds: model.fireSeconds, total: model.fireTotal, size: 40 * s)
+                        .layoutPriority(0)
+                    // Fixed timer slot so the pill does not jump when the countdown / autopilot appears.
+                    if !model.state.placing && !model.state.finished && table.isLocal(near) {
+                        TurnTimer(
+                            seconds: model.fireSeconds,
+                            total: model.fireTotal,
+                            auto: model.autoSeats.contains(near),
+                            size: 40,
+                            onResume: model.resumeManual
+                        )
+                        .layoutPriority(1)
                     }
                 }
             }

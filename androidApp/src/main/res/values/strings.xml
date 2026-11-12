@@ -20,6 +20,8 @@
     <string name="congklak_status_your_turn">Your turn · pick a glowing hole</string>
     <string name="congklak_status_thinking">thinking…</string>
     <string name="congklak_status_their_turn">their turn</string>
+    <!-- Shared by every timed game: the local seat whose timer ran out. -->
+    <string name="game_status_autopilot">Autopilot</string>
     <string name="congklak_store_bot">CPU</string>
     <string name="congklak_rules_title">How to play</string>
     <string name="congklak_rules_close">Close</string>
@@ -457,7 +459,7 @@
     <string name="gaple_your_team_wins">Your team wins!</string>
     <string name="gaple_rule_tiles">A double-six set of 28 tiles. Everyone gets 7; with 2 or 3 players the rest stay face down.</string>
     <string name="gaple_rule_open">The first round opens with balak enam [6|6], or the highest double if nobody holds it. Later rounds: the last winner leads with any tile.</string>
-    <string name="gaple_rule_play">A tile must match one open end. If it fits both, tap the end you want.</string>
+    <string name="gaple_rule_play">A tile must match an open end. Tap one that fits only one end to play it; if it fits both, the matching ends light up — tap the one you want.</string>
     <string name="gaple_rule_pass">No tile fits? You pass. There is no drawing.</string>
     <string name="gaple_rule_draw">No tile fits? You draw from the face-down tiles until one fits, and pass only when none are left.</string>
     <string name="gaple_rule_end">The round ends when someone empties their hand (domino) or nobody can play (gaple): then the lowest pips in hand wins.</string>

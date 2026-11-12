@@ -85,7 +85,7 @@ import com.ardeman.krida.core.games.UlarTanggaState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
-import com.ardeman.krida.ui.CountdownRing
+import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
@@ -309,8 +309,16 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     val throwReadyNow by rememberUpdatedState(throwReady())
 
     // Seats on this phone whose timer ran out: the phone throws for them after a short pause
-    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player throws themselves.
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player throws or taps autopilot.
     val autoSeats = remember { mutableStateListOf<Int>() }
+    var autoResume by remember { mutableIntStateOf(0) }
+
+    fun resumeManual() {
+        val local = autoSeats.filter { table.isLocal(it) }
+        if (local.isEmpty()) return
+        autoSeats.removeAll(local.toSet())
+        autoResume += 1
+    }
 
     /** Throws the die for the local player whose turn it is; it shakes until the roll comes back. */
     fun roll(toss: UlarTanggaRenderer.Toss, byPlayer: Boolean = true) {
@@ -333,7 +341,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
     }
 
     // Countdown to throw (same as ludo): pauses while the die is held, then a short toss.
-    LaunchedEffect(throwReady(), state.turn, state.lastRoll, state.lastSeat) {
+    LaunchedEffect(throwReady(), state.turn, state.lastRoll, state.lastSeat, autoResume) {
         if (!throwReady()) {
             rollSeconds = 0
             return@LaunchedEffect
@@ -452,18 +460,39 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
             ) {
                 CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.hud("back"))
                 Spacer(Modifier.height(4.dp))
-                // Two tiles a row.
+                // Two tiles a row; each local seat keeps its timer / autopilot under the tile
+                // (same slot as congklak's pill), so the die column does not jump.
                 Column(Modifier.hud("players"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     tileOrder.chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            pair.forEach { seat -> PlayerTile(
-                                table, state, seat, on = seat == highlighted,
-                                roll = offRoll(seat), out = state.opening && seat !in throwing,
-                                modifier = Modifier.weight(1f).onGloballyPositioned {
-                                    val p = it.positionInRoot()
-                                    playerOrigins[seat] = floatArrayOf(p.x - rootX + it.size.width / 2f, p.y - rootY + it.size.height / 2f)
-                                },
-                            ) }
+                            pair.forEach { seat ->
+                                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    PlayerTile(
+                                        table, state, seat, on = seat == highlighted,
+                                        roll = offRoll(seat), out = state.opening && seat !in throwing,
+                                        modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                                            val p = it.positionInRoot()
+                                            playerOrigins[seat] = floatArrayOf(p.x - rootX + it.size.width / 2f, p.y - rootY + it.size.height / 2f)
+                                        },
+                                    )
+                                    // Same height under every tile so a row of mixed local / bot
+                                    // seats stays level; only local seats wire the control.
+                                    Box(
+                                        Modifier.padding(top = 6.dp).size(36.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        if (table.isLocal(seat)) {
+                                            TurnTimer(
+                                                if (seat in autoSeats) 0 else if (seat == state.turn && throwReady()) rollSeconds else 0,
+                                                rollTotal,
+                                                auto = seat in autoSeats,
+                                                onResume = ::resumeManual,
+                                                size = 36.dp,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
                         }
                     }
@@ -490,12 +519,6 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     modifier = Modifier.hud("emote"),
                 )
                 Spacer(Modifier.weight(1f))
-                // Die above the status line (same as ludo), with a ring that counts down to an
-                // automatic short toss. Tap to toss, hold to shake, release to throw.
-                if (throwReady() && rollSeconds > 0) {
-                    CountdownRing(rollSeconds, rollTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
-                    Spacer(Modifier.height(6.dp))
-                }
                 Box(
                     Modifier.size(104.dp).align(Alignment.CenterHorizontally).hud("die")
                         .onGloballyPositioned {

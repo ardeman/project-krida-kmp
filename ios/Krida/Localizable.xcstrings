@@ -5573,6 +5573,22 @@
         }
       }
     },
+    "Autopilot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autopilot"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otomatis"
+          }
+        }
+      }
+    },
     "Hit!": {
       "localizations": {
         "en": {
@@ -6373,18 +6389,18 @@
         }
       }
     },
-    "A tile must match one open end. If it fits both, tap the end you want.": {
+    "A tile must match an open end. Tap one that fits only one end to play it; if it fits both, the matching ends light up — tap the one you want.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A tile must match one open end. If it fits both, tap the end you want."
+            "value": "A tile must match an open end. Tap one that fits only one end to play it; if it fits both, the matching ends light up — tap the one you want."
           }
         },
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kartu harus cocok dengan salah satu ujung. Kalau cocok di dua ujung, ketuk ujung yang kamu mau."
+            "value": "Kartu harus cocok dengan ujung yang terbuka. Ketuk kartu yang hanya cocok di satu ujung untuk memainkannya; kalau cocok di dua ujung, ujung yang cocok menyala — ketuk yang kamu mau."
           }
         }
       }

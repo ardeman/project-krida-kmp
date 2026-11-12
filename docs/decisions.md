@@ -218,7 +218,11 @@ in the same commit as the code.
   above the fleet lists; at 0 the phone fires the easy computer's shot
   (`PerangKapalGame.timeoutMove`). Auto-play after a timeout applies as in the other games: a
   player who let the placement or firing timer run out gets their later shots fired after
-  `Krida.AUTO_PLAY_MS` until they tap the radar themselves.
+  `Krida.AUTO_PLAY_MS` until they tap the radar themselves. **Autopilot button (owner,
+  2026-11-12):** while that seat is on auto, the timer slot shows a circle button the same
+  size as the countdown ring (play icon); tapping it clears auto without needing a move, and
+  the next local turn gets a normal countdown again. Same control in every timed game.
+
 - Added by the agent, not asked for (tell the owner if they should go): placing a ship
   selects the next ship not yet on the ocean; a gold ring marks the last shot; a peg on a
   ship stands on its deck so hits on your own ships show.
@@ -230,9 +234,13 @@ in the same commit as the code.
 - **Drawing option (owner, 2026-11-12):** a "Drawing" setting (Off / Until it fits) for 2–3
   seats; the host draws for a stuck seat automatically, no draw button. Off keeps the
   traditional no-draw rule.
-- **Player HUD by seat count (owner, 2026-11-12):** with 2 seats, gaple uses the congklak /
-  perang kapal pills (opponent on top, you below the hand). With 3–4 seats it uses ular
-  tangga / ludo left-column tiles, two a row. Same rule in `docs/design.md`.
+- **Player HUD (owner, 2026-11-13):** gaple uses ular tangga / ludo left-column tiles for
+  every seat count (2, 3 or 4), two a row — not the congklak / perang kapal pills. Same
+  rule in `docs/design.md`.
+- **End rings after pick (owner, 2026-11-13):** board end rings stay hidden on your turn
+  until you tap a tile. One legal end → plays there immediately; both → only those two
+  rings light (camera zooms); tap a ring to place. Avoids showing both empty ends before
+  a pick so players don't tap the wrong side.
 - **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
   with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
   "Remove ads".
@@ -243,16 +251,22 @@ in the same commit as the code.
   card also counts down and the host deals on. Congklak: 15 s to pick a pit
   (`Krida.PLAY_TURN_MS`), then the phone plays what the easy computer would pick
   (`CongklakGame.timeoutMove`, a random hole with seeds) as if the player tapped it (owner,
-  2026-11-12); the ring sits beside the mover's pill and stops while seeds are sown.
+  2026-11-12); the ring sits on the far right (top: beside the speaker; bottom: trailing
+  edge) and stops while seeds are sown (owner, 2026-11-13).
   **Auto-play after a timeout (owner, 2026-11-12):** once a player on this phone lets a
   timer run out, the phone plays that player's later turns (roll, pick, move) after a short
   pause (`Krida.AUTO_PLAY_MS`, 0.8 s) with no countdown, as the easy computer would, until the
-  player acts themselves (taps or holds the die, taps a token, pit or tile). Every timed game,
-  on Android and iOS. The flag is per seat on this phone and is not sent to other phones. Ludo:
+  player acts themselves (taps or holds the die, taps a token, pit or tile) or taps the
+  autopilot button in the timer slot (owner, 2026-11-12). The button stays on screen while
+  any local seat is on auto — including during opponents' turns — until tapped (owner,
+  2026-11-13). Every timed game, on Android and iOS. The flag is per seat on this phone and
+  is not sent to other phones.   Ludo:
   after a roll with more than one token to choose, 15 s to pick (`Krida.PLAY_TURN_MS`), then
-  the easy computer's pick (`LudoGame.timeoutMove`, any legal token); the ring sits above the
-  die where the roll countdown was (owner, 2026-11-12). Perang
-  kapal: 60 s to place the fleet, 15 s per shot (see the perang kapal section).
+  the easy computer's pick (`LudoGame.timeoutMove`, any legal token). **Ular tangga / ludo
+  timer on the seat tile (owner, 2026-11-13):** the countdown and autopilot sit under that
+  seat's left-column tile (reserved slot, like congklak's pill), not above the die, so the
+  die column stays put. Perang kapal: 60 s to place the fleet, 15 s per shot (see the perang
+  kapal section).
 - Added by the agent, not asked for: passes are automatic (the host skips a seat with no
   fitting tile and lists it in `lastPasses`), so there is no Pass button. A double at a turn
   of the line lies lengthwise in the L-shaped corner instead of across. If no double is dealt

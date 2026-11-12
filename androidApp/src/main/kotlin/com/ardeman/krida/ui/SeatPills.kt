@@ -43,7 +43,14 @@ fun OpponentPill(seat: PillSeat, on: Boolean, detail: String, modifier: Modifier
     Pill(on, height = 40.dp, glow = on, modifier = modifier) {
         PillAvatar(seat, on, 30.dp)
         Text(seat.name, style = Theme.font(16, color = if (on) Color.White else Theme.ink), maxLines = 1)
-        Text(detail, style = Theme.font(13, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // weight so a long detail ellipsises instead of shoving past a countdown beside the pill.
+        Text(
+            detail,
+            Modifier.weight(1f, fill = false),
+            style = Theme.font(13, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -55,7 +62,14 @@ fun PlayerPill(seat: PillSeat, on: Boolean, status: String, modifier: Modifier =
         Pill(on, height = 46.dp, glow = false, endPadding = 20.dp) {
             PillAvatar(seat, on, 34.dp)
             Text(seat.name, style = Theme.font(17, FontWeight.Black, if (on) Color.White else Theme.ink), maxLines = 1)
-            Text(status, style = Theme.font(15, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // weight so long status ("Your turn · …") ellipsises instead of covering the timer.
+            Text(
+                status,
+                Modifier.weight(1f, fill = false),
+                style = Theme.font(15, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }

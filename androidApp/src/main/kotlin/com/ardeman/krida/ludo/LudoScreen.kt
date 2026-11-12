@@ -77,7 +77,7 @@ import com.ardeman.krida.core.games.LudoState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
-import com.ardeman.krida.ui.CountdownRing
+import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
@@ -336,8 +336,16 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     }
 
     // Seats on this phone whose timer ran out: the phone plays their turns after a short pause
-    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player rolls or picks themselves.
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player rolls/picks or taps autopilot.
     val autoSeats = remember { mutableStateListOf<Int>() }
+    var autoResume by remember { mutableIntStateOf(0) }
+
+    fun resumeManual() {
+        val local = autoSeats.filter { table.isLocal(it) }
+        if (local.isEmpty()) return
+        autoSeats.removeAll(local.toSet())
+        autoResume += 1
+    }
 
     fun roll(toss: LudoRenderer.Toss, byPlayer: Boolean = true) {
         if (!canRoll) return
@@ -360,7 +368,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     }
 
     // Countdown to throw: pauses while the die is held, then rolls a short toss.
-    LaunchedEffect(canRoll, state.turn, state.lastRoll, state.lastSeat) {
+    LaunchedEffect(canRoll, state.turn, state.lastRoll, state.lastSeat, autoResume) {
         if (!canRoll) {
             rollSeconds = 0
             return@LaunchedEffect
@@ -392,7 +400,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
     val pickTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
     val picking = canPick && legal.isNotEmpty()
     val pickingNow by rememberUpdatedState(picking)
-    LaunchedEffect(picking, state) {
+    LaunchedEffect(picking, state, autoResume) {
         if (!picking) {
             pickSeconds = 0
             return@LaunchedEffect
@@ -516,21 +524,46 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             Column(Modifier.width(136.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.hud("back"))
                 Spacer(Modifier.height(4.dp))
+                // Two tiles a row; each local seat keeps its timer / autopilot under the tile
+                // (same slot as congklak's pill), so the die column does not jump.
                 Column(Modifier.hud("players"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     state.tokens.indices.chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             pair.forEach { seat ->
-                                PlayerTile(
-                                    table, state, seat,
-                                    on = seat == state.turn && !state.finished,
-                                    modifier = Modifier.weight(1f).onGloballyPositioned {
-                                        val p = it.positionInWindow()
-                                        playerOrigins[seat] = floatArrayOf(
-                                            p.x - viewOrigin[0] + it.size.width / 2f,
-                                            p.y - viewOrigin[1] + it.size.height / 2f,
-                                        )
-                                    },
-                                )
+                                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    PlayerTile(
+                                        table, state, seat,
+                                        on = seat == state.turn && !state.finished,
+                                        modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                                            val p = it.positionInWindow()
+                                            playerOrigins[seat] = floatArrayOf(
+                                                p.x - viewOrigin[0] + it.size.width / 2f,
+                                                p.y - viewOrigin[1] + it.size.height / 2f,
+                                            )
+                                        },
+                                    )
+                                    Box(
+                                        Modifier.padding(top = 6.dp).size(36.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        if (table.isLocal(seat)) {
+                                            val seatAuto = seat in autoSeats
+                                            TurnTimer(
+                                                when {
+                                                    seatAuto -> 0
+                                                    seat != state.turn -> 0
+                                                    picking -> pickSeconds
+                                                    canRoll -> rollSeconds
+                                                    else -> 0
+                                                },
+                                                if (picking && seat == state.turn) pickTotal else rollTotal,
+                                                auto = seatAuto,
+                                                onResume = ::resumeManual,
+                                                size = 36.dp,
+                                            )
+                                        }
+                                    }
+                                }
                             }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
                         }
@@ -555,18 +588,6 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 )
                 Spacer(Modifier.weight(1f))
                 val dieLabel = stringResource(R.string.ular_roll)
-                // Die above the status line (same as ular tangga), with its spot measured against
-                // the TextureView origin so the 3D die lines up with this hit target. A ring above
-                // counts down to an automatic short toss.
-                if (canRoll && rollSeconds > 0) {
-                    CountdownRing(rollSeconds, rollTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
-                    Spacer(Modifier.height(6.dp))
-                }
-                // While picking a token: the pick countdown in the same spot.
-                if (picking && pickSeconds > 0) {
-                    CountdownRing(pickSeconds, pickTotal, Modifier.align(Alignment.CenterHorizontally).hud("rollTimer"), size = 40.dp)
-                    Spacer(Modifier.height(6.dp))
-                }
                 Box(
                     Modifier.size(104.dp).align(Alignment.CenterHorizontally).hud("die")
                         .onGloballyPositioned {

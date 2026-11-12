@@ -34,6 +34,56 @@ struct CountdownRing: View {
     }
 }
 
+/// Same footprint as `CountdownRing`: tap to leave autoplay and get a normal turn countdown
+/// again. Shown in the timer slot while the phone is playing for a local seat.
+struct AutopilotButton: View {
+    var size: CGFloat = 40
+    var action: () -> Void
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        Button {
+            Sounds.shared.play(.tap)
+            action()
+        } label: {
+            Image("Autopilot")
+                .resizable()
+                .scaledToFit()
+                .foregroundStyle(Theme.accent)
+                .frame(width: size * s * 0.55, height: size * s * 0.55)
+                .frame(width: size * s, height: size * s)
+                .background(Theme.surface, in: Circle())
+                .overlay(Circle().stroke(Theme.line, lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("autopilotButton")
+        .accessibilityLabel(Text("Autopilot"))
+    }
+}
+
+/// Timer slot: countdown while counting, or the autopilot button while the phone is playing
+/// for this seat. Always keeps `size` so the pill / die beside it does not jump when the
+/// countdown starts or autopilot takes over.
+struct TurnTimer: View {
+    var seconds: Int
+    var total: Int
+    var auto: Bool
+    var size: CGFloat = 40
+    var onResume: () -> Void
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        ZStack {
+            if auto {
+                AutopilotButton(size: size, action: onResume)
+            } else if seconds > 0 {
+                CountdownRing(seconds: seconds, total: total, size: size)
+            }
+        }
+        .frame(width: size * s, height: size * s)
+    }
+}
+
 /// A short line with its countdown ring in front, e.g. "Waiting for Ayu…" while a seat waits.
 struct CountdownNotice: View {
     let text: String

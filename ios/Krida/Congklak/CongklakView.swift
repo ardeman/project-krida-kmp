@@ -149,8 +149,18 @@ final class CongklakGameModel: ObservableObject {
     }
 
     /// Seats on this phone whose timer ran out: the phone picks for them after a short pause
-    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player picks a pit themselves.
-    private var autoSeats = Set<Int>()
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player picks a pit or taps autopilot.
+    @Published private(set) var autoSeats = Set<Int>()
+
+    /// Leave autopilot without picking: the next local turn gets a normal countdown again.
+    func resumeManual(seat: Int? = nil) {
+        let seat = seat ?? turn
+        guard autoSeats.contains(seat) else { return }
+        autoSeats.remove(seat)
+        guard localTurn, self.turn == seat else { return }
+        turnKey = nil
+        syncTimer()
+    }
 
     /// A tap at a view point: plays the nearest hole on the mover's side, if close enough.
     func tap(at point: CGPoint) {
@@ -425,14 +435,18 @@ private struct CongklakBoardView: View {
             VStack(spacing: 0 * s) {
                 PillTopBar(gap: 8 * s) {
                     CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
-                    HStack(spacing: 10 * s) {
-                        opponentPill
-                        // Pass-and-play: the far player's countdown sits by their pill.
-                        if model.turnSeconds > 0 && model.turn == farSeat {
-                            CountdownRing(seconds: model.turnSeconds, total: model.turnTotal, size: 40 * s)
-                        }
-                    }
+                    opponentPill
                     HStack(spacing: 8 * s) {
+                        // Pass-and-play: far seat's timer sits by the speaker on the far right.
+                        if isLocal(farSeat) {
+                            TurnTimer(
+                                seconds: model.turn == farSeat ? model.turnSeconds : 0,
+                                total: model.turnTotal,
+                                auto: model.autoSeats.contains(farSeat),
+                                size: 40,
+                                onResume: { model.resumeManual(seat: farSeat) }
+                            )
+                        }
                         SoundToggles()
                         if model.canPlay && isLocal(model.turn) && model.hint == nil {
                             CircleIconButton(systemImage: "lightbulb", label: ads.removed ? "Hint" : "Hint (watch an ad)", action: model.showHint)
@@ -454,13 +468,23 @@ private struct CongklakBoardView: View {
                             .font(Theme.font(13 * s, .bold))
                             .foregroundStyle(Theme.muted)
                     }
-                    HStack(spacing: 10 * s) {
+                    // Pill stays centred; near seat's timer / autopilot sits on the far right.
+                    ZStack {
                         PlayerPill(seat: pill(nearSeat), on: active(nearSeat), status: status(nearSeat), s: s)
-                        if model.turnSeconds > 0 && model.turn == nearSeat {
-                            CountdownRing(seconds: model.turnSeconds, total: model.turnTotal, size: 40 * s)
+                        if isLocal(nearSeat) {
+                            TurnTimer(
+                                seconds: model.turn == nearSeat ? model.turnSeconds : 0,
+                                total: model.turnTotal,
+                                auto: model.autoSeats.contains(nearSeat),
+                                size: 40,
+                                onResume: { model.resumeManual(seat: nearSeat) }
+                            )
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
+                .padding(.horizontal, 24 * s)
                 .padding(.bottom, 14 * s)
             }
             EmoteHud(

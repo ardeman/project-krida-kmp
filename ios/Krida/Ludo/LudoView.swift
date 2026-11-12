@@ -110,9 +110,25 @@ final class LudoGameModel: ObservableObject {
     }
 
     /// Seats on this phone whose timer ran out: the phone plays their turns after a short pause
-    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player rolls or picks themselves.
-    private var autoSeats = Set<Int>()
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player rolls/picks or taps autopilot.
+    @Published private(set) var autoSeats = Set<Int>()
     private var autoPause: Double { Double(Krida.shared.AUTO_PLAY_MS) / 1000 }
+
+    /// True while any seat on this phone is on autopilot (stays up during opponents' turns).
+    var onAutopilot: Bool { autoSeats.contains { table.isLocal($0) } }
+
+    /// Leave autopilot without rolling/picking: the next local turn gets a normal countdown again.
+    func resumeManual() {
+        let local = autoSeats.filter { table.isLocal($0) }
+        guard !local.isEmpty else { return }
+        autoSeats.subtract(local)
+        if canRoll {
+            syncRollTimer()
+        } else if picking {
+            pickKey = nil
+            syncPickTimer()
+        }
+    }
 
     func roll(_ toss: LudoScene.Toss, byPlayer: Bool = true) {
         guard canRoll, pendingToss == nil else { scene.holdDie(false); return }
@@ -567,7 +583,6 @@ private struct LudoBoardView: View {
               Self.hudKeys.allSatisfy({ boxes[$0] != nil }) else { return }
         let margin = 12 * s
         var keys = Self.hudKeys
-        if (model.canRoll && model.rollSeconds > 0) || (model.picking && model.pickSeconds > 0) { keys.append("rollTimer") }
         if table.waiting != nil || table.notice != nil { keys.append("notice") }
         if table.canEmote { keys.append("emote") }
         let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
@@ -618,14 +633,39 @@ private struct LudoBoardView: View {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
+                // Two tiles a row; each local seat keeps its timer / autopilot under the tile
+                // (same slot as congklak's pill), so the die column does not jump.
                 let count = model.players
                 let rows = stride(from: 0, to: count, by: 2).map { Array($0..<min($0 + 2, count)) }
                 VStack(spacing: 8 * s) {
                     ForEach(rows, id: \.self) { pair in
-                        HStack(spacing: 8 * s) {
+                        HStack(alignment: .top, spacing: 8 * s) {
                             ForEach(pair, id: \.self) { seat in
-                                tile(seat, on: seat == model.turn && !model.state.finished && model.queueEmpty)
-                                    .modifier(hudBox("seat-\(seat)"))
+                                VStack(spacing: 6 * s) {
+                                    tile(seat, on: seat == model.turn && !model.state.finished && model.queueEmpty)
+                                        .modifier(hudBox("seat-\(seat)"))
+                                    ZStack {
+                                        Color.clear.frame(width: 36 * s, height: 36 * s)
+                                        if table.isLocal(seat) {
+                                            let seatAuto = model.autoSeats.contains(seat)
+                                            let onSeat = seat == model.turn
+                                            TurnTimer(
+                                                seconds: {
+                                                    if seatAuto { return 0 }
+                                                    guard onSeat else { return 0 }
+                                                    if model.picking { return model.pickSeconds }
+                                                    if model.canRoll { return model.rollSeconds }
+                                                    return 0
+                                                }(),
+                                                total: onSeat && model.picking ? model.pickTotal : model.rollTotal,
+                                                auto: seatAuto,
+                                                size: 36,
+                                                onResume: model.resumeManual
+                                            )
+                                        }
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
                             }
                             if pair.count == 1 { Spacer(minLength: 0) }
                         }
@@ -659,17 +699,6 @@ private struct LudoBoardView: View {
                 .modifier(hudBox("emote"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
-                if model.canRoll && model.rollSeconds > 0 {
-                    CountdownRing(seconds: model.rollSeconds, total: model.rollTotal, size: 40)
-                        .modifier(hudBox("rollTimer"))
-                        .padding(.bottom, 6 * s)
-                }
-                // While picking a token: the pick countdown in the same spot.
-                if model.picking && model.pickSeconds > 0 {
-                    CountdownRing(seconds: model.pickSeconds, total: model.pickTotal, size: 40)
-                        .modifier(hudBox("rollTimer"))
-                        .padding(.bottom, 6 * s)
-                }
                 Color.clear
                     .frame(width: 104 * s, height: 104 * s)
                     .contentShape(Rectangle())

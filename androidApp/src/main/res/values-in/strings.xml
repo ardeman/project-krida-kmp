@@ -17,6 +17,7 @@
     <string name="congklak_status_your_turn">Giliranmu · pilih lubang yang menyala</string>
     <string name="congklak_status_thinking">berpikir…</string>
     <string name="congklak_status_their_turn">gilirannya</string>
+    <string name="game_status_autopilot">Otomatis</string>
     <string name="congklak_store_bot">KOM</string>
     <string name="congklak_rules_title">Cara main</string>
     <string name="congklak_rules_close">Tutup</string>
@@ -446,7 +447,7 @@
     <string name="gaple_your_team_wins">Timmu menang!</string>
     <string name="gaple_rule_tiles">Satu set balak enam, 28 kartu. Tiap pemain dapat 7; dengan 2 atau 3 pemain sisanya tetap tertutup.</string>
     <string name="gaple_rule_open">Ronde pertama dibuka dengan balak enam [6|6], atau balak tertinggi kalau tak ada yang memegangnya. Ronde berikutnya: pemenang terakhir membuka dengan kartu apa saja.</string>
-    <string name="gaple_rule_play">Kartu harus cocok dengan salah satu ujung. Kalau cocok di dua ujung, ketuk ujung yang kamu mau.</string>
+    <string name="gaple_rule_play">Kartu harus cocok dengan ujung yang terbuka. Ketuk kartu yang hanya cocok di satu ujung untuk memainkannya; kalau cocok di dua ujung, ujung yang cocok menyala — ketuk yang kamu mau.</string>
     <string name="gaple_rule_pass">Tak ada kartu yang cocok? Kamu pas. Tidak ada ambil kartu.</string>
     <string name="gaple_rule_draw">Tak ada kartu yang cocok? Ambil dari kartu tertutup sampai ada yang cocok; pas hanya kalau kartunya habis.</string>
     <string name="gaple_rule_end">Ronde selesai kalau ada yang kartunya habis (domino) atau tak ada yang bisa jalan (gaple): mata terkecil di tangan menang.</string>

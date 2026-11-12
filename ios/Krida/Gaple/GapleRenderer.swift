@@ -27,7 +27,8 @@ final class GapleRenderer {
     private var rings: [ModelEntity] = []
     /// Ring centres on the felt, for taps; nil when an end has no ring.
     private var ringAt: [SIMD3<Float>?] = [nil, nil]
-    private var pulsing = false
+    /// Ends whose rings are shown and pulsing while the player picks; empty when idle.
+    private var activeEnds: Set<Int> = []
     private var pulseTime: Float = 0
 
     /// A tile flying from its player's side to its place in the line.
@@ -119,7 +120,7 @@ final class GapleRenderer {
         updates = nil
         frameWatch = nil
         flight = nil
-        pulsing = false
+        activeEnds = []
         watchPoints = nil
         camSettled = true
     }
@@ -150,10 +151,12 @@ final class GapleRenderer {
         camSettled = false
     }
 
-    /// Zoom onto the end rings while `on`, or ease back out.
+    /// Zoom onto the highlighted end rings, or ease back out when none.
     func watchPicking(_ on: Bool) {
-        let pts = on ? ringAt.compactMap { $0 } : []
-        watch(pts.isEmpty ? nil : pts)
+        let points: [SIMD3<Float>] = on
+            ? activeEnds.compactMap { end in (0..<ringAt.count).contains(end) ? ringAt[end] : nil }
+            : []
+        watch(points.isEmpty ? nil : points)
     }
 
     /// Calls `done` once the scene has updated `frames` times, i.e. the table is on screen.
@@ -219,9 +222,23 @@ final class GapleRenderer {
 
         let ends: [GapleEndPose?] = state.roundOver || layout == nil ? [nil, nil] : [layout?.left, layout?.right]
         for (end, pose) in ends.enumerated() {
-            let c = pose.map { Self.vec(scene.ringCenter(end: $0)) }
-            ringAt[end] = c
-            if let c {
+            ringAt[end] = pose.map { Self.vec(scene.ringCenter(end: $0)) }
+        }
+        refreshRings()
+    }
+
+    /// Shows and pulses only the given end rings (0 left, 1 right) so a picked tile's legal
+    /// spots are clear. Pass an empty list to hide them (idle / not picking).
+    func highlightEnds(_ ends: [Int]) {
+        activeEnds = Set(ends)
+        pulseTime = 0
+        refreshRings()
+        if !activeEnds.isEmpty { watchPicking(true) }
+    }
+
+    private func refreshRings() {
+        for end in 0..<rings.count {
+            if let c = ringAt[end], activeEnds.contains(end) {
                 rings[end].transform = Self.ring(c, scale: 1)
                 rings[end].isEnabled = true
             } else {
@@ -230,21 +247,9 @@ final class GapleRenderer {
         }
     }
 
-    /// Pulses both end rings while the player picks an end.
-    func pulseEnds(_ on: Bool) {
-        guard pulsing != on else { return }
-        pulsing = on
-        pulseTime = 0
-        if !on {
-            for (end, c) in ringAt.enumerated() { if let c { rings[end].transform = Self.ring(c, scale: 1) } }
-        }
-        // Rings moved with the last apply: retarget the zoom if still picking.
-        if on { watchPicking(true) }
-    }
-
-    /// Screen point of `end`'s ring (0 left, 1 right), or nil when it has none.
+    /// Screen point of `end`'s ring (0 left, 1 right), or nil when that end is not highlighted.
     func endOnScreen(_ end: Int) -> CGPoint? {
-        guard screen.width > 0, let c = ringAt[end] else { return nil }
+        guard activeEnds.contains(end), screen.width > 0, let c = ringAt[end] else { return nil }
         let p = project(c, tanV: tanHalf)
         return CGPoint(x: p.x + viewFrame.minX, y: p.y + viewFrame.minY)
     }
@@ -266,10 +271,13 @@ final class GapleRenderer {
                 flight = f
             }
         }
-        if pulsing {
+        if !activeEnds.isEmpty {
             pulseTime += dt
             let s = 1 + 0.12 * sin(pulseTime * 6)
-            for (end, c) in ringAt.enumerated() { if let c { rings[end].transform = Self.ring(c, scale: s) } }
+            for end in activeEnds {
+                guard let c = ringAt[end] else { continue }
+                rings[end].transform = Self.ring(c, scale: s)
+            }
         }
     }
 
