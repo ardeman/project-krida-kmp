@@ -36,7 +36,7 @@ final class LudoGameModel: ObservableObject {
         state = table.latest
         scene.onDieBounce = { [weak self] in
             guard let self, self.lifetime.active else { return }
-            self.sounds.play(.tap)
+            self.sounds.play(.die)
         }
         table.onUpdate = { [weak self] update in
             guard let self, self.lifetime.active else { return }
@@ -282,7 +282,6 @@ final class LudoGameModel: ObservableObject {
                     let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                     // Small buffer so the last throw frame can mark landed before we hop (and recall).
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
-                    sounds.play(.tap)
                 } else {
                     _ = toss(for: seat)
                 }
@@ -297,7 +296,12 @@ final class LudoGameModel: ObservableObject {
                     scene.watch([start] + path)
                     try await Task.sleep(for: .seconds(0.18))
                     scene.move(seat, pawn, path, seconds: Float(Double(path.count) * Self.hop), hop: 0.35)
-                    try await Task.sleep(for: .seconds(Double(path.count) * Self.hop + 0.08))
+                    // The same tok on each square as ular tangga.
+                    for _ in path {
+                        sounds.play(.step)
+                        try await Task.sleep(for: .seconds(Self.hop))
+                    }
+                    try await Task.sleep(for: .seconds(0.08))
                     for cap in next.lastCaptures {
                         let fromSpot = spot(state, Int(cap.seat), Int(cap.pawn))
                         let back = spot(next, Int(cap.seat), Int(cap.pawn))

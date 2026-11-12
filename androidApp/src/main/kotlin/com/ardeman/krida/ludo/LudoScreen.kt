@@ -205,7 +205,6 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 val flight = r.throwDie(roll, toss, origin, seat)
                 // Small buffer so the last throw frame can mark Landed before we hop (and recall).
                 delay((flight * 1000).toLong() + 200L)
-                Sounds.play(Sounds.Effect.Tap)
             }
 
             val pawn = after.lastPawn
@@ -221,14 +220,22 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                 r.watch(listOf(start) + path)
                 delay(180L)
                 r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
-                delay(path.size * HOP_MS + 80L)
+                // The same tok on each square as ular tangga.
+                repeat(path.size) {
+                    Sounds.play(Sounds.Effect.Step)
+                    delay(HOP_MS)
+                }
+                delay(80L)
                 for (cap in after.lastCaptures) {
                     val from = spot(before, cap.seat, cap.pawn)
                     val to = spot(after, cap.seat, cap.pawn)
                     r.watch(listOf(from, to))
                     r.move(cap.seat, cap.pawn, listOf(to), 0.35f, hop = 0.5f)
                 }
-                if (after.lastCaptures.isNotEmpty()) delay(400L)
+                if (after.lastCaptures.isNotEmpty()) {
+                    Sounds.play(Sounds.Effect.Capture)
+                    delay(400L)
+                }
             }
             placeAll(after)
             r.recallDie(if (table.isLocal(after.turn)) null else playerOrigins[after.turn])
@@ -370,7 +377,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
                         }
                         renderer = LudoRenderer(view).apply {
                             this.onFirstFrame = onFirstFrame
-                            onDieBounce = { if (lifetime.active) Sounds.play(Sounds.Effect.Tap) }
+                            onDieBounce = { if (lifetime.active) Sounds.play(Sounds.Effect.Die) }
                             resume()
                         }
                         view.tag = renderer
