@@ -10,4 +10,6 @@ object StandardRules {
     val congklak: CongklakRules get() = CongklakRules(true, CongklakStarter.RANDOM)
     val ularTangga: UlarTanggaRules get() = UlarTanggaRules(UlarTanggaOptions())
     val ludo: LudoRules get() = LudoRules(LudoOptions())
+    /** Perang kapal has no host options in v1; this is the game object itself. */
+    val perangKapal: PerangKapalGame get() = PerangKapalGame
 }

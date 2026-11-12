@@ -20,8 +20,14 @@ interface GameRules<S, M> {
 
     fun initialState(players: Int, random: Random): S
 
-    /** Seat whose turn it is. */
+    /** Seat whose turn it is (also the `turn` field in a `state` message). */
     fun currentTurn(state: S): Int
+
+    /**
+     * Seats that may submit a move now. Defaults to only [currentTurn]. Games with a
+     * simultaneous phase (e.g. perang kapal placement) return every seat that still acts.
+     */
+    fun actingSeats(state: S): List<Int> = listOf(currentTurn(state))
 
     /** null when legal, otherwise a short reason code. */
     fun validate(state: S, seat: Int, move: M): String?
@@ -30,6 +36,21 @@ interface GameRules<S, M> {
     fun apply(state: S, seat: Int, move: M, random: Random): S
 
     fun isFinished(state: S): Boolean
+}
+
+/**
+ * Games where each seat must not see the full board (fog of war). [HostSession] sends
+ * [viewFor] to each remote peer and keeps the true state on the host. The host UI should
+ * also call [viewFor] for the local seat before drawing.
+ */
+interface PrivateStateRules<S, M> {
+    fun viewFor(state: S, seat: Int): S
+
+    /**
+     * Move to put in `last` for [viewer], or null to omit it (e.g. an opponent's ship
+     * placement would leak coordinates).
+     */
+    fun viewMove(move: M, actor: Int, viewer: Int): M?
 }
 
 /**

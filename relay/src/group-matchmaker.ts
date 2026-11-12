@@ -52,7 +52,7 @@ export class GroupMatchmaker implements DurableObject {
       discover, group: first?.group ?? this.code(), target, game,
       deadline: first?.deadline ?? Date.now() + 20_000,
       phase: first?.phase ?? "searching", consent: false, revision: first?.revision ?? 0,
-      maxPlayers: game === "congklak" ? 2 : 4,
+      maxPlayers: game === "congklak" || game === "perang_kapal" ? 2 : 4,
     } satisfies Ticket);
     // Membership changes invalidate prior consent: everyone sees the new composition.
     this.resetConsent(this.ticket(server).group);

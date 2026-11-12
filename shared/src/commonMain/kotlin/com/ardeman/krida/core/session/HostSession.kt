@@ -140,12 +140,17 @@ class HostSession<S, M>(
         return changeColor(s, color)
     }
 
-    /** Seat of the bot whose turn it is, or null when a person is to move (or no game is on). */
+    /**
+     * Seat of a bot that may move now, or null when only people act (or no game is on).
+     * When several bots may act (simultaneous placement), returns the lowest seat.
+     */
     fun botToMove(): Int? {
         val current = state ?: return null
         if (rules.isFinished(current)) return null
-        val seat = rules.currentTurn(current)
-        return if (seats.getOrNull(seat)?.bot != null) seat else null
+        for (seat in rules.actingSeats(current)) {
+            if (seats.getOrNull(seat)?.bot != null) return seat
+        }
+        return null
     }
 
     /**
@@ -366,7 +371,7 @@ class HostSession<S, M>(
     private fun submit(seat: Int, move: M): String? {
         val current = state ?: return InvalidReason.NOT_STARTED
         if (rules.isFinished(current)) return InvalidReason.FINISHED
-        if (rules.currentTurn(current) != seat) return InvalidReason.NOT_YOUR_TURN
+        if (seat !in rules.actingSeats(current)) return InvalidReason.NOT_YOUR_TURN
         rules.validate(current, seat, move)?.let { return it }
         state = rules.apply(current, seat, move, random)
         lastSeat = seat
@@ -376,20 +381,34 @@ class HostSession<S, M>(
         return null
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun broadcastState() {
         val s = state ?: return
-        val msg = Message.State(
-            seq = seq,
-            turn = rules.currentTurn(s),
-            finished = rules.isFinished(s),
-            state = Codec.json.encodeToJsonElement(rules.stateSerializer, s),
-            players = players,
-            last = lastMove?.let { m ->
-                LastMove(lastSeat!!, Codec.json.encodeToJsonElement(rules.moveSerializer, m))
-            },
-        )
-        val bytes = Codec.encode(msg)
-        remotePeers().forEach { transport.send(it, bytes) }
+        val privateRules = rules as? PrivateStateRules<S, M>
+        val actor = lastSeat
+        val move = lastMove
+        seats.forEachIndexed { i, seat ->
+            val peer = seat.peer
+            if (peer == null || !seat.connected) return@forEachIndexed
+            val view = privateRules?.viewFor(s, i) ?: s
+            val last = if (move != null && actor != null) {
+                val shown = privateRules?.viewMove(move, actor, i) ?: move.takeIf { privateRules == null }
+                shown?.let { m ->
+                    LastMove(actor, Codec.json.encodeToJsonElement(rules.moveSerializer, m))
+                }
+            } else null
+            send(
+                peer,
+                Message.State(
+                    seq = seq,
+                    turn = rules.currentTurn(s),
+                    finished = rules.isFinished(s),
+                    state = Codec.json.encodeToJsonElement(rules.stateSerializer, view),
+                    players = players,
+                    last = last,
+                ),
+            )
+        }
         onPlayersChanged?.invoke(players)
         onStateChanged?.invoke(s)
     }

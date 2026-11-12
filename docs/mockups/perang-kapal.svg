@@ -1,0 +1,405 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1812" height="1900" viewBox="0 0 1812 1900">
+<rect width="1812" height="1900" fill="#191512"/>
+<defs><radialGradient id="lbg" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient>
+<radialGradient id="dbg" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient></defs>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Perang kapal / Light</text>
+<g transform="translate(16,52)">
+<rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+<rect x="24" y="70" width="300" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<rect x="44" y="90" width="260" height="150" rx="16" fill="#1B4F72"/>
+
+<rect x="74" y="130" width="90" height="16" rx="4" fill="#8F552A"/>
+<rect x="74" y="152" width="72" height="16" rx="4" fill="#B8743F"/>
+<rect x="74" y="174" width="54" height="16" rx="4" fill="#8F552A"/>
+<rect x="74" y="196" width="54" height="16" rx="4" fill="#B8743F"/>
+<rect x="74" y="218" width="36" height="16" rx="4" fill="#8F552A"/>
+
+<text x="174" y="268" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Perang kapal</text>
+<text x="174" y="293" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">2 players</text>
+<text x="174" y="316" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Sink the fleet.</text>
+<circle cx="54" cy="220" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="54" y="228" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<circle cx="294" cy="220" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="294" y="228" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">›</text>
+<rect x="340" y="70" width="510" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="358" y="100" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Play on</text>
+<rect x="358" y="110" width="150" height="40" rx="12" fill="#A65A26"/>
+<text x="433" y="136" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">This phone</text>
+<rect x="516" y="110" width="150" height="40" rx="12" fill="#F6E6D3"/>
+<text x="591" y="136" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Nearby</text>
+<rect x="674" y="110" width="150" height="40" rx="12" fill="#F6E6D3"/>
+<text x="749" y="136" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Online</text>
+<text x="358" y="175" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Players</text>
+<rect x="358" y="186" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="386" cy="208" r="10" fill="#D6453D"/>
+<text x="386" y="234" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">You</text>
+<rect x="424" y="186" width="56" height="56" rx="12" fill="#F6E6D3" stroke="#2F6FD1" stroke-width="2"/>
+<circle cx="452" cy="208" r="10" fill="#2F6FD1"/>
+<text x="452" y="234" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">Bot</text>
+<text x="358" y="280" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Classic · one shot each turn</text>
+<text x="358" y="302" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">You vs the computer</text>
+<rect x="700" y="312" width="130" height="44" rx="14" fill="#A65A26"/>
+<text x="765" y="340" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Start</text>
+</g>
+<text x="922" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Perang kapal / Dark</text>
+<g transform="translate(922,52)">
+<rect width="874" height="402" rx="12" fill="url(#dbg)"/>
+<rect x="24" y="70" width="300" height="300" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<rect x="44" y="90" width="260" height="150" rx="16" fill="#1B4F72"/>
+
+<rect x="74" y="130" width="90" height="16" rx="4" fill="#8F552A"/>
+<rect x="74" y="152" width="72" height="16" rx="4" fill="#B8743F"/>
+<rect x="74" y="174" width="54" height="16" rx="4" fill="#8F552A"/>
+<rect x="74" y="196" width="54" height="16" rx="4" fill="#B8743F"/>
+<rect x="74" y="218" width="36" height="16" rx="4" fill="#8F552A"/>
+
+<text x="174" y="268" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="900" text-anchor="middle">Perang kapal</text>
+<text x="174" y="293" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">2 players</text>
+<text x="174" y="316" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Sink the fleet.</text>
+<circle cx="54" cy="220" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="54" y="228" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<circle cx="294" cy="220" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="294" y="228" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">›</text>
+<rect x="340" y="70" width="510" height="300" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="358" y="100" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Play on</text>
+<rect x="358" y="110" width="150" height="40" rx="12" fill="#C9783A"/>
+<text x="433" y="136" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">This phone</text>
+<rect x="516" y="110" width="150" height="40" rx="12" fill="#3A2C20"/>
+<text x="591" y="136" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Nearby</text>
+<rect x="674" y="110" width="150" height="40" rx="12" fill="#3A2C20"/>
+<text x="749" y="136" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Online</text>
+<text x="358" y="175" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Players</text>
+<rect x="358" y="186" width="56" height="56" rx="12" fill="#3A2C20" stroke="#D6453D" stroke-width="2"/>
+<circle cx="386" cy="208" r="10" fill="#D6453D"/>
+<text x="386" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">You</text>
+<rect x="424" y="186" width="56" height="56" rx="12" fill="#3A2C20" stroke="#2F6FD1" stroke-width="2"/>
+<circle cx="452" cy="208" r="10" fill="#2F6FD1"/>
+<text x="452" y="234" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="10" font-weight="800" text-anchor="middle">Bot</text>
+<text x="358" y="280" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Classic · one shot each turn</text>
+<text x="358" y="302" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">You vs the computer</text>
+<rect x="700" y="312" width="130" height="44" rx="14" fill="#C9783A"/>
+<text x="765" y="340" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Start</text>
+</g>
+<text x="16" y="500" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Place fleet / Light</text>
+<g transform="translate(16,514)">
+<rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900">Perang kapal</text>
+<text x="80" y="54" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700">Place your fleet</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="220" y="78" width="240" height="240" rx="8" fill="#D6E8F2" stroke="#A8C0D0" stroke-width="1.5"/>
+<line x1="220" y1="78" x2="460" y2="78" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="78" x2="220" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="102" x2="460" y2="102" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="244" y1="78" x2="244" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="126" x2="460" y2="126" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="268" y1="78" x2="268" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="150" x2="460" y2="150" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="292" y1="78" x2="292" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="174" x2="460" y2="174" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="316" y1="78" x2="316" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="198" x2="460" y2="198" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="340" y1="78" x2="340" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="222" x2="460" y2="222" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="364" y1="78" x2="364" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="246" x2="460" y2="246" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="388" y1="78" x2="388" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="270" x2="460" y2="270" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="412" y1="78" x2="412" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="294" x2="460" y2="294" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="436" y1="78" x2="436" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="318" x2="460" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="460" y1="78" x2="460" y2="318" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<rect x="246" y="104" width="116" height="20" rx="4" fill="#8F552A"/>
+<rect x="246" y="152" width="92" height="20" rx="4" fill="#B8743F"/>
+<rect x="366" y="200" width="20" height="68" rx="4" fill="#8F552A"/>
+<rect x="294" y="248" width="68" height="20" rx="4" fill="#B8743F"/>
+<rect x="414" y="128" width="20" height="44" rx="4" fill="#8F552A"/>
+<rect x="413" y="127" width="22" height="22" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<rect x="413" y="151" width="22" height="22" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<text x="340" y="70" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Your ocean</text>
+<rect x="500" y="100" width="340" height="220" rx="16" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="520" y="130" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">Ships</text>
+<text x="520" y="156" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Tap a ship, then a cell. Rotate flips it.</text>
+<rect x="520" y="172" width="100" height="20" rx="4" fill="#8F552A"/>
+<text x="630" y="187" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal induk · 5</text>
+<rect x="520" y="200" width="80" height="20" rx="4" fill="#B8743F"/>
+<text x="610" y="215" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal perang · 4</text>
+<rect x="520" y="228" width="60" height="20" rx="4" fill="#8F552A"/>
+<text x="590" y="243" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Penjelajah · 3</text>
+<rect x="520" y="256" width="60" height="20" rx="4" fill="#B8743F"/>
+<text x="590" y="271" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal selam · 3</text>
+<rect x="520" y="284" width="40" height="20" rx="4" fill="#8F552A" stroke="#F0B429" stroke-width="2"/>
+<text x="570" y="299" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800">Perusak · 2 · selected</text>
+<rect x="700" y="340" width="130" height="44" rx="14" fill="#A65A26"/>
+<text x="765" y="368" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Ready</text>
+<rect x="560" y="340" width="120" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="620" y="368" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Rotate</text>
+</g>
+<text x="922" y="500" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Place fleet / Dark</text>
+<g transform="translate(922,514)">
+<rect width="874" height="402" rx="12" fill="url(#dbg)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900">Perang kapal</text>
+<text x="80" y="54" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700">Place your fleet</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#3A2C20" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="220" y="78" width="240" height="240" rx="8" fill="#163A54" stroke="#3A5A72" stroke-width="1.5"/>
+<line x1="220" y1="78" x2="460" y2="78" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="78" x2="220" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="102" x2="460" y2="102" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="244" y1="78" x2="244" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="126" x2="460" y2="126" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="268" y1="78" x2="268" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="150" x2="460" y2="150" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="292" y1="78" x2="292" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="174" x2="460" y2="174" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="316" y1="78" x2="316" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="198" x2="460" y2="198" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="340" y1="78" x2="340" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="222" x2="460" y2="222" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="364" y1="78" x2="364" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="246" x2="460" y2="246" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="388" y1="78" x2="388" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="270" x2="460" y2="270" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="412" y1="78" x2="412" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="294" x2="460" y2="294" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="436" y1="78" x2="436" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="220" y1="318" x2="460" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="460" y1="78" x2="460" y2="318" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<rect x="246" y="104" width="116" height="20" rx="4" fill="#8F552A"/>
+<rect x="246" y="152" width="92" height="20" rx="4" fill="#B8743F"/>
+<rect x="366" y="200" width="20" height="68" rx="4" fill="#8F552A"/>
+<rect x="294" y="248" width="68" height="20" rx="4" fill="#B8743F"/>
+<rect x="414" y="128" width="20" height="44" rx="4" fill="#8F552A"/>
+<rect x="413" y="127" width="22" height="22" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<rect x="413" y="151" width="22" height="22" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<text x="340" y="70" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Your ocean</text>
+<rect x="500" y="100" width="340" height="220" rx="16" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="520" y="130" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">Ships</text>
+<text x="520" y="156" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Tap a ship, then a cell. Rotate flips it.</text>
+<rect x="520" y="172" width="100" height="20" rx="4" fill="#8F552A"/>
+<text x="630" y="187" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal induk · 5</text>
+<rect x="520" y="200" width="80" height="20" rx="4" fill="#B8743F"/>
+<text x="610" y="215" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal perang · 4</text>
+<rect x="520" y="228" width="60" height="20" rx="4" fill="#8F552A"/>
+<text x="590" y="243" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Penjelajah · 3</text>
+<rect x="520" y="256" width="60" height="20" rx="4" fill="#B8743F"/>
+<text x="590" y="271" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">Kapal selam · 3</text>
+<rect x="520" y="284" width="40" height="20" rx="4" fill="#8F552A" stroke="#F0B429" stroke-width="2"/>
+<text x="570" y="299" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800">Perusak · 2 · selected</text>
+<rect x="700" y="340" width="130" height="44" rx="14" fill="#C9783A"/>
+<text x="765" y="368" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Ready</text>
+<rect x="560" y="340" width="120" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="620" y="368" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Rotate</text>
+</g>
+<text x="16" y="962" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Battle · your turn / Light</text>
+<g transform="translate(16,976)">
+<rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+<circle cx="46" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="46" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900">Perang kapal</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#F6E6D3" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="170" y="90" width="220" height="220" rx="8" fill="#D6E8F2" stroke="#A8C0D0" stroke-width="1.5"/>
+<line x1="170" y1="90" x2="390" y2="90" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="90" x2="170" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="112" x2="390" y2="112" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="192" y1="90" x2="192" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="134" x2="390" y2="134" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="214" y1="90" x2="214" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="156" x2="390" y2="156" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="236" y1="90" x2="236" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="178" x2="390" y2="178" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="258" y1="90" x2="258" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="200" x2="390" y2="200" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="280" y1="90" x2="280" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="222" x2="390" y2="222" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="302" y1="90" x2="302" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="244" x2="390" y2="244" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="324" y1="90" x2="324" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="266" x2="390" y2="266" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="346" y1="90" x2="346" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="288" x2="390" y2="288" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="368" y1="90" x2="368" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="310" x2="390" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="390" y1="90" x2="390" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<rect x="194" y="114" width="106" height="18" rx="4" fill="#8F552A"/>
+<rect x="194" y="158" width="84" height="18" rx="4" fill="#B8743F"/>
+<rect x="304" y="202" width="18" height="62" rx="4" fill="#8F552A"/>
+<rect x="238" y="246" width="62" height="18" rx="4" fill="#B8743F"/>
+<rect x="348" y="136" width="18" height="40" rx="4" fill="#8F552A"/>
+<circle cx="225.0" cy="123.0" r="6.16" fill="#D6453D"/>
+<circle cx="269.0" cy="189.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="313.0" cy="233.0" r="6.16" fill="#D6453D"/>
+<circle cx="335.0" cy="211.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<rect x="430" y="90" width="220" height="220" rx="8" fill="#E8EEF2" stroke="#A8C0D0" stroke-width="1.5"/>
+<line x1="430" y1="90" x2="650" y2="90" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="90" x2="430" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="112" x2="650" y2="112" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="452" y1="90" x2="452" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="134" x2="650" y2="134" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="474" y1="90" x2="474" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="156" x2="650" y2="156" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="496" y1="90" x2="496" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="178" x2="650" y2="178" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="518" y1="90" x2="518" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="200" x2="650" y2="200" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="540" y1="90" x2="540" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="222" x2="650" y2="222" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="562" y1="90" x2="562" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="244" x2="650" y2="244" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="584" y1="90" x2="584" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="266" x2="650" y2="266" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="606" y1="90" x2="606" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="288" x2="650" y2="288" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="628" y1="90" x2="628" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="310" x2="650" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<line x1="650" y1="90" x2="650" y2="310" stroke="#A8C0D0" stroke-width="0.8" opacity="0.55"/>
+<circle cx="441.0" cy="101.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="507.0" cy="145.0" r="6.16" fill="#D6453D"/>
+<circle cx="507.0" cy="167.0" r="6.16" fill="#D6453D"/>
+<circle cx="551.0" cy="255.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="617.0" cy="277.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<rect x="563" y="179" width="20" height="20" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<text x="280.0" y="78" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Your ocean</text>
+<text x="540.0" y="78" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Radar</text>
+<circle cx="790" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="790" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="734" y="46" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<text x="796" y="200" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Your turn</text>
+<text x="796" y="222" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Tap a cell</text>
+<text x="437" y="340" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="800" text-anchor="middle">Hit!</text>
+<text x="437" y="362" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Enemy ocean · D7</text>
+</g>
+<text x="922" y="962" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Battle · your turn / Dark</text>
+<g transform="translate(922,976)">
+<rect width="874" height="402" rx="12" fill="url(#dbg)"/>
+<circle cx="46" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="46" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">‹</text>
+<text x="80" y="32" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="900">Perang kapal</text>
+<rect x="24" y="80" width="64" height="64" rx="12" fill="#2A221C" stroke="#D6453D" stroke-width="2"/>
+<circle cx="56" cy="104" r="12" fill="#D6453D"/>
+<text x="56" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">You</text>
+<rect x="94" y="80" width="64" height="64" rx="12" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<circle cx="126" cy="104" r="12" fill="#2F6FD1"/>
+<text x="126" y="132" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="11" font-weight="800" text-anchor="middle">Bot</text>
+<rect x="170" y="90" width="220" height="220" rx="8" fill="#163A54" stroke="#3A5A72" stroke-width="1.5"/>
+<line x1="170" y1="90" x2="390" y2="90" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="90" x2="170" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="112" x2="390" y2="112" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="192" y1="90" x2="192" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="134" x2="390" y2="134" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="214" y1="90" x2="214" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="156" x2="390" y2="156" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="236" y1="90" x2="236" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="178" x2="390" y2="178" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="258" y1="90" x2="258" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="200" x2="390" y2="200" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="280" y1="90" x2="280" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="222" x2="390" y2="222" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="302" y1="90" x2="302" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="244" x2="390" y2="244" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="324" y1="90" x2="324" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="266" x2="390" y2="266" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="346" y1="90" x2="346" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="288" x2="390" y2="288" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="368" y1="90" x2="368" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="170" y1="310" x2="390" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="390" y1="90" x2="390" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<rect x="194" y="114" width="106" height="18" rx="4" fill="#8F552A"/>
+<rect x="194" y="158" width="84" height="18" rx="4" fill="#B8743F"/>
+<rect x="304" y="202" width="18" height="62" rx="4" fill="#8F552A"/>
+<rect x="238" y="246" width="62" height="18" rx="4" fill="#B8743F"/>
+<rect x="348" y="136" width="18" height="40" rx="4" fill="#8F552A"/>
+<circle cx="225.0" cy="123.0" r="6.16" fill="#D6453D"/>
+<circle cx="269.0" cy="189.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="313.0" cy="233.0" r="6.16" fill="#D6453D"/>
+<circle cx="335.0" cy="211.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<rect x="430" y="90" width="220" height="220" rx="8" fill="#1A2A38" stroke="#3A5A72" stroke-width="1.5"/>
+<line x1="430" y1="90" x2="650" y2="90" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="90" x2="430" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="112" x2="650" y2="112" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="452" y1="90" x2="452" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="134" x2="650" y2="134" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="474" y1="90" x2="474" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="156" x2="650" y2="156" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="496" y1="90" x2="496" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="178" x2="650" y2="178" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="518" y1="90" x2="518" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="200" x2="650" y2="200" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="540" y1="90" x2="540" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="222" x2="650" y2="222" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="562" y1="90" x2="562" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="244" x2="650" y2="244" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="584" y1="90" x2="584" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="266" x2="650" y2="266" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="606" y1="90" x2="606" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="288" x2="650" y2="288" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="628" y1="90" x2="628" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="430" y1="310" x2="650" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<line x1="650" y1="90" x2="650" y2="310" stroke="#3A5A72" stroke-width="0.8" opacity="0.55"/>
+<circle cx="441.0" cy="101.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="507.0" cy="145.0" r="6.16" fill="#D6453D"/>
+<circle cx="507.0" cy="167.0" r="6.16" fill="#D6453D"/>
+<circle cx="551.0" cy="255.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<circle cx="617.0" cy="277.0" r="4.84" fill="none" stroke="#5A4537" stroke-width="2"/>
+<rect x="563" y="179" width="20" height="20" rx="3" fill="none" stroke="#F0B429" stroke-width="2.5"/>
+<text x="280.0" y="78" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Your ocean</text>
+<text x="540.0" y="78" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="800" text-anchor="middle">Radar</text>
+<circle cx="790" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="790" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">?</text>
+<circle cx="734" cy="38" r="22" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="734" y="46" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800" text-anchor="middle">♪</text>
+<text x="796" y="200" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="800" text-anchor="middle">Your turn</text>
+<text x="796" y="222" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Tap a cell</text>
+<text x="437" y="340" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="800" text-anchor="middle">Hit!</text>
+<text x="437" y="362" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700" text-anchor="middle">Enemy ocean · D7</text>
+</g>
+<text x="16" y="1424" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Result / Light</text>
+<g transform="translate(16,1438)">
+<rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+<rect x="187" y="60" width="500" height="280" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="437" y="110" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">You win</text>
+<text x="437" y="140" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Fleet sunk</text>
+<circle cx="280" cy="190" r="14" fill="#D6453D"/>
+<text x="305" y="196" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">1. You</text>
+<circle cx="280" cy="228" r="14" fill="#2F6FD1"/>
+<text x="305" y="234" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">2. Bot</text>
+<rect x="227" y="270" width="180" height="44" rx="14" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+<text x="317" y="298" fill="#5A4537" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">To menu</text>
+<rect x="427" y="270" width="180" height="44" rx="14" fill="#A65A26"/>
+<text x="517" y="298" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play again</text>
+</g>
+<text x="922" y="1424" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Result / Dark</text>
+<g transform="translate(922,1438)">
+<rect width="874" height="402" rx="12" fill="url(#dbg)"/>
+<rect x="187" y="60" width="500" height="280" rx="20" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="437" y="110" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">You win</text>
+<text x="437" y="140" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" text-anchor="middle">Fleet sunk</text>
+<circle cx="280" cy="190" r="14" fill="#D6453D"/>
+<text x="305" y="196" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">1. You</text>
+<circle cx="280" cy="228" r="14" fill="#2F6FD1"/>
+<text x="305" y="234" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">2. Bot</text>
+<rect x="227" y="270" width="180" height="44" rx="14" fill="#2A221C" stroke="#3A3027" stroke-width="1.5"/>
+<text x="317" y="298" fill="#B7A593" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">To menu</text>
+<rect x="427" y="270" width="180" height="44" rx="14" fill="#C9783A"/>
+<text x="517" y="298" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800" text-anchor="middle">Play again</text>
+</g>
+</svg>

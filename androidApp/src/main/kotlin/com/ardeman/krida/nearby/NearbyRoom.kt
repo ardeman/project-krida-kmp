@@ -17,10 +17,15 @@ import com.ardeman.krida.congklak.HostTable
 import com.ardeman.krida.core.games.CongklakGame
 import com.ardeman.krida.core.games.LudoBot
 import com.ardeman.krida.core.games.LudoGame
+import com.ardeman.krida.core.games.PerangKapalBot
+import com.ardeman.krida.core.games.PerangKapalGame
 import com.ardeman.krida.ludo.LudoGuestTable
 import com.ardeman.krida.ludo.LudoHostTable
 import com.ardeman.krida.ludo.LudoSettings
 import com.ardeman.krida.ludo.LudoTable
+import com.ardeman.krida.perangkapal.PerangKapalGuestTable
+import com.ardeman.krida.perangkapal.PerangKapalHostTable
+import com.ardeman.krida.perangkapal.PerangKapalTable
 import com.ardeman.krida.core.games.StandardRules
 import com.ardeman.krida.core.games.UlarTanggaBot
 import com.ardeman.krida.core.games.UlarTanggaGame
@@ -99,6 +104,8 @@ class NearbyRoom private constructor(
     var ular by mutableStateOf<UlarTanggaTable?>(null)
         private set
     var ludo by mutableStateOf<LudoTable?>(null)
+        private set
+    var perangKapal by mutableStateOf<PerangKapalTable?>(null)
         private set
 
     /** Ids of the friend invites whose guests hold a seat now (host only). */
@@ -272,7 +279,7 @@ class NearbyRoom private constructor(
         if (!failed) stage = Stage.LOST
     }
 
-    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO }
+    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO, PERANG_KAPAL }
 
     companion object {
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
@@ -283,9 +290,13 @@ class NearbyRoom private constructor(
             val gameId = when (game) {
                 Game.ULAR_TANGGA -> UlarTanggaGame.id
                 Game.LUDO -> LudoGame.id
+                Game.PERANG_KAPAL -> PerangKapalGame.id
                 Game.CONGKLAK -> CongklakGame.id
             }
-            val total = if (game == Game.CONGKLAK) 2 else seats?.coerceIn(2, 4) ?: 4
+            val total = when (game) {
+                Game.CONGKLAK, Game.PERANG_KAPAL -> 2
+                else -> seats?.coerceIn(2, 4) ?: 4
+            }
             val useLan = lan && !online
             val transport: Transport = when {
                 online -> OnlineHostTransport(roomCode, game = gameId, seats = total, publicRoom = publicRoom)
@@ -328,6 +339,18 @@ class NearbyRoom private constructor(
                         }
                     }
                 }
+                Game.PERANG_KAPAL -> {
+                    val session = room.hostSession(StandardRules.perangKapal, name, transport, avatar)
+                    room.canAddBots = true
+                    room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, PerangKapalBot()) }
+                    room.removeBot = { seat -> session.removeBot(seat) }
+                    room.begin = {
+                        if (session.canStart()) {
+                            session.start()
+                            room.perangKapal = PerangKapalHostTable(session, mySeat = 0, transport = transport)
+                        }
+                    }
+                }
             }
             when (transport) {
                 is BleHostTransport -> transport.start()
@@ -335,7 +358,11 @@ class NearbyRoom private constructor(
                 is OnlineHostTransport -> {
                     // Only before the game: once it runs, the table shows the drop.
                     transport.onReady = onOnlineReady
-                    transport.onClosed = { if (room.congklak == null && room.ular == null && room.ludo == null) room.stage = Stage.OFFLINE }
+                    transport.onClosed = {
+                        if (room.congklak == null && room.ular == null && room.ludo == null && room.perangKapal == null) {
+                            room.stage = Stage.OFFLINE
+                        }
+                    }
                     transport.start()
                 }
             }
@@ -383,6 +410,10 @@ class NearbyRoom private constructor(
                     }
                     LudoGame.id -> room.guestSession(LudoGame, join).also { s ->
                         s.onState = { _ -> room.ludo = LudoGuestTable(s) }
+                        s.replay()
+                    }
+                    PerangKapalGame.id -> room.guestSession(PerangKapalGame, join).also { s ->
+                        s.onState = { _ -> room.perangKapal = PerangKapalGuestTable(s) }
                         s.replay()
                     }
                     else -> room.stage = Stage.UNKNOWN_GAME

@@ -368,4 +368,34 @@
     <string name="invite_card_title">%1$s mengundangmu</string>
     <string name="invite_card_detail">%1$s · room %2$s · %3$d dari %4$d pemain</string>
     <string name="invite_not_now">Nanti saja</string>
+    <!-- Perang kapal -->
+    <string name="perang_kapal_title">Perang kapal</string>
+    <string name="perang_kapal_card_players">2 pemain</string>
+    <string name="perang_kapal_card_tagline">Tenggelamkan armadanya.</string>
+    <string name="perang_kapal_player_lost">Pemain terputus. Komputer menggantikan setelah 15 detik.</string>
+    <string name="perang_kapal_detail_nearby">2 HP lewat Bluetooth, tanpa internet</string>
+    <string name="perang_kapal_detail_online">2 HP lewat internet, teman di mana saja</string>
+    <string name="perang_kapal_detail_computer">Kamu melawan komputer.</string>
+    <string name="perang_kapal_hint">Klasik · satu tembakan tiap giliran</string>
+    <string name="perang_kapal_place_fleet">Susun armadamu</string>
+    <string name="perang_kapal_place_hint">Ketuk kapal, lalu kotak di lautmu</string>
+    <string name="perang_kapal_waiting_ready">Menunggu pemain lain…</string>
+    <string name="perang_kapal_ready">Siap</string>
+    <string name="perang_kapal_rotate">Putar</string>
+    <string name="perang_kapal_your_turn">Giliranmu · ketuk kotak di radar</string>
+    <string name="perang_kapal_hit">Kena!</string>
+    <string name="perang_kapal_miss">Meleset</string>
+    <string name="perang_kapal_sunk">%1$s tenggelam!</string>
+    <string name="perang_kapal_you_win">Kamu menang</string>
+    <string name="perang_kapal_wins">%1$s menang</string>
+    <string name="perang_kapal_fleet_sunk">Armada tenggelam</string>
+    <string name="perang_kapal_ship_carrier">Kapal induk · 5</string>
+    <string name="perang_kapal_ship_battleship">Kapal perang · 4</string>
+    <string name="perang_kapal_ship_cruiser">Kapal penjelajah · 3</string>
+    <string name="perang_kapal_ship_sub">Kapal selam · 3</string>
+    <string name="perang_kapal_ship_destroyer">Kapal perusak · 2</string>
+    <string name="perang_kapal_rule_fleet">Tiap pihak punya lima kapal: panjang 5, 4, 3, 3, dan 2 di papan 10×10.</string>
+    <string name="perang_kapal_rule_place">Susun semua kapal sebelum menembak. Kapal lurus, di dalam papan, dan boleh saling bersentuhan.</string>
+    <string name="perang_kapal_rule_fire">Pemain bergiliran menembak satu kali. Kena tidak memberi tembakan lagi.</string>
+    <string name="perang_kapal_rule_win">Tenggelamkan seluruh armada lawan untuk menang.</string>
 </resources>

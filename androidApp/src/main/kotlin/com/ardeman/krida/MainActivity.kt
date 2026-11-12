@@ -113,11 +113,17 @@ import com.ardeman.krida.ulartangga.UlarTanggaRenderer
 import com.ardeman.krida.ulartangga.UlarTanggaScreen
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.core.games.LudoGame
+import com.ardeman.krida.core.games.PerangKapalGame
 import com.ardeman.krida.ludo.LudoHostTable
 import com.ardeman.krida.ludo.LudoPreview
 import com.ardeman.krida.ludo.LudoScreen
 import com.ardeman.krida.ludo.LudoSettings
 import com.ardeman.krida.ludo.LudoTable
+import com.ardeman.krida.perangkapal.PerangKapalHostTable
+import com.ardeman.krida.perangkapal.PerangKapalPreview
+import com.ardeman.krida.perangkapal.PerangKapalScreen
+import com.ardeman.krida.perangkapal.PerangKapalSettings
+import com.ardeman.krida.perangkapal.PerangKapalTable
 import com.ardeman.krida.ulartangga.UlarTanggaHostTable
 import com.ardeman.krida.ulartangga.UlarTanggaTable
 import com.ardeman.krida.core.games.CongklakBot
@@ -178,6 +184,7 @@ class MainActivity : ComponentActivity() {
     private var passAndPlay by mutableStateOf<CongklakTable?>(null)
     private var ularTable by mutableStateOf<UlarTanggaTable?>(null)
     private var ludoTable by mutableStateOf<LudoTable?>(null)
+    private var perangKapalTable by mutableStateOf<PerangKapalTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     /** A string resource under the join screen's code: the scanner failed or read another QR. */
     private var joinError by mutableStateOf<Int?>(null)
@@ -229,6 +236,7 @@ class MainActivity : ComponentActivity() {
         CongklakSettings.init(this)
         UlarTanggaSettings.init(this)
         LudoSettings.init(this)
+        PerangKapalSettings.init(this)
         LastRoom.init(this)
         Account.init(this)
         // Language and theme changes recreate this activity with its original launch intent.
@@ -253,9 +261,10 @@ class MainActivity : ComponentActivity() {
                 val table = passAndPlay ?: r?.congklak
                 val ular = ularTable ?: r?.ular
                 val ludo = ludoTable ?: r?.ludo
+                val perang = perangKapalTable ?: r?.perangKapal
                 // Games and rooms can sit idle between turns / while waiting for a friend;
                 // keep the screen awake so the phone doesn't sleep mid-session.
-                val keepAwake = ludo != null || ular != null || table != null || r != null
+                val keepAwake = perang != null || ludo != null || ular != null || table != null || r != null
                 DisposableEffect(keepAwake) {
                     val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                     if (keepAwake) window.addFlags(flag) else window.clearFlags(flag)
@@ -270,6 +279,7 @@ class MainActivity : ComponentActivity() {
                     onDispose { Invites.stop() }
                 }
                 when {
+                    perang != null -> PerangKapalScreen(perang, onExit = { perangKapalTable = null; room = null; joining = false })
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
                     ular != null -> UlarTanggaScreen(ular, onExit = { ularTable = null; room = null; joining = false })
                     table != null -> CongklakScreen(table, onExit = { passAndPlay = null; room = null; joining = false })
@@ -278,8 +288,7 @@ class MainActivity : ComponentActivity() {
                         game = quickMatchGame,
                         onBack = { creatingOnlineRoom = false },
                         onCreate = { public, seats ->
-                            room = NearbyRoom.host(this@MainActivity, myName,
-                                when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
+                            room = NearbyRoom.host(this@MainActivity, myName, nearbyGame(quickMatchGame),
                                 online = true, publicRoom = public, seats = seats, avatar = myAvatar)
                             creatingOnlineRoom = false
                         },
@@ -290,8 +299,7 @@ class MainActivity : ComponentActivity() {
                         target = quickMatchTarget,
                         onCancel = { playingQuickMatch = false },
                         createHost = { code, humans, bots, onReady ->
-                            NearbyRoom.host(this@MainActivity, myName,
-                                when (quickMatchGame) { LudoGame.id -> NearbyRoom.Game.LUDO; UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA; else -> NearbyRoom.Game.CONGKLAK },
+                            NearbyRoom.host(this@MainActivity, myName, nearbyGame(quickMatchGame),
                                 online = true, code = code, onOnlineReady = onReady, standardRules = true, avatar = myAvatar,
                             ).also { it.configureQuickMatch(humans, bots, getString(R.string.bot_name)) }
                         },
@@ -310,6 +318,7 @@ class MainActivity : ComponentActivity() {
                                 LudoGame.id -> ludoTable = LudoHostTable.local(List(count) { seat ->
                                     LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
                                 })
+                                PerangKapalGame.id -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
                                 else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             }
                             playingQuickMatch = false
@@ -584,6 +593,7 @@ class MainActivity : ComponentActivity() {
         var nearbyLink by rememberSaveable { mutableStateOf(NearbyLink.BLUETOOTH) }
         val ular = game == Game.ULAR_TANGGA
         val ludo = game == Game.LUDO
+        val kapal = game == Game.PERANG_KAPAL
         val multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         val nearby = place != Place.PHONE
@@ -595,6 +605,7 @@ class MainActivity : ComponentActivity() {
         val seats = when {
             ular -> UlarTanggaSettings.seats
             ludo -> LudoSettings.seats
+            kapal -> PerangKapalSettings.phoneSeats
             else -> congklak
         }
         val computers = seats.count { it == LocalSeat.COMPUTER }
@@ -641,8 +652,9 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            // In a nearby room everyone who joins plays, up to 4.
-            if (!nearby) SettingRow(stringResource(R.string.play_players)) {
+            // In a nearby room everyone who joins plays, up to 4. Perang kapal on this phone
+            // is locked to you vs the computer (no seat taps).
+            if (!nearby && !kapal) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
                     colors = if (multi) {
@@ -661,6 +673,17 @@ class MainActivity : ComponentActivity() {
                     },
                 )
             }
+            if (!nearby && kapal) {
+                SettingRow(stringResource(R.string.play_players)) {
+                    SeatTiles(
+                        seats = seats,
+                        colors = listOf(Color(0xFFD6453D), Color(0xFF2F6FD1)),
+                        tappable = emptySet(),
+                        onTap = {},
+                    )
+                }
+                Hint(stringResource(R.string.perang_kapal_hint))
+            }
             if (!nearby && multi && people == 1 && computers > 0) {
                 LocalColorRow(
                     names = colorNames,
@@ -678,9 +701,20 @@ class MainActivity : ComponentActivity() {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
-                            online -> Detail(stringResource(when { ular -> R.string.ular_detail_online; ludo -> R.string.ludo_detail_online; else -> R.string.online_detail }))
+                            online -> Detail(stringResource(when {
+                                ular -> R.string.ular_detail_online
+                                ludo -> R.string.ludo_detail_online
+                                kapal -> R.string.perang_kapal_detail_online
+                                else -> R.string.online_detail
+                            }))
                             lan -> Detail(stringResource(R.string.nearby_detail_wifi))
-                            nearby -> Detail(stringResource(when { ular -> R.string.ular_detail_nearby; ludo -> R.string.ludo_detail_nearby; else -> R.string.nearby_detail }))
+                            nearby -> Detail(stringResource(when {
+                                ular -> R.string.ular_detail_nearby
+                                ludo -> R.string.ludo_detail_nearby
+                                kapal -> R.string.perang_kapal_detail_nearby
+                                else -> R.string.nearby_detail
+                            }))
+                            kapal -> Detail(stringResource(R.string.perang_kapal_detail_computer))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
                             !multi -> Detail(stringResource(R.string.mode_pass_detail))
                             computers == 0 -> Detail(stringResource(if (ludo) R.string.ludo_detail_phone else R.string.ular_detail_phone))
@@ -699,6 +733,7 @@ class MainActivity : ComponentActivity() {
                                     quickMatchGame = when {
                                         ular -> UlarTanggaGame.id
                                         ludo -> LudoGame.id
+                                        kapal -> PerangKapalGame.id
                                         else -> CongklakGame.id
                                     }
                                     joining = true
@@ -716,6 +751,7 @@ class MainActivity : ComponentActivity() {
                                         quickMatchGame = when {
                                             ular -> UlarTanggaGame.id
                                             ludo -> LudoGame.id
+                                            kapal -> PerangKapalGame.id
                                             else -> CongklakGame.id
                                         }
                                         creatingOnlineRoom = true
@@ -727,6 +763,7 @@ class MainActivity : ComponentActivity() {
                                                 when {
                                                     ular -> NearbyRoom.Game.ULAR_TANGGA
                                                     ludo -> NearbyRoom.Game.LUDO
+                                                    kapal -> NearbyRoom.Game.PERANG_KAPAL
                                                     else -> NearbyRoom.Game.CONGKLAK
                                                 },
                                                 lan = lan,
@@ -735,6 +772,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                         if (lan) startHost() else withBlePermissions { startHost() }
                                     }
+                                    kapal -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
                                     multi -> {
                                         var nextComputer = 0
                                         val players = seats.mapIndexedNotNull { i, kind ->
@@ -970,15 +1008,25 @@ private enum class Game(val title: Int, val players: Int, val tagline: Int, val 
     CONGKLAK(R.string.congklak_title, R.string.congklak_card_players, R.string.congklak_card_tagline, Theme.wood, Theme.woodShadow),
     ULAR_TANGGA(R.string.ular_title, R.string.ular_card_players, R.string.ular_card_tagline, Color(0xFF4F8A3B), Color(0xFF3B6A2B)),
     LUDO(R.string.ludo_title, R.string.ludo_card_players, R.string.ludo_card_tagline, Color(0xFF3D6EB5), Color(0xFF2A5085)),
+    PERANG_KAPAL(R.string.perang_kapal_title, R.string.perang_kapal_card_players, R.string.perang_kapal_card_tagline, Color(0xFF1B4F72), Color(0xFF123A54)),
+}
+
+private fun nearbyGame(id: String) = when (id) {
+    LudoGame.id -> NearbyRoom.Game.LUDO
+    UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA
+    PerangKapalGame.id -> NearbyRoom.Game.PERANG_KAPAL
+    else -> NearbyRoom.Game.CONGKLAK
 }
 
 @Composable
 private fun GameRoomOptions(game: Any) {
     val ular = game == Game.ULAR_TANGGA || game == UlarTanggaGame.id
     val ludo = game == Game.LUDO || game == LudoGame.id
+    val kapal = game == Game.PERANG_KAPAL || game == PerangKapalGame.id
     when {
         ular -> SettingRow(stringResource(R.string.play_rules)) { UlarTanggaOptionChips() }
         ludo -> SettingRow(stringResource(R.string.play_rules)) { LudoOptionChips() }
+        kapal -> Hint(stringResource(R.string.perang_kapal_hint))
         else -> {
             SettingRow(stringResource(R.string.play_capture)) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1198,6 +1246,7 @@ private fun GameCardFace(game: Game, onReady: () -> Unit, modifier: Modifier = M
                     }
                 }
                 Game.LUDO -> LudoPreview(preview, onReady = onReady)
+                Game.PERANG_KAPAL -> PerangKapalPreview(preview, onReady = onReady)
             }
             Text(stringResource(game.tagline), style = Theme.font(13, FontWeight.SemiBold, cream), modifier = Modifier.padding(end = 6.dp))
         }

@@ -23,7 +23,9 @@ export const PUSH_SCHEMA = [
   `CREATE INDEX IF NOT EXISTS push_tokens_user ON push_tokens (user_id)`,
 ];
 
-const GAME_NAMES: Record<string, string> = { congklak: "Congklak", ular_tangga: "Ular Tangga", ludo: "Ludo" };
+const GAME_NAMES: Record<string, string> = {
+  congklak: "Congklak", ular_tangga: "Ular Tangga", ludo: "Ludo", perang_kapal: "Perang Kapal",
+};
 
 let jwt: { at: number; kid: string; value: string } | undefined;
 

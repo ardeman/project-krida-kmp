@@ -379,4 +379,34 @@
     <string name="invite_card_title">%1$s invites you</string>
     <string name="invite_card_detail">%1$s · room %2$s · %3$d of %4$d players</string>
     <string name="invite_not_now">Not now</string>
+    <!-- Perang kapal -->
+    <string name="perang_kapal_title">Perang kapal</string>
+    <string name="perang_kapal_card_players">2 players</string>
+    <string name="perang_kapal_card_tagline">Sink the fleet.</string>
+    <string name="perang_kapal_player_lost">A player disconnected. The computer takes over after 15 seconds.</string>
+    <string name="perang_kapal_detail_nearby">2 phones over Bluetooth, no internet</string>
+    <string name="perang_kapal_detail_online">2 phones over the internet, friends anywhere</string>
+    <string name="perang_kapal_detail_computer">You against the computer.</string>
+    <string name="perang_kapal_hint">Classic · one shot each turn</string>
+    <string name="perang_kapal_place_fleet">Place your fleet</string>
+    <string name="perang_kapal_place_hint">Tap a ship, then a cell on your ocean</string>
+    <string name="perang_kapal_waiting_ready">Waiting for the other player…</string>
+    <string name="perang_kapal_ready">Ready</string>
+    <string name="perang_kapal_rotate">Rotate</string>
+    <string name="perang_kapal_your_turn">Your turn · tap a radar cell</string>
+    <string name="perang_kapal_hit">Hit!</string>
+    <string name="perang_kapal_miss">Miss</string>
+    <string name="perang_kapal_sunk">%1$s sunk!</string>
+    <string name="perang_kapal_you_win">You win</string>
+    <string name="perang_kapal_wins">%1$s wins</string>
+    <string name="perang_kapal_fleet_sunk">Fleet sunk</string>
+    <string name="perang_kapal_ship_carrier">Carrier · 5</string>
+    <string name="perang_kapal_ship_battleship">Battleship · 4</string>
+    <string name="perang_kapal_ship_cruiser">Cruiser · 3</string>
+    <string name="perang_kapal_ship_sub">Submarine · 3</string>
+    <string name="perang_kapal_ship_destroyer">Destroyer · 2</string>
+    <string name="perang_kapal_rule_fleet">Each side has five ships: lengths 5, 4, 3, 3 and 2 on a 10×10 grid.</string>
+    <string name="perang_kapal_rule_place">Place every ship before firing. Ships are straight, on the board, and may touch.</string>
+    <string name="perang_kapal_rule_fire">Players take turns firing one shot. A hit does not grant another shot.</string>
+    <string name="perang_kapal_rule_win">Sink the whole enemy fleet to win.</string>
 </resources>
