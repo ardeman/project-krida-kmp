@@ -39,5 +39,6 @@ The first install from a new signing certificate may need trusting on the phone:
 
 - **`No Android device ready`**: check the cable, USB debugging, and the authorization prompt on the phone; `adb devices` should list it as `device`.
 - **`No paired iPhone found`**: open Xcode's Device Hub with the phone plugged in and trust the Mac on the phone.
+- **iPhone install fails or times out (CoreDevice error 3002 or 4000)**: the link to the phone dropped, usually over Wi-Fi while the phone locked or slept. The script says whether it found the phone over cable or Wi-Fi and retries the install once; if it still fails, plug the phone in, unlock it, and run `./scripts/install-ios.sh --no-build`.
 - **iOS signing errors**: open `ios/Krida.xcodeproj` once in Xcode and check Signing & Capabilities is signed in to the team.
 - **Gradle fails with a Java version error**: install JDK 21 (`brew install openjdk@21`).

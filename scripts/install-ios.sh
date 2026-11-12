@@ -32,7 +32,9 @@ if [ -z "$DEVICE" ]; then
     exit 1
 fi
 NAME=$(jq -r --arg u "$DEVICE" '.result.devices[] | select(.hardwareProperties.udid == $u) | .deviceProperties.name' "$TMP/devices.json")
-echo "Device: $NAME ($DEVICE)"
+TRANSPORT=$(jq -r --arg u "$DEVICE" '.result.devices[] | select(.hardwareProperties.udid == $u) | .connectionProperties.transportType // ""' "$TMP/devices.json")
+if [ "$TRANSPORT" = "wired" ]; then VIA="cable"; else VIA="Wi-Fi"; fi
+echo "Device: $NAME ($DEVICE) over $VIA"
 
 if [ "${1:-}" != "--no-build" ]; then
     # The shared framework build step runs Gradle, which needs JDK 17–21.
@@ -47,7 +49,16 @@ fi
 
 [ -d "$APP" ] || { echo "App not found: $APP"; exit 1; }
 
-xcrun devicectl device install app --device "$DEVICE" "$APP"
+# Wi-Fi installs drop when the phone locks or sleeps (CoreDevice 3002, 4000): retry once.
+if ! xcrun devicectl device install app --device "$DEVICE" "$APP"; then
+    echo "Install failed; retrying once..."
+    sleep 3
+    xcrun devicectl device install app --device "$DEVICE" "$APP" || {
+        echo "Install failed again. Plug the iPhone in with a cable, unlock it, and run:"
+        echo "  ./scripts/install-ios.sh --no-build"
+        exit 1
+    }
+fi
 xcrun devicectl device process launch --device "$DEVICE" --terminate-existing "$BUNDLE_ID" \
     || echo "Installed, but launch failed (is the phone locked?). Open Krida by hand."
 
