@@ -513,7 +513,10 @@ private struct CongklakBoardView: View {
 
     private func avatar(_ seat: Int, on: Bool, size: CGFloat) -> some View {
         Group {
-            if seat == botSeat {
+            if seat != botSeat, let avatar = table.players.avatar(of: seat) {
+                // `size` is already scaled; AvatarBadge scales its own.
+                AvatarBadge(avatar: avatar, size: size / s)
+            } else if seat == botSeat {
                 Image(systemName: "desktopcomputer").font(.system(size: size * 0.5, weight: .semibold))
             } else {
                 Text(String(displayName(seat).prefix(1)).uppercased()).font(Theme.font(size * 0.45, .black))

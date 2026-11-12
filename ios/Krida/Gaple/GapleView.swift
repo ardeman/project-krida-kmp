@@ -472,7 +472,8 @@ private struct GapleBoardView: View {
         let score = state.scores.indices.contains(seat) ? state.scores[seat].intValue : 0
         let tiles = String(localized: "\(count) tiles", bundle: .app)
         return HStack(spacing: 6 * s) {
-            Circle().fill(pawnColor(seat)).frame(width: 14 * s, height: 14 * s)
+            let avatar = table.players.avatar(of: seat)
+            SeatAvatar(avatar: avatar, color: pawnColor(seat), size: avatar != nil ? 22 : 14)
             VStack(alignment: .leading, spacing: 0) {
                 Text(seatName(seat)).font(Theme.font(12 * s, .bold)).lineLimit(1)
                 Text(verbatim: state.partners ? "\(tiles) · \(teamLetter(seat))" : tiles)

@@ -1,5 +1,8 @@
 package com.ardeman.krida.ulartangga
 
+import com.ardeman.krida.account.SeatAvatar
+import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.AvatarBadge
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -652,6 +655,11 @@ private fun PlayerTile(
                 ) {
                     Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = Theme.ink, modifier = Modifier.size(10.dp))
                 }
+            } else {
+                // Multi-device players with an account show their avatar in the same corner.
+                table.players.avatarOf(seat)?.let {
+                    AvatarBadge(it, size = 18.dp, modifier = Modifier.align(Alignment.BottomEnd).border(1.5.dp, Color.White, CircleShape))
+                }
             }
         }
         Text(
@@ -701,7 +709,8 @@ private fun GameOver(table: UlarTanggaTable, state: UlarTanggaState, onExit: () 
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("${i + 1}", style = Theme.font(16, FontWeight.Black, Theme.muted), modifier = Modifier.width(18.dp))
-                        Box(Modifier.size(14.dp).background(seatColor(state, seat), CircleShape))
+                        val avatar = table.players.avatarOf(seat)
+                        SeatAvatar(avatar, seatColor(state, seat), if (avatar != null) 22.dp else 14.dp)
                         Text(displayName(table, seat), style = Theme.font(16, color = Theme.ink), maxLines = 1, modifier = Modifier.weight(1f))
                         val square = state.positions[seat]
                         Text(if (square == 0) stringResource(R.string.ular_start) else square.toString(), style = Theme.font(15, FontWeight.Bold, Theme.muted))

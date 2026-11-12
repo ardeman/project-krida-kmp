@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ardeman.krida.R
 import com.ardeman.krida.core.account.Avatar
+import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.ui.Theme
 import okhttp3.Call
 import okhttp3.Callback
@@ -69,6 +71,25 @@ fun AvatarBadge(
         is Avatar.Resolved.Drawn -> DrawnAvatar(shown.mix, size, modifier, ring)
         is Avatar.Resolved.Google -> GoogleAvatar(shown.url, size, modifier, ring)
         Avatar.Resolved.Neutral -> NeutralAvatar(size, modifier, ring)
+    }
+}
+
+/** The avatar of the player in [seat], or null for bots and players without one. */
+fun List<PlayerInfo>.avatarOf(seat: Int): String? = firstOrNull { it.seat == seat }?.takeIf { !it.bot }?.avatar
+
+/**
+ * In-game seat marker: the player's avatar inside a ring of the seat [color], or the plain
+ * colour dot when the seat has no avatar (signed out, bot, pass-and-play).
+ */
+@Composable
+fun SeatAvatar(avatar: String?, color: Color, size: Dp, modifier: Modifier = Modifier) {
+    if (avatar == null) {
+        Box(modifier.size(size).clip(CircleShape).background(color))
+    } else {
+        val ring = if (size < 24.dp) 2.dp else 3.dp
+        Box(modifier.size(size).background(color, CircleShape).padding(ring), contentAlignment = Alignment.Center) {
+            AvatarBadge(avatar, size = size - ring * 2)
+        }
     }
 }
 

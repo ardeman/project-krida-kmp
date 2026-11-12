@@ -1,5 +1,7 @@
 package com.ardeman.krida.congklak
 
+import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.AvatarBadge
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -455,6 +457,9 @@ private class Seats(private val table: CongklakTable, val near: Int) {
 
     fun name(seat: Int) = table.players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
 
+    /** The seat's account avatar in multi-device games; null keeps the initial or bot icon. */
+    fun avatar(seat: Int) = if (seat == botSeat) null else table.players.avatarOf(seat)
+
     /** "Kamu" for this device's own seat; the player's name otherwise. */
     @Composable
     fun displayName(seat: Int) = if (table.mySeat == seat) stringResource(R.string.bot_you) else name(seat)
@@ -529,6 +534,7 @@ private fun Pill(
 
 @Composable
 private fun Avatar(seats: Seats, seat: Int, on: Boolean, size: Dp) {
+    seats.avatar(seat)?.let { return AvatarBadge(it, size = size, modifier = Modifier.clearAndSetSemantics {}) }
     val tint = if (on) Theme.accent else Theme.muted
     Box(
         Modifier.size(size).background(if (on) Theme.raised else Theme.track, CircleShape).clearAndSetSemantics {},

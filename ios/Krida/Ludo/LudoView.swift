@@ -701,7 +701,7 @@ private struct LudoBoardView: View {
         let color = Int(model.state.color(seat: Int32(seat)))
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         return VStack(spacing: 3 * s) {
-            Circle().fill(pawnColor(color)).frame(width: 22 * s, height: 22 * s)
+            SeatAvatar(avatar: table.players.avatar(of: seat), color: pawnColor(color), size: 22)
             Text(displayName(seat))
                 .font(Theme.font(11 * s, .bold))
                 .foregroundStyle(Theme.ink)
@@ -737,7 +737,7 @@ private struct LudoBoardView: View {
                 VStack(spacing: 6 * s) {
                     ForEach(Array(ranking.enumerated()), id: \.offset) { i, seat in
                         HStack(spacing: 10 * s) {
-                            Circle().fill(pawnColor(Int(st.color(seat: Int32(seat))))).frame(width: 18 * s, height: 18 * s)
+                            SeatAvatar(avatar: table.players.avatar(of: seat), color: pawnColor(Int(st.color(seat: Int32(seat)))), size: 18)
                             Text("\(i + 1). \(displayName(seat))")
                                 .font(Theme.font(16 * s, .bold))
                                 .lineLimit(1)

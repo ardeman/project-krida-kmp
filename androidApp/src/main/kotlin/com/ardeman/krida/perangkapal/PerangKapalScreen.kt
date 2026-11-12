@@ -1,5 +1,7 @@
 package com.ardeman.krida.perangkapal
 
+import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.SeatAvatar
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
@@ -656,7 +658,7 @@ private fun PlayerTile(table: PerangKapalTable, seat: Int, on: Boolean) {
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(22.dp).clip(CircleShape).background(color))
+        SeatAvatar(table.players.avatarOf(seat), color, 22.dp)
         Text(name, style = Theme.font(11, FontWeight.Bold, Theme.ink), maxLines = 1)
     }
 }

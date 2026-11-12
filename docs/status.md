@@ -60,6 +60,10 @@ file in the same commit when an item is done or a new one comes up. Last updated
 - Online step 10d, name and avatar: coded and deployed (relay + privacy, 2026-11-12).
   Open: phone checks (edit profile, friends/invites, seats; Google + Apple; both themes
   and languages).
+- In-game avatars (2026-11-12): multi-device players with an account show their avatar on
+  the player tiles in every game (ringed in the seat colour; Ular Tangga in the tile's
+  corner, Congklak in the pills) and on the Ludo and Ular Tangga result lists. Builds on
+  both platforms; not yet seen in a real two-phone match.
 - Step 10a (sign-in) is live on the relay and checked on the iPhone. Still open: the Pixel
   check.
 

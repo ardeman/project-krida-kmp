@@ -1,5 +1,7 @@
 package com.ardeman.krida.ludo
 
+import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.SeatAvatar
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -652,7 +654,7 @@ private fun PlayerTile(table: LudoTable, state: LudoState, seat: Int, on: Boolea
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(22.dp).clip(CircleShape).background(color))
+        SeatAvatar(table.players.avatarOf(seat), color, 22.dp)
         Text(name, style = Theme.font(11, FontWeight.Bold, Theme.ink), maxLines = 1)
     }
 }
@@ -679,7 +681,7 @@ private fun ResultCard(table: LudoTable, state: LudoState, onExit: () -> Unit, o
             Text(stringResource(R.string.ludo_all_home), style = Theme.font(14, FontWeight.Bold, Theme.muted))
             ranking.forEachIndexed { i, seat ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    Box(Modifier.size(18.dp).clip(CircleShape).background(pawnColor(state.color(seat))))
+                    SeatAvatar(table.players.avatarOf(seat), pawnColor(state.color(seat)), 18.dp)
                     Text("${i + 1}. ${if (seat == you) stringResource(R.string.bot_you) else table.name(seat)}", style = Theme.font(16, FontWeight.Bold, Theme.ink))
                 }
             }

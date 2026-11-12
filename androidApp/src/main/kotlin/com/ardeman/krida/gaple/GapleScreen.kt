@@ -1,5 +1,7 @@
 package com.ardeman.krida.gaple
 
+import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.SeatAvatar
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
@@ -514,7 +516,8 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(Modifier.size(14.dp).clip(CircleShape).background(color))
+        val avatar = table.players.avatarOf(seat)
+        SeatAvatar(avatar, color, if (avatar != null) 22.dp else 14.dp)
         Column(Modifier.weight(1f)) {
             Text(seatName(table, seat), style = Theme.font(12, FontWeight.Bold, Theme.ink), maxLines = 1)
             Text(

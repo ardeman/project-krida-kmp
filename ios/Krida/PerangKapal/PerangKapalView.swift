@@ -641,7 +641,7 @@ private struct PerangKapalBoardView: View {
     private func tile(_ seat: Int, on: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         return VStack(spacing: 3 * s) {
-            Circle().fill(seatColor(seat)).frame(width: 22 * s, height: 22 * s)
+            SeatAvatar(avatar: table.players.avatar(of: seat), color: seatColor(seat), size: 22)
             Text(displayName(seat))
                 .font(Theme.font(11 * s, .bold))
                 .foregroundStyle(Theme.ink)

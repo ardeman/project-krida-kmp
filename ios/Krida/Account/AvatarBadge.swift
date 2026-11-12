@@ -37,6 +37,35 @@ struct AvatarBadge: View {
     }
 }
 
+extension Array where Element == PlayerInfo {
+    /// The avatar of the player in `seat`, or nil for bots and players without one.
+    func avatar(of seat: Int) -> String? {
+        guard let p = first(where: { Int($0.seat) == seat }), !p.bot else { return nil }
+        return p.avatar
+    }
+}
+
+/// In-game seat marker: the player's avatar inside a ring of the seat `color`, or the plain
+/// colour dot when the seat has no avatar (signed out, bot, pass-and-play). `size` is
+/// unscaled. Same as Android `SeatAvatar`.
+struct SeatAvatar: View {
+    let avatar: String?
+    let color: Color
+    let size: CGFloat
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        if let avatar {
+            let ring: CGFloat = size < 24 ? 2 : 3
+            AvatarBadge(avatar: avatar, size: size - ring * 2)
+                .padding(ring * s)
+                .background(color, in: Circle())
+        } else {
+            Circle().fill(color).frame(width: size * s, height: size * s)
+        }
+    }
+}
+
 private struct DrawnAvatar: View {
     let mix: Avatar.Mix
     let size: CGFloat

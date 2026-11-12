@@ -668,6 +668,10 @@ private struct UlarTanggaBoardView: View {
                         .frame(width: 16 * s, height: 16 * s)
                         .background(Theme.surface, in: Circle())
                         .overlay(Circle().stroke(Theme.line, lineWidth: 1))
+                } else if let avatar = table.players.avatar(of: seat) {
+                    // Multi-device players with an account show their avatar in the same corner.
+                    AvatarBadge(avatar: avatar, size: 18)
+                        .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
                 }
             }
             Text(displayName(seat))
@@ -706,7 +710,8 @@ private struct UlarTanggaBoardView: View {
                         let square = st.positions[seat].intValue
                         HStack(spacing: 10 * s) {
                             Text("\(i + 1)").font(Theme.font(16 * s, .black)).foregroundStyle(Theme.muted).frame(width: 18 * s)
-                            Circle().fill(pawnColor(Int(st.color(seat: Int32(seat))))).frame(width: 14 * s, height: 14 * s)
+                            let avatar = table.players.avatar(of: seat)
+                            SeatAvatar(avatar: avatar, color: pawnColor(Int(st.color(seat: Int32(seat)))), size: avatar != nil ? 22 : 14)
                             Text(displayName(seat)).font(Theme.font(16 * s)).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                             Text(square == 0 ? String(localized: "Start", bundle: .app) : "\(square)")
                                 .font(Theme.font(15 * s, .bold)).foregroundStyle(Theme.muted)
