@@ -198,6 +198,15 @@ class CongklakTest {
     }
 
     @Test
+    fun startingSeedsAreColoredBySide() {
+        val t = CongklakSeeds(g.initialState(2, Random(1)).pits).targets()
+        // Seat 0's holes are on the near side (+z), seat 1's across.
+        for (seed in 0 until CongklakBoard.SEED_COUNT) {
+            assertEquals(if (t[seed * 3 + 2] > 0f) 0 else 1, CongklakBoard.seedVariant(seed), "seed $seed")
+        }
+    }
+
+    @Test
     fun boardMeshIsWellFormed() {
         val m = CongklakBoard.boardMesh()
         val idx = m.indexArray()

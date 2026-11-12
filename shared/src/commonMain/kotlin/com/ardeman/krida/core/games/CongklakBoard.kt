@@ -21,7 +21,8 @@ import kotlin.math.sin
  */
 object CongklakBoard {
     const val SEED_COUNT = CongklakGame.HOLES * CongklakGame.SEEDS * 2
-    const val SEED_VARIANTS = 3
+    /** One seed color per seat: white for seat 0, brown for seat 1. */
+    const val SEED_VARIANTS = 2
 
     /** Camera, shared so both platforms frame the board the same way. */
     val cameraEye = floatArrayOf(0f, 21f, 17f)
@@ -44,7 +45,6 @@ object CongklakBoard {
 
     private val SEED_COLORS = arrayOf(
         floatArrayOf(0.95f, 0.90f, 0.78f),
-        floatArrayOf(0.86f, 0.80f, 0.68f),
         floatArrayOf(0.82f, 0.62f, 0.40f),
     )
     private val WOOD = floatArrayOf(0.64f, 0.42f, 0.24f)
@@ -68,7 +68,11 @@ object CongklakBoard {
     /** Point on the board surface at the middle of [pit], for tap targets and labels: x, y, z. */
     fun pitAnchor(pit: Int): FloatArray = floatArrayOf(centers[pit][0], boardTop - 0.5f, centers[pit][1])
 
-    fun seedVariant(seed: Int) = seed % SEED_VARIANTS
+    /**
+     * Color of [seed]: the seat whose holes it starts in. [CongklakSeeds.reset] deals seeds in
+     * pit order, so the first half starts on seat 0's side and the rest on seat 1's.
+     */
+    fun seedVariant(seed: Int) = if (seed < SEED_COUNT / 2) 0 else 1
 
     /** Stable yaw per seed, in radians. */
     fun yaw(seed: Int): Float = jitter(seed * 7 + 3) * 0.6f

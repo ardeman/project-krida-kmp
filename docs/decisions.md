@@ -57,6 +57,8 @@ in the same commit as the code.
 - **Who starts:** Me / Opponent / Random, default Random. Rock-paper-scissors start was rejected.
 - Game screen: gold rings only on playable pits, never on the stores; store labels instead;
   "seeds in hand" count while sowing.
+- Seeds come in two colors, one per side: cream seeds start in seat 0's holes, tan in seat
+  1's (owner, 2026-11-12). They keep their color as they are sown.
 - Deferred, each its own task: multiple rounds with burnt (hangus) holes (probably a protocol
   bump) and the simultaneous first move.
 
