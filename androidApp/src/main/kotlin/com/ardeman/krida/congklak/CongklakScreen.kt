@@ -91,6 +91,10 @@ import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.Theme
+import com.ardeman.krida.ui.OpponentPill
+import com.ardeman.krida.ui.PillSeat
+import com.ardeman.krida.ui.PillTopBar
+import com.ardeman.krida.ui.PlayerPill
 import kotlin.math.hypot
 import kotlin.random.Random
 import com.ardeman.krida.ui.rememberGameLifetime
@@ -386,11 +390,11 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         // HUD: back, opponent, help on top; direction hint and your pill at the bottom.
         Box(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp)) {
             Column(Modifier.fillMaxSize()) {
-                TopBar(gap = 12.dp) {
+                PillTopBar(gap = 12.dp) {
                     CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OpponentPill(
-                            seats = seats,
+                            seat = seats.pill(seats.far),
                             on = active(seats.far),
                             detail = listOfNotNull(table.botLevel?.takeIf { seats.far == seats.botSeat }, status(seats.far)).joinToString(" · "),
                             modifier = Modifier,
@@ -421,7 +425,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
                         }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        PlayerPill(seats, seats.near, active(seats.near), status(seats.near))
+                        PlayerPill(seats.pill(seats.near), active(seats.near), status(seats.near))
                         if (turnSeconds > 0 && state.turn == seats.near) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
                     }
                 }
@@ -468,6 +472,10 @@ private class Seats(private val table: CongklakTable, val near: Int) {
     /** The seat can be played from this device (own seat, or anyone in pass-and-play). */
     fun isLocal(seat: Int) = seat != botSeat && (table.mySeat == null || table.mySeat == seat)
 
+    /** How the seat shows in its pill. */
+    @Composable
+    fun pill(seat: Int) = PillSeat(displayName(seat), avatar(seat), seat == botSeat)
+
     /** Short label on a store: KAMU, KOM, or the player's name. */
     @Composable
     fun storeTag(seat: Int) =
@@ -483,69 +491,6 @@ private fun StoreLabel(count: Int, tag: String, near: Boolean) {
             style = Theme.font(11, FontWeight.Black, if (near) Color.White else Theme.inkOnLight),
             modifier = Modifier.background(if (near) Theme.accent else Theme.tan, RoundedCornerShape(8.dp)).padding(horizontal = 7.dp, vertical = 2.dp),
         )
-    }
-}
-
-/** The far seat, above the board: who you play against and what they're doing. */
-@Composable
-private fun OpponentPill(seats: Seats, on: Boolean, detail: String, modifier: Modifier) {
-    Pill(on, height = 40.dp, glow = on, modifier = modifier) {
-        Avatar(seats, seats.far, on, 30.dp)
-        Text(seats.displayName(seats.far), style = Theme.font(16, color = if (on) Color.White else Theme.ink), maxLines = 1)
-        Text(detail, style = Theme.font(13, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-}
-
-/** The near seat, below the board; glows on its turn. */
-@Composable
-private fun PlayerPill(seats: Seats, seat: Int, on: Boolean, status: String) {
-    val ring = if (on) Modifier.border(4.dp, Theme.gold.copy(alpha = 0.45f), CircleShape).padding(2.dp) else Modifier
-    Box(ring) {
-        Pill(on, height = 46.dp, glow = false, endPadding = 20.dp) {
-            Avatar(seats, seat, on, 34.dp)
-            Text(seats.displayName(seat), style = Theme.font(17, FontWeight.Black, if (on) Color.White else Theme.ink), maxLines = 1)
-            Text(status, style = Theme.font(15, FontWeight.Bold, if (on) Theme.onAccent else Theme.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
-}
-
-@Composable
-private fun Pill(
-    on: Boolean,
-    height: Dp,
-    glow: Boolean,
-    modifier: Modifier = Modifier,
-    endPadding: Dp = 16.dp,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Row(
-        modifier
-            .then(if (glow) Modifier.shadow(10.dp, CircleShape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
-            .height(height)
-            .clip(CircleShape)
-            .background(if (on) Theme.accent else Theme.surface)
-            .then(if (on) Modifier else Modifier.border(1.5.dp, Theme.line, CircleShape))
-            .padding(start = 6.dp, end = endPadding)
-            .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        content = content,
-    )
-}
-
-@Composable
-private fun Avatar(seats: Seats, seat: Int, on: Boolean, size: Dp) {
-    seats.avatar(seat)?.let { return AvatarBadge(it, size = size, modifier = Modifier.clearAndSetSemantics {}) }
-    val tint = if (on) Theme.accent else Theme.muted
-    Box(
-        Modifier.size(size).background(if (on) Theme.raised else Theme.track, CircleShape).clearAndSetSemantics {},
-        contentAlignment = Alignment.Center,
-    ) {
-        if (seat == seats.botSeat) {
-            Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = tint, modifier = Modifier.size(size * 0.5f))
-        } else {
-            Text(seats.displayName(seat).take(1).uppercase(), style = Theme.font((size.value * 0.45f).toInt(), FontWeight.Black, tint))
-        }
     }
 }
 
@@ -668,28 +613,6 @@ internal fun CongklakRulesDialog(tembakAfterStore: Boolean, onDismiss: () -> Uni
                 }
             }
         }
-    }
-}
-
-/**
- * Back button, opponent pill, buttons: the pill is centered on the bar when it fits and slides
- * aside (and shrinks) when it doesn't, so it never covers a button. Expects exactly three children.
- */
-@Composable
-private fun TopBar(gap: Dp, content: @Composable () -> Unit) = Layout(content, Modifier.fillMaxWidth()) { measurables, constraints ->
-    val loose = constraints.copy(minWidth = 0, minHeight = 0)
-    val lead = measurables[0].measure(loose)
-    val trail = measurables[2].measure(loose)
-    val gapPx = gap.roundToPx()
-    val room = (constraints.maxWidth - lead.width - trail.width - 2 * gapPx).coerceAtLeast(0)
-    val center = measurables[1].measure(loose.copy(maxWidth = room))
-    val height = maxOf(lead.height, center.height, trail.height)
-    layout(constraints.maxWidth, height) {
-        val minX = lead.width + gapPx
-        val x = ((constraints.maxWidth - center.width) / 2).coerceIn(minX, (minX + room - center.width).coerceAtLeast(minX))
-        lead.place(0, (height - lead.height) / 2)
-        center.place(x, (height - center.height) / 2)
-        trail.place(constraints.maxWidth - trail.width, (height - trail.height) / 2)
     }
 }
 

@@ -2353,6 +2353,22 @@
         }
       }
     },
+    "placing ships": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "placing ships"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "menata kapal"
+          }
+        }
+      }
+    },
     "Play again": {
       "localizations": {
         "en": {

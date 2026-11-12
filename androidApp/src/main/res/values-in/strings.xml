@@ -387,6 +387,7 @@
     <string name="perang_kapal_continue">Lanjut</string>
     <string name="perang_kapal_waiting_ready">Menunggu pemain lain…</string>
     <string name="perang_kapal_ready">Siap</string>
+    <string name="perang_kapal_status_placing">menata kapal</string>
     <string name="perang_kapal_your_turn">Giliranmu · ketuk kotak di radar</string>
     <string name="perang_kapal_hit">Kena!</string>
     <string name="perang_kapal_miss">Meleset</string>

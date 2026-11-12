@@ -528,14 +528,17 @@ private struct PerangKapalBoardView: View {
     /// Points per board unit in the tray: the longest ship fills the column.
     private var trayUnit: CGFloat { 152 * s / CGFloat(PerangKapalBoard.shared.shipLength(kind: 0)) }
 
-    /// The grids take the space between the two HUD columns.
+    /// The grids take the space between the top bar and the player pill, centred on the
+    /// screen and clear of the right column.
     private func relayout() {
-        guard size.width > 0, let room = boxes["room"], let left = boxes["left"], let right = boxes["right"],
-              left.width > 0, right.width > 0 else { return }
+        guard size.width > 0, let room = boxes["room"], let right = boxes["right"], right.width > 0 else { return }
         let margin = 12 * s
-        let x0 = left.maxX + margin, x1 = right.minX - margin
-        guard x1 > x0 else { return }
-        model.layout(size: size, free: CGRect(x: x0, y: room.minY, width: x1 - x0, height: room.height), left: room.minX)
+        let cx = size.width / 2
+        let half = min(cx - room.minX, right.minX - margin - cx)
+        let y0 = boxes["top"].map { $0.maxY + margin } ?? room.minY
+        let y1 = boxes["bottom"].map { $0.minY - margin } ?? room.maxY
+        guard half > 0, y1 > y0 else { return }
+        model.layout(size: size, free: CGRect(x: cx - half, y: y0, width: 2 * half, height: y1 - y0), left: room.minX)
     }
 
     private func exit() {
@@ -551,7 +554,26 @@ private struct PerangKapalBoardView: View {
         table.mySeat == seat ? String(localized: "You", bundle: .app) : table.name(seat)
     }
 
-    private var status: String {
+    private func pill(_ seat: Int) -> PillSeat {
+        PillSeat(name: displayName(seat), avatar: table.players.avatar(of: seat), bot: table.botSeats.contains(seat))
+    }
+
+    /// What the seat is doing, in its pill.
+    private func seatStatus(_ seat: Int) -> String {
+        let st = model.state
+        let on = model.acting(seat)
+        let bot = table.botSeats.contains(seat)
+        if st.placing && !st.finished {
+            if !on { return String(localized: "Ready", bundle: .app) }
+            return bot ? String(localized: "thinking…", bundle: .app) : String(localized: "placing ships", bundle: .app)
+        }
+        if !on { return String(localized: "waiting", bundle: .app) }
+        if bot { return String(localized: "thinking…", bundle: .app) }
+        return table.isLocal(seat) ? String(localized: "Your turn · tap a radar cell", bundle: .app) : String(localized: "their turn", bundle: .app)
+    }
+
+    /// Above your pill: what to do while placing, or how the last shot went.
+    private var shotLine: String {
         let st = model.state
         if st.finished { return "" }
         if st.placing {
@@ -559,84 +581,75 @@ private struct PerangKapalBoardView: View {
                 ? String(localized: "Drag ships onto your ocean · tap one to turn it", bundle: .app)
                 : String(localized: "Waiting for the other player…", bundle: .app)
         }
-        // The last shot's result first; before the first shot, whose turn it is.
         if let hit = st.lastHit?.boolValue {
             if hit, let sunk = st.lastSunk?.intValue {
                 return String(localized: "\(shipName(sunk)) sunk!", bundle: .app)
             }
             return hit ? String(localized: "Hit!", bundle: .app) : String(localized: "Miss", bundle: .app)
         }
-        if model.canFire { return String(localized: "Your turn · tap a radar cell", bundle: .app) }
-        return String(localized: "\(displayName(model.turn))'s turn", bundle: .app)
+        return ""
     }
 
+    /// Like congklak's: back, opponent, buttons on top; the fleets on the right; the last shot
+    /// and your pill at the bottom.
     private var hud: some View {
-        HStack(alignment: .top, spacing: 0) {
-            VStack(alignment: .leading, spacing: 10 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
-                Spacer().frame(height: 4 * s)
-                VStack(spacing: 8 * s) {
-                    ForEach(0..<2, id: \.self) { seat in tile(seat, on: model.acting(seat)) }
+        let near = model.viewer
+        let far = 1 - model.viewer
+        return ZStack(alignment: .bottom) {
+            VStack(spacing: 8 * s) {
+                PillTopBar(gap: 8 * s) {
+                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    OpponentPill(seat: pill(far), on: model.acting(far), detail: seatStatus(far), s: s)
+                    HStack(spacing: 8 * s) {
+                        SoundToggles()
+                        CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
+                    }
                 }
-                Spacer(minLength: 0)
+                .modifier(hudBox("top"))
+                VStack(spacing: 0) {
+                    EmoteHud(
+                        canEmote: table.canEmote,
+                        emotes: table.emotes,
+                        playerName: displayName,
+                        onSend: table.sendEmote,
+                        s: s
+                    )
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    Spacer(minLength: 0)
+                    if model.canPlace { tray }
+                    if !model.state.placing {
+                        fleetStatus("Enemy fleet", sunk: model.lost(far))
+                        fleetStatus("Your fleet", sunk: model.lost(near))
+                            .padding(.top, 8 * s)
+                    }
+                }
+                .frame(width: 168 * s)
+                .frame(maxHeight: .infinity)
+                .modifier(hudBox("right"))
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .frame(width: 136 * s)
-            .frame(maxHeight: .infinity)
-            .modifier(hudBox("left"))
-            Spacer(minLength: 0)
-            VStack(spacing: 0) {
-                HStack(spacing: 8 * s) {
-                    SoundToggles()
-                    CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
+            VStack(spacing: 8 * s) {
+                Group {
+                    if let away = table.waiting {
+                        CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
+                    } else if let notice = table.notice {
+                        Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
+                    } else {
+                        Text(shotLine).font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted)
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                if table.canEmote { Spacer().frame(height: 8 * s) }
-                EmoteHud(
-                    canEmote: table.canEmote,
-                    emotes: table.emotes,
-                    playerName: displayName,
-                    onSend: table.sendEmote,
-                    s: s
-                )
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                Spacer(minLength: 0)
-                if model.canPlace { tray }
-                if !model.state.placing {
+                .lineLimit(1)
+                .frame(minHeight: 20 * s)
+                HStack(spacing: 10 * s) {
+                    PlayerPill(seat: pill(near), on: model.acting(near), status: seatStatus(near), s: s)
                     if model.fireSeconds > 0 {
                         CountdownRing(seconds: model.fireSeconds, total: model.fireTotal, size: 40 * s)
-                            .padding(.bottom, 8 * s)
                     }
-                    fleetStatus("Enemy fleet", sunk: model.lost(1 - model.viewer))
-                    fleetStatus("Your fleet", sunk: model.lost(model.viewer))
-                        .padding(.top, 8 * s)
-                }
-                Text(status)
-                    .font(Theme.font(13 * s, .bold))
-                    .foregroundStyle(Theme.ink)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(2, reservesSpace: true)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 8 * s)
-                if let away = table.waiting {
-                    CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 8 * s)
-                } else if let notice = table.notice {
-                    Text(notice)
-                        .font(Theme.font(13 * s, .bold))
-                        .foregroundStyle(Theme.error)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                        .padding(.horizontal, 8 * s)
-                        .padding(.vertical, 6 * s)
-                        .background(Theme.surface.opacity(0.92), in: RoundedRectangle(cornerRadius: 12 * s))
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 8 * s)
                 }
             }
-            .frame(width: 168 * s)
-            .frame(maxHeight: .infinity)
-            .modifier(hudBox("right"))
+            .modifier(hudBox("bottom"))
+            // Clear of the right column on both sides, so the pill stays centred.
+            .padding(.horizontal, 176 * s)
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
@@ -738,24 +751,6 @@ private struct PerangKapalBoardView: View {
             .accessibilityAddTraits(.isModal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func tile(_ seat: Int, on: Bool) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 12 * s)
-        return VStack(spacing: 3 * s) {
-            SeatAvatar(avatar: table.players.avatar(of: seat), color: seatColor(seat), size: 22)
-            Text(displayName(seat))
-                .font(Theme.font(11 * s, .bold))
-                .foregroundStyle(Theme.ink)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .padding(6 * s)
-        .frame(maxWidth: .infinity)
-        .background(on ? Theme.chip : Theme.surface, in: shape)
-        .overlay(shape.stroke(on ? seatColor(seat) : Theme.line, lineWidth: on ? 2 : 1.5))
-        .animation(.easeOut(duration: 0.2), value: on)
-        .accessibilityElement(children: .combine)
     }
 
     private var gameOver: some View {

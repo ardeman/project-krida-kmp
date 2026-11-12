@@ -398,6 +398,7 @@
     <string name="perang_kapal_continue">Continue</string>
     <string name="perang_kapal_waiting_ready">Waiting for the other player…</string>
     <string name="perang_kapal_ready">Ready</string>
+    <string name="perang_kapal_status_placing">placing ships</string>
     <string name="perang_kapal_your_turn">Your turn · tap a radar cell</string>
     <string name="perang_kapal_hit">Hit!</string>
     <string name="perang_kapal_miss">Miss</string>

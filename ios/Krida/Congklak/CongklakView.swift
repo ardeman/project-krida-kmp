@@ -413,7 +413,7 @@ private struct CongklakBoardView: View {
     private var hud: some View {
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0 * s) {
-                TopBar(gap: 8 * s) {
+                PillTopBar(gap: 8 * s) {
                     CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                     HStack(spacing: 10 * s) {
                         opponentPill
@@ -445,7 +445,7 @@ private struct CongklakBoardView: View {
                             .foregroundStyle(Theme.muted)
                     }
                     HStack(spacing: 10 * s) {
-                        playerPill(nearSeat)
+                        PlayerPill(seat: pill(nearSeat), on: active(nearSeat), status: status(nearSeat), s: s)
                         if model.turnSeconds > 0 && model.turn == nearSeat {
                             CountdownRing(seconds: model.turnSeconds, total: model.turnTotal, size: 40 * s)
                         }
@@ -472,61 +472,16 @@ private struct CongklakBoardView: View {
         .foregroundStyle(Theme.ink)
     }
 
+    /// How the seat shows in its pill.
+    private func pill(_ seat: Int) -> PillSeat {
+        PillSeat(name: displayName(seat), avatar: seat == botSeat ? nil : table.players.avatar(of: seat), bot: seat == botSeat)
+    }
+
     /// The far seat, above the board: who you play against and what they're doing.
     private var opponentPill: some View {
         let seat = farSeat
-        let on = active(seat)
         let detail = [table.botLevel.flatMap { seat == botSeat ? $0 : nil }, status(seat)].compactMap { $0 }.joined(separator: " · ")
-        return HStack(spacing: 10 * s) {
-            avatar(seat, on: on, size: 30 * s)
-            Text(displayName(seat)).font(Theme.font(16 * s))
-            Text(detail).font(Theme.font(13 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
-        }
-        .lineLimit(1)
-        .padding(.leading, 6 * s)
-        .padding(.trailing, 16 * s)
-        .frame(height: 40 * s)
-        .foregroundStyle(on ? .white : Theme.ink)
-        .background(on ? Theme.accent : Theme.surface, in: Capsule())
-        .overlay(Capsule().stroke(on ? .clear : Theme.line, lineWidth: 1.5))
-        .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6 * s)
-        .accessibilityElement(children: .combine)
-    }
-
-    /// The near seat, below the board; glows on its turn.
-    private func playerPill(_ seat: Int) -> some View {
-        let on = active(seat)
-        return HStack(spacing: 10 * s) {
-            avatar(seat, on: on, size: 34 * s)
-            Text(displayName(seat)).font(Theme.font(17 * s, .black))
-            Text(status(seat)).font(Theme.font(15 * s, .bold)).foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
-        }
-        .lineLimit(1)
-        .padding(.leading, 6 * s)
-        .padding(.trailing, 20 * s)
-        .frame(height: 46 * s)
-        .foregroundStyle(on ? .white : Theme.ink)
-        .background(on ? Theme.accent : Theme.surface, in: Capsule())
-        .overlay(Capsule().stroke(on ? Theme.gold.opacity(0.45) : Theme.line, lineWidth: on ? 4 : 1.5).padding(on ? -2 : 0))
-        .animation(.easeOut(duration: 0.2), value: on)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func avatar(_ seat: Int, on: Bool, size: CGFloat) -> some View {
-        Group {
-            if seat != botSeat, let avatar = table.players.avatar(of: seat) {
-                // `size` is already scaled; AvatarBadge scales its own.
-                AvatarBadge(avatar: avatar, size: size / s)
-            } else if seat == botSeat {
-                Image(systemName: "desktopcomputer").font(.system(size: size * 0.5, weight: .semibold))
-            } else {
-                Text(String(displayName(seat).prefix(1)).uppercased()).font(Theme.font(size * 0.45, .black))
-            }
-        }
-        .foregroundStyle(on ? Theme.accent : Theme.muted)
-        .frame(width: size, height: size)
-        .background(on ? Theme.raised : Theme.track, in: Circle())
-        .accessibilityHidden(true)
+        return OpponentPill(seat: pill(seat), on: active(seat), detail: detail, s: s)
     }
 
     // MARK: Counts on the rim
@@ -634,32 +589,6 @@ private struct CongklakBoardView: View {
     }
 
     private func score(_ seat: Int) -> Int { Int(model.game.score(state: model.state, seat: Int32(seat))) }
-}
-
-/// The board's top bar: a leading view, a center view and a trailing view. The center sits
-/// in the middle of the bar when it fits, slides aside to clear the others when it doesn't,
-/// and is offered only the space left between them (so it truncates instead of overlapping).
-private struct TopBar: Layout {
-    var gap: CGFloat
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let height = subviews.map { $0.sizeThatFits(.unspecified).height }.max() ?? 0
-        return CGSize(width: proposal.width ?? subviews.map { $0.sizeThatFits(.unspecified).width }.reduce(0, +), height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        guard subviews.count == 3 else { return }
-        let lead = subviews[0].sizeThatFits(.unspecified)
-        let trail = subviews[2].sizeThatFits(.unspecified)
-        let room = max(bounds.width - lead.width - trail.width - 2 * gap, 0)
-        let center = subviews[1].sizeThatFits(ProposedViewSize(width: room, height: nil))
-        let width = min(center.width, room)
-        let minX = bounds.minX + lead.width + gap
-        let x = min(max(bounds.midX - width / 2, minX), minX + room - width)
-        subviews[0].place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(lead))
-        subviews[1].place(at: CGPoint(x: x, y: bounds.midY), anchor: .leading, proposal: ProposedViewSize(width: width, height: center.height))
-        subviews[2].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing, proposal: ProposedViewSize(trail))
-    }
 }
 
 /// "How to play": the rule variant from shared/ CongklakGame, in short.
