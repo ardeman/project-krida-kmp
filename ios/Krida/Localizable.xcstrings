@@ -6452,6 +6452,38 @@
           }
         }
       }
+    },
+    "Up to 4 phones over Bluetooth, each hand on its own phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 4 phones over Bluetooth, each hand on its own phone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hingga 4 HP lewat Bluetooth, kartu di HP masing-masing"
+          }
+        }
+      }
+    },
+    "Up to 4 phones over the internet, each hand on its own phone": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 4 phones over the internet, each hand on its own phone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hingga 4 HP lewat internet, kartu di HP masing-masing"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

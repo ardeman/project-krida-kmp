@@ -65,6 +65,7 @@ func gameTitle(_ game: String?) -> Text {
     case UlarTanggaGame.shared.id: Text("Snakes & ladders")
     case LudoGame.shared.id: Text("Ludo")
     case PerangKapalGame.shared.id: Text("Perang kapal")
+    case GapleGame.shared.id: Text("Gaple")
     case CongklakGame.shared.id: Text("Congklak")
     default: Text("Join a room")
     }

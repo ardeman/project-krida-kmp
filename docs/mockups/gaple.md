@@ -95,5 +95,5 @@ and **Play again** (host only in a room).
    tests; `StandardRules.gaple`; protocol + relay allow `gaple` / 2–4; hidden-hand views in
    `HostSession` (like perang kapal's fog of war); partners as a game option.
 3. [x] Android screen + menu + table (this phone) + nearby/online wiring.
-4. [ ] iOS parity: `ios/Krida/Gaple/` (done, this phone) + nearby/online wiring.
+4. [x] iOS parity: `ios/Krida/Gaple/` (this phone) + nearby/online wiring.
 5. [ ] Phone checks (vs computer, then nearby/online).

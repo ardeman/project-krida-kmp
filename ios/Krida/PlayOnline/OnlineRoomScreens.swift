@@ -22,7 +22,7 @@ struct CreateOnlineRoomView<Options: View>: View {
         self.onBack = onBack
         self.onCreate = onCreate
         self.options = options()
-        _seats = State(initialValue: game == UlarTanggaGame.shared.id || game == LudoGame.shared.id ? 4 : 2)
+        _seats = State(initialValue: fourSeatGame(game) ? 4 : 2)
     }
 
     var body: some View {
@@ -82,7 +82,7 @@ struct JoinOnlineRoomView: View {
         self.onJoin = onJoin
         self.onSearch = onSearch
         self.onBack = onBack
-        _seats = State(initialValue: game == UlarTanggaGame.shared.id || game == LudoGame.shared.id ? 4 : 2)
+        _seats = State(initialValue: fourSeatGame(game) ? 4 : 2)
     }
 
     private var valid: Bool { RoomCode.shared.isValidOnline(code: code) }
@@ -138,7 +138,7 @@ private struct RoomPlayerCount: View {
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if game == UlarTanggaGame.shared.id || game == LudoGame.shared.id {
+        if fourSeatGame(game) {
             RoomDetail(text: "Players")
             Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
                       selection: $seats, label: "Players")
@@ -161,4 +161,9 @@ private struct RoomDetail: View {
         Text(text).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
             .fixedSize(horizontal: false, vertical: true)
     }
+}
+
+/// Games a room can seat 2–4 players in; the rest are two-player. Same as Android.
+func fourSeatGame(_ game: String) -> Bool {
+    game == UlarTanggaGame.shared.id || game == LudoGame.shared.id || game == GapleGame.shared.id
 }
