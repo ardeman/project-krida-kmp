@@ -537,7 +537,11 @@ class LudoRenderer(textureView: TextureView) : VoxelStage(textureView, LudoGlb.b
     }
 
     override fun step(dt: Float): Boolean {
-        var moving = stepDie(dt) || stepCamera(dt)
+        // Step both every frame: `||` skipped the camera while the die moved, so a zoom-out
+        // stalled whenever the die was recalled or rocking for the next roll.
+        val dieMoving = stepDie(dt)
+        val camMoving = stepCamera(dt)
+        var moving = dieMoving || camMoving
         for (i in motions.indices) {
             val m = motions[i] ?: continue
             m.elapsed += dt
