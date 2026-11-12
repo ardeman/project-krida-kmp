@@ -12,6 +12,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
   (this phone vs computer first: drag and tap ships from the tray, turn one, Ready, fire,
   hit pegs on ships, the ring on the last shot, result card; then two people on one phone
   with the pass cover; then nearby and online, iPhone ↔ Pixel, both languages and themes).
+- **Gaple** (fifth game): rules picked by the owner 2026-11-12 (2–4 seats with partners
+  across, balak enam opens, pass when no tile fits, pips to 100). Mockup approved
+  ([mockups/gaple.md](mockups/gaple.md)). Next: shared rules, board layout, bots and tests.
 - Offline LAN (README roadmap 6): coded under Nearby (Bluetooth | Wi‑Fi control, default
   Bluetooth; decision in `docs/decisions.md`). Android and iOS host/guest transports,
   play-card Link control, join/lobby copy. iOS dual-simulator e2e passes
