@@ -26,8 +26,9 @@ file in the same commit when an item is done or a new one comes up. Last updated
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak
-  (15 s; congklak plays the easy computer's pick) too. Still missing: perang kapal (fire;
-  placement could finish with a random fleet). Congklak's timer is checked vs computer on
+  (15 s; congklak plays the easy computer's pick) too. Perang kapal has a 60 s placement
+  timer and a 15 s firing timer with auto-play (2026-11-12, both platforms build, not checked
+  on a device). Congklak's timer is checked vs computer on
   the iOS simulator and a Pixel XL (plus pass-and-play on iOS), not yet in nearby/online rooms.
 - Offline LAN (README roadmap 6): coded under Nearby (Bluetooth | Wi‑Fi control, default
   Bluetooth; decision in `docs/decisions.md`). Android and iOS host/guest transports,

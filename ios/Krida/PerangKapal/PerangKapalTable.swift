@@ -73,6 +73,8 @@ class PerangKapalTable: ObservableObject {
 
     /// Puts ship `kind` with its bow on `cell`. Returns false when nothing was sent.
     func place(seat: Int, kind: Int, cell: Int, horizontal: Bool) -> Bool { false }
+    /// Sets the whole fleet at once (the placement timer ran out). Returns false when nothing was sent.
+    func setFleet(seat: Int, fleet: [PerangKapalShip]) -> Bool { false }
     /// Locks the fleet in. Returns false when nothing was sent.
     func ready(seat: Int) -> Bool { false }
     /// Fires at `cell` on the opponent's grid. Returns false when nothing was sent.
@@ -87,6 +89,9 @@ class PerangKapalTable: ObservableObject {
     fileprivate static func placeMove(kind: Int, cell: Int, horizontal: Bool) -> PerangKapalMove {
         PerangKapalMove(kind: KotlinInt(int: Int32(kind)), cell: KotlinInt(int: Int32(cell)),
                         horizontal: horizontal, ready: false, fire: nil, fleet: nil)
+    }
+    fileprivate static func fleetMove(_ fleet: [PerangKapalShip]) -> PerangKapalMove {
+        PerangKapalMove(kind: nil, cell: nil, horizontal: true, ready: false, fire: nil, fleet: fleet)
     }
     fileprivate static var readyMove: PerangKapalMove {
         PerangKapalMove(kind: nil, cell: nil, horizontal: true, ready: true, fire: nil, fleet: nil)
@@ -141,6 +146,10 @@ final class PerangKapalHostTable: PerangKapalTable {
 
     override func place(seat: Int, kind: Int, cell: Int, horizontal: Bool) -> Bool {
         active && session.submitLocal(seat: Int32(seat), move: Self.placeMove(kind: kind, cell: cell, horizontal: horizontal)) == nil
+    }
+
+    override func setFleet(seat: Int, fleet: [PerangKapalShip]) -> Bool {
+        active && session.submitLocal(seat: Int32(seat), move: Self.fleetMove(fleet)) == nil
     }
 
     override func ready(seat: Int) -> Bool {
@@ -231,6 +240,10 @@ final class PerangKapalGuestTable: PerangKapalTable {
 
     override func place(seat: Int, kind: Int, cell: Int, horizontal: Bool) -> Bool {
         active && seat == mySeat && session.sendMove(move: Self.placeMove(kind: kind, cell: cell, horizontal: horizontal)) != nil
+    }
+
+    override func setFleet(seat: Int, fleet: [PerangKapalShip]) -> Bool {
+        active && seat == mySeat && session.sendMove(move: Self.fleetMove(fleet)) != nil
     }
 
     override func ready(seat: Int) -> Bool {

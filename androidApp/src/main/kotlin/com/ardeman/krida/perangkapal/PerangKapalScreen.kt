@@ -48,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,6 +81,7 @@ import com.ardeman.krida.core.games.PerangKapalState
 import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
+import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -90,6 +92,7 @@ import com.ardeman.krida.ui.Theme
 import com.ardeman.krida.ui.gameInsets
 import com.ardeman.krida.ui.rememberGameLifetime
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 @Composable
 fun PerangKapalScreen(table: PerangKapalTable, onExit: () -> Unit) {
@@ -242,18 +245,27 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         selectNext()
     }
 
+    // Seats on this phone whose timer ran out: the phone fires for them after a short pause
+    // (Krida.AUTO_PLAY_MS) instead of a countdown, until that player fires themselves.
+    val autoSeats = remember { mutableStateListOf<Int>() }
+
     fun tap(at: Offset) {
         val r = renderer ?: return
         if (canFire()) {
             val cell = r.pickCell(at.x, at.y, onRadar = true) ?: return
-            if (table.fire(viewer, cell)) Sounds.play(Sounds.Effect.Tap)
+            if (table.fire(viewer, cell)) {
+                Sounds.play(Sounds.Effect.Tap)
+                autoSeats.remove(viewer)
+            }
         } else if (canPlace()) {
             val cell = r.pickCell(at.x, at.y, onRadar = false) ?: return
             val ship = fleet().firstOrNull { cell in it.cells }
             val kind = selectedKind
             if (ship != null) {
-                // A tap on a placed ship turns it around its middle.
-                if (place(ship.kind, PerangKapalGame.turnedBow(ship), !ship.horizontal)) Sounds.play(Sounds.Effect.Tap)
+                // A tap on a placed ship turns it: around its middle, or on another of its
+                // cells when the middle is crowded.
+                val bow = PerangKapalGame.turnedBow(fleet(), ship, cell)
+                if (bow != null && place(ship.kind, bow, !ship.horizontal)) Sounds.play(Sounds.Effect.Tap)
             } else if (kind != null) {
                 val across = horizontal(kind)
                 if (place(kind, PerangKapalGame.bowFor(cell, kind, across), across)) {
@@ -267,6 +279,61 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
     fun exit() {
         lifetime.stop()
         onExit()
+    }
+
+    // Placement timer: while a player on this phone places their fleet, a countdown runs; at 0
+    // the phone places the ships still missing (PerangKapalGame.timeoutFleet) and taps Ready.
+    // The pass cover and waiting on the other side stop it; each placing turn starts afresh.
+    val placeTotal = (Krida.PLACE_FLEET_MS / 1000L).toInt()
+    var placeSeconds by remember { mutableIntStateOf(0) }
+    val canPlaceNow by rememberUpdatedState(canPlace)
+    LaunchedEffect(canPlace, viewer) {
+        if (!canPlace) {
+            placeSeconds = 0
+            return@LaunchedEffect
+        }
+        placeSeconds = placeTotal
+        while (placeSeconds > 0) {
+            delay(1000L)
+            if (!canPlaceNow || !lifetime.active) return@LaunchedEffect
+            placeSeconds -= 1
+        }
+        val seat = viewer
+        val fleet = PerangKapalGame.timeoutFleet(table.latest, seat, Random.Default) ?: return@LaunchedEffect
+        ghost = null
+        dragCell[0] = null
+        if (!PerangKapalGame.fleetComplete(table.latest.fleets[seat])) table.setFleet(seat, fleet)
+        if (table.ready(seat)) Sounds.play(Sounds.Effect.Tap)
+        if (seat !in autoSeats) autoSeats.add(seat)
+    }
+
+    // Firing timer: on a local player's shot a countdown runs; at 0 the phone fires the easy
+    // computer's shot (PerangKapalGame.timeoutMove), and keeps firing for that player after a
+    // short pause until they tap the radar themselves.
+    val fireTotal = (Krida.PLAY_TURN_MS / 1000L).toInt()
+    var fireSeconds by remember { mutableIntStateOf(0) }
+    val canFireNow by rememberUpdatedState(canFire)
+    LaunchedEffect(canFire, state, viewer) {
+        if (!canFire) {
+            fireSeconds = 0
+            return@LaunchedEffect
+        }
+        val seat = viewer
+        if (seat in autoSeats) {
+            fireSeconds = 0
+            delay(Krida.AUTO_PLAY_MS)
+        } else {
+            fireSeconds = fireTotal
+            while (fireSeconds > 0) {
+                delay(1000L)
+                if (!canFireNow || !lifetime.active) return@LaunchedEffect
+                fireSeconds -= 1
+            }
+            if (seat !in autoSeats) autoSeats.add(seat)
+        }
+        if (!canFireNow || !lifetime.active || seat !in autoSeats) return@LaunchedEffect
+        val move = PerangKapalGame.timeoutMove(table.latest, seat, Random.Default) ?: return@LaunchedEffect
+        if (table.fire(seat, move.fire ?: return@LaunchedEffect)) Sounds.play(Sounds.Effect.Tap)
     }
 
     BackHandler(onBack = ::exit)
@@ -419,12 +486,18 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
                         },
                         origin = { Offset(viewOrigin[0], viewOrigin[1]) },
                         canReady = canReady,
+                        seconds = placeSeconds,
+                        total = placeTotal,
                         onReady = {
                             if (table.ready(viewer)) Sounds.play(Sounds.Effect.Tap)
                         },
                     )
                 }
                 if (!state.placing) {
+                    if (fireSeconds > 0) {
+                        CountdownRing(fireSeconds, fireTotal, size = 40.dp)
+                        Spacer(Modifier.height(8.dp))
+                    }
                     FleetStatus(R.string.perang_kapal_enemy_fleet, state.lost(1 - viewer))
                     Spacer(Modifier.height(8.dp))
                     FleetStatus(R.string.perang_kapal_your_fleet, state.lost(viewer))
@@ -521,13 +594,18 @@ private fun ShipTray(
     onRelease: (kind: Int) -> Unit,
     origin: () -> Offset,
     canReady: Boolean,
+    seconds: Int,
+    total: Int,
     onReady: () -> Unit,
 ) {
     val touch = rememberUpdatedState(onTouch)
     val release = rememberUpdatedState(onRelease)
     val boardOrigin = rememberUpdatedState(origin)
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.End) {
-        Text(stringResource(R.string.perang_kapal_place_fleet), style = Theme.font(13, FontWeight.Bold, Theme.ink), textAlign = TextAlign.End)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (seconds > 0) CountdownRing(seconds, total, size = 30.dp)
+            Text(stringResource(R.string.perang_kapal_place_fleet), style = Theme.font(13, FontWeight.Bold, Theme.ink), textAlign = TextAlign.End)
+        }
         for (kind in 0 until PerangKapalGame.KINDS) {
             val on = kind == selected
             val name = stringResource(shipName(kind))

@@ -56,10 +56,16 @@ object Krida {
      * How long a local player has to play a tile (gaple), pick a pit (congklak) or pick a token
      * after a roll (ludo) before the phone plays [com.ardeman.krida.core.games.GapleGame.timeoutMove],
      * [com.ardeman.krida.core.games.CongklakGame.timeoutMove] or
-     * [com.ardeman.krida.core.games.LudoGame.timeoutMove] for them, and how long the gaple round-end
+     * [com.ardeman.krida.core.games.LudoGame.timeoutMove] for them (perang kapal: fire,
+     * [com.ardeman.krida.core.games.PerangKapalGame.timeoutMove]), and how long the gaple round-end
      * card waits before the host deals the next round.
      */
     const val PLAY_TURN_MS: Long = 15_000L
+    /**
+     * How long a local player has to place their perang kapal fleet before the phone places
+     * the rest ([com.ardeman.krida.core.games.PerangKapalGame.timeoutFleet]) and taps Ready.
+     */
+    const val PLACE_FLEET_MS: Long = 60_000L
     /**
      * Once a player on this phone lets a turn timer run out, the phone plays their later turns
      * (rolls, picks, moves) after this short pause instead of a full countdown, until that

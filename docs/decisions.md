@@ -204,6 +204,21 @@ in the same commit as the code.
   boxes; the tray shows the ships themselves, to tap then place or to drag and drop; a tap
   on a placed ship turns it (no Rotate button); in battle the opponent's grid is large and
   your own a small view-only copy.
+- **Turning a crowded ship (owner, 2026-11-12):** a tap on a placed ship turns it around its
+  middle; when that spot is taken or off the board it turns on the tapped cell, then on any
+  other of its cells, sliding along the new line to wherever it fits
+  (`PerangKapalGame.turnedBow(fleet, ship, tapped)`). Only a ship with no free turn stays put.
+- **Placement timer (owner, 2026-11-12):** placing the fleet has a countdown, 60 s
+  (`Krida.PLACE_FLEET_MS`), shown as a ring beside "Place your fleet". At 0 the phone places
+  the ships still missing at random, as the easy computer would
+  (`PerangKapalGame.timeoutFleet`), and taps Ready. Ships already on the ocean stay where the
+  player put them (agent's choice; the computer itself places a whole random fleet). The pass
+  cover stops it; each person's placing turn starts a fresh countdown.
+- **Firing timer (owner, 2026-11-12):** each shot has 15 s (`Krida.PLAY_TURN_MS`), the ring
+  above the fleet lists; at 0 the phone fires the easy computer's shot
+  (`PerangKapalGame.timeoutMove`). Auto-play after a timeout applies as in the other games: a
+  player who let the placement or firing timer run out gets their later shots fired after
+  `Krida.AUTO_PLAY_MS` until they tap the radar themselves.
 - Added by the agent, not asked for (tell the owner if they should go): placing a ship
   selects the next ship not yet on the ocean; a gold ring marks the last shot; a peg on a
   ship stands on its deck so hits on your own ships show.
@@ -228,7 +243,7 @@ in the same commit as the code.
   after a roll with more than one token to choose, 15 s to pick (`Krida.PLAY_TURN_MS`), then
   the easy computer's pick (`LudoGame.timeoutMove`, any legal token); the ring sits above the
   die where the roll countdown was (owner, 2026-11-12). Perang
-  kapal still needs its timer (see `status.md`).
+  kapal: 60 s to place the fleet, 15 s per shot (see the perang kapal section).
 - Added by the agent, not asked for: passes are automatic (the host skips a seat with no
   fitting tile and lists it in `lastPasses`), so there is no Pass button. A double at a turn
   of the line lies lengthwise in the L-shaped corner instead of across. If no double is dealt

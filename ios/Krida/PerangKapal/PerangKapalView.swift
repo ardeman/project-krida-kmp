@@ -19,6 +19,10 @@ final class PerangKapalGameModel: ObservableObject {
     @Published private(set) var selectedKind: Int? = 0
     /// A ship dragged from the tray that is not over the ocean yet, under the finger.
     @Published private(set) var ghost: (kind: Int, point: CGPoint)?
+    /// Seconds left to place the fleet (`Krida.PLACE_FLEET_MS`); 0 when not counting.
+    @Published private(set) var placeSeconds = 0
+    /// Seconds left to fire (`Krida.PLAY_TURN_MS`); 0 when not counting.
+    @Published private(set) var fireSeconds = 0
 
     let table: PerangKapalTable
     let scene = PerangKapalScene()
@@ -30,6 +34,15 @@ final class PerangKapalGameModel: ObservableObject {
     /// Finger down on the ocean: the ship under it (if any) and whether it has become a drag.
     private var grab: (kind: Int?, dragging: Bool)?
     private var dragCell: Int?
+    /// The seat whose placement countdown runs, nil when none does.
+    private var placeKey: Int?
+    /// The firing countdown's seat and snapshot, nil when none runs.
+    private var fireKey: String?
+    /// Counts snapshots, so each new shot to make restarts the firing countdown.
+    private var version = 0
+    /// Seats on this phone whose timer ran out: the phone fires for them after a short pause
+    /// (`Krida.AUTO_PLAY_MS`) instead of a countdown, until that player fires themselves.
+    private var autoSeats = Set<Int>()
 
     private static let botFirst: Double = 0.32
     private static let botNext: Double = 0.26
@@ -85,9 +98,82 @@ final class PerangKapalGameModel: ObservableObject {
 
     private func show(_ next: PerangKapalState) {
         state = next
+        version += 1
         draw()
         syncViewer()
+        syncPlaceTimer()
+        syncFireTimer()
         scheduleBot()
+    }
+
+    // MARK: Placement timer
+
+    /// Seconds to place the fleet (`Krida.PLACE_FLEET_MS`).
+    var placeTotal: Int { Int(Krida.shared.PLACE_FLEET_MS / 1000) }
+
+    /// While a player on this phone places their fleet a countdown runs; at 0 the phone places
+    /// the ships still missing (`PerangKapalGame.timeoutFleet`) and taps Ready. The pass cover
+    /// and waiting on the other side stop it; each placing turn starts afresh.
+    private func syncPlaceTimer() {
+        let key = canPlace ? viewer : nil
+        guard key != placeKey else { return }
+        placeKey = key
+        lifetime.cancel("place")
+        placeSeconds = 0
+        guard let seat = key else { return }
+        placeSeconds = placeTotal
+        lifetime.launch("place") { [self] in
+            while placeSeconds > 0 {
+                try await Task.sleep(for: .seconds(1))
+                guard canPlace, viewer == seat else { placeSeconds = 0; return }
+                placeSeconds -= 1
+            }
+            let latest = table.latest
+            guard let fleet = game.timeoutFleet(state: latest, seat: Int32(seat), random: KotlinRandom.companion) else { return }
+            ghost = nil
+            grab = nil
+            dragCell = nil
+            let placed = latest.fleets.indices.contains(seat) ? latest.fleets[seat] : []
+            if !game.fleetComplete(fleet: placed) { _ = table.setFleet(seat: seat, fleet: fleet) }
+            if table.ready(seat: seat) { sounds.play(.tap) }
+            autoSeats.insert(seat)
+        }
+    }
+
+    // MARK: Firing timer
+
+    /// Seconds to fire (`Krida.PLAY_TURN_MS`).
+    var fireTotal: Int { Int(Krida.shared.PLAY_TURN_MS / 1000) }
+
+    /// On a local player's shot a countdown runs; at 0 the phone fires the easy computer's shot
+    /// (`PerangKapalGame.timeoutMove`), and keeps firing for that player after a short pause
+    /// until they tap the radar themselves.
+    private func syncFireTimer() {
+        let key = canFire ? "\(viewer)-\(version)" : nil
+        guard key != fireKey else { return }
+        fireKey = key
+        lifetime.cancel("fire")
+        fireSeconds = 0
+        guard key != nil else { return }
+        let seat = viewer
+        let auto = autoSeats.contains(seat)
+        fireSeconds = auto ? 0 : fireTotal
+        lifetime.launch("fire") { [self] in
+            if auto {
+                try await Task.sleep(for: .seconds(Double(Krida.shared.AUTO_PLAY_MS) / 1000))
+            } else {
+                while fireSeconds > 0 {
+                    try await Task.sleep(for: .seconds(1))
+                    guard canFire, viewer == seat else { fireSeconds = 0; return }
+                    fireSeconds -= 1
+                }
+                autoSeats.insert(seat)
+            }
+            guard canFire, viewer == seat, autoSeats.contains(seat),
+                  let cell = game.timeoutMove(state: table.latest, seat: Int32(seat), random: KotlinRandom.companion)?.fire
+            else { return }
+            if table.fire(seat: seat, cell: Int(cell.int32Value)) { sounds.play(.tap) }
+        }
     }
 
     private func draw() {
@@ -126,6 +212,8 @@ final class PerangKapalGameModel: ObservableObject {
         cover = nil
         selectNext()
         draw()
+        syncPlaceTimer()
+        syncFireTimer()
     }
 
     // MARK: Computers
@@ -231,12 +319,17 @@ final class PerangKapalGameModel: ObservableObject {
     private func tap(at point: CGPoint) {
         if canFire {
             guard let cell = scene.pickCell(at: point, onRadar: true) else { return }
-            if table.fire(seat: viewer, cell: cell) { sounds.play(.tap) }
+            if table.fire(seat: viewer, cell: cell) {
+                sounds.play(.tap)
+                autoSeats.remove(viewer)
+            }
         } else if canPlace {
             guard let cell = scene.pickCell(at: point, onRadar: false) else { return }
             if let ship = ship(at: cell) {
-                // A tap on a placed ship turns it around its middle.
-                if place(Int(ship.kind), bow: Int(game.turnedBow(ship: ship)), horizontal: !ship.horizontal) { sounds.play(.tap) }
+                // A tap on a placed ship turns it: around its middle, or on another of its
+                // cells when the middle is crowded.
+                guard let bow = game.turnedBow(fleet: myFleet, ship: ship, tapped: Int32(cell)) else { return }
+                if place(Int(ship.kind), bow: Int(bow.int32Value), horizontal: !ship.horizontal) { sounds.play(.tap) }
             } else if let kind = selectedKind {
                 let across = horizontal(kind)
                 guard place(kind, bow: Int(game.bowFor(cell: Int32(cell), kind: Int32(kind), horizontal: across)), horizontal: across) else { return }
@@ -509,6 +602,10 @@ private struct PerangKapalBoardView: View {
                 Spacer(minLength: 0)
                 if model.canPlace { tray }
                 if !model.state.placing {
+                    if model.fireSeconds > 0 {
+                        CountdownRing(seconds: model.fireSeconds, total: model.fireTotal, size: 40 * s)
+                            .padding(.bottom, 8 * s)
+                    }
                     fleetStatus("Enemy fleet", sunk: model.lost(1 - model.viewer))
                     fleetStatus("Your fleet", sunk: model.lost(model.viewer))
                         .padding(.top, 8 * s)
@@ -553,9 +650,14 @@ private struct PerangKapalBoardView: View {
     private var tray: some View {
         let placed = model.placedKinds
         return VStack(alignment: .trailing, spacing: 4 * s) {
-            Text("Place your fleet")
-                .font(Theme.font(13 * s, .bold))
-                .lineLimit(1)
+            HStack(spacing: 8 * s) {
+                if model.placeSeconds > 0 {
+                    CountdownRing(seconds: model.placeSeconds, total: model.placeTotal, size: 30 * s)
+                }
+                Text("Place your fleet")
+                    .font(Theme.font(13 * s, .bold))
+                    .lineLimit(1)
+            }
             ForEach(shipNames.indices, id: \.self) { kind in
                 let on = kind == model.selectedKind
                 let shape = RoundedRectangle(cornerRadius: 10 * s)

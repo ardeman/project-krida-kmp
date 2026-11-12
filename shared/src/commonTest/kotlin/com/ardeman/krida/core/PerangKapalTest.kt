@@ -192,4 +192,75 @@ class PerangKapalTest {
             assertTrue(game.legalFleet(fleet), "seed $i")
         }
     }
+    @Test
+    fun timeoutFleetKeepsPlacedShipsAndFillsTheRest() {
+        var s = game.initialState(2, Random(3))
+        s = game.apply(s, 0, PerangKapalMove(kind = 0, cell = 0, horizontal = true), Random.Default)
+        s = game.apply(s, 0, PerangKapalMove(kind = 4, cell = 90, horizontal = true), Random.Default)
+        repeat(20) { i ->
+            val fleet = assertNotNull(game.timeoutFleet(s, 0, Random(i)))
+            assertTrue(game.legalFleet(fleet), "seed $i")
+            assertEquals(s.fleets[0].first { it.kind == 0 }, fleet.first { it.kind == 0 })
+            assertEquals(s.fleets[0].first { it.kind == 4 }, fleet.first { it.kind == 4 })
+            val placed = game.apply(s, 0, PerangKapalMove(fleet = fleet), Random.Default)
+            assertNull(game.validate(placed, 0, PerangKapalMove(ready = true)))
+        }
+        assertTrue(game.legalFleet(assertNotNull(game.timeoutFleet(s, 1, Random(1)))))
+    }
+
+    @Test
+    fun timeoutFleetIsNullOnceReadyOrInBattle() {
+        var s = game.initialState(2, Random(4))
+        s = game.apply(s, 0, PerangKapalMove(fleet = game.randomFleet(Random(5))), Random.Default)
+        s = game.apply(s, 0, PerangKapalMove(ready = true), Random.Default)
+        assertNull(game.timeoutFleet(s, 0, Random(1)))
+        s = game.apply(s, 1, PerangKapalMove(fleet = game.randomFleet(Random(6))), Random.Default)
+        s = game.apply(s, 1, PerangKapalMove(ready = true), Random.Default)
+        assertNull(game.timeoutFleet(s, 1, Random(1)))
+    }
+    @Test
+    fun timeoutMoveFiresALegalShotOnlyOnYourTurn() {
+        var s = game.initialState(2, Random(7))
+        assertNull(game.timeoutMove(s, 0, Random(1)))
+        for (seat in 0..1) {
+            s = game.apply(s, seat, PerangKapalMove(fleet = game.randomFleet(Random(seat + 20))), Random.Default)
+            s = game.apply(s, seat, PerangKapalMove(ready = true), Random.Default)
+        }
+        assertNull(game.timeoutMove(s, 1 - s.turn, Random(1)))
+        repeat(40) {
+            val seat = s.turn
+            val move = assertNotNull(game.timeoutMove(game.viewFor(s, seat), seat, Random(it)))
+            assertNull(game.validate(s, seat, move))
+            s = game.apply(s, seat, move, Random.Default)
+        }
+    }
+    @Test
+    fun crowdedShipTurnsOnAnotherCell() {
+        // Packed like a player's fleet: the carrier on the bottom row, ships stacked above it.
+        val fleet = listOf(
+            horizontal(0, 94), horizontal(3, 85), horizontal(1, 74), horizontal(2, 64),
+            PerangKapalShip(4, game.cellsFor(45, 2, false)!!),
+        )
+        assertTrue(game.legalFleet(fleet))
+        // The submarine is boxed in by full rows above and below: no turn exists.
+        assertNull(game.turnedBow(fleet, fleet[1], 86))
+        for (ship in fleet.filter { it.kind != 3 }) {
+            for (tapped in ship.cells) {
+                val bow = assertNotNull(game.turnedBow(fleet, ship, tapped), "kind ${ship.kind}")
+                val cells = assertNotNull(game.cellsFor(bow, PerangKapalGame.FLEET[ship.kind], !ship.horizontal))
+                assertTrue(cells.any { it in ship.cells }, "kind ${ship.kind} keeps a cell")
+                val others = fleet.filter { it.kind != ship.kind }.flatMap { it.cells }
+                assertTrue(cells.none { it in others }, "kind ${ship.kind} overlaps")
+            }
+        }
+        // Free water: same as turning around the middle.
+        val alone = horizontal(1, 44)
+        assertEquals(game.turnedBow(alone), game.turnedBow(listOf(alone), alone, 44))
+    }
+
+    @Test
+    fun boxedInShipCannotTurn() {
+        val fleet = listOf(horizontal(4, 0), horizontal(0, 10))
+        assertNull(game.turnedBow(fleet, fleet[0], 0))
+    }
 }

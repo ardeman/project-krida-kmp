@@ -233,6 +233,32 @@ object PerangKapalGame :
     fun turnedBow(ship: PerangKapalShip): Int =
         bowFor(ship.cells.sorted()[ship.cells.size / 2], ship.kind, !ship.horizontal)
 
+    /**
+     * Bow cell for turning [ship] a quarter in [fleet] (what a tap on a placed ship does), or
+     * null when it cannot turn anywhere. Around its middle cell first; when that would overlap
+     * another ship or hang over the edge, the turned ship may pivot on the [tapped] cell, then
+     * on any other of its cells (nearest the middle first), sliding along its new line, so a
+     * ship in a crowded corner still turns wherever it fits.
+     */
+    fun turnedBow(fleet: List<PerangKapalShip>, ship: PerangKapalShip, tapped: Int): Int? {
+        val sorted = ship.cells.sorted()
+        val length = sorted.size
+        val middle = sorted[length / 2]
+        val across = !ship.horizontal
+        val step = if (across) 1 else SIZE
+        val pivots = (listOf(middle, tapped) + sorted.sortedBy { kotlin.math.abs(sorted.indexOf(it) - length / 2) })
+            .distinct().filter { it in sorted }
+        val shifts = (0 until length).sortedBy { kotlin.math.abs(it - length / 2) }
+        for (pivot in pivots) for (shift in shifts) {
+            val back = if (across) pivot % SIZE else pivot / SIZE
+            if (shift > back) continue
+            val bow = pivot - shift * step
+            val cells = cellsFor(bow, length, across) ?: continue
+            if (!overlaps(fleet, ship.kind, cells)) return bow
+        }
+        return null
+    }
+
     fun fleetComplete(fleet: List<PerangKapalShip>): Boolean =
         fleet.size == KINDS && fleet.map { it.kind }.toSet() == (0 until KINDS).toSet() &&
             fleet.all { it.cells.size == FLEET[it.kind] }
@@ -267,6 +293,51 @@ object PerangKapalGame :
             if (ok && fleetComplete(ships)) return ships
         }
         error("Could not place a random fleet")
+    }
+
+    /**
+     * What the phone sets for [seat] when the placement timer
+     * ([com.ardeman.krida.core.protocol.Krida.PLACE_FLEET_MS]) runs out, before it taps Ready:
+     * the ships already on the ocean stay, the rest are placed at random as the easy computer
+     * would. If they cannot all fit around the placed ones, a whole random fleet. Null when
+     * [seat] has nothing left to place (already ready, battle started or game over).
+     */
+    fun timeoutFleet(state: PerangKapalState, seat: Int, random: Random): List<PerangKapalShip>? {
+        if (state.finished || !state.placing || state.ready.getOrElse(seat) { true }) return null
+        val placed = state.fleets[seat]
+        if (fleetComplete(placed)) return placed
+        for (attempt in 0 until 50) {
+            val ships = placed.toMutableList()
+            var ok = true
+            for (kind in 0 until KINDS) {
+                if (ships.any { it.kind == kind }) continue
+                val taken = occupied(ships)
+                val options = ArrayList<List<Int>>()
+                for (cell in 0 until CELLS) for (horizontal in listOf(true, false)) {
+                    val cells = cellsFor(cell, FLEET[kind], horizontal) ?: continue
+                    if (cells.none { it in taken }) options += cells
+                }
+                if (options.isEmpty()) {
+                    ok = false
+                    break
+                }
+                ships += PerangKapalShip(kind, options.random(random))
+            }
+            if (ok && legalFleet(ships)) return ships
+        }
+        return randomFleet(random)
+    }
+
+    /**
+     * What the phone fires for [seat] when its turn timer
+     * ([com.ardeman.krida.core.protocol.Krida.PLAY_TURN_MS]) runs out: the easy computer's shot
+     * ([PerangKapalBot.Level.EASY]), drawn from [random]. It only reads [seat]'s own shots, so a
+     * guest's view is enough; the phone sends it like a tap. Null when [seat] may not fire now.
+     */
+    fun timeoutMove(state: PerangKapalState, seat: Int, random: Random): PerangKapalMove? {
+        if (state.finished || state.placing || seat != state.turn) return null
+        if (openCells(state, seat).isEmpty()) return null
+        return PerangKapalBot(PerangKapalBot.Level.EASY).chooseMove(state, seat, random)
     }
 
     private fun place(
