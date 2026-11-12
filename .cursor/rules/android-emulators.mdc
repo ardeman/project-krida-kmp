@@ -12,18 +12,24 @@ boots and dual-AVD runs.
 
 - **Pixel_XL**: API 29 `google_apis` — the stable guest for scripts.
 - **Pixel_9a**: Android 16 (API 36) `google_apis_playstore`, skin `pixel_9a`,
-  `hw.device.name=pixel_9` (avdmanager has no `pixel_9a` device id), `hw.gpu.mode=auto`.
+  `hw.device.name=pixel_9` (avdmanager has no `pixel_9a` device id), `hw.gpu.mode=auto`, **3-button navigation** (required, see below).
   Device Manager must show API 36, not 0. A wrong `target` (e.g. `android-36.1` with old
   cmdline-tools) shows as **API 0**.
 
 ## Do / don't
 
 - Start AVDs from **Device Manager** when possible; let Play first boot finish.
-- If bootloop after a killed first boot: wipe `userdata-qemu.img*` / cache / snapshots
-  (or recreate), then one Device Manager start.
-- Do **not** force `-gpu swiftshader_indirect` or always `-no-snapshot` — that path hit
-  SurfaceFlinger `RegionSampling` / `hasReadColorBufferDma` crashes on API 36+ while
-  Studio/`auto` looked fine interactively.
+- If Pixel_9a bootloops, check `adb logcat -b crash` first. The 2026-11-12 loop looked like
+  a killed first boot but was the gesture-navigation crash below; wiping would not have
+  fixed it.
+- Pixel_9a must stay on **3-button navigation**. With gesture navigation, emulator 37.2.13
+  with the API 36 Play image crash-loops: SurfaceFlinger `RegionSampling` aborts on
+  `hasReadColorBufferDma`, taking the launcher and system_server down every ~10 s. It
+  happens with every GPU mode (`auto`, `host`, software) and with `GLDMA`/`GLDMA2` off, so
+  GPU flags and wiping data do not fix it. After a wipe or recreate, set it again while
+  the device loops:
+  `adb shell cmd overlay enable-exclusive --category com.android.internal.systemui.navbar.threebutton`
+  then `adb emu avd snapshot save default_boot` so quick boot does not reload the bad state.
 - Do **not** leave Play Store first boots running unattended in CLI; kill qemu if the Mac
   heats up.
 - AOSP `default` is stable but looks wrong (no Pixel UI). Play / `google_apis` for UI.

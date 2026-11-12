@@ -13,10 +13,12 @@ file in the same commit when an item is done or a new one comes up. Last updated
   `scripts/test-cross-lan.mjs`; TCP via `adb forward` because emulator NSD is unreliable).
   Local AVDs (2026-11-12): **Pixel_XL** = API 29 google_apis (stable); **Pixel_9a** =
   Android 16 / API 36 Play Store + `pixel_9a` skin (recreated after a broken `target` that
-  showed as API 0 in Device Manager). Dual-AVD / long CLI cold boots overheat this Mac and
-  can leave Play images bootlooping if killed mid-first-boot — prefer Device Manager, one
-  AVD, wipe userdata if bootloop; do not force `-gpu swiftshader_indirect` (Studio uses
-  `auto`). Open: phone LAN checks (same Wi‑Fi and hotspot, Android ↔ iOS, leave/rejoin);
+  showed as API 0 in Device Manager). Dual-AVD / long CLI cold boots overheat this Mac —
+  prefer Device Manager and one AVD. Pixel_9a bootlooped on 2026-11-12 because of gesture
+  navigation (SurfaceFlinger `RegionSampling` abort on emulator 37.2.13, any GPU mode); it
+  is fixed by keeping it on 3-button navigation, not by wiping or GPU flags (commands in
+  `.cursor/rules/android-emulators.mdc`). Open: phone LAN checks (same Wi‑Fi and hotspot,
+  Android ↔ iOS, leave/rejoin);
   dual-emu / cross only if the Mac can hold two AVDs without thrashing.
 - Online step 10b, friends list: relay, web, Android and iOS are built and live
   (`docs/mockups/friends.md`); phone checks open (add/remove by code and `/f/`, both
