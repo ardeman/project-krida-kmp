@@ -5844,6 +5844,614 @@
           }
         }
       }
+    },
+    "Gaple": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple"
+          }
+        }
+      }
+    },
+    "Match the ends, empty your hand.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match the ends, empty your hand."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sambung ujungnya, habiskan kartumu."
+          }
+        }
+      }
+    },
+    "No tile fits? Pass. First to 100 points wins.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tile fits? Pass. First to 100 points wins."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tak ada yang cocok? Pas. Pertama ke 100 poin menang."
+          }
+        }
+      }
+    },
+    "You against the computer. Hands stay hidden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You against the computer. Hands stay hidden."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu melawan komputer. Kartu tetap tertutup."
+          }
+        }
+      }
+    },
+    "Partners": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partners"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berpasangan"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mati"
+          }
+        }
+      }
+    },
+    "Across 2 v 2": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Across 2 v 2"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berhadapan 2 v 2"
+          }
+        }
+      }
+    },
+    "Round %1$lld · to %2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Round %1$lld · to %2$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronde %1$lld · sampai %2$lld"
+          }
+        }
+      }
+    },
+    "%lld tiles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld tiles"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld kartu"
+          }
+        }
+      }
+    },
+    "Team %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tim %@"
+          }
+        }
+      }
+    },
+    "Your turn": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your turn"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giliranmu"
+          }
+        }
+      }
+    },
+    "Tap an end": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap an end"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketuk salah satu ujung"
+          }
+        }
+      }
+    },
+    "Open with %1$lld|%2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open with %1$lld|%2$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buka dengan %1$lld|%2$lld"
+          }
+        }
+      }
+    },
+    "%1$@ plays %2$lld|%3$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ plays %2$lld|%3$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ main %2$lld|%3$lld"
+          }
+        }
+      }
+    },
+    "%@: Pass": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: Pass"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: Pas"
+          }
+        }
+      }
+    },
+    "Tile %1$lld|%2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tile %1$lld|%2$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kartu %1$lld|%2$lld"
+          }
+        }
+      }
+    },
+    "Left end": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left end"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ujung kiri"
+          }
+        }
+      }
+    },
+    "Right end": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right end"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ujung kanan"
+          }
+        }
+      }
+    },
+    "Domino! You went out": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domino! You went out"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domino! Kartumu habis"
+          }
+        }
+      }
+    },
+    "Domino! %@ went out": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domino! %@ went out"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domino! Kartu %@ habis"
+          }
+        }
+      }
+    },
+    "Gaple! Nobody can play": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple! Nobody can play"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple! Tak ada yang bisa jalan"
+          }
+        }
+      }
+    },
+    "Pips": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pips"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mata"
+          }
+        }
+      }
+    },
+    "Points": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Points"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poin"
+          }
+        }
+      }
+    },
+    "Total": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Total"
+          }
+        }
+      }
+    },
+    "Next round": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next round"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronde berikutnya"
+          }
+        }
+      }
+    },
+    "Waiting for the host": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the host"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu tuan rumah"
+          }
+        }
+      }
+    },
+    "First to 100 points": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First to 100 points"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pertama ke 100 poin"
+          }
+        }
+      }
+    },
+    "Team %@ wins": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Team %@ wins"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tim %@ menang"
+          }
+        }
+      }
+    },
+    "Your team wins!": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your team wins!"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timmu menang!"
+          }
+        }
+      }
+    },
+    "You play %1$lld|%2$lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You play %1$lld|%2$lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu main %1$lld|%2$lld"
+          }
+        }
+      }
+    },
+    "A double-six set of 28 tiles. Everyone gets 7; with 2 or 3 players the rest stay face down.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A double-six set of 28 tiles. Everyone gets 7; with 2 or 3 players the rest stay face down."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satu set balak enam, 28 kartu. Tiap pemain dapat 7; dengan 2 atau 3 pemain sisanya tetap tertutup."
+          }
+        }
+      }
+    },
+    "The first round opens with balak enam [6|6], or the highest double if nobody holds it. Later rounds: the last winner leads with any tile.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first round opens with balak enam [6|6], or the highest double if nobody holds it. Later rounds: the last winner leads with any tile."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronde pertama dibuka dengan balak enam [6|6], atau balak tertinggi kalau tak ada yang memegangnya. Ronde berikutnya: pemenang terakhir membuka dengan kartu apa saja."
+          }
+        }
+      }
+    },
+    "A tile must match one open end. If it fits both, tap the end you want.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A tile must match one open end. If it fits both, tap the end you want."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kartu harus cocok dengan salah satu ujung. Kalau cocok di dua ujung, ketuk ujung yang kamu mau."
+          }
+        }
+      }
+    },
+    "No tile fits? You pass. There is no drawing.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tile fits? You pass. There is no drawing."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tak ada kartu yang cocok? Kamu pas. Tidak ada ambil kartu."
+          }
+        }
+      }
+    },
+    "The round ends when someone empties their hand (domino) or nobody can play (gaple): then the lowest pips in hand wins.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The round ends when someone empties their hand (domino) or nobody can play (gaple): then the lowest pips in hand wins."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ronde selesai kalau ada yang kartunya habis (domino) atau tak ada yang bisa jalan (gaple): mata terkecil di tangan menang."
+          }
+        }
+      }
+    },
+    "The round winner scores the pips left in the other hands. First to 100 wins.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The round winner scores the pips left in the other hands. First to 100 wins."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemenang ronde dapat poin dari sisa mata di tangan lawan. Pertama ke 100 menang."
+          }
+        }
+      }
+    },
+    "Partners: seats across play as a team and share one score.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partners: seats across play as a team and share one score."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Berpasangan: kursi yang berhadapan satu tim dan berbagi satu skor."
+          }
+        }
+      }
+    },
+    "15 seconds a turn: when time runs out the phone plays your heaviest fitting tile.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 seconds a turn: when time runs out the phone plays your heaviest fitting tile."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 detik tiap giliran: kalau waktu habis, ponsel memainkan kartumu yang cocok dan paling berat."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

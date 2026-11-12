@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var ularTable: UlarTanggaTable?
     @State private var ludoTable: LudoTable?
     @State private var perangKapalTable: PerangKapalTable?
+    @State private var gapleTable: GapleTable?
     /// The game on the left card; the play card follows it.
     @State private var game: MenuGame = .congklak
     /// Ular tangga's seat tiles for a game on this phone, as `LocalSeats.encode` text.
@@ -19,6 +20,8 @@ struct ContentView: View {
     @State private var congklakSeats: [LocalSeat] = [.person, .person]
     /// Perang kapal's seats: the first is always a person, the second the computer or a person.
     @State private var kapalSeats: [LocalSeat] = [.person, .computer]
+    /// Gaple's seat tiles on this phone (you, then a computer or empty), as `LocalSeats.encode` text.
+    @AppStorage(GapleSettings.seatsKey) private var gapleSeatsText = ""
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
     /// The join screen (scan the host's QR or type the code) is up.
@@ -56,7 +59,7 @@ struct ContentView: View {
 
     /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
     private var keepAwake: Bool {
-        passAndPlay != nil || ularTable != nil || ludoTable != nil || perangKapalTable != nil || room != nil
+        passAndPlay != nil || ularTable != nil || ludoTable != nil || perangKapalTable != nil || gapleTable != nil || room != nil
     }
 
     var body: some View {
@@ -72,6 +75,9 @@ struct ContentView: View {
                     .id(ObjectIdentifier(table))
             } else if let table = perangKapalTable {
                 PerangKapalView(table: table) { perangKapalTable = nil }
+                    .id(ObjectIdentifier(table))
+            } else if let table = gapleTable {
+                GapleView(table: table) { gapleTable = nil }
                     .id(ObjectIdentifier(table))
             } else if let room {
                 RoomView(
@@ -229,7 +235,7 @@ struct ContentView: View {
 
     /// No game, lobby or search is up; links and notifications only apply here.
     private var onMenus: Bool {
-        passAndPlay == nil && ularTable == nil && ludoTable == nil && perangKapalTable == nil && room == nil
+        passAndPlay == nil && ularTable == nil && ludoTable == nil && perangKapalTable == nil && gapleTable == nil && room == nil
             && !creatingOnlineRoom && !playingQuickMatch
     }
 
@@ -430,12 +436,14 @@ struct ContentView: View {
         let ludo = game == .ludo
         // Two seats; on this phone against the computer, or two people passing the phone.
         let kapal = game == .perangKapal
+        // Gaple is on this phone only until its nearby and online rooms are wired.
+        let gaple = game == .gaple
         let multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
-        let nearby = place != .phone
-        let online = place == .online
+        let nearby = place != .phone && !gaple
+        let online = nearby && place == .online
         let lan = nearby && !online && nearbyLink == .wifi
-        let seats = kapal ? kapalSeats : ludo ? ludoSeats : ular ? ularSeats : congklakSeats
+        let seats = gaple ? gapleSeats : kapal ? kapalSeats : ludo ? ludoSeats : ular ? ularSeats : congklakSeats
         let computers = seats.filter { $0 == .computer }.count
         let people = seats.filter { $0 == .person }.count
         let seatColors: [Int] = multi
@@ -454,8 +462,10 @@ struct ContentView: View {
             (.bluetooth, "Bluetooth", nil), (.wifi, "Wi‑Fi", nil),
         ]
         return VStack(alignment: .leading, spacing: 10 * s) {
-            SettingRow(label: "Play on") {
-                Segmented(options: places, selection: $place, label: "Play on")
+            if !gaple {
+                SettingRow(label: "Play on") {
+                    Segmented(options: places, selection: $place, label: "Play on")
+                }
             }
             if nearby && !online {
                 SettingRow(label: "Link") {
@@ -463,7 +473,18 @@ struct ContentView: View {
                 }
             }
             // In a nearby room everyone who joins plays, up to 4.
-            if !nearby {
+            if gaple {
+                SettingRow(label: "Players") {
+                    // You are always the first seat; the others are a computer or empty.
+                    SeatTiles(
+                        seats: seats,
+                        colors: seats.indices.map { seats[$0] == .empty ? Theme.border : pawnColor($0) },
+                        tappable: [1, 2, 3]
+                    ) { i in
+                        gapleSeatsText = LocalSeats.shared.encode(seats: GapleSettings.tap(seats, index: i))
+                    }
+                }
+            } else if !nearby {
                 SettingRow(label: "Players") {
                     SeatTiles(
                         seats: seats,
@@ -489,7 +510,7 @@ struct ContentView: View {
             }
             // The description above equally sized Join/Create buttons, as on Android. Online
             // rules move to the Create room screen.
-            SettingRow(label: !multi && !kapal && !nearby && computers > 0 ? "Level" : nil) {
+            SettingRow(label: !multi && !kapal && !gaple && !nearby && computers > 0 ? "Level" : nil) {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
                         detail(multi ? "Up to 4 phones over the internet, friends anywhere"
@@ -499,6 +520,8 @@ struct ContentView: View {
                     } else if nearby {
                         detail(multi ? "Up to 4 phones over Bluetooth, no internet"
                             : kapal ? "2 phones over Bluetooth, no internet" : "Bluetooth, no internet")
+                    } else if gaple {
+                        detail("You against the computer. Hands stay hidden.")
                     } else if kapal {
                         detail(computers > 0 ? "You against the computer." : "Two players, taking turns on one phone")
                     } else if !multi && computers > 0 {
@@ -555,6 +578,8 @@ struct ContentView: View {
         return LocalSeats.shared.decode(text: ularSeatsText.isEmpty ? nil : ularSeatsText, size: 4, fallback: fallback)
     }
 
+    private var gapleSeats: [LocalSeat] { GapleSettings.seats(gapleSeatsText) }
+
     /// Ludo's seat tiles. The first two start as people; empty seats are skipped.
     private var ludoSeats: [LocalSeat] {
         let fallback = (0..<4).map { $0 < 2 ? LocalSeat.person : LocalSeat.empty }
@@ -565,6 +590,7 @@ struct ContentView: View {
         switch menu {
         case .ludo: LudoGame.shared.id
         case .perangKapal: PerangKapalGame.shared.id
+        case .gaple: GapleGame.shared.id
         case .ularTangga: UlarTanggaGame.shared.id
         case .congklak: CongklakGame.shared.id
         }
@@ -580,6 +606,7 @@ struct ContentView: View {
     private func rules(for id: String) -> RoomRules {
         if id == LudoGame.shared.id { return .ludo }
         if id == PerangKapalGame.shared.id { return .perangKapal }
+        if id == GapleGame.shared.id { return .gaple }
         if id == UlarTanggaGame.shared.id { return .ularTangga }
         return .congklak
     }
@@ -588,12 +615,14 @@ struct ContentView: View {
         switch menu {
         case .ludo: .ludo
         case .perangKapal: .perangKapal
+        case .gaple: .gaple
         case .ularTangga: .ularTangga
         case .congklak: .congklak
         }
     }
 
     private func start() {
+        if game == .gaple { return startGaple() }
         if place == .online {
             quickMatchGame = gameId(game)
             creatingOnlineRoom = true
@@ -661,6 +690,13 @@ struct ContentView: View {
                 you: String(localized: "You", bundle: .app), computer: String(localized: "Computer", bundle: .app))
             : PerangKapalHostTable.passAndPlay(
                 names: [String(localized: "Player 1", bundle: .app), String(localized: "Player 2", bundle: .app)])
+    }
+
+    private func startGaple() {
+        let computers = gapleSeats.filter { $0 == .computer }.count
+        gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: computers) { n in
+            computers == 1 ? String(localized: "Computer", bundle: .app) : String(localized: "Computer \(n)", bundle: .app)
+        }
     }
 
     private func startPassAndPlay() {
@@ -853,7 +889,7 @@ private struct SeatTiles: View {
 
 /// A small label above its control; no label keeps the rows' spacing. Same as Android.
 /// Which game's rule controls the play card and the online create screen show.
-enum RoomRules { case congklak, ularTangga, ludo, perangKapal }
+enum RoomRules { case congklak, ularTangga, ludo, perangKapal, gaple }
 
 /// The game's rule options (ular tangga or ludo chips; congklak tembak and starter), saved as they
 /// change: on the play card for this phone and nearby, on Create room online.
@@ -861,10 +897,22 @@ struct GameRoomOptions: View {
     let rules: RoomRules
     @AppStorage(CongklakSettings.tembakAfterStoreKey) private var tembakAfterStore = true
     @AppStorage(CongklakSettings.starterKey) private var starter = "random"
+    @AppStorage(GapleSettings.seatsKey) private var gapleSeatsText = ""
+    @AppStorage(GapleSettings.partnersKey) private var gaplePartners = false
     @Environment(\.uiScale) private var s
 
     var body: some View {
         switch rules {
+        case .gaple:
+            Group {
+                // Partners only make sense with four at the table.
+                if !GapleSettings.seats(gapleSeatsText).contains(.empty) {
+                    SettingRow(label: "Partners") {
+                        Segmented(options: [(false, "Off", nil), (true, "Across 2 v 2", nil)], selection: $gaplePartners, label: "Partners")
+                    }
+                }
+                RuleHint(text: "No tile fits? Pass. First to 100 points wins.")
+            }
         case .ularTangga:
             SettingRow(label: "Rules") { UlarTanggaOptionChips() }
         case .ludo:
@@ -948,7 +996,7 @@ struct Segmented<T: Hashable>: View {
 
 /// The games the left card switches between, until the game list exists. Same as Android.
 enum MenuGame: CaseIterable {
-    case congklak, ularTangga, ludo, perangKapal
+    case congklak, ularTangga, ludo, perangKapal, gaple
 
     var title: LocalizedStringKey {
         switch self {
@@ -956,6 +1004,7 @@ enum MenuGame: CaseIterable {
         case .ularTangga: "Snakes & ladders"
         case .ludo: "Ludo"
         case .perangKapal: "Perang kapal"
+        case .gaple: "Gaple"
         }
     }
     var players: LocalizedStringKey { self == .congklak || self == .perangKapal ? "2 players" : "2–4 players" }
@@ -965,6 +1014,7 @@ enum MenuGame: CaseIterable {
         case .ularTangga: "Climb the ladders, dodge the snakes."
         case .ludo: "Race your four tokens home."
         case .perangKapal: "Sink the fleet."
+        case .gaple: "Match the ends, empty your hand."
         }
     }
     var face: Color {
@@ -973,6 +1023,7 @@ enum MenuGame: CaseIterable {
         case .ularTangga: Color(hex: 0x4F8A3B)
         case .ludo: Color(hex: 0x3D6EB5)
         case .perangKapal: Color(hex: 0x1B4F72)
+        case .gaple: Color(hex: 0x7B2D3B)
         }
     }
     var edge: Color {
@@ -981,6 +1032,7 @@ enum MenuGame: CaseIterable {
         case .ularTangga: Color(hex: 0x3B6A2B)
         case .ludo: Color(hex: 0x2A5085)
         case .perangKapal: Color(hex: 0x123A54)
+        case .gaple: Color(hex: 0x5A1F2B)
         }
     }
 }
@@ -1058,6 +1110,7 @@ private struct GameCardFace: View {
                 case .ularTangga: UlarTanggaPreview(onReady: onReady)
                 case .ludo: LudoPreview(onReady: onReady)
                 case .perangKapal: PerangKapalPreview(onReady: onReady)
+                case .gaple: GaplePreview(onReady: onReady)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
