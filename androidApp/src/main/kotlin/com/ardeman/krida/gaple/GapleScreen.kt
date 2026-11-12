@@ -89,6 +89,10 @@ import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
+import com.ardeman.krida.ui.OpponentPill
+import com.ardeman.krida.ui.PillSeat
+import com.ardeman.krida.ui.PillTopBar
+import com.ardeman.krida.ui.PlayerPill
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
@@ -399,73 +403,180 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             }
         }
 
-        Row(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM)) {
-            Column(Modifier.width(150.dp).fillMaxHeight().hud("left"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
-                Text(stringResource(R.string.gaple_title), style = Theme.font(18, FontWeight.Black, Theme.ink))
-                Text(
-                    stringResource(R.string.gaple_round, state.round, GapleGame.TARGET),
-                    style = Theme.font(12, FontWeight.Bold, Theme.muted),
-                )
-                if (drawing(state)) Text(
-                    stringResource(R.string.gaple_pile, GapleGame.asideCount(state)),
-                    style = Theme.font(12, FontWeight.Bold, Theme.muted),
-                )
-                for (seat in 0 until state.players) {
-                    PlayerTile(table, state, seat, on = seat == state.turn && !state.roundOver && !state.finished)
-                }
-            }
-            Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                EventPills(table, state, myTurn, picking != null, Modifier.heightIn(min = 32.dp).hud("pills"))
-                Spacer(Modifier.weight(1f))
-                Hand(
-                    hand = state.hands.getOrNull(me).orEmpty(),
-                    playable = playable.toSet(),
-                    picking = picking,
-                    onTap = ::play,
-                    modifier = Modifier.hud("hand"),
-                )
-            }
-            Column(Modifier.width(160.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SoundToggles()
-                    CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
-                }
-                // Reactions sit right under the rules button.
-                if (table.canEmote) Spacer(Modifier.height(8.dp))
-                val youLabel = stringResource(R.string.bot_you)
-                EmoteHud(
-                    canEmote = table.canEmote,
-                    emotes = table.emotes,
-                    playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
-                    onSend = table::sendEmote,
-                )
-                Spacer(Modifier.weight(1f))
-                if (myTurn && turnSeconds > 0) {
-                    Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.gaple_your_turn), style = Theme.font(13, FontWeight.Bold, Theme.ink))
-                        CountdownRing(turnSeconds, turnTotal, size = 40.dp)
-                    }
-                }
+        val youLabel = stringResource(R.string.bot_you)
+        val twoPlayer = state.players == 2
+        fun pill(seat: Int) = PillSeat(
+            if (seat == me) youLabel else table.name(seat),
+            table.players.avatarOf(seat),
+            seat in table.botSeats,
+        )
+        fun seatOn(seat: Int) = seat == state.turn && !state.roundOver && !state.finished
+        val statusWaiting = stringResource(R.string.congklak_status_waiting)
+        val statusThinking = stringResource(R.string.congklak_status_thinking)
+        val statusTheirs = stringResource(R.string.congklak_status_their_turn)
+        val statusYours = stringResource(R.string.gaple_your_turn)
+        val statusPick = stringResource(R.string.gaple_pick_end)
+        val mustOpen = state.mustPlay?.let { stringResource(R.string.gaple_must_open, it.a, it.b) }
+        val scoreLines = (0 until state.players).map { seat ->
+            stringResource(R.string.gaple_tiles_left, state.handCounts.getOrElse(seat) { 0 }) +
+                " · ${state.scores.getOrElse(seat) { 0 }}"
+        }
+        fun seatStatus(seat: Int): String {
+            if (!seatOn(seat)) return scoreLines.getOrElse(seat) { "" }
+            return when {
+                seat in table.botSeats -> statusThinking
+                seat == me && picking != null -> statusPick
+                seat == me -> mustOpen ?: statusYours
+                else -> statusTheirs
             }
         }
 
-        table.waiting?.let { away ->
-            CountdownNotice(
-                stringResource(R.string.online_waiting_for, away.name),
-                away.seconds,
-                (Krida.HANDOFF_WAIT_MS / 1000).toInt(),
-                Modifier.align(Alignment.TopCenter).padding(top = 16.dp),
-            )
-        } ?: table.notice?.let {
-            Text(
-                stringResource(it),
-                style = Theme.font(14, FontWeight.Bold, Theme.error),
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
-                    .background(Theme.surface.copy(alpha = 0.92f), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-            )
+        if (twoPlayer) {
+            // Congklak / perang kapal: opponent pill on top, your pill under the hand.
+            val far = 1 - me
+            Box(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM)) {
+                Column(Modifier.fillMaxSize()) {
+                    PillTopBar(gap = 12.dp, Modifier.hud("top")) {
+                        CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                        OpponentPill(pill(far), seatOn(far), seatStatus(far))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SoundToggles()
+                            CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
+                        }
+                    }
+                    Row(Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp)) {
+                        Column(
+                            Modifier.weight(1f).fillMaxHeight(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                stringResource(R.string.gaple_round, state.round, GapleGame.TARGET),
+                                style = Theme.font(12, FontWeight.Bold, Theme.muted),
+                            )
+                            if (drawing(state)) Text(
+                                stringResource(R.string.gaple_pile, GapleGame.asideCount(state)),
+                                style = Theme.font(12, FontWeight.Bold, Theme.muted),
+                            )
+                            EventPills(table, state, myTurn, picking != null, Modifier.heightIn(min = 32.dp).hud("pills"))
+                            Spacer(Modifier.weight(1f))
+                            Hand(
+                                hand = state.hands.getOrNull(me).orEmpty(),
+                                playable = playable.toSet(),
+                                picking = picking,
+                                onTap = ::play,
+                                modifier = Modifier.hud("hand"),
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Box(Modifier.heightIn(min = 20.dp), contentAlignment = Alignment.Center) {
+                                val away = table.waiting
+                                val notice = table.notice?.let { stringResource(it) }
+                                if (away != null) {
+                                    CountdownNotice(
+                                        stringResource(R.string.online_waiting_for, away.name),
+                                        away.seconds,
+                                        (Krida.HANDOFF_WAIT_MS / 1000).toInt(),
+                                    )
+                                } else if (notice != null) {
+                                    Text(notice, style = Theme.font(14, FontWeight.Bold, Theme.error))
+                                } else if (!seatOn(me)) {
+                                    Text(statusWaiting, style = Theme.font(13, FontWeight.Bold, Theme.muted))
+                                }
+                            }
+                            Row(
+                                Modifier.hud("bottom"),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                PlayerPill(pill(me), seatOn(me), seatStatus(me))
+                                if (myTurn && turnSeconds > 0) CountdownRing(turnSeconds, turnTotal, size = 40.dp)
+                            }
+                        }
+                        Column(Modifier.width(160.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
+                            EmoteHud(
+                                canEmote = table.canEmote,
+                                emotes = table.emotes,
+                                playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
+                                onSend = table::sendEmote,
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            // 3–4 seats: ular tangga / ludo left-column tiles, two a row.
+            Row(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM)) {
+                Column(Modifier.width(150.dp).fillMaxHeight().hud("left"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                    Text(stringResource(R.string.gaple_title), style = Theme.font(18, FontWeight.Black, Theme.ink))
+                    Text(
+                        stringResource(R.string.gaple_round, state.round, GapleGame.TARGET),
+                        style = Theme.font(12, FontWeight.Bold, Theme.muted),
+                    )
+                    if (drawing(state)) Text(
+                        stringResource(R.string.gaple_pile, GapleGame.asideCount(state)),
+                        style = Theme.font(12, FontWeight.Bold, Theme.muted),
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        (0 until state.players).toList().chunked(2).forEach { pair ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                pair.forEach { seat ->
+                                    PlayerTile(table, state, seat, on = seatOn(seat), Modifier.weight(1f))
+                                }
+                                if (pair.size == 1) Spacer(Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+                Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    EventPills(table, state, myTurn, picking != null, Modifier.heightIn(min = 32.dp).hud("pills"))
+                    Spacer(Modifier.weight(1f))
+                    Hand(
+                        hand = state.hands.getOrNull(me).orEmpty(),
+                        playable = playable.toSet(),
+                        picking = picking,
+                        onTap = ::play,
+                        modifier = Modifier.hud("hand"),
+                    )
+                }
+                Column(Modifier.width(160.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SoundToggles()
+                        CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
+                    }
+                    if (table.canEmote) Spacer(Modifier.height(8.dp))
+                    EmoteHud(
+                        canEmote = table.canEmote,
+                        emotes = table.emotes,
+                        playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
+                        onSend = table::sendEmote,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (myTurn && turnSeconds > 0) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(R.string.gaple_your_turn), style = Theme.font(13, FontWeight.Bold, Theme.ink))
+                            CountdownRing(turnSeconds, turnTotal, size = 40.dp)
+                        }
+                    }
+                }
+            }
+
+            table.waiting?.let { away ->
+                CountdownNotice(
+                    stringResource(R.string.online_waiting_for, away.name),
+                    away.seconds,
+                    (Krida.HANDOFF_WAIT_MS / 1000).toInt(),
+                    Modifier.align(Alignment.TopCenter).padding(top = 16.dp),
+                )
+            } ?: table.notice?.let {
+                Text(
+                    stringResource(it),
+                    style = Theme.font(14, FontWeight.Bold, Theme.error),
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+                        .background(Theme.surface.copy(alpha = 0.92f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                )
+            }
         }
 
         if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onNext = ::deal)
@@ -526,31 +637,30 @@ private fun Pill(text: String, color: Color) {
     )
 }
 
+/** Compact seat tile for 3–4 players, two a row like ludo / ular tangga. */
 @Composable
-private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Boolean) {
+private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Boolean, modifier: Modifier = Modifier) {
     val color = pawnColor(seat)
     val shape = RoundedCornerShape(12.dp)
     val score = state.scores.getOrElse(seat) { 0 }
-    Row(
-        Modifier.fillMaxWidth().clip(shape)
+    val tiles = state.handCounts.getOrElse(seat) { 0 }
+    val team = if (state.partners) " · ${if (state.team(seat) == 0) "A" else "B"}" else ""
+    Column(
+        modifier.clip(shape)
             .background(if (on) Theme.chip else Theme.surface)
-            .border(if (on) 2.dp else 1.dp, if (on) color else Theme.line, shape)
-            .padding(horizontal = 8.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+            .border(if (on) 2.dp else 1.5.dp, if (on) color else Theme.line, shape)
+            .padding(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val avatar = table.players.avatarOf(seat)
         SeatAvatar(avatar, color, if (avatar != null) 22.dp else 14.dp)
-        Column(Modifier.weight(1f)) {
-            Text(seatName(table, seat), style = Theme.font(12, FontWeight.Bold, Theme.ink), maxLines = 1)
-            Text(
-                stringResource(R.string.gaple_tiles_left, state.handCounts.getOrElse(seat) { 0 }) +
-                    if (state.partners) " · ${if (state.team(seat) == 0) "A" else "B"}" else "",
-                style = Theme.font(11, FontWeight.SemiBold, Theme.muted),
-                maxLines = 1,
-            )
-        }
-        Text("$score", style = Theme.font(15, FontWeight.Black, Theme.ink))
+        Text(seatName(table, seat), style = Theme.font(11, FontWeight.Bold, Theme.ink), maxLines = 1)
+        Text("$score", style = Theme.font(14, FontWeight.Black, Theme.ink), maxLines = 1)
+        Text(
+            stringResource(R.string.gaple_tiles_left, tiles) + team,
+            style = Theme.font(10, FontWeight.SemiBold, Theme.muted),
+            maxLines = 1,
+        )
     }
 }
 

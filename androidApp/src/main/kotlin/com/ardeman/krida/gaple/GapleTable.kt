@@ -76,6 +76,8 @@ abstract class GapleTable {
         if (active) emotes = emotes.plusEmote(seat, id)
     }
 
+    val botSeats: Set<Int> get() = players.filter { it.bot }.map { it.seat }.toSet()
+
     fun name(seat: Int) = players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
 
     abstract fun play(tile: GapleTile, end: Int?): Boolean

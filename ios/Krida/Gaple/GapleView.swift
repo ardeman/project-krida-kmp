@@ -326,7 +326,7 @@ private struct GapleBoardView: View {
                     .accessibilityAction(named: Text("Left end")) { model.playEnd(Int(GapleGame.shared.LEFT)) }
                     .accessibilityAction(named: Text("Right end")) { model.playEnd(Int(GapleGame.shared.RIGHT)) }
                 hud
-                notices
+                if state.players > 2 { notices }
                 if model.roundCard { roundCard }
                 if model.settled && state.finished { resultCard }
             }
@@ -354,13 +354,28 @@ private struct GapleBoardView: View {
         .sheet(isPresented: $showRules) { GapleRulesSheet(partners: state.partners, drawing: drawing) }
     }
 
-    /// The table takes the space between the side columns, under the pills and above the hand.
+    /// The table takes the space the HUD leaves: between the side columns (3–4 seats) or under
+    /// the top bar and above the hand (2 seats), clear of the right column.
     private func relayout() {
-        guard size.width > 0, let room = boxes["room"], let left = boxes["left"], let right = boxes["right"],
-              let pills = boxes["pills"], let hand = boxes["hand"], left.width > 0, right.width > 0 else { return }
+        guard size.width > 0, let room = boxes["room"], let right = boxes["right"], right.width > 0,
+              let hand = boxes["hand"] else { return }
         let margin = 8 * s
-        let x0 = left.maxX + margin, x1 = right.minX - margin
-        let y0 = max(room.minY, pills.maxY + margin), y1 = min(room.maxY, hand.minY - margin)
+        let twoPlayer = state.players == 2
+        let x0: CGFloat
+        let y0: CGFloat
+        if twoPlayer {
+            x0 = room.minX + margin
+            y0 = max(
+                boxes["top"].map { $0.maxY + margin } ?? room.minY,
+                boxes["pills"].map { $0.maxY + margin } ?? room.minY
+            )
+        } else {
+            guard let left = boxes["left"], left.width > 0, let pills = boxes["pills"] else { return }
+            x0 = left.maxX + margin
+            y0 = max(room.minY, pills.maxY + margin)
+        }
+        let x1 = right.minX - margin
+        let y1 = min(room.maxY, hand.minY - margin)
         guard x1 > x0, y1 > y0 else { return }
         model.layout(size: size, free: CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0))
     }
@@ -381,10 +396,125 @@ private struct GapleBoardView: View {
 
     private func teamLetter(_ seat: Int) -> String { state.team(seat: Int32(seat)) == 0 ? "A" : "B" }
 
+    private func pillSeat(_ seat: Int) -> PillSeat {
+        PillSeat(name: seatName(seat), avatar: table.players.avatar(of: seat), bot: table.botSeats.contains(seat))
+    }
+
+    private func seatOn(_ seat: Int) -> Bool {
+        seat == Int(state.turn) && !state.roundOver && !state.finished
+    }
+
+    /// Turn status when the seat is acting; otherwise tiles left and score.
+    private func seatStatus(_ seat: Int) -> String {
+        let count = state.handCounts.indices.contains(seat) ? state.handCounts[seat].intValue : 0
+        let score = state.scores.indices.contains(seat) ? state.scores[seat].intValue : 0
+        let scoreLine = String(localized: "\(count) tiles", bundle: .app) + " · \(score)"
+        guard seatOn(seat) else { return scoreLine }
+        if table.botSeats.contains(seat) { return String(localized: "thinking…", bundle: .app) }
+        if seat == table.mySeat {
+            if model.picking != nil { return String(localized: "Tap an end", bundle: .app) }
+            if let open = state.mustPlay {
+                return String(localized: "Open with \(Int(open.a))|\(Int(open.b))", bundle: .app)
+            }
+            return String(localized: "Your turn", bundle: .app)
+        }
+        return String(localized: "their turn", bundle: .app)
+    }
+
     // MARK: HUD
 
+    @ViewBuilder
     private var hud: some View {
-        HStack(alignment: .top, spacing: 0) {
+        if state.players == 2 {
+            twoPlayerHud
+        } else {
+            multiPlayerHud
+        }
+    }
+
+    /// Congklak / perang kapal: opponent pill on top, your pill under the hand.
+    private var twoPlayerHud: some View {
+        let me = table.mySeat
+        let far = 1 - me
+        return HStack(alignment: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                PillTopBar(gap: 12 * s) {
+                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    OpponentPill(seat: pillSeat(far), on: seatOn(far), detail: seatStatus(far), s: s)
+                    HStack(spacing: 8 * s) {
+                        SoundToggles()
+                        CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
+                    }
+                }
+                .modifier(hudBox("top"))
+                Text("Round \(Int(state.round)) · to \(Int(GapleGame.shared.TARGET))")
+                    .font(Theme.font(12 * s, .bold))
+                    .foregroundStyle(Theme.muted)
+                    .lineLimit(1)
+                    .padding(.top, 8 * s)
+                if drawing {
+                    Text("\(Int(GapleGame.shared.asideCount(state: state))) face down")
+                        .font(Theme.font(12 * s, .bold))
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(1)
+                }
+                pills
+                    .frame(minHeight: 32 * s)
+                    .modifier(hudBox("pills"))
+                    .padding(.top, 4 * s)
+                Spacer(minLength: 0)
+                handRow.modifier(hudBox("hand"))
+                Group {
+                    if let away = table.waiting {
+                        CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
+                    } else if let notice = table.notice {
+                        Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
+                    } else if !seatOn(me) {
+                        Text("waiting").font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted)
+                    }
+                }
+                .lineLimit(1)
+                .frame(minHeight: 20 * s)
+                .padding(.top, 8 * s)
+                HStack(spacing: 10 * s) {
+                    PlayerPill(seat: pillSeat(me), on: seatOn(me), status: seatStatus(me), s: s)
+                    if model.myTurn && model.turnSeconds > 0 {
+                        CountdownRing(seconds: model.turnSeconds, total: model.total, size: 40)
+                    }
+                }
+                .modifier(hudBox("bottom"))
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .multilineTextAlignment(.center)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { handSpace = $0 }
+            VStack(alignment: .trailing, spacing: 0) {
+                EmoteHud(
+                    canEmote: table.canEmote,
+                    emotes: table.emotes,
+                    playerName: seatName,
+                    onSend: table.sendEmote,
+                    s: s
+                )
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 0)
+            }
+            .frame(width: 160 * s)
+            .frame(maxHeight: .infinity)
+            .modifier(hudBox("right"))
+        }
+        .modifier(hudBox("room"))
+        .padding(.horizontal, 24 * s)
+        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
+        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
+        .padding(.vertical, 14 * s)
+        .foregroundStyle(Theme.ink)
+    }
+
+    /// 3–4 seats: ular tangga / ludo left-column tiles, two a row.
+    private var multiPlayerHud: some View {
+        let count = Int(state.players)
+        let rows = stride(from: 0, to: count, by: 2).map { Array($0..<min($0 + 2, count)) }
+        return HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 8 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                 Text("Gaple").font(Theme.font(18 * s, .black))
@@ -398,8 +528,15 @@ private struct GapleBoardView: View {
                         .foregroundStyle(Theme.muted)
                         .lineLimit(1)
                 }
-                ForEach(0..<Int(state.players), id: \.self) { seat in
-                    playerTile(seat, on: seat == Int(state.turn) && !state.roundOver && !state.finished)
+                VStack(spacing: 8 * s) {
+                    ForEach(rows, id: \.self) { pair in
+                        HStack(spacing: 8 * s) {
+                            ForEach(pair, id: \.self) { seat in
+                                playerTile(seat, on: seatOn(seat))
+                            }
+                            if pair.count == 1 { Spacer(minLength: 0) }
+                        }
+                    }
                 }
                 Spacer(minLength: 0)
             }
@@ -420,7 +557,6 @@ private struct GapleBoardView: View {
                     SoundToggles()
                     CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
                 }
-                // Reactions sit right under the rules button.
                 if table.canEmote { Spacer().frame(height: 8 * s) }
                 EmoteHud(
                     canEmote: table.canEmote,
@@ -491,28 +627,28 @@ private struct GapleBoardView: View {
             .overlay(Capsule().stroke(Theme.line, lineWidth: 1))
     }
 
+    /// Compact seat tile for 3–4 players, two a row like ludo / ular tangga.
     private func playerTile(_ seat: Int, on: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         let count = state.handCounts.indices.contains(seat) ? state.handCounts[seat].intValue : 0
         let score = state.scores.indices.contains(seat) ? state.scores[seat].intValue : 0
         let tiles = String(localized: "\(count) tiles", bundle: .app)
-        return HStack(spacing: 6 * s) {
+        let team = state.partners ? " · \(teamLetter(seat))" : ""
+        return VStack(spacing: 2 * s) {
             let avatar = table.players.avatar(of: seat)
             SeatAvatar(avatar: avatar, color: pawnColor(seat), size: avatar != nil ? 22 : 14)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(seatName(seat)).font(Theme.font(12 * s, .bold)).lineLimit(1)
-                Text(verbatim: state.partners ? "\(tiles) · \(teamLetter(seat))" : tiles)
-                    .font(Theme.font(11 * s, .semibold))
-                    .foregroundStyle(Theme.muted)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Text(verbatim: "\(score)").font(Theme.font(15 * s, .black))
+            Text(seatName(seat)).font(Theme.font(11 * s, .bold)).lineLimit(1).minimumScaleFactor(0.7)
+            Text(verbatim: "\(score)").font(Theme.font(14 * s, .black)).lineLimit(1)
+            Text(verbatim: tiles + team)
+                .font(Theme.font(10 * s, .semibold))
+                .foregroundStyle(Theme.muted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
-        .padding(.horizontal, 8 * s)
-        .padding(.vertical, 5 * s)
+        .padding(6 * s)
+        .frame(maxWidth: .infinity)
         .background(on ? Theme.chip : Theme.surface, in: shape)
-        .overlay(shape.stroke(on ? pawnColor(seat) : Theme.line, lineWidth: on ? 2 : 1))
+        .overlay(shape.stroke(on ? pawnColor(seat) : Theme.line, lineWidth: on ? 2 : 1.5))
         .animation(.easeOut(duration: 0.2), value: on)
         .accessibilityElement(children: .combine)
     }

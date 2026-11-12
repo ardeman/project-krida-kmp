@@ -230,6 +230,9 @@ in the same commit as the code.
 - **Drawing option (owner, 2026-11-12):** a "Drawing" setting (Off / Until it fits) for 2–3
   seats; the host draws for a stuck seat automatically, no draw button. Off keeps the
   traditional no-draw rule.
+- **Player HUD by seat count (owner, 2026-11-12):** with 2 seats, gaple uses the congklak /
+  perang kapal pills (opponent on top, you below the hand). With 3–4 seats it uses ular
+  tangga / ludo left-column tiles, two a row. Same rule in `docs/design.md`.
 - **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
   with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
   "Remove ads".

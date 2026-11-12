@@ -55,21 +55,38 @@ Picked by the owner, 2026-11-12.
 
 ## Table screen
 
-- **Left:** back, title with the round number and the target, then one tile per seat:
-  colour, name, tiles left, score (team letter A / B with partners; partners show the shared
-  team score). The seat whose turn it is is outlined in its colour.
-- **Centre:** a felt table seen from above at a slight tilt. The line of play starts in the
-  middle and turns at the table's edges; doubles lie across the line. The two open ends get
-  dashed gold rings. Opponents' hands are face-down voxel tiles at their table sides.
-- **Bottom:** your hand, face up and upright. Tiles that fit are raised with a gold ring.
-  Tap a tile to play it; if it fits both ends, both end rings pulse and you tap one.
-- **Turn timer:** a 15 s countdown ring (`Krida.PLAY_TURN_MS`, the same `CountdownRing` as
-  the ludo die) next to "Your turn". At 0 the phone plays `GapleGame.timeoutMove`: the
-  heaviest fitting tile on the first end it fits. Passing needs no timer: the host skips a
-  seat with no fitting tile by itself.
-- **Status pills** on the felt: "Your turn" and the last event ("Bot 3: Pass", "Bot 1
-  plays 6|4"). A pass also gets a short "Pas!" voice line.
-- **Right:** sound, rules help, emote (nearby / online). No die.
+Player indicators follow the shared HUD rule in `docs/design.md`: **2 seats** use the
+congklak / perang kapal pills; **3–4 seats** use ular tangga / ludo left-column tiles.
+
+### 2 seats (pills)
+
+- **Top:** back, opponent `OpponentPill`, sound and rules help (`PillTopBar`).
+- **Centre:** round / target (and face-down pile count when drawing), status pills on the
+  felt, then the table, then your hand.
+- **Bottom:** your `PlayerPill` with the 15 s countdown ring beside it on your turn. Pill
+  detail is turn status while acting, otherwise tiles left and score.
+- **Right:** emote (nearby / online). No die.
+
+### 3–4 seats (tiles)
+
+- **Left:** back, title with the round number and the target, then seat tiles **two a row**
+  like ludo / ular tangga: colour, name, score, tiles left (team letter A / B with partners;
+  partners show the shared team score). The seat whose turn it is is outlined in its colour.
+- **Centre:** status pills on the felt, the table, then your hand.
+- **Right:** sound, rules help, emote (nearby / online), and the turn countdown. No die.
+
+### Shared on every seat count
+
+- **Centre table:** a felt table seen from above at a slight tilt. The line of play starts in
+  the middle and turns at the table's edges; doubles lie across the line. The two open ends
+  get dashed gold rings. Opponents' hands are face-down voxel tiles at their table sides.
+- **Hand:** face up and upright. Tiles that fit are raised with a gold ring. Tap a tile to
+  play it; if it fits both ends, both end rings pulse and you tap one.
+- **Turn timer:** 15 s (`Krida.PLAY_TURN_MS`, the same `CountdownRing` as the ludo die). At 0
+  the phone plays `GapleGame.timeoutMove`: the heaviest fitting tile on the first end it fits.
+  Passing needs no timer: the host skips a seat with no fitting tile by itself.
+- **Status pills** on the felt: the last event ("Bot 3: Pass", "Bot 1 plays 6|4") and whose
+  turn it is when it isn't yours. A pass also gets a short "Pas!" voice line.
 
 ## Round end
 

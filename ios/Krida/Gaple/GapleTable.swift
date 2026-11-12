@@ -55,6 +55,8 @@ class GapleTable: ObservableObject {
             : nil
     }
 
+    var botSeats: Set<Int> { Set(players.filter(\.bot).map { Int($0.seat) }) }
+
     func name(_ seat: Int) -> String {
         players.first { Int($0.seat) == seat }?.name ?? "\(seat + 1)"
     }

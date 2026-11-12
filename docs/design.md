@@ -93,7 +93,8 @@ in: RoundedRectangle(cornerRadius: 20 * s))` + `.overlay(... .stroke(Theme.line,
 | Seat tiles, colour swatches, dashed empty seat | `NearbyScreens.kt` | `NearbyScreens.swift` |
 | Loading | `LoadingIndicator` / `LoadingScreen` (`ui/Loading.kt`) | `LoadingIndicator` / `LoadingScreen` (`Support/Loading.swift`) |
 | Countdown | `CountdownRing` / `CountdownNotice` (`ui/CountdownRing.kt`) | `CountdownRing` / `CountdownNotice` (`Support/CountdownRing.swift`) |
-| Players in a 2-player game: opponent pill on top, your pill below the board | `PillTopBar`, `OpponentPill`, `PlayerPill` (`ui/SeatPills.kt`) | same names (`Support/SeatPills.swift`) |
+| Players in a 2-player game (congklak, perang kapal, gaple with 2 seats): opponent pill on top, your pill below the board | `PillTopBar`, `OpponentPill`, `PlayerPill` (`ui/SeatPills.kt`) | same names (`Support/SeatPills.swift`) |
+| Players in a 3–4 player game (ular tangga, ludo, gaple with 3–4 seats): left-column tiles, two a row | per-game `PlayerTile` (avatar + name; gaple also score / tiles left) | same pattern in each game's view |
 | Tap sound | built into the buttons | `.tapSound(...)` (built into the button styles) |
 
 `NearbyFrame` is internal on Android; iOS should expose its existing frame when adapting
