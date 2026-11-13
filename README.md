@@ -148,7 +148,7 @@ normal, hard). Android and iOS play congklak vs computer (Mudah / Sedang / Sulit
 have the reworked UI (two-column home, turn pills, gold rings on playable holes, result card).
 Sound on both: seed clicks while sowing, "Tembak!" ("Shoot!") on a capture, turn and result
 voice lines in the app language (`vo_*_en.m4a` for English), and looping gamelan music, each switched off on its own from home or the board.
-The `.m4a` files are made with ElevenLabs in `../project-pamerstudio-node/krida` (its README).
+Audio is made in Pamer Studio (`../project-pamerstudio-node/krida`, `npm start` → krida): `scripts/export.mjs` / `install-audio.mjs`. App Store / Play screenshots use the shared editor at `../project-pamerstudio-node/store-screenshots/` (`npm start` → store-screenshots).
 Ads on both (AdMob behind the UMP consent form; `androidApp/.../ads/`, `ios/Krida/Ads/`): a
 banner on the home screen, an interstitial every 2nd finished game, and a rewarded ad
 for a hint ("Petunjuk": the hard bot's move). The "Hapus iklan" purchase (non-consumable

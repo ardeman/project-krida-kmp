@@ -59,8 +59,9 @@ how the owner likes to work. `docs/status.md` lists open work outside the online
 
 ## Releases
 
-- TestFlight / App Store: build and upload yourself with
+- App Store: build and upload with
   `xcrun altool --upload-app --type ios -f <ipa> --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"`
   (key in `~/.appstoreconnect/private_keys/`, env vars in `~/.zshenv`). Use a build number
-  higher than the last upload.
-- Don't upload to Play internal testing until several games are ready.
+  higher than the last upload. First publish aims at **production** App Review, not a
+  TestFlight tester track (owner, 2026-11-13).
+- Play: first publish is **closed testing**, then production later (owner, 2026-11-13).

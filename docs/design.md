@@ -19,13 +19,15 @@ match across platforms: `RoomLobby`, `JoinScreen`, `ConnectingScreen` exist on b
 ## Layout
 
 - **Always landscape.** The whole app is inside `LandscapeStage`, which turns the layout on
-  portrait or foldable screens. Design for a landscape phone first: **874 × 402 pt** on iOS
-  (the phone design size); Android caps menus and room screens at **874 × 460 dp**.
+  portrait or foldable screens (portrait is declared so an upright Duo is not letterboxed).
+  Design for a landscape phone first: **874 × 402 pt** on iOS (the phone design size);
+  Android caps menus and room screens at **874 × 460 dp**.
 - **Scale on iOS.** Every size in SwiftUI is multiplied by `s` (`@Environment(\.uiScale)`):
   `24 * s`, `Theme.font(16 * s)`. It is 1 on phones and up to 1.5 on iPad. Android scales
   through `LandscapeStage`'s density, so use plain `dp`/`sp`.
-- **Insets.** Android: `.windowInsetsPadding(gameInsets)`. iOS: leave room for
-  `@Environment(\.punchHole)` (a camera hole in one corner) in headers.
+- **Insets.** Android: `.windowInsetsPadding(gameInsets)`. iOS: a foldable cover camera is
+  `@Environment(\.punchHole)` — clear **only that corner** with `.clearPunchHole`, never the
+  whole side (the rest of the strip is usable). Dynamic Island still uses both-side insets.
 - **Two columns, not one long column.** A landscape phone has little height. Put cards side by
   side (`Row`/`HStack` with 14 spacing) rather than stacking them; a single centred card is
   fine for status screens.

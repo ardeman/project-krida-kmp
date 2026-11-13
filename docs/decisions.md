@@ -22,7 +22,8 @@ in the same commit as the code.
 ## Look and feel
 
 - **Always landscape**, including iPad and foldables (`LandscapeStage` turns the layout on a
-  portrait window).
+  portrait window). Portrait orientations are declared so an upright Duo / iPad is not
+  letterboxed in black; the UI still reads as landscape.
 - **Backdrop:** the terracotta radial glow on every screen and the website; apps follow the
   system light/dark setting. 3D boards render on a transparent view so the glow shows behind
   them. Rejected: plain cream/sand, sage green, an outline on the die.
@@ -279,8 +280,12 @@ in the same commit as the code.
 
 ## Release
 
-- Play internal testing waits until several games exist, not just congklak.
 - Store listing text and privacy answers live in [store.md](store.md).
 - **Privacy link in the app (owner, 2026-11-13):** the menu always has a "Privacy policy"
   control that opens the site page in the app language (`/privasi/` or `/en/privacy/`).
   No in-app terms, about, or changelog pages yet.
+- **First store publish path (owner, 2026-11-13):** App Store — upload a build and submit
+  that version for **production** App Review (no TestFlight tester track as the goal).
+  Play — **closed testing** first (required before production), then production later.
+  Upload still uses the usual IPA/AAB pipelines; Apple’s upload lands in App Store Connect
+  either way.

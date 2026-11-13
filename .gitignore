@@ -20,6 +20,9 @@ web/node_modules/
 web/dist/
 web/.astro/
 
+# pnpm may drop a local store when hard-links into the project fail
+.pnpm-store/
+
 # Logs
 *.log
 
@@ -31,3 +34,12 @@ web/.astro/
 .tmp/
 tmp/
 .cursor-tmp/
+
+# Marketing skills live in Pamer Studio; keep only a symlink pointer here.
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/app-store-screenshots
+.cursor/skills/*
+!.cursor/skills/app-store-screenshots
+

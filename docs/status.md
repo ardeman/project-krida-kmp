@@ -92,14 +92,18 @@ Real users will try online play first; don't push for these, ask whether feedbac
 
 ## Release setup
 
-- Play: create the app, upload the AAB, the `hapus_iklan` product. Enter Data safety from
-  `docs/store.md` (AdMob + online relay rows) when uploading. Play internal testing waits
-  until several games are ready.
+- **Path (owner, 2026-11-13):** App Store → production submit (not TestFlight as the goal).
+  Play → closed testing first, then production later.
+- Play: create the app, upload the AAB to closed testing, the `hapus_iklan` product. Enter
+  Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
 - Add the Play app signing key's SHA-256 to `web/public/.well-known/assetlinks.json` once Play
   signs the app.
 - App Store: enter App Privacy from `docs/store.md` when submitting; the IAP is ready with
   the first build.
-- Link the AdMob apps to the store listings after publishing; store graphics still open.
+- Store listing copy in `docs/store.md` updated for all five games (2026-11-13). Graphics:
+  editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
+  iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.
+- Link the AdMob apps to the store listings after publishing.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
