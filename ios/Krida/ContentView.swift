@@ -161,12 +161,34 @@ struct ContentView: View {
         .onAppear { UIApplication.shared.isIdleTimerDisabled = keepAwake }
         .onChange(of: keepAwake) { _, on in UIApplication.shared.isIdleTimerDisabled = on }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
-        // `-openCongklak` launch argument: straight to the board (simulator screenshots, UI tests).
+        // Launch args for simulator screenshots, UI tests and promo recording (pass after `--` to simctl).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklakComputer") { startVsComputer(.normal) } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openLudo") { game = .ludo; startLudo() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openPerangKapal") { game = .perangKapal; startPerangKapal(computer: true) } }
-        #if DEBUG
+        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openGaple") { game = .gaple; startGaple() } }
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-openNearby") {
+                place = .nearby
+                room = NearbyRoom.host(game: roomGame(gameId(game)), lan: false)
+            }
+        }
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-openAccount")
+                || ProcessInfo.processInfo.arguments.contains("-openProfileEdit") {
+                if ProcessInfo.processInfo.arguments.contains("-openProfileEdit") {
+                    Account.shared.installScreenshotDemo()
+                }
+                showingAccount = true
+            }
+        }
+        .onAppear {
+            if ProcessInfo.processInfo.arguments.contains("-openNearbyJoin") {
+                place = .nearby
+                joining = true
+            }
+        }
         // Direct entry for quick-match screenshots and native flow checks.
         .onAppear {
             let args = ProcessInfo.processInfo.arguments
@@ -179,7 +201,6 @@ struct ContentView: View {
                 }
             }
         }
-        #endif
         // A friend link (https://krida.ardeman.com/f/K7M2XQ4D or krida://friend?code=…) opens
         // the Account screen with the code filled in. A running game or lobby stays; the
         // link only applies from the menus.
@@ -321,7 +342,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 14 * s) {
                 HStack {
                     Image("Wordmark").resizable().scaledToFit().frame(height: 40 * s).accessibilityLabel("Krida")
-                        .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0))
+                        .clearPunchHole(hole, .topLeading, already: 24 * s)
                     Spacer(minLength: 8 * s)
                     accountMenuButton
                 }
@@ -352,7 +373,7 @@ struct ContentView: View {
                         AdBanner()
                         RemoveAdsButton()
                     }
-                    .padding(.trailing, max((hole?.trailing ?? 0) - 24 * s, 0))
+                    .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
                 }
             }
         }

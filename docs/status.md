@@ -98,8 +98,12 @@ Real users will try online play first; don't push for these, ask whether feedbac
   Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
 - Add the Play app signing key's SHA-256 to `web/public/.well-known/assetlinks.json` once Play
   signs the app.
-- App Store: enter App Privacy from `docs/store.md` when submitting; the IAP is ready with
-  the first build.
+- App Store version **1.0** (`WAITING_FOR_REVIEW`, resubmitted 2026-11-13 via Zen after a
+  Developer Reject to add creatives): listing (id+en, no Android per 2.3.10), age 4+,
+  Games/Board, free pricing, worldwide, build **1**, review contact, App Privacy published
+  from `docs/store.md`. Screenshots from Pamer framed exports (iPhone 6.7″+6.5″, iPad 12.9″,
+  iPhone Duo outer — en+id). Header + search creatives uploaded for Indonesian and English
+  (U.S.) from `.tmp/pamer-exports/creatives/`. IAP `hapus_iklan` went with the version.
 - Store listing copy in `docs/store.md` updated for all five games (2026-11-13). Graphics:
   editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
   iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.

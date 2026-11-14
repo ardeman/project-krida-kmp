@@ -631,6 +631,7 @@ private struct LudoBoardView: View {
         HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 10 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    .clearPunchHole(hole, .topLeading, already: 24 * s)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
                 // Two tiles a row; each local seat keeps its timer / autopilot under the tile
@@ -699,49 +700,52 @@ private struct LudoBoardView: View {
                 .modifier(hudBox("emote"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
-                Color.clear
-                    .frame(width: 104 * s, height: 104 * s)
-                    .contentShape(Rectangle())
-                    .gesture(dieGesture)
-                    .modifier(hudBox("die"))
-                    .accessibilityElement()
-                    .accessibilityLabel(Text("Roll"))
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction { model.roll(.short) }
-                Text(status)
-                    .font(Theme.font(13 * s, .bold))
-                    .foregroundStyle(Theme.ink)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(2, reservesSpace: true)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .modifier(hudBox("status"))
-                    .padding(.top, 8 * s)
-                if let away = table.waiting {
-                    CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
-                        .frame(maxWidth: .infinity)
-                        .modifier(hudBox("notice"))
-                        .padding(.top, 8 * s)
-                } else if let notice = table.notice {
-                    Text(notice)
+                VStack(spacing: 0) {
+                    Color.clear
+                        .frame(width: 104 * s, height: 104 * s)
+                        .contentShape(Rectangle())
+                        .gesture(dieGesture)
+                        .modifier(hudBox("die"))
+                        .accessibilityElement()
+                        .accessibilityLabel(Text("Roll"))
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { model.roll(.short) }
+                    Text(status)
                         .font(Theme.font(13 * s, .bold))
-                        .foregroundStyle(Theme.error)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                        .padding(.horizontal, 8 * s)
-                        .padding(.vertical, 6 * s)
-                        .background(Theme.surface.opacity(0.92), in: RoundedRectangle(cornerRadius: 12 * s))
-                        .frame(maxWidth: .infinity)
-                        .modifier(hudBox("notice"))
+                        .foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(2, reservesSpace: true)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .modifier(hudBox("status"))
                         .padding(.top, 8 * s)
+                    if let away = table.waiting {
+                        CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
+                            .frame(maxWidth: .infinity)
+                            .modifier(hudBox("notice"))
+                            .padding(.top, 8 * s)
+                    } else if let notice = table.notice {
+                        Text(notice)
+                            .font(Theme.font(13 * s, .bold))
+                            .foregroundStyle(Theme.error)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                            .padding(.horizontal, 8 * s)
+                            .padding(.vertical, 6 * s)
+                            .background(Theme.surface.opacity(0.92), in: RoundedRectangle(cornerRadius: 12 * s))
+                            .frame(maxWidth: .infinity)
+                            .modifier(hudBox("notice"))
+                            .padding(.top, 8 * s)
+                    }
                 }
+                .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
             }
             .frame(width: 148 * s)
             .frame(maxHeight: .infinity)
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
-        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
-        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
+        .padding(.leading, max(sideInsets.leading - 24 * s, 0))
+        .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
     }

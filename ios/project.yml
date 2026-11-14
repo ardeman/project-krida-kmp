@@ -60,15 +60,21 @@ targets:
         CFBundleDisplayName: Krida
         UILaunchScreen:
           UIColorName: Backdrop
+        # Portrait too: on an unfolded Duo / iPad held upright, landscape-only caused the
+        # system to letterbox the app in black bars. LandscapeStage turns the layout itself.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        # Opt out of resizable windows so the landscape lock holds (iPad, unfolded foldables).
-        # Deprecated since iOS 26; LandscapeStage turns the layout itself where it is ignored.
-        UIRequiresFullScreen: true
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+        # Let foldables and Stage Manager hand a real portrait window (not a letterboxed
+        # landscape strip). Deprecated as a lock since iOS 26; false keeps full bleed.
+        UIRequiresFullScreen: false
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
         # English here; Indonesian in Krida/InfoPlist.xcstrings.
         NSBluetoothAlwaysUsageDescription: "Krida uses Bluetooth to play with friends nearby, without internet."
         NSLocalNetworkUsageDescription: "Krida looks for friends on the same Wi-Fi to play together."

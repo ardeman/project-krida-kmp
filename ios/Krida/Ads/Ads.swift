@@ -27,6 +27,8 @@ final class Ads: NSObject, ObservableObject {
     private var loadingInterstitial = false
     private var loadingRewarded = false
     private var finishedGames = 0
+    /// UI tests / store screenshots: keep the paid "Remove ads" layout; ignore StoreKit.
+    private var skipAds = false
     /// Runs once when the full-screen ad on screen goes away, shown or not.
     private var onClosed: (() -> Void)?
 
@@ -38,10 +40,12 @@ final class Ads: NSObject, ObservableObject {
 
     /// Call once at launch: asks for consent where the rules require it, then starts AdMob.
     func start() {
-        // UI tests (`-skipAds`): no UMP sheet and no ad units, so taps hit the play card.
+        // UI tests / store shots (`-skipAds`): paid "Remove ads" layout — no UMP, no ad units.
         if ProcessInfo.processInfo.arguments.contains("-skipAds") {
+            skipAds = true
             removed = true
             started = true
+            removeAdsPrice = nil
             return
         }
         // Consent given in an earlier session lets ads start without waiting for the update.
@@ -103,6 +107,7 @@ final class Ads: NSObject, ObservableObject {
     }
 
     private func updateOwned(_ value: Bool) {
+        if skipAds { return }
         guard value != removed else { return }
         removed = value
         UserDefaults.standard.set(value, forKey: Self.removedKey)

@@ -89,6 +89,17 @@ final class Account: NSObject, ObservableObject {
     var sessionToken: String? { token }
     private var webSession: ASWebAuthenticationSession?
 
+    /// Store screenshots (`-openProfileEdit`): a local demo user so Edit profile can open
+    /// without Sign in with Apple / Google on the simulator.
+    func installScreenshotDemo() {
+        user = User(id: "shot-demo", name: "Arde", provider: "apple", avatar: "0-3-8", picture: nil)
+        token = nil
+        friendCode = "K7M2XQ4D"
+        friends = []
+        busy = false
+        failed = false
+    }
+
     private override init() {
         super.init()
         token = Self.loadToken()

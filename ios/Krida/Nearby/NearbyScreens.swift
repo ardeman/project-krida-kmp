@@ -40,7 +40,9 @@ struct NearbyFrame<Content: View>: View {
                     .foregroundStyle(Theme.muted)
                 }
             }
-            .padding(.leading, hole?.leading ?? 0)
+            // Top-leading camera only — the header row. Cards keep the full trailing strip;
+            // a bottom-trailing hole sits over empty card corner, not the whole side.
+            .clearPunchHole(hole, .topLeading, already: 24 * s)
             HStack(spacing: 14 * s) { content }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

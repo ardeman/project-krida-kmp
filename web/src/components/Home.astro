@@ -25,7 +25,18 @@ const copy = {
     gamesNav: "Permainan",
     h1: "Main bareng, di mana saja.",
     lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
-    soon: "Segera hadir di Google Play dan App Store.",
+    soon: "Yuk gabung jadi closed tester — cara gabung di bawah.",
+    testNav: "Closed tester",
+    testTitle: "Yuk gabung jadi closed tester",
+    testLead:
+      "Krida masih di Google Play closed testing. Cara paling gampang: lewat TesBareng, lalu opt-in di Play.",
+    testSteps: [
+      "Buka TesBareng dan cari Krida (atau app yang kamu diminta uji).",
+      "Gabung sebagai tester di TesBareng, lalu ikuti tautan opt-in Google Play.",
+      "Di Play, ketuk “Become a tester”, lalu unduh Krida dari daftar closed testing.",
+    ],
+    testCta: "Buka TesBareng",
+    testHref: "https://tesbareng.vercel.app",
     games: [
       { name: "Congklak", players: "2 pemain", tagline: "Kumpulkan biji terbanyak di lumbungmu." },
       { name: "Ular tangga", players: "2–4 pemain", tagline: "Naiki tangga, hindari ular." },
@@ -55,7 +66,18 @@ const copy = {
     gamesNav: "Games",
     h1: "Play together, anywhere.",
     lead: "Congklak, snakes & ladders, ludo, perang kapal and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
-    soon: "Coming soon to Google Play and the App Store.",
+    soon: "Come join as a closed tester — how to join below.",
+    testNav: "Closed tester",
+    testTitle: "Come join as a closed tester",
+    testLead:
+      "Krida is on Google Play closed testing first. The easy path: TesBareng, then opt in on Play.",
+    testSteps: [
+      "Open TesBareng and find Krida (or the app you’re asked to test).",
+      "Join as a tester on TesBareng, then follow the Google Play opt-in link.",
+      "On Play, tap “Become a tester”, then install Krida from the closed track.",
+    ],
+    testCta: "Open TesBareng",
+    testHref: "https://tesbareng.vercel.app",
     games: [
       { name: "Congklak", players: "2 players", tagline: "Gather the most seeds in your store." },
       { name: "Snakes & ladders", players: "2–4 players", tagline: "Climb the ladders, dodge the snakes." },
@@ -90,6 +112,7 @@ const year = new Date().getFullYear();
       <a class="logo" href={`${root}/${alternates[lang]}`}><Wordmark height={30} /></a>
       <span class="nav-links">
         <a class="pill" href="#games">{copy.gamesNav}</a>
+        <a class="pill" href="#closed-test">{copy.testNav}</a>
         <LangSwitch lang={lang} alternates={alternates} />
       </span>
     </header>
@@ -98,7 +121,7 @@ const year = new Date().getFullYear();
       <div class="hero-text">
         <h1>{copy.h1}</h1>
         <p class="lead">{copy.lead}</p>
-        <p class="soon">{copy.soon}</p>
+        <p class="soon"><a href="#closed-test">{copy.soon}</a></p>
       </div>
       <div class="hero-art"><Board /></div>
     </section>
@@ -117,6 +140,17 @@ const year = new Date().getFullYear();
           ))
         }
       </div>
+    </section>
+
+    <section id="closed-test" class="section">
+      <h2>{copy.testTitle}</h2>
+      <p class="test-lead">{copy.testLead}</p>
+      <ol class="test-steps">
+        {copy.testSteps.map((step) => <li>{step}</li>)}
+      </ol>
+      <p>
+        <a class="pill pill-strong" href={copy.testHref} rel="noopener noreferrer" target="_blank">{copy.testCta}</a>
+      </p>
     </section>
 
     <section class="section">

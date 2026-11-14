@@ -65,15 +65,41 @@ extension EnvironmentValues {
 }
 
 /// A camera hole in one corner of a landscape screen (a foldable's cover display). iOS
-/// reserves a whole strip on that side; the hole itself is only in the corner: top-leading
-/// when the strip is on the leading side, bottom-trailing when it is on the trailing side.
+/// reserves a whole strip on that side, but the hole itself is only in the corner:
+/// top-leading when the strip is on the leading side, bottom-trailing when it is on the
+/// trailing side. Clear **only that corner** — never pad the whole side (the rest of the
+/// strip is usable). iPhone's Dynamic Island uses both-side insets instead; see
+/// `LandscapeStage`.
 struct PunchHole: Equatable {
+    enum Corner: Equatable {
+        case topLeading
+        case bottomTrailing
+    }
+
     var edge: HorizontalEdge
-    /// Width of the strip iOS reserves; keep content in the hole's corner this far in.
+    /// Width of the strip iOS reserves; keep controls in the hole's corner this far in.
     var inset: CGFloat
 
-    var leading: CGFloat { edge == .leading ? inset : 0 }
-    var trailing: CGFloat { edge == .trailing ? inset : 0 }
+    var corner: Corner { edge == .leading ? .topLeading : .bottomTrailing }
+
+    /// Extra padding on top of `already` (the screen's usual edge padding) for a control
+    /// that sits in this hole's corner. Zero when the control is in the other corner.
+    func extra(for corner: Corner, already: CGFloat = 0) -> CGFloat {
+        self.corner == corner ? max(inset - already, 0) : 0
+    }
+}
+
+extension View {
+    /// Pads this control only when it sits in the punch-hole corner. Other corners and the
+    /// rest of that side stay flush — so a Duo cover display keeps using the strip.
+    @ViewBuilder
+    func clearPunchHole(_ hole: PunchHole?, _ corner: PunchHole.Corner, already: CGFloat = 0) -> some View {
+        let pad = hole?.extra(for: corner, already: already) ?? 0
+        switch corner {
+        case .topLeading: padding(.leading, pad)
+        case .bottomTrailing: padding(.trailing, pad)
+        }
+    }
 }
 
 private struct PunchHoleKey: EnvironmentKey {
@@ -88,12 +114,12 @@ extension EnvironmentValues {
     }
 }
 
-/// Keeps every screen in landscape, whatever shape the window has. Where iOS ignores the
-/// landscape-only orientations (resizable scenes: iPad windows, an unfolded foldable) and
-/// hands over a portrait window, the stage turns the layout a quarter turn, as if the
-/// screen were locked to landscape. A landscape window taller than 4:3 gets a centered
-/// stage with backdrop bars above and below. Inside the stage, `uiScale`
-/// grows with the stage so an iPad shows the phone design bigger rather than emptier.
+/// Keeps every screen in landscape, whatever shape the window has. Portrait is declared so
+/// an unfolded Duo / iPad upright gets a real portrait window (landscape-only used to be
+/// letterboxed in black by the system). The stage then turns the layout a quarter turn.
+/// A landscape window taller than 4:3 gets a centered stage with backdrop bars above and
+/// below. Inside the stage, `uiScale` grows with the stage so an iPad shows the phone
+/// design bigger rather than emptier.
 ///
 /// A safe-area inset on one side only means a corner punch hole: the stage then takes the
 /// full width and screens keep just that corner clear (`punchHole`). Insets on both sides

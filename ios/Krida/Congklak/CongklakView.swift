@@ -435,6 +435,7 @@ private struct CongklakBoardView: View {
             VStack(spacing: 0 * s) {
                 PillTopBar(gap: 8 * s) {
                     CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                        .clearPunchHole(hole, .topLeading, already: 24 * s)
                     opponentPill
                     HStack(spacing: 8 * s) {
                         // Pass-and-play: far seat's timer sits by the speaker on the far right.
@@ -455,7 +456,6 @@ private struct CongklakBoardView: View {
                     }
                 }
                 .padding(.horizontal, 24 * s)
-                .padding(.leading, max((hole?.leading ?? 0) - 24 * s, 0)) // the back button clears a top-leading hole
                 .padding(.top, 14 * s)
                 Spacer()
                 VStack(spacing: 8 * s) {
@@ -479,6 +479,7 @@ private struct CongklakBoardView: View {
                                 size: 40,
                                 onResume: { model.resumeManual(seat: nearSeat) }
                             )
+                            .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }

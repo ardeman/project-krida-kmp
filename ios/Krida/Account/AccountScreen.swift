@@ -37,7 +37,7 @@ struct AccountScreen: View {
     let onBack: () -> Void
     @ObservedObject private var account = Account.shared
     @State private var confirmingDelete = false
-    @State private var editing = false
+    @State private var editing = ProcessInfo.processInfo.arguments.contains("-openProfileEdit")
     @Environment(\.uiScale) private var s
     @Environment(\.colorScheme) private var scheme
 
@@ -84,7 +84,9 @@ struct AccountScreen: View {
         }
         .task(id: account.user?.id) {
             account.loadFriends()
-            editing = false
+            if !ProcessInfo.processInfo.arguments.contains("-openProfileEdit") {
+                editing = false
+            }
         }
     }
 

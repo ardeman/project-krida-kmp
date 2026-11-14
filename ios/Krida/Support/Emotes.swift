@@ -55,7 +55,7 @@ struct EmoteHud: View {
     var s: CGFloat = 1
     var opensUp = false
 
-    @State private var open = false
+    @State private var open = ProcessInfo.processInfo.arguments.contains("-openEmotes")
     @State private var shown: [EmoteEvent] = []
     /// Reactions already on show (or there before this HUD appeared); nil until it appears.
     @State private var seen: Int?
@@ -95,7 +95,13 @@ struct EmoteHud: View {
             .zIndex(1)
             .animation(.easeOut(duration: 0.2), value: open)
             .animation(.easeOut(duration: 0.2), value: shown.map(\.n))
-            .onAppear { if seen == nil { seen = emotes.last?.n ?? 0 } }
+            .onAppear {
+                if seen == nil { seen = emotes.last?.n ?? 0 }
+                // Seed a floating bubble for store screenshots alongside the open picker.
+                if ProcessInfo.processInfo.arguments.contains("-openEmotes"), shown.isEmpty {
+                    shown = [EmoteEvent(seat: 1, id: "awesome")]
+                }
+            }
             // Use the onChange *new* value — capturing `emotes` from the View is stale.
             .onChange(of: emotes) { _, new in
                 let fresh = new.filter { $0.n > (seen ?? 0) }

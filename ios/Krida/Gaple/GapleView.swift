@@ -425,6 +425,7 @@ private struct GapleBoardView: View {
         return HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 8 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    .clearPunchHole(hole, .topLeading, already: 24 * s)
                 Text("Gaple").font(Theme.font(18 * s, .black))
                 Text("Round \(Int(state.round)) · to \(Int(GapleGame.shared.TARGET))")
                     .font(Theme.font(12 * s, .bold))
@@ -488,6 +489,7 @@ private struct GapleBoardView: View {
                     )
                 }
                 .padding(.top, 10 * s)
+                .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
             }
             .frame(width: 160 * s)
             .frame(maxHeight: .infinity)
@@ -495,8 +497,8 @@ private struct GapleBoardView: View {
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
-        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
-        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
+        .padding(.leading, max(sideInsets.leading - 24 * s, 0))
+        .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
     }

@@ -7,8 +7,12 @@ Bluetooth or Wi-Fi, online through the relay). Update this file when a game or a
 
 Privacy policy: https://krida.ardeman.com/privasi/ (Indonesian, source `web/src/pages/privasi.astro`) and https://krida.ardeman.com/en/privacy/ (English, `web/src/pages/en/privacy.astro`).
 Contact email: mail@ardeman.com.
+**App Store support URL:** https://ardeman.com
 
 ## Listing text
+
+App Store metadata must not name other platforms (Guideline 2.3.10 — Bedug rejection
+2026-11-07 for “Android”). Say “main bareng” / “play together”, not “Android dan iPhone”.
 
 **Name** (both stores, ≤ 30): Krida: Permainan Tradisional
 
@@ -19,11 +23,11 @@ Contact email: mail@ardeman.com.
 **App Store subtitle** (≤ 30): Board games Nusantara 3D
 
 **App Store keywords** (≤ 100, comma-separated, no spaces):
-`congklak,dakon,ular tangga,ludo,gaple,perang kapal,board game,permainan tradisional,bluetooth,online,indonesia`
+`congklak,dakon,ular tangga,ludo,gaple,perang kapal,permainan tradisional,bluetooth,online,indonesia`
 
 **App Store promotional text** (≤ 170):
 
-> Congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel 3D. Lawan komputer, gantian di satu HP, Bluetooth, atau online — Android dan iPhone satu meja.
+> Congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel 3D. Lawan komputer, gantian di satu HP, Bluetooth, atau online — main bareng di satu meja.
 
 **Full description** (Play ≤ 4000, App Store description):
 
@@ -42,7 +46,7 @@ Contact email: mail@ardeman.com.
 > CARA MAIN
 > • Lawan komputer: pilih tingkat kesulitan (congklak) atau isi kursi dengan komputer.
 > • Gantian di satu HP atau tablet.
-> • Main bareng teman di dekatmu lewat Bluetooth atau Wi-Fi yang sama, tanpa internet. Android dan iPhone bisa main bareng.
+> • Main bareng teman di dekatmu lewat Bluetooth atau Wi-Fi yang sama, tanpa internet.
 > • Main online lewat internet: buat atau gabung room, lobi publik, atau quick match. Undang teman lewat akun opsional.
 >
 > KENAPA KRIDA
@@ -75,7 +79,7 @@ https://krida.ardeman.com/en/privacy/.
 
 **App Store promotional text** (≤ 170):
 
-> Congklak, snakes & ladders, ludo, perang kapal and gaple in 3D voxel style. Computer, pass-and-play, Bluetooth, or online — Android and iPhone at one table.
+> Congklak, snakes & ladders, ludo, perang kapal and gaple in 3D voxel style. Computer, pass-and-play, Bluetooth, or online — play together at one table.
 
 **Full description** (Play ≤ 4000, App Store description):
 
@@ -94,7 +98,7 @@ https://krida.ardeman.com/en/privacy/.
 > HOW TO PLAY
 > • Play the computer: choose a difficulty (congklak) or fill seats with computers.
 > • Take turns on one phone or tablet.
-> • Play friends nearby over Bluetooth or the same Wi-Fi, no internet needed. Android and iPhone can play together.
+> • Play friends nearby over Bluetooth or the same Wi-Fi, no internet needed.
 > • Play online over the internet: create or join a room, browse public lobbies, or quick match. Optional accounts let you invite friends.
 >
 > WHY KRIDA

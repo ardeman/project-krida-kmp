@@ -611,6 +611,7 @@ private struct PerangKapalBoardView: View {
             VStack(spacing: 8 * s) {
                 PillTopBar(gap: 8 * s) {
                     CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                        .clearPunchHole(hole, .topLeading, already: 24 * s)
                     OpponentPill(seat: pill(far), on: model.acting(far), detail: seatStatus(far), s: s)
                     HStack(spacing: 8 * s) {
                         SoundToggles()
@@ -671,11 +672,12 @@ private struct PerangKapalBoardView: View {
             .modifier(hudBox("bottom"))
             // Clear of the right column on both sides, so the pill stays centred.
             .padding(.horizontal, 176 * s)
+            .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
-        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
-        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
+        .padding(.leading, max(sideInsets.leading - 24 * s, 0))
+        .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
     }

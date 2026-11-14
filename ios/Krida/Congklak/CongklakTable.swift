@@ -106,7 +106,11 @@ final class HostTable: CongklakTable {
 
     override var mySeat: Int32? { seat }
     override var canRestart: Bool { true }
-    override var canEmote: Bool { !(transport is LocalTransport) }
+    override var canEmote: Bool {
+        // `-forceEmotes`: store screenshots / UI checks on a local board.
+        if ProcessInfo.processInfo.arguments.contains("-forceEmotes") { return true }
+        return !(transport is LocalTransport)
+    }
 
     override func play(seat: Int32, hole: Int32) -> Bool {
         active && session.submitLocal(seat: seat, move: CongklakMove(hole: hole)) == nil

@@ -560,6 +560,7 @@ private struct UlarTanggaBoardView: View {
             // Left: back, then the players, two tiles a row.
             VStack(alignment: .leading, spacing: 10 * s) {
                 CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    .clearPunchHole(hole, .topLeading, already: 24 * s)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
                 // Two tiles a row; each local seat keeps its timer / autopilot under the tile
@@ -621,48 +622,52 @@ private struct UlarTanggaBoardView: View {
                 .modifier(hudBox("emote"))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
-                // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
-                // hold it to spin it and let go to throw it.
-                Color.clear
-                    .frame(width: 104 * s, height: 104 * s)
-                    .contentShape(Rectangle())
-                    .gesture(dieGesture)
-                    .modifier(hudBox("die"))
-                    .accessibilityElement()
-                    .accessibilityLabel(Text("Roll"))
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityAction { model.roll(.short) }
-                Text(status)
-                    .font(Theme.font(14 * s, .bold))
-                    .foregroundStyle(Theme.muted)
-                    .multilineTextAlignment(.center)
-                    // Two lines kept even for a short status, so the die and the board don't move.
-                    .lineLimit(2, reservesSpace: true)
-                    .frame(maxWidth: .infinity)
-                    .modifier(hudBox("status"))
-                    .padding(.top, 10 * s)
-                if let away = table.waiting {
-                    CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
-                        .frame(maxWidth: .infinity)
-                        .modifier(hudBox("notice"))
-                } else if let notice = table.notice {
-                    Text(notice)
-                        .font(Theme.font(13 * s, .bold))
-                        .foregroundStyle(Theme.error)
+                // Die + status sit in the bottom-trailing camera corner; sound/rules stay flush.
+                VStack(spacing: 0) {
+                    // The die itself is 3D, drawn by the scene over this spot; tap it to toss it,
+                    // hold it to spin it and let go to throw it.
+                    Color.clear
+                        .frame(width: 104 * s, height: 104 * s)
+                        .contentShape(Rectangle())
+                        .gesture(dieGesture)
+                        .modifier(hudBox("die"))
+                        .accessibilityElement()
+                        .accessibilityLabel(Text("Roll"))
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { model.roll(.short) }
+                    Text(status)
+                        .font(Theme.font(14 * s, .bold))
+                        .foregroundStyle(Theme.muted)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                        // Two lines kept even for a short status, so the die and the board don't move.
+                        .lineLimit(2, reservesSpace: true)
                         .frame(maxWidth: .infinity)
-                        .modifier(hudBox("notice"))
+                        .modifier(hudBox("status"))
+                        .padding(.top, 10 * s)
+                    if let away = table.waiting {
+                        CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
+                            .frame(maxWidth: .infinity)
+                            .modifier(hudBox("notice"))
+                    } else if let notice = table.notice {
+                        Text(notice)
+                            .font(Theme.font(13 * s, .bold))
+                            .foregroundStyle(Theme.error)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity)
+                            .modifier(hudBox("notice"))
+                    }
                 }
+                .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
             }
             .frame(width: 148 * s)
             .frame(maxHeight: .infinity)
         }
         .modifier(hudBox("room"))
         .padding(.horizontal, 24 * s)
-        // Clear a corner punch hole or the Dynamic Island's strip.
-        .padding(.leading, max(max(hole?.leading ?? 0, sideInsets.leading) - 24 * s, 0))
-        .padding(.trailing, max(max(hole?.trailing ?? 0, sideInsets.trailing) - 24 * s, 0))
+        // Dynamic Island / system strip only — punch hole is corner-only above.
+        .padding(.leading, max(sideInsets.leading - 24 * s, 0))
+        .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
     }
