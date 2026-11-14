@@ -2,7 +2,7 @@
 import SwiftUI
 @preconcurrency import UserMessagingPlatform
 
-/// AdMob: a banner on the menus, an interstitial after every [interstitialEvery]th finished game,
+/// AdMob: a banner on the menus, an interstitial after every finished game (when one is ready),
 /// and a rewarded ad that pays for a hint. Owning "Remove ads" ([removed]) turns all of it off;
 /// hints are then free. Nothing is requested before the UMP consent flow allows it.
 /// Mirrors androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
@@ -10,7 +10,6 @@ import SwiftUI
 final class Ads: NSObject, ObservableObject {
     static let shared = Ads()
 
-    private static let interstitialEvery = 2
     private static let removedKey = "ads.removed"
 
     /// The player owns "Remove ads". Cached so ads never flash on before the App Store answers.
@@ -26,7 +25,6 @@ final class Ads: NSObject, ObservableObject {
     private var rewarded: RewardedAd?
     private var loadingInterstitial = false
     private var loadingRewarded = false
-    private var finishedGames = 0
     /// UI tests / store screenshots: keep the paid "Remove ads" layout; ignore StoreKit.
     private var skipAds = false
     /// Runs once when the full-screen ad on screen goes away, shown or not.
@@ -69,11 +67,10 @@ final class Ads: NSObject, ObservableObject {
 
     func showPrivacyOptions() { ConsentForm.presentPrivacyOptionsForm(from: nil) { _ in } }
 
-    /// Call when the player leaves a finished game; [then] runs after the interstitial,
-    /// if one was due and ready, is closed.
+    /// Call when the player leaves a finished game; [then] runs after the interstitial
+    /// closes, or immediately if ads are off / none ready yet.
     func afterGame(then: @escaping () -> Void) {
-        finishedGames += 1
-        guard !removed, let ad = interstitial, finishedGames % Self.interstitialEvery == 0 else {
+        guard !removed, let ad = interstitial else {
             loadInterstitial()
             return then()
         }

@@ -39,14 +39,13 @@ import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 
 /**
- * AdMob: a banner on the menus, an interstitial after every [INTERSTITIAL_EVERY]th finished
- * game, and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all of
- * it off; hints are then free. Nothing is requested before the UMP consent flow allows it.
+ * AdMob: a banner on the menus, an interstitial after every finished game (when one is
+ * ready), and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all
+ * of it off; hints are then free. Nothing is requested before the UMP consent flow allows it.
  * Ad unit ids live in res/values/ads.xml (real ids in release; Google's test ids in debug).
  */
 object Ads {
 
-    private const val INTERSTITIAL_EVERY = 2
     private const val PREFS = "ads"
     private const val KEY_REMOVED = "removed"
     private const val KEY_DEBUG_REMOVED = "debugRemoved"
@@ -70,7 +69,6 @@ object Ads {
     private var rewarded: RewardedAd? = null
     private var loadingInterstitial = false
     private var loadingRewarded = false
-    private var finishedGames = 0
 
     /** Price of "Hapus iklan" from Play; null hides the button. */
     val removeAdsPrice: String? get() = if (removed) null else Billing.price
@@ -120,13 +118,12 @@ object Ads {
     fun showPrivacyOptions(activity: Activity) = UserMessagingPlatform.showPrivacyOptionsForm(activity) { }
 
     /**
-     * Call when the player leaves a finished game; [then] runs after the interstitial,
-     * if one was due and ready, is closed.
+     * Call when the player leaves a finished game; [then] runs after the interstitial
+     * closes, or immediately if ads are off / none ready yet.
      */
     fun afterGame(activity: Activity, then: () -> Unit) {
-        finishedGames++
         val ad = interstitial
-        if (removed || ad == null || finishedGames % INTERSTITIAL_EVERY != 0) {
+        if (removed || ad == null) {
             loadInterstitial()
             return then()
         }

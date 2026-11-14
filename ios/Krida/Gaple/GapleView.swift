@@ -216,7 +216,7 @@ final class GapleGameModel: ObservableObject {
         playEnd(hit.0)
     }
 
-    /// Deals the next round; against computers a (frequency-capped) interstitial may run first.
+    /// Deals the next round; against computers an interstitial may run first when one is ready.
     func nextRound() {
         guard lifetime.active, table.isHost, !dealing else { return }
         dealing = true

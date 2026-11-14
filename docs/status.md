@@ -109,17 +109,21 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - Store listing copy in `docs/store.md` updated for all five games (2026-11-13). Graphics:
   editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
   iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.
-- Link the AdMob apps to the store listings after publishing.
+- Link the AdMob apps to the store listings after publishing (needs a **public** Play page).
 - **Android release ads (2026-11-14):** packaging OK (`scripts/verify-android-release-ads.sh`;
-  real ids, `AD_ID`, R8). Sideload → SDK starts, `Ad failed to load : 3` (NO_FILL). AdMob
-  Android app is **Requires review / Limited ad serving — Add store**; Play Console already
-  has `com.ardeman.krida` but the listing is not findable in AdMob search yet (not public).
-  AdMob UMP **Krida EU consent** published 2026-11-14 (both Krida apps,
-  privacy URL `https://krida.ardeman.com/privasi/`). **1.0.2 / versionCode 3** AAB uploaded to
-  Closed testing – Alpha and sent for review (2026-11-14; quick checks then Google review).
-  AdMob **Apps to confirm** for `com.ardeman.krida` still blocked on **Link to Google Play**
-  (listing not findable while closed review is pending). Retry after closed **1.0.2** is live.
-  AAB on Desktop: `~/Desktop/krida-1.0.2-release.aab`.
+  real ids, `AD_ID`, R8). AdMob UMP **Krida EU consent** published (both Krida apps,
+  privacy URL `https://krida.ardeman.com/privasi/`). Closed testing – Alpha **1.0.2 /
+  versionCode 3** published. Debug build: Google test banner OK on Pixel XL. Release /
+  closed install: production banner can fill on Pixel (TikTok Shop seen 2026-11-14) after
+  an initial `Ad failed to load : 3` (NO_FILL). AdMob **Apps to confirm** shows
+  `com.ardeman.krida` (**Setup incomplete**, 136 requests / 7d). **Finish setup** → add to
+  existing Krida Android (`~5902194713`); do **not** create a second AdMob app.
+  **Link to Google Play** still returns “Couldn't find any matching Google Play apps”
+  (closed tracks aren’t publicly searchable; store URL 404). **Continue** stays disabled
+  until Play links. Next: promote **1.0.2** to Play **production**, then retry Finish
+  setup / Link to Play. AAB: `~/Desktop/krida-1.0.2-release.aab`.
+  Interstitial after **every** finished game when ready (was every other; Android + iOS,
+  2026-11-14) — see `docs/decisions.md`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 

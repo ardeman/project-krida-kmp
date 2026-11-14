@@ -306,7 +306,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     }
 
     // Round end: the host deals on by itself after the same countdown. Against computers an
-    // interstitial (frequency-capped) may run first; [dealing] keeps the button and the
+    // interstitial may run first; [dealing] keeps the button and the
     // countdown from dealing (or showing an ad) twice.
     val roundCard = settled && state.roundOver && !state.finished
     val activity = LocalActivity.current

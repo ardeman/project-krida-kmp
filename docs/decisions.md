@@ -38,9 +38,10 @@ in the same commit as the code.
   1 person. Congklak: seat 1 is always a person.
 - **Rule chips explain themselves:** a hint line under the options says what the chosen or last
   tapped option does.
-- **Ads:** banner on menus only (not in game, not in room lobbies), interstitial after a game
-  (frequency-capped), rewarded ad for a hint from the hard bot. A one-time "Remove ads"
-  purchase turns them off. Audience General / 13+, not Families.
+- **Ads:** banner on menus only (not in game, not in room lobbies), interstitial after every
+  finished game when one is ready (Menu / Play again / next Gaple round against computers),
+  rewarded ad for a hint from the hard bot. A one-time "Remove ads" purchase turns them off.
+  Audience General / 13+, not Families. (Owner 2026-11-14: every finish, not every other.)
 
 ## Language and audio
 
@@ -251,9 +252,9 @@ in the same commit as the code.
   until you tap a tile. One legal end → plays there immediately; both → only those two
   rings light; tap a ring to place. Avoids showing both empty ends before a pick so
   players don't tap the wrong side. No camera zoom onto the ends (owner, 2026-11-14).
-- **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
-  with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
-  "Remove ads".
+- **Ad between rounds (owner, 2026-11-12; every finish 2026-11-14):** against computers only,
+  the next round opens with the shared interstitial (`Ads.afterGame`) when one is ready; none
+  in rooms, none after "Remove ads".
 - **Turn timer in every game (owner, 2026-11-12):** no game may wait forever on a player.
   Each turn has a countdown and at 0 the phone moves for the player. Gaple: 15 s
   (`Krida.PLAY_TURN_MS`), then `GapleGame.timeoutMove` (what the easy computer would play,
