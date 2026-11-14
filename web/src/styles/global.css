@@ -56,29 +56,24 @@ h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.02; letter-spacing: -0.02
 .soon a { color: inherit; }
 .nav-links { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .pill-strong { background: var(--ink); color: var(--surface); border-color: var(--ink); }
-.test-lead { color: var(--muted); font-size: 17px; max-width: 36em; margin: 0 0 16px; }
-.test-steps { margin: 0 0 20px; padding-left: 1.2em; max-width: 40em; color: var(--muted); }
-.test-steps li { margin: 0 0 12px; }
-.test-steps strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
-.test-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; }
-.test-guide { font-size: 18px; margin: 8px 0 16px; }
-.test-figures { display: grid; gap: 20px; }
-.test-figure { margin: 0; }
-.test-figure a { display: block; color: inherit; text-decoration: none; }
-.test-figure img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-.test-figure figcaption { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 44em; }
 
+/* Invite + how-to beside the video (fills the old empty column). */
+.test-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 28px 36px;
+  align-items: start;
+}
+.test-main h2 { margin: 0 0 10px; }
+.test-lead { color: var(--muted); font-size: 16px; max-width: 36em; margin: 0 0 22px; }
+.test-media {
+  min-width: 0;
+  position: sticky;
+  top: 16px;
+}
 .promo-video {
   position: relative;
   width: 100%;
-  max-width: 880px;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius);
   border: 1px solid var(--line);
@@ -86,8 +81,174 @@ h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.02; letter-spacing: -0.02
   background: #1a120c;
 }
 .promo-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.promo-watch { margin: 12px 0 0; font-size: 14px; }
+.promo-watch { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
 .promo-watch a { color: var(--accent); }
+
+/* Step-by-step how-to (CSS-only radio wizard; no JS). */
+.test-wizard { position: relative; }
+.test-how {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+.test-wizard-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+.test-wizard-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.test-wizard-tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  cursor: pointer;
+  color: var(--muted);
+}
+.test-wizard-tab:hover { border-color: var(--ink); color: var(--ink); }
+.test-wizard-tab-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.test-wizard-tab-label {
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.test-wizard-stage {
+  position: relative;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+}
+.test-wizard-panel { display: none; }
+.test-wizard-count { margin: 0 0 4px; font-size: 12px; color: var(--muted); }
+.test-wizard-title {
+  margin: 0 0 6px;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.test-wizard-body { margin: 0 0 12px; color: var(--muted); font-size: 15px; }
+.test-wizard-actions { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Screenshot lightbox: closed by default (no layout cost); open via checkbox + label. */
+.shot-toggle {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+.test-shot-open { cursor: pointer; user-select: none; }
+.shot-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.shot-toggle:checked + .shot-lightbox { display: grid; }
+.shot-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 12, 8, 0.72);
+  cursor: pointer;
+}
+.shot-lightbox-frame {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: min(920px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: 0 18px 48px rgba(20, 12, 8, 0.35);
+}
+.shot-lightbox-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.shot-lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  cursor: pointer;
+  user-select: none;
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgba(20, 12, 8, 0.18);
+}
+html:has(.shot-toggle:checked) { overflow: hidden; }
+.test-wizard-nav { margin-top: 14px; }
+.test-wizard-nav-row { display: none; justify-content: space-between; gap: 10px; }
+.test-wizard-nav-btn { cursor: pointer; user-select: none; }
+.test-wizard-nav-spacer { flex: 1; }
+
+/* Active step: id ends with -0 … -3 (name is join-id / join-en). */
+.test-wizard-radio[id$="-0"]:checked ~ .test-wizard-tabs label[for$="-0"],
+.test-wizard-radio[id$="-1"]:checked ~ .test-wizard-tabs label[for$="-1"],
+.test-wizard-radio[id$="-2"]:checked ~ .test-wizard-tabs label[for$="-2"],
+.test-wizard-radio[id$="-3"]:checked ~ .test-wizard-tabs label[for$="-3"] {
+  border-color: var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.test-wizard-radio[id$="-0"]:checked ~ .test-wizard-tabs label[for$="-0"] .test-wizard-tab-num,
+.test-wizard-radio[id$="-1"]:checked ~ .test-wizard-tabs label[for$="-1"] .test-wizard-tab-num,
+.test-wizard-radio[id$="-2"]:checked ~ .test-wizard-tabs label[for$="-2"] .test-wizard-tab-num,
+.test-wizard-radio[id$="-3"]:checked ~ .test-wizard-tabs label[for$="-3"] .test-wizard-tab-num {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+.test-wizard-radio[id$="-0"]:checked ~ .test-wizard-stage .test-wizard-panel-0,
+.test-wizard-radio[id$="-1"]:checked ~ .test-wizard-stage .test-wizard-panel-1,
+.test-wizard-radio[id$="-2"]:checked ~ .test-wizard-stage .test-wizard-panel-2,
+.test-wizard-radio[id$="-3"]:checked ~ .test-wizard-stage .test-wizard-panel-3 {
+  display: block;
+}
+.test-wizard-radio[id$="-0"]:checked ~ .test-wizard-nav .test-wizard-nav-0,
+.test-wizard-radio[id$="-1"]:checked ~ .test-wizard-nav .test-wizard-nav-1,
+.test-wizard-radio[id$="-2"]:checked ~ .test-wizard-nav .test-wizard-nav-2,
+.test-wizard-radio[id$="-3"]:checked ~ .test-wizard-nav .test-wizard-nav-3 {
+  display: flex;
+}
 
 .voxel { display: inline-block; flex: none; }
 
@@ -123,6 +284,10 @@ h3 { margin: 10px 0 2px; font-size: 18px; }
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; padding-top: 16px; }
   .games { grid-template-columns: repeat(2, 1fr); }
+  .test-layout { grid-template-columns: 1fr; }
+  .test-media { position: static; }
+  .test-wizard-tab { padding: 6px; }
+  .test-wizard-tab-label { display: none; }
 }
 @media (max-width: 520px) {
   .games, .features { grid-template-columns: 1fr; }

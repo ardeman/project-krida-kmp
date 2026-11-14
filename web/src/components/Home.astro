@@ -23,57 +23,59 @@ const copy = {
     description:
       "Congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel 3D. Lawan komputer, main offline lewat Bluetooth atau Wi‑Fi, atau online. Android dan iPhone bisa main bareng.",
     gamesNav: "Permainan",
-    promoNav: "Cuplikan",
     h1: "Main bareng, di mana saja.",
     lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
     soon: "Yuk gabung jadi closed tester — cara gabung di bawah.",
-    promoTitle: "Cuplikan Krida",
-    promoLead: "Lihat congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel — plus cara main bareng di mana saja.",
-    promoWatch: "Tonton di YouTube",
     testNav: "Closed tester",
     testTitle: "Yuk gabung jadi closed tester",
     testLead:
-      "Krida masih di Google Play closed testing. Tidak perlu punya app sendiri: ikut sebagai tester murni lewat TesBareng, lalu opt-in di Play.",
+      "Krida masih di Google Play closed testing. Ikut sebagai tester murni lewat TesBareng — tidak perlu punya app sendiri.",
+    testVideoCaption: "Undangan closed testing",
+    testVideoWatch: "Tonton di YouTube",
+    testHow: "Cara gabung",
+    testPrev: "Sebelumnya",
+    testNext: "Lanjut",
+    testShot: "Lihat cuplikan layar",
+    testShotClose: "Tutup",
+    testStepOf: (n: number, total: number) => `Langkah ${n} dari ${total}`,
     testSteps: [
       {
+        tab: "Google Group",
         title: "Gabung Google Group",
-        body: "Masuk ke google-tester-indonesia dengan akun Google yang ada di HP-mu. Cukup sekali untuk semua app di komunitas.",
+        body: "Masuk ke google-tester-indonesia dengan akun Google di HP-mu (sekali saja).",
+        cta: "Gabung Google Group",
+        href: "https://groups.google.com/g/google-tester-indonesia",
+        img: "join/step-1-group.jpg",
+        imgAlt: "Kartu TesBareng langkah 1: Gabung Google Group, salin email grup, dan tombol Gabung Google Group.",
       },
       {
-        title: "Masuk TesBareng, buka Krida",
-        body: "Ketuk “Masuk dengan Google”, lalu buka halaman Krida di daftar app (atau lewat tombol di bawah).",
+        tab: "Buka Krida",
+        title: "Masuk dengan Google, buka Krida",
+        body: "Masuk TesBareng dengan Google, lalu buka halaman Krida di daftar app (tombol di bawah).",
+        cta: "Buka Krida di TesBareng",
+        href: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
+        strong: true,
+        img: "join/step-2-krida.jpg",
+        imgAlt: "Kartu TesBareng langkah 2: Masuk dengan Google, lalu pilih app yang ingin diuji.",
       },
       {
+        tab: "Jadi tester",
         title: "Gabung sebagai tester",
-        body: "Ketuk “Gabung sebagai tester”. Cohort tidak wajib — tester murni boleh langsung ngetes Krida.",
+        body: "Di halaman Krida, ketuk “Gabung sebagai tester”, lalu “Buka link opt-in”. Cohort tidak wajib.",
+        img: "join/step-3-gabung.jpg",
+        imgAlt: "Tombol Gabung sebagai tester dan Buka link opt-in, plus tip tiga langkah di TesBareng.",
       },
       {
-        title: "Opt-in di Google Play, lalu install",
-        body: "Buka tautan opt-in dari TesBareng, ketuk “Jadi tester”, install Krida dari jalur closed testing, main sebentar, dan kirim feedback di Play dengan kata-katamu sendiri.",
+        tab: "Opt-in Play",
+        title: "Opt-in di Play, lalu install",
+        body: "Di Play, ketuk “Become a tester” / “Jadi tester”, install Krida, main sebentar, kirim feedback.",
+        cta: "Buka opt-in Google Play",
+        href: "https://play.google.com/apps/testing/com.ardeman.krida",
+        strong: true,
+        img: "join/step-4-play.jpg",
+        imgAlt: "Halaman Google Play testing Krida dengan tombol Become a tester.",
       },
     ],
-    testFigures: [
-      {
-        src: "join/step-tesbareng.jpg",
-        alt: "Tiga langkah gabung di halaman TesBareng: Google Group, masuk dengan Google, lalu pilih app.",
-        caption: "Di TesBareng: Google Group → masuk → pilih app (cuplikan layar sungguhan).",
-      },
-      {
-        src: "join/step-krida-list.jpg",
-        alt: "Krida: Permainan Tradisional di daftar app TesBareng, status mencari tester.",
-        caption: "Krida sudah ada di daftar app TesBareng — cari namanya, lalu buka halaman app-nya.",
-      },
-      {
-        src: "join/step-optin.jpg",
-        alt: "Titik cek TesBareng: opt-in dan install di hari 0, lalu pakai dan kirim feedback.",
-        caption: "Sesudah gabung: buka link opt-in Play, install, main, lalu kirim feedback di Play.",
-      },
-    ],
-    testCta: "Buka Krida di TesBareng",
-    testHref: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
-    testGroupCta: "Gabung Google Group",
-    testGroupHref: "https://groups.google.com/g/google-tester-indonesia",
-    testGuide: "Cara gabung (cuplikan layar TesBareng)",
     games: [
       { name: "Congklak", players: "2 pemain", tagline: "Kumpulkan biji terbanyak di lumbungmu." },
       { name: "Ular tangga", players: "2–4 pemain", tagline: "Naiki tangga, hindari ular." },
@@ -101,57 +103,59 @@ const copy = {
     description:
       "Congklak, snakes & ladders, ludo, perang kapal and gaple in 3D voxel style. Play the computer, offline over Bluetooth or Wi‑Fi, or online; Android and iPhone play together.",
     gamesNav: "Games",
-    promoNav: "Trailer",
     h1: "Play together, anywhere.",
     lead: "Congklak, snakes & ladders, ludo, perang kapal and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
     soon: "Come join as a closed tester — how to join below.",
-    promoTitle: "Krida trailer",
-    promoLead: "See congklak, snakes & ladders, ludo, perang kapal and gaple in voxel style — and how you play together anywhere.",
-    promoWatch: "Watch on YouTube",
     testNav: "Closed tester",
     testTitle: "Come join as a closed tester",
     testLead:
-      "Krida is on Google Play closed testing first. You don’t need your own app: join as a pure tester on TesBareng, then opt in on Play.",
+      "Krida is on Google Play closed testing first. Join as a pure tester on TesBareng — you don’t need your own app.",
+    testVideoCaption: "Closed testing invite",
+    testVideoWatch: "Watch on YouTube",
+    testHow: "How to join",
+    testPrev: "Previous",
+    testNext: "Next",
+    testShot: "View screenshot",
+    testShotClose: "Close",
+    testStepOf: (n: number, total: number) => `Step ${n} of ${total}`,
     testSteps: [
       {
+        tab: "Google Group",
         title: "Join the Google Group",
-        body: "Join google-tester-indonesia with the Google account on your phone. Once is enough for every app in the community.",
+        body: "Join google-tester-indonesia with the Google account on your phone (once is enough).",
+        cta: "Join the Google Group",
+        href: "https://groups.google.com/g/google-tester-indonesia",
+        img: "join/step-1-group.jpg",
+        imgAlt: "TesBareng step 1 card: join Google Group, copy group email, Gabung Google Group button.",
       },
       {
-        title: "Sign in to TesBareng, open Krida",
-        body: "Tap “Sign in with Google”, then open Krida’s page in the app list (or use the button below).",
+        tab: "Open Krida",
+        title: "Sign in with Google, open Krida",
+        body: "Sign in to TesBareng with Google, then open Krida’s page in the app list (button below).",
+        cta: "Open Krida on TesBareng",
+        href: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
+        strong: true,
+        img: "join/step-2-krida.jpg",
+        imgAlt: "TesBareng step 2 card: sign in with Google, then pick an app to test.",
       },
       {
+        tab: "Join tester",
         title: "Join as a tester",
-        body: "Tap “Gabung sebagai tester”. A cohort is optional — pure testers can help with Krida right away.",
+        body: "On Krida’s page, tap “Gabung sebagai tester”, then “Buka link opt-in”. A cohort is optional.",
+        img: "join/step-3-gabung.jpg",
+        imgAlt: "Gabung sebagai tester and Buka link opt-in buttons, plus TesBareng’s three-step tip.",
       },
       {
-        title: "Opt in on Google Play, then install",
-        body: "Open the Play opt-in link from TesBareng, tap “Become a tester”, install Krida from the closed track, play a bit, and leave Play feedback in your own words if you like.",
+        tab: "Opt-in Play",
+        title: "Opt in on Play, then install",
+        body: "On Play, tap “Become a tester”, install Krida, play a bit, leave feedback.",
+        cta: "Open Google Play opt-in",
+        href: "https://play.google.com/apps/testing/com.ardeman.krida",
+        strong: true,
+        img: "join/step-4-play.jpg",
+        imgAlt: "Google Play testing page for Krida with Become a tester.",
       },
     ],
-    testFigures: [
-      {
-        src: "join/step-tesbareng.jpg",
-        alt: "TesBareng’s three join steps: Google Group, sign in with Google, then pick an app.",
-        caption: "On TesBareng: Google Group → sign in → pick an app (real screenshot).",
-      },
-      {
-        src: "join/step-krida-list.jpg",
-        alt: "Krida: Permainan Tradisional in the TesBareng app list, searching for testers.",
-        caption: "Krida is listed on TesBareng — find the name, then open its app page.",
-      },
-      {
-        src: "join/step-optin.jpg",
-        alt: "TesBareng checkpoints: opt in and install on day 0, then play and send feedback.",
-        caption: "After joining: open the Play opt-in link, install, play, then send Play feedback.",
-      },
-    ],
-    testCta: "Open Krida on TesBareng",
-    testHref: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
-    testGroupCta: "Join the Google Group",
-    testGroupHref: "https://groups.google.com/g/google-tester-indonesia",
-    testGuide: "How to join (TesBareng screenshots)",
     games: [
       { name: "Congklak", players: "2 players", tagline: "Gather the most seeds in your store." },
       { name: "Snakes & ladders", players: "2–4 players", tagline: "Climb the ladders, dodge the snakes." },
@@ -178,6 +182,9 @@ const copy = {
 
 const games = copy.games.map((g, i) => ({ ...g, color: colors[i] }));
 const year = new Date().getFullYear();
+const joinSteps = copy.testSteps;
+const joinTotal = joinSteps.length;
+const joinRadioName = `join-${lang}`;
 // YouTube uploads from the launch promo (ID / EN).
 const youtubeId = lang === "id" ? "I1J0heCExhE" : "zNrHe3mnXcw";
 const youtubeWatch = `https://youtu.be/${youtubeId}`;
@@ -190,7 +197,6 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
       <a class="logo" href={`${root}/${alternates[lang]}`}><Wordmark height={30} /></a>
       <span class="nav-links">
         <a class="pill" href="#games">{copy.gamesNav}</a>
-        <a class="pill" href="#promo">{copy.promoNav}</a>
         <a class="pill" href="#closed-test">{copy.testNav}</a>
         <LangSwitch lang={lang} alternates={alternates} />
       </span>
@@ -205,6 +211,130 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
       <div class="hero-art"><Board /></div>
     </section>
 
+    <section id="closed-test" class="section">
+      <div class="test-layout">
+        <div class="test-main">
+          <h2>{copy.testTitle}</h2>
+          <p class="test-lead">{copy.testLead}</p>
+
+          <div class="test-wizard">
+            <h3 class="test-how">{copy.testHow}</h3>
+            {
+              joinSteps.map((_, i) => (
+                <input
+                  class="test-wizard-radio"
+                  type="radio"
+                  name={joinRadioName}
+                  id={`${joinRadioName}-${i}`}
+                  checked={i === 0}
+                />
+              ))
+            }
+            <div class="test-wizard-tabs" role="tablist" aria-label={copy.testHow}>
+              {
+                joinSteps.map((step, i) => (
+                  <label
+                    class="test-wizard-tab"
+                    for={`${joinRadioName}-${i}`}
+                    title={step.title}
+                  >
+                    <span class="test-wizard-tab-num">{i + 1}</span>
+                    <span class="test-wizard-tab-label">{step.tab}</span>
+                  </label>
+                ))
+              }
+            </div>
+            <div class="test-wizard-stage">
+              {
+                joinSteps.map((step, i) => (
+                  <article class={`test-wizard-panel test-wizard-panel-${i}`} aria-labelledby={`${joinRadioName}-${i}-title`}>
+                    <p class="test-wizard-count">{copy.testStepOf(i + 1, joinTotal)}</p>
+                    <h4 class="test-wizard-title" id={`${joinRadioName}-${i}-title`}>{step.title}</h4>
+                    <p class="test-wizard-body">{step.body}</p>
+                    <p class="test-wizard-actions">
+                      {step.cta && step.href ? (
+                        <a
+                          class:list={["pill", { "pill-strong": step.strong }]}
+                          href={step.href}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {step.cta}
+                        </a>
+                      ) : null}
+                      {step.img ? (
+                        <label class="pill test-shot-open" for={`shot-toggle-${lang}-${i}`}>{copy.testShot}</label>
+                      ) : null}
+                    </p>
+                  </article>
+                ))
+              }
+            </div>
+            <div class="test-wizard-nav">
+              {
+                joinSteps.map((_, i) => (
+                  <div class={`test-wizard-nav-row test-wizard-nav-${i}`}>
+                    {i > 0 ? (
+                      <label class="pill test-wizard-nav-btn" for={`${joinRadioName}-${i - 1}`}>{copy.testPrev}</label>
+                    ) : (
+                      <span class="test-wizard-nav-spacer" />
+                    )}
+                    {i < joinTotal - 1 ? (
+                      <label class="pill pill-strong test-wizard-nav-btn" for={`${joinRadioName}-${i + 1}`}>{copy.testNext}</label>
+                    ) : (
+                      <span class="test-wizard-nav-spacer" />
+                    )}
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+
+        <aside class="test-media">
+          <div class="promo-video">
+            <iframe
+              class="promo-frame"
+              src={youtubeEmbed}
+              title={copy.testTitle}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+            ></iframe>
+          </div>
+          <p class="promo-watch">
+            <span>{copy.testVideoCaption}</span>
+            {" · "}
+            <a href={youtubeWatch} rel="noopener noreferrer" target="_blank">{copy.testVideoWatch}</a>
+          </p>
+        </aside>
+      </div>
+
+      {
+        joinSteps.map((step, i) =>
+          step.img ? (
+            <>
+              <input
+                class="shot-toggle"
+                type="checkbox"
+                id={`shot-toggle-${lang}-${i}`}
+                aria-hidden="true"
+                tabindex={-1}
+              />
+              <div class="shot-lightbox" role="dialog" aria-label={step.imgAlt}>
+                <label class="shot-lightbox-backdrop" for={`shot-toggle-${lang}-${i}`} aria-label={copy.testShotClose}></label>
+                <figure class="shot-lightbox-frame">
+                  <label class="shot-lightbox-close pill" for={`shot-toggle-${lang}-${i}`}>{copy.testShotClose}</label>
+                  <img src={`${root}/${step.img}`} alt={step.imgAlt} loading="lazy" width="1100" />
+                </figure>
+              </div>
+            </>
+          ) : null,
+        )
+      }
+    </section>
+
     <section id="games" class="section">
       <h2>{copy.gamesNav}</h2>
       <div class="games">
@@ -216,57 +346,6 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
               <p class="players">{g.players}</p>
               <p>{g.tagline}</p>
             </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <section id="promo" class="section">
-      <h2>{copy.promoTitle}</h2>
-      <p class="test-lead">{copy.promoLead}</p>
-      <div class="promo-video">
-        <iframe
-          class="promo-frame"
-          src={youtubeEmbed}
-          title={copy.promoTitle}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          loading="lazy"
-          referrerpolicy="strict-origin-when-cross-origin"
-        ></iframe>
-      </div>
-      <p class="promo-watch">
-        <a href={youtubeWatch} rel="noopener noreferrer" target="_blank">{copy.promoWatch}</a>
-      </p>
-    </section>
-
-    <section id="closed-test" class="section">
-      <h2>{copy.testTitle}</h2>
-      <p class="test-lead">{copy.testLead}</p>
-      <ol class="test-steps">
-        {
-          copy.testSteps.map((step) => (
-            <li>
-              <strong>{step.title}</strong>
-              <span>{step.body}</span>
-            </li>
-          ))
-        }
-      </ol>
-      <p class="test-actions">
-        <a class="pill pill-strong" href={copy.testHref} rel="noopener noreferrer" target="_blank">{copy.testCta}</a>
-        <a class="pill" href={copy.testGroupHref} rel="noopener noreferrer" target="_blank">{copy.testGroupCta}</a>
-      </p>
-      <h3 class="test-guide">{copy.testGuide}</h3>
-      <div class="test-figures">
-        {
-          copy.testFigures.map((fig) => (
-            <figure class="test-figure">
-              <a href={`${root}/${fig.src}`} target="_blank" rel="noopener noreferrer">
-                <img src={`${root}/${fig.src}`} alt={fig.alt} loading="lazy" width="1100" />
-              </a>
-              <figcaption>{fig.caption}</figcaption>
-            </figure>
           ))
         }
       </div>
