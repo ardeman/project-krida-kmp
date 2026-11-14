@@ -72,7 +72,7 @@ final class GapleGameModel: ObservableObject {
         }
         let next = queue.removeFirst()
         animating = true
-        // Clear pick (and zoom) before the tile flies in.
+        // Clear pick before the tile flies in.
         picking = nil
         syncTimers()
         lifetime.launch("animation") { [self] in
@@ -201,11 +201,10 @@ final class GapleGameModel: ObservableObject {
         if table.play(tile, end: end) { sounds.play(.tap) }
     }
 
-    /// Only the ends this tile can join light up; zoom onto them while picking.
+    /// Only the ends this tile can join light up while picking.
     private func syncEndHighlight() {
         let ends = picking.map { game.endsFor(state: state, tile: $0).map(\.intValue) } ?? []
         renderer.highlightEnds(ends)
-        renderer.watchPicking(!ends.isEmpty)
     }
 
     /// A tap near one of the two pulsing rings plays the picked tile there.
@@ -543,7 +542,7 @@ private struct GapleBoardView: View {
             .overlay(Capsule().stroke(Theme.line, lineWidth: 1))
     }
 
-    /// Seat tile for every seat count, two a row like ludo / ular tangga: score inside the colour circle.
+    /// Seat tile for every seat count, two a row like ludo / ular tangga: avatar large, score in the corner.
     private func playerTile(_ seat: Int, on: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         let count = state.handCounts.indices.contains(seat) ? state.handCounts[seat].intValue : 0
@@ -554,26 +553,41 @@ private struct GapleBoardView: View {
         // Dark digits on a light pawn colour (yellow), white on the rest.
         let rgb = UlarTanggaBoard.shared.pieceColor(color: Int32(seat))
         let light = rgb.get(index: 0) * 0.3 + rgb.get(index: 1) * 0.59 + rgb.get(index: 2) * 0.11 > 0.6
+        let bot = table.botSeats.contains(seat)
+        let avatar = bot ? nil : table.players.avatar(of: seat)
         return VStack(spacing: 2 * s) {
             ZStack(alignment: .bottomTrailing) {
-                Text(verbatim: "\(score)")
-                    .font(Theme.font(14 * s, .black))
-                    .foregroundStyle(light ? Theme.inkOnLight : .white)
-                    .lineLimit(1)
-                    .frame(width: 30 * s, height: 30 * s)
-                    .background(color, in: Circle())
-                    .padding(2 * s)
-                    .background(.white, in: Circle())
-                if table.botSeats.contains(seat) {
-                    Image(systemName: "desktopcomputer")
-                        .font(.system(size: 8 * s, weight: .bold))
-                        .foregroundStyle(Theme.ink)
-                        .frame(width: 16 * s, height: 16 * s)
-                        .background(Theme.surface, in: Circle())
-                        .overlay(Circle().stroke(Theme.line, lineWidth: 1))
-                } else if let avatar = table.players.avatar(of: seat) {
-                    AvatarBadge(avatar: avatar, size: 18)
-                        .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                if avatar != nil || bot {
+                    if let avatar {
+                        AvatarBadge(avatar: avatar, size: 34)
+                            .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                    } else {
+                        Image(systemName: "desktopcomputer")
+                            .font(.system(size: 16 * s, weight: .semibold))
+                            .foregroundStyle(Theme.ink)
+                            .frame(width: 30 * s, height: 30 * s)
+                            .background(Theme.track, in: Circle())
+                            .padding(2 * s)
+                            .background(.white, in: Circle())
+                    }
+                    Text(verbatim: "\(score)")
+                        .font(Theme.font(10 * s, .black))
+                        .foregroundStyle(light ? Theme.inkOnLight : .white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 17 * s, height: 17 * s)
+                        .background(color, in: Circle())
+                        .padding(1.5 * s)
+                        .background(.white, in: Circle())
+                } else {
+                    Text(verbatim: "\(score)")
+                        .font(Theme.font(14 * s, .black))
+                        .foregroundStyle(light ? Theme.inkOnLight : .white)
+                        .lineLimit(1)
+                        .frame(width: 30 * s, height: 30 * s)
+                        .background(color, in: Circle())
+                        .padding(2 * s)
+                        .background(.white, in: Circle())
                 }
             }
             Text(seatName(seat)).font(Theme.font(11 * s, .bold)).lineLimit(1).minimumScaleFactor(0.7)
@@ -715,6 +729,9 @@ private struct GapleBoardView: View {
                     Text("Waiting for the host").font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
                 }
             }
+            // The card covers the HUD back button; leave without waiting for the next deal.
+            Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                .buttonStyle(SecondaryButtonStyle(height: 44, tint: Theme.muted))
         }
     }
 

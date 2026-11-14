@@ -1,0 +1,61 @@
+---
+import Base from "../../layouts/Base.astro";
+import Wordmark from "../../components/Wordmark.astro";
+import LangSwitch from "../../components/LangSwitch.astro";
+const home = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/en/`;
+const root = import.meta.env.BASE_URL.replace(/\/$/, "");
+const alternates = { id: "catatan/", en: "en/changelog/" };
+---
+
+<Base
+  title="Changelog — Krida"
+  description="What’s new in each Krida release for Android and iPhone."
+  lang="en"
+  alternates={alternates}
+>
+  <main>
+    <header class="nav">
+      <a class="logo" href={home}><Wordmark height={30} /></a>
+      <LangSwitch lang="en" alternates={alternates} />
+    </header>
+
+    <article class="doc">
+      <h1>Changelog</h1>
+      <p class="doc-date">Newest first. Same version on Google Play and the App Store.</p>
+
+      <h2>1.0.2 <span class="doc-build">build 3</span></h2>
+      <p class="doc-date">14 November 2026</p>
+      <ul>
+        <li>Cheerful arcade-style announcement voices.</li>
+        <li>Removed in-game camera zoom (ludo, ular tangga, gaple).</li>
+        <li>Battleship: clearer gaps between miss / hit / turn, especially vs computer.</li>
+        <li>Android ads ready for Play release (UMP + production units).</li>
+      </ul>
+
+      <h2>1.0.1 <span class="doc-build">build 2</span></h2>
+      <p class="doc-date">14 November 2026</p>
+      <ul>
+        <li>Fixed Indonesian language on Android (the in-app picker no longer stuck on English).</li>
+        <li>Perang kapal player tiles match ular tangga / ludo.</li>
+        <li>Gaple: Menu on the between-rounds card.</li>
+        <li>Congklak: camera stays on the whole board while sowing.</li>
+        <li>English name for perang kapal: Battleship.</li>
+      </ul>
+
+      <h2>1.0.0 <span class="doc-build">build 1</span></h2>
+      <p class="doc-date">November 2026</p>
+      <ul>
+        <li>First release on the App Store and Google Play (closed testing).</li>
+        <li>Five games: congklak, ular tangga, ludo, perang kapal, and gaple.</li>
+        <li>Pass-and-play, computer, nearby (Bluetooth / Wi‑Fi), and online.</li>
+      </ul>
+    </article>
+
+    <footer class="footer">
+      <a href={home}>Back to Krida</a>
+      <span class="footer-copy"
+        >krida.ardeman.com · <a href={`${root}/en/privacy/`}>Privacy</a></span
+      >
+    </footer>
+  </main>
+</Base>

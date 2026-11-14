@@ -18,10 +18,10 @@ match across platforms: `RoomLobby`, `JoinScreen`, `ConnectingScreen` exist on b
 
 ## Layout
 
-- **Always landscape.** The whole app is inside `LandscapeStage`, which turns the layout on
-  portrait or foldable screens (portrait is declared so an upright Duo is not letterboxed).
-  Design for a landscape phone first: **874 × 402 pt** on iOS (the phone design size);
-  Android caps menus and room screens at **874 × 460 dp**.
+- **Always landscape.** The whole app is inside `LandscapeStage`. iPhone is landscape-only;
+  iPad / unfolded Duo may open a portrait window and the stage turns the layout (so the
+  system does not letterbox). Design for a landscape phone first: **874 × 402 pt** on iOS
+  (the phone design size); Android caps menus and room screens at **874 × 460 dp**.
 - **Scale on iOS.** Every size in SwiftUI is multiplied by `s` (`@Environment(\.uiScale)`):
   `24 * s`, `Theme.font(16 * s)`. It is 1 on phones and up to 1.5 on iPad. Android scales
   through `LandscapeStage`'s density, so use plain `dp`/`sp`.
@@ -95,8 +95,8 @@ in: RoundedRectangle(cornerRadius: 20 * s))` + `.overlay(... .stroke(Theme.line,
 | Seat tiles, colour swatches, dashed empty seat | `NearbyScreens.kt` | `NearbyScreens.swift` |
 | Loading | `LoadingIndicator` / `LoadingScreen` (`ui/Loading.kt`) | `LoadingIndicator` / `LoadingScreen` (`Support/Loading.swift`) |
 | Countdown | `CountdownRing` / `CountdownNotice` (`ui/CountdownRing.kt`) | `CountdownRing` / `CountdownNotice` (`Support/CountdownRing.swift`) |
-| Players in a 2-player game (congklak, perang kapal): opponent pill on top, your pill below the board | `PillTopBar`, `OpponentPill`, `PlayerPill` (`ui/SeatPills.kt`) | same names (`Support/SeatPills.swift`) |
-| Players in ular tangga, ludo, and gaple (any seat count): left-column tiles, two a row | per-game `PlayerTile` (avatar + name; gaple also score in the colour circle / tiles left) | same pattern in each game's view |
+| Players in a 2-player game (congklak): opponent pill on top, your pill below the board | `PillTopBar`, `OpponentPill`, `PlayerPill` (`ui/SeatPills.kt`) | same names (`Support/SeatPills.swift`) |
+| Players in ular tangga, ludo, gaple, and perang kapal (any seat count): left-column tiles, two a row | per-game `PlayerTile` (large avatar / bot, status number in the corner; gaple also tiles left; perang kapal ships left) | same pattern in each game's view |
 | Tap sound | built into the buttons | `.tapSound(...)` (built into the button styles) |
 
 `NearbyFrame` is internal on Android; iOS should expose its existing frame when adapting

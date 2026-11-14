@@ -118,6 +118,25 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
+**Version:** marketing `1.0.2`, Android `versionCode` / iOS build `3` (see [changelog.md](changelog.md)).
+Paste the matching language block into Play “Release notes” (≤ 500) and App Store
+“What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
+notes go on the store form.
+
+### What’s New — 1.0.2 (id)
+
+> Suara pengumuman lebih ceria (gaya arcade).
+> Zoom kamera dalam permainan dihapus (ludo, ular tangga, gaple).
+> Perang kapal: jeda lebih jelas antara miss / kena / giliran, terutama lawan komputer.
+> Iklan Android siap rilis Play (UMP + unit produksi).
+
+### What’s New — 1.0.2 (en-US)
+
+> Cheerful arcade-style announcement voices.
+> Removed in-game camera zoom (ludo, ular tangga, gaple).
+> Battleship: clearer gaps between miss / hit / turn, especially vs computer.
+> Android ads ready for Play release (UMP + production units).
+
 **Graphics:** shipping files in `docs/brand/store/` (Play icon 512×512, feature graphic
 1024×500, phone screenshots). The screenshot editor lives in Pamer Studio at
 `../project-pamerstudio-node/store-screenshots/` (shared editor for every app; skill +

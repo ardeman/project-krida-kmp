@@ -161,7 +161,9 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <footer class="footer">
       <a href={home}>Back to Krida</a>
-      <span class="footer-copy">krida.ardeman.com</span>
+      <span class="footer-copy"
+        >krida.ardeman.com · <a href={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/en/changelog/`}>Changelog</a></span
+      >
     </footer>
   </main>
 </Base>

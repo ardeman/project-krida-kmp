@@ -97,14 +97,16 @@ const copy = {
     lemaSrcGloss: "bermain",
     privacy: "Kebijakan privasi",
     privacyPath: "privasi/",
+    changelog: "Catatan perubahan",
+    changelogPath: "catatan/",
   },
   en: {
     title: "Krida — Board games from Indonesia, play together anywhere",
     description:
-      "Congklak, snakes & ladders, ludo, perang kapal and gaple in 3D voxel style. Play the computer, offline over Bluetooth or Wi‑Fi, or online; Android and iPhone play together.",
+      "Congklak, snakes & ladders, ludo, battleship and gaple in 3D voxel style. Play the computer, offline over Bluetooth or Wi‑Fi, or online; Android and iPhone play together.",
     gamesNav: "Games",
     h1: "Play together, anywhere.",
-    lead: "Congklak, snakes & ladders, ludo, perang kapal and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
+    lead: "Congklak, snakes & ladders, ludo, battleship and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
     soon: "Come join as a closed tester — how to join below.",
     testNav: "Closed tester",
     testTitle: "Come join as a closed tester",
@@ -160,7 +162,7 @@ const copy = {
       { name: "Congklak", players: "2 players", tagline: "Gather the most seeds in your store." },
       { name: "Snakes & ladders", players: "2–4 players", tagline: "Climb the ladders, dodge the snakes." },
       { name: "Ludo", players: "2–4 players", tagline: "Race your four tokens home." },
-      { name: "Perang kapal", players: "2 players", tagline: "Sink the fleet." },
+      { name: "Battleship", players: "2 players", tagline: "Sink the fleet." },
       { name: "Gaple", players: "2–4 players", tagline: "Match the ends, empty your hand." },
     ],
     whyTitle: "Why Krida",
@@ -177,6 +179,8 @@ const copy = {
     lemaSrcGloss: "play",
     privacy: "Privacy policy",
     privacyPath: "en/privacy/",
+    changelog: "Changelog",
+    changelogPath: "en/changelog/",
   },
 }[lang];
 
@@ -371,7 +375,11 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
         <span class="lema-def">{copy.lemaDef}</span>
         <span class="lema-src">{copy.lemaSrc} <i lang="sa">krīḍā</i>: {copy.lemaSrcGloss}.</span>
       </p>
-      <span class="footer-copy">© {year} Krida · krida.ardeman.com · <a href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a></span>
+      <span class="footer-copy"
+        >© {year} Krida · krida.ardeman.com · <a href={`${root}/${copy.changelogPath}`}>{copy.changelog}</a> · <a
+          href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a
+        ></span
+      >
     </footer>
   </main>
 </Base>

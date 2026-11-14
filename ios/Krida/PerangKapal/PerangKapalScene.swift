@@ -39,10 +39,12 @@ final class PerangKapalScene {
     /// Cell 0 of the ocean: the ship, peg and ring meshes are built there and moved from it.
     private let base: SIMD3<Float>
     private var battle = false
+    /// Ocean cell under the finger while placing; nil when none. Reuses the gold ocean ring.
+    private var hoverCell: Int?
     private var frameWatch: Cancellable?
     private var screen: CGSize = .zero
-    private var free: CGRect = .zero
-    private var left: CGFloat = 0
+    private var room: CGRect = .zero
+    private var obstacles: [CGRect] = []
     /// Tangent of half the vertical field of view in use.
     private var tanHalf: Float
 
@@ -140,13 +142,35 @@ final class PerangKapalScene {
         fill(&radarHits, hitMesh, pegs(outgoing, hit: true, radarX, onRadar), in: anchor)
         fill(&radarMisses, missMesh, pegs(outgoing, hit: false, radarX, onRadar), in: anchor)
 
-        oceanRing.isEnabled = false
         radarRing.isEnabled = false
         if battle, state.lastHit != nil, let cell = state.lastCell?.intValue, let seat = state.lastSeat?.intValue {
+            hoverCell = nil
+            oceanRing.isEnabled = false
             let ring = seat == mySeat ? radarRing : oceanRing
             ring.position = spot(cell, seat == mySeat ? radarX : 0)
             ring.isEnabled = true
+        } else {
+            radarRing.isEnabled = false
+            applyHoverRing()
         }
+    }
+
+    /// Gold ring on the ocean cell under the finger while placing, so a mistap next to a ship
+    /// is obvious (tap a ship cell to turn it). Cleared when `cell` is nil or in battle.
+    func setHover(_ cell: Int?) {
+        let next = battle ? nil : cell
+        guard hoverCell != next else { return }
+        hoverCell = next
+        applyHoverRing()
+    }
+
+    private func applyHoverRing() {
+        guard !battle, let cell = hoverCell else {
+            oceanRing.isEnabled = false
+            return
+        }
+        oceanRing.position = spot(cell, 0)
+        oceanRing.isEnabled = true
     }
 
     /// One entity per ship kind: the mesh for the ship's direction, moved to its first cell.
@@ -196,41 +220,77 @@ final class PerangKapalScene {
     /// centred on the camera's target, so keep them around the grid's centre.
     var focus: [SIMD3<Float>]?
 
-    /// Fits the grid to play on into `free` (the screen without the HUD columns). In battle
-    /// that is the radar; the small ocean beside it may reach under the left column, down to
-    /// `left`. Returns the frame the view must take.
+    /// Fits the play grid into `room` as large as ludo does, dodging `obstacles` (HUD boxes).
+    /// In battle the radar clears obstacles; the mini ocean only has to stay in the room.
     @discardableResult
-    func layout(size: CGSize, free: CGRect, left: CGFloat) -> CGRect {
-        guard size.width > 0, size.height > 0, free.width > 0, free.height > 0 else { return viewFrame }
+    func layout(size: CGSize, room: CGRect, obstacles: [CGRect] = []) -> CGRect {
+        guard size.width > 0, size.height > 0, room.width > 0, room.height > 0 else { return viewFrame }
         screen = size
-        self.free = free
-        self.left = left
+        self.room = room
+        self.obstacles = obstacles
         return applyLayout()
     }
 
     @discardableResult
     private func applyLayout() -> CGRect {
         applyCamera()
-        guard screen.width > 0 else { return viewFrame }
+        guard screen.width > 0, room.width > 0 else { return viewFrame }
         let baseTan = tan(board.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
-        let corners = focus ?? board.bounds(originX: battle ? board.RADAR_OFFSET_X : 0).map(Self.vec)
+        let play = focus ?? board.bounds(originX: battle ? board.RADAR_OFFSET_X : 0).map(Self.vec)
         let c = CGPoint(x: screen.width / 2, y: screen.height / 2)
-        let shot = corners.map { project($0, tanV: baseTan) }
-        let halfW = max(shot.map { abs($0.x - c.x) }.max() ?? 1, 1)
-        let halfH = max(shot.map { abs($0.y - c.y) }.max() ?? 1, 1)
-        // Scaling the picture by k around the centre is the same as dividing the tangent by k.
-        var k = min(free.width / 2 / halfW, free.height / 2 / halfH)
-        if battle {
-            // The small ocean must not leave the screen on the left.
-            let reach = c.x - (board.miniBounds().map { project(Self.vec($0), tanV: baseTan).x }.min() ?? c.x)
-            if reach > 0 { k = min(k, (free.midX - left) / reach) }
+        let playShot = play.map { project($0, tanV: baseTan) }
+        let roomShot: [CGPoint] = if battle, focus == nil {
+            playShot + board.miniBounds().map { project(Self.vec($0), tanV: baseTan) }
+        } else {
+            playShot
         }
+        func place(_ k: CGFloat) -> CGPoint? {
+            func scaled(_ pts: [CGPoint]) -> [CGPoint] {
+                pts.map { CGPoint(x: c.x + ($0.x - c.x) * k, y: c.y + ($0.y - c.y) * k) }
+            }
+            let roomPts = scaled(roomShot)
+            let x0 = roomPts.map(\.x).min()!, x1 = roomPts.map(\.x).max()!
+            let y0 = roomPts.map(\.y).min()!, y1 = roomPts.map(\.y).max()!
+            let loX = room.minX - x0, hiX = room.maxX - x1
+            let loY = room.minY - y0, hiY = room.maxY - y1
+            guard loX <= hiX, loY <= hiY else { return nil }
+            let playPts = scaled(playShot)
+            let mid = CGPoint(x: (loX + hiX) / 2, y: (loY + hiY) / 2)
+            var best: CGPoint?
+            var bestD = CGFloat.greatestFiniteMagnitude
+            for i in 0...Self.fitSteps {
+                for j in 0...Self.fitSteps {
+                    let d = CGPoint(
+                        x: loX + (hiX - loX) * CGFloat(i) / CGFloat(Self.fitSteps),
+                        y: loY + (hiY - loY) * CGFloat(j) / CGFloat(Self.fitSteps)
+                    )
+                    let dist = (d.x - mid.x) * (d.x - mid.x) + (d.y - mid.y) * (d.y - mid.y)
+                    guard dist < bestD else { continue }
+                    let px0 = playPts.map(\.x).min()! + d.x, px1 = playPts.map(\.x).max()! + d.x
+                    let py0 = playPts.map(\.y).min()! + d.y, py1 = playPts.map(\.y).max()! + d.y
+                    let playBox = CGRect(x: px0, y: py0, width: px1 - px0, height: py1 - py0)
+                    if obstacles.contains(where: { $0.intersects(playBox) }) { continue }
+                    best = d
+                    bestD = dist
+                }
+            }
+            return best
+        }
+        var lo = log(0.05), hi = log(20.0)
+        for _ in 0..<20 {
+            let mid = (lo + hi) / 2
+            if place(exp(mid)) != nil { lo = mid } else { hi = mid }
+        }
+        let k = exp(lo)
+        let shift = place(k) ?? .zero
         tanHalf = baseTan / Float(k)
         camera.camera.fieldOfViewInDegrees = 2 * atan(tanHalf) * 180 / .pi
-        viewFrame = CGRect(x: free.midX - c.x, y: free.midY - c.y, width: screen.width, height: screen.height)
+        viewFrame = CGRect(x: shift.x, y: shift.y, width: screen.width, height: screen.height)
         onViewFrame?(viewFrame)
         return viewFrame
     }
+
+    private static let fitSteps = 24
 
     /// The cell of the radar (in battle) or of the ocean (while placing) under `point`, in
     /// the screen's coordinates.

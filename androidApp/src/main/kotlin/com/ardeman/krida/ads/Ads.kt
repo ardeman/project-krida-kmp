@@ -3,6 +3,8 @@ package com.ardeman.krida.ads
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -20,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.ardeman.krida.R
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -39,7 +42,7 @@ import com.google.android.ump.UserMessagingPlatform
  * AdMob: a banner on the menus, an interstitial after every [INTERSTITIAL_EVERY]th finished
  * game, and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all of
  * it off; hints are then free. Nothing is requested before the UMP consent flow allows it.
- * Ad unit ids live in res/values/ads.xml.
+ * Ad unit ids live in res/values/ads.xml (real ids in release; Google's test ids in debug).
  */
 object Ads {
 
@@ -48,6 +51,8 @@ object Ads {
     private const val KEY_REMOVED = "removed"
     private const val KEY_DEBUG_REMOVED = "debugRemoved"
     private const val EXTRA_DEBUG_REMOVED = "adsRemoved"
+    /** Cap retries so a long NO_FILL stretch does not spin forever. */
+    private const val MAX_LOAD_ATTEMPTS = 5
 
     /** The player owns "Hapus iklan". Cached so ads never flash on before Play answers. */
     var removed by mutableStateOf(false)
@@ -60,6 +65,7 @@ object Ads {
     private var started by mutableStateOf(false)
     private var debugRemoved = false
     private lateinit var app: Context
+    private val main = Handler(Looper.getMainLooper())
     private var interstitial: InterstitialAd? = null
     private var rewarded: RewardedAd? = null
     private var loadingInterstitial = false
@@ -165,10 +171,24 @@ object Ads {
                             AdView(ctx).apply {
                                 setAdSize(size)
                                 adUnitId = unit
+                                val retry = Runnable {
+                                    if (!removed && started) loadAd(AdRequest.Builder().build())
+                                }
+                                tag = retry
+                                adListener = object : AdListener() {
+                                    override fun onAdFailedToLoad(error: LoadAdError) {
+                                        // NO_FILL and brief network blips: try again shortly.
+                                        main.removeCallbacks(retry)
+                                        main.postDelayed(retry, 30_000L)
+                                    }
+                                }
                                 loadAd(AdRequest.Builder().build())
                             }
                         },
-                        onRelease = { it.destroy() },
+                        onRelease = { view ->
+                            (view.tag as? Runnable)?.let(main::removeCallbacks)
+                            view.destroy()
+                        },
                     )
                 }
             }
@@ -192,25 +212,55 @@ object Ads {
         if (value) {
             interstitial = null
             rewarded = null
+            main.removeCallbacksAndMessages(null)
         }
     }
 
-    private fun loadInterstitial() {
+    private fun loadInterstitial(attempt: Int = 0) {
         if (!started || removed || interstitial != null || loadingInterstitial) return
         loadingInterstitial = true
-        InterstitialAd.load(app, app.getString(R.string.admob_interstitial), AdRequest.Builder().build(), object : InterstitialAdLoadCallback() {
-            override fun onAdLoaded(ad: InterstitialAd) { interstitial = ad; loadingInterstitial = false }
-            override fun onAdFailedToLoad(error: LoadAdError) { loadingInterstitial = false }
-        })
+        InterstitialAd.load(
+            app,
+            app.getString(R.string.admob_interstitial),
+            AdRequest.Builder().build(),
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    interstitial = ad
+                    loadingInterstitial = false
+                }
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    loadingInterstitial = false
+                    retryLater(attempt) { loadInterstitial(attempt + 1) }
+                }
+            },
+        )
     }
 
-    private fun loadRewarded() {
+    private fun loadRewarded(attempt: Int = 0) {
         if (!started || removed || rewarded != null || loadingRewarded) return
         loadingRewarded = true
-        RewardedAd.load(app, app.getString(R.string.admob_rewarded), AdRequest.Builder().build(), object : RewardedAdLoadCallback() {
-            override fun onAdLoaded(ad: RewardedAd) { rewarded = ad; loadingRewarded = false }
-            override fun onAdFailedToLoad(error: LoadAdError) { loadingRewarded = false }
-        })
+        RewardedAd.load(
+            app,
+            app.getString(R.string.admob_rewarded),
+            AdRequest.Builder().build(),
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(ad: RewardedAd) {
+                    rewarded = ad
+                    loadingRewarded = false
+                }
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    loadingRewarded = false
+                    retryLater(attempt) { loadRewarded(attempt + 1) }
+                }
+            },
+        )
+    }
+
+    /** Back off after a failed load (common while AdMob has no fill yet). */
+    private fun retryLater(attempt: Int, load: () -> Unit) {
+        if (attempt >= MAX_LOAD_ATTEMPTS - 1) return
+        val delayMs = (8_000L * (1L shl attempt)).coerceAtMost(60_000L)
+        main.postDelayed({ if (started && !removed) load() }, delayMs)
     }
 
     /** Calls [done] once when a full-screen ad goes away, shown or not. */

@@ -622,9 +622,12 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
         fun scaleFor(fov: Float) = tanBase / tan(fov * PI.toFloat() / 360f)
         fun place(k: Float): FloatArray? {
             val shapes = hulls.map { hull -> hull.map { floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k) } }
-            val all = shapes.flatten()
-            val x0 = all.minOf { it[0] }; val x1 = all.maxOf { it[0] }
-            val y0 = all.minOf { it[1] }; val y1 = all.maxOf { it[1] }
+            // Room size follows the main board only (like ludo's single square). The start pad
+            // is a separate hull that may tuck under the left HUD; including it in the room
+            // AABB was shrinking the board below ludo.
+            val board = shapes.firstOrNull() ?: return null
+            val x0 = board.minOf { it[0] }; val x1 = board.maxOf { it[0] }
+            val y0 = board.minOf { it[1] }; val y1 = board.maxOf { it[1] }
             val loX = room[0] - x0; val hiX = room[2] - x1
             val loY = room[1] - y0; val hiY = room[3] - y1
             if (loX > hiX || loY > hiY) return null
@@ -636,7 +639,8 @@ class UlarTanggaRenderer(textureView: TextureView) : VoxelStage(textureView, Ula
                 val sy = loY + (hiY - loY) * j / FIT_STEPS
                 val distance = (sx - midX) * (sx - midX) + (sy - midY) * (sy - midY)
                 if (distance >= bestDistance) continue
-                if (obstacles.any { box -> shapes.any { overlaps(it, sx, sy, box) } }) continue
+                // Only the main board must clear the HUD; the start pad may sit under it.
+                if (obstacles.any { box -> overlaps(board, sx, sy, box) }) continue
                 best = floatArrayOf(sx, sy)
                 bestDistance = distance
             }

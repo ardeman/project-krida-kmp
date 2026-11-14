@@ -23,7 +23,7 @@ file in the same commit when an item is done or a new one comes up. Last updated
   (same screen, table and menu card) plus nearby and online rooms (host, join, computers in
   empty seats, 2–4 seat online rooms, partners, quick match); builds, not played on a device
   yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line plays when a seat passes (recorded 2026-11-12).
-  Picking a tile zooms onto the open ends; unpick or place eases back out (2026-11-12).
+  End rings light on a dual-fit pick; no camera zoom (2026-11-14).
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak
@@ -81,9 +81,11 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - iPhone: seat tiles and rule hint lines, loading screen, play card, ular tangga board.
 - Audio: SFX, voice-over and music not yet listened to by the owner. New lines 2026-11-12:
   ular tangga dice-off ("Throw the die to set the playing order") and perang kapal placement
-  ("Drag ships onto your ocean").
-- Camera zoom on congklak / ular tangga / ludo only follows a seat on this phone (2026-11-12);
-  bots and remote seats stay on the whole-board view.
+  ("Drag ships onto your ocean").   Die faces 1–6 (Satu!…Enam! / One!…Six!) spoken after each
+  throw on ular tangga and ludo (2026-11-14). Perang kapal: miss / hit / sunk SFX + VO,
+  then your/their turn; win/lose at the end (2026-11-14).
+- Gameplay camera zoom removed on ular tangga, ludo, gaple and congklak (2026-11-14);
+  boards stay on the whole-board / whole-table view.
 - Bilingual: check both languages on the devices.
 - Account: iPhone checked 2026-11-11 (Google sign-in and sign out, Apple sign-in and delete
   account). Pixel: sign in with Google, sign out, delete account still open.
@@ -96,8 +98,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   Play → closed testing first, then production later.
 - Play: create the app, upload the AAB to closed testing, the `hapus_iklan` product. Enter
   Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
-- Add the Play app signing key's SHA-256 to `web/public/.well-known/assetlinks.json` once Play
-  signs the app.
+- Play app signing SHA-256 added to `web/public/.well-known/assetlinks.json` (2026-11-14;
+  keep upload + debug fingerprints too). Live after the next web deploy.
 - App Store version **1.0** (`WAITING_FOR_REVIEW`, resubmitted 2026-11-13 via Zen after a
   Developer Reject to add creatives): listing (id+en, no Android per 2.3.10), age 4+,
   Games/Board, free pricing, worldwide, build **1**, review contact, App Privacy published
@@ -108,6 +110,16 @@ Real users will try online play first; don't push for these, ask whether feedbac
   editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
   iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.
 - Link the AdMob apps to the store listings after publishing.
+- **Android release ads (2026-11-14):** packaging OK (`scripts/verify-android-release-ads.sh`;
+  real ids, `AD_ID`, R8). Sideload → SDK starts, `Ad failed to load : 3` (NO_FILL). AdMob
+  Android app is **Requires review / Limited ad serving — Add store**; Play Console already
+  has `com.ardeman.krida` but the listing is not findable in AdMob search yet (not public).
+  AdMob UMP **Krida EU consent** published 2026-11-14 (both Krida apps,
+  privacy URL `https://krida.ardeman.com/privasi/`). **1.0.2 / versionCode 3** AAB uploaded to
+  Closed testing – Alpha and sent for review (2026-11-14; quick checks then Google review).
+  AdMob **Apps to confirm** for `com.ardeman.krida` still blocked on **Link to Google Play**
+  (listing not findable while closed review is pending). Retry after closed **1.0.2** is live.
+  AAB on Desktop: `~/Desktop/krida-1.0.2-release.aab`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 

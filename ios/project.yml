@@ -31,8 +31,8 @@ targets:
         PRODUCT_NAME: Krida
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0.2"
+        CURRENT_PROJECT_VERSION: "3"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "5.0"
         # Kotlin Multiplatform "Shared" framework built by the pre-build script below.
@@ -60,15 +60,14 @@ targets:
         CFBundleDisplayName: Krida
         UILaunchScreen:
           UIColorName: Backdrop
-        # Portrait too: on an unfolded Duo / iPad held upright, landscape-only caused the
-        # system to letterbox the app in black bars. LandscapeStage turns the layout itself.
+        # iPhone stays landscape-only. Portrait on the phone lets the orientation lock trap
+        # the window upright while the user holds it sideways, so LandscapeStage's quarter
+        # turn looks broken. iPad / unfolded Duo still declare portrait below; LandscapeStage
+        # turns that layout itself (no system letterbox).
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationPortraitUpsideDown
-        # Let foldables and Stage Manager hand a real portrait window (not a letterboxed
-        # landscape strip). Deprecated as a lock since iOS 26; false keeps full bleed.
+        # Let Stage Manager / foldables hand a real window. Deprecated as a lock since iOS 26.
         UIRequiresFullScreen: false
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft

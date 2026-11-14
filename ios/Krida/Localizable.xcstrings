@@ -2783,7 +2783,7 @@
         "id": {
           "stringUnit": {
             "state": "translated",
-            "value": "Room %@ · host %@"
+            "value": "Room %1$@ · host %2$@"
           }
         }
       }
@@ -5434,7 +5434,23 @@
         "en": {
           "stringUnit": {
             "state": "translated",
+            "value": "Battleship"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
             "value": "Perang kapal"
+          }
+        }
+      }
+    },
+    "Battleship": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battleship"
           }
         },
         "id": {

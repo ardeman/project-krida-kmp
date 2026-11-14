@@ -84,8 +84,9 @@ object UlarTanggaBoard {
 
     /**
      * Boxes around everything drawn, each as its eight corners (x, y, z): the board with its
-     * frame, and the start pad, both up to a pawn's height. Platforms fit the camera to them,
-     * each box on its own, so the pad may tuck under a HUD box beside the board's near corner.
+     * frame first, then the start pad, both up to a pawn's height. Platforms size the room to
+     * the board (like ludo) and only require that hull to clear the HUD; the pad may tuck under
+     * the left tiles beside the board's near corner.
      */
     fun bounds(): List<List<FloatArray>> {
         val e = HALF + RIM

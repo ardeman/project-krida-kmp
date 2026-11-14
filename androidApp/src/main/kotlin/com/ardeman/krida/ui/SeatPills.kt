@@ -31,9 +31,9 @@ import com.ardeman.krida.R
 import com.ardeman.krida.account.AvatarBadge
 
 /**
- * The player indicator of two-player games (congklak, perang kapal, gaple with 2 seats): the
- * opponent in a pill above the board, this device's player in a larger pill below it. Games
- * with 3–4 seats use the left-column tiles instead (ular tangga, ludo, gaple).
+ * The player indicator of congklak (2 seats): the opponent in a pill above the board, this
+ * device's player in a larger pill below it. Ular tangga, ludo, gaple and perang kapal use
+ * left-column tiles instead.
  */
 class PillSeat(val name: String, val avatar: String?, val bot: Boolean)
 

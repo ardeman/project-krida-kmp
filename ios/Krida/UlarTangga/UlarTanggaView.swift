@@ -87,15 +87,6 @@ final class UlarTanggaGameModel: ObservableObject {
         scene.dieSpot = (CGPoint(x: dieSpot.midX, y: dieSpot.midY), dieSpot.width * 0.45)
     }
 
-    /// Ease in on the board centre while the die flies.
-    private func watchDie() {
-        let land = board.dieLanding
-        scene.watch([
-            SIMD3(land.get(index: 0), board.TOP, land.get(index: 1)),
-            SIMD3(land.get(index: 2), board.TOP, land.get(index: 3)),
-        ])
-    }
-
     func updateReady() { scene.dieReady = ready }
 
     private func spot(_ s: UlarTanggaState, _ seat: Int) -> SIMD3<Float> {
@@ -267,8 +258,6 @@ final class UlarTanggaGameModel: ObservableObject {
         afterReadyChange()
         lifetime.launch("animation") { [self] in
             defer {
-                // Always ease back out after a throw or hop, even if cancelled mid-move.
-                scene.watch(nil)
                 animating = false
                 if lifetime.active { drain() }
             }
@@ -277,14 +266,12 @@ final class UlarTanggaGameModel: ObservableObject {
             if let offThrow, let thrower = offThrow.first?.intValue, let value = offThrow.second?.intValue {
                 // A dice-off throw: the die lands on the throw, which shows on the seat's tile.
                 let origin = table.isLocal(thrower) ? nil : playerOrigins[thrower]
-                // Zoom only while a seat on this phone throws.
-                if table.isLocal(thrower) { watchDie() }
                 let seconds = scene.throwDie(value, toss: toss(for: thrower), origin: origin, seat: thrower)
                 try await Task.sleep(for: .seconds(Double(seconds) + 0.15))
+                sounds.sayDie(value)
                 state = next
                 try await Task.sleep(for: .seconds(0.45))
                 recallDie(for: next)
-                scene.watch(nil)
                 if !next.opening {
                     // The order is set: show every throw a moment, then the tiles line up in order.
                     offHold = true
@@ -294,15 +281,12 @@ final class UlarTanggaGameModel: ObservableObject {
                 }
             } else if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
-                let local = table.isLocal(seat)
-                // Zoom only while a seat on this phone throws and moves.
-                if local { watchDie() }
                 let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                 try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
+                sounds.sayDie(roll)
                 let play = game.play(state: state, seat: Int32(seat), roll: Int32(roll))
                 for square in play.steps {
                     let to = UlarTanggaScene.vec(board.pieceSpot(square: square.int32Value, seat: Int32(seat), shared: false))
-                    if local { scene.watch([to]) }
                     scene.move(seat, [to], seconds: Float(Self.hop * 0.9), hop: 0.7)
                     sounds.play(.step)
                     try await Task.sleep(for: .seconds(Self.hop))
@@ -315,15 +299,17 @@ final class UlarTanggaGameModel: ObservableObject {
                     let seconds = Self.length(path) / Self.jumpUnitsPerSecond + 0.2
                     sounds.play(ladder ? .store : .capture)
                     sounds.say(ladder ? .ladder : .snake)
-                    if local { scene.watch(path) }
                     scene.move(seat, Array(path.dropFirst()), seconds: seconds)
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.08))
                 }
                 for s in 0..<next.positions.count { scene.move(s, [spot(next, s)], seconds: Float(Self.settle)) }
                 try await Task.sleep(for: .seconds(Self.settle))
                 recallDie(for: next)
-                scene.watch(nil)
                 try await Task.sleep(for: .seconds(0.28))
+                // Let "Ular!" / "Tangga!" finish before "Lempar lagi" cuts in.
+                if play.jumpTo != nil, play.state.turn == play.state.lastSeat?.int32Value {
+                    try await Task.sleep(for: .seconds(0.5))
+                }
                 state = next
                 let last = game.LAST
                 announce(play.state, reached: landed == last || play.jumpTo?.int32Value == last)
@@ -355,7 +341,10 @@ final class UlarTanggaGameModel: ObservableObject {
             if me != nil { sounds.say(won ? .win : .lose) }
         } else if reached {
             sounds.play(.win)
-        } else if after.turn != after.lastSeat?.int32Value {
+        } else if after.turn == after.lastSeat?.int32Value {
+            // Same seat again (a six with "roll again"): same line as ludo.
+            if table.isLocal(Int(after.turn)) { sounds.say(.rollAgain) }
+        } else {
             announceTurn(Int(after.turn))
         }
     }
@@ -683,8 +672,7 @@ private struct UlarTanggaBoardView: View {
             .onEnded { _ in model.releaseDie(completed: true) }
     }
 
-    /// A seat as a square tile: its square (or finishing place, or dice-off throw) inside a
-    /// circle in its color, the name below.
+    /// A seat as a square tile: avatar (or bot) large, square / finish / dice-off in the corner.
     private func tile(_ seat: Int, on: Bool, roll: Int?, out: Bool) -> some View {
         let st = model.state
         let place = st.finishOrder.firstIndex { $0.intValue == seat }
@@ -695,28 +683,42 @@ private struct UlarTanggaBoardView: View {
         let light = c.get(index: 0) * 0.3 + c.get(index: 1) * 0.59 + c.get(index: 2) * 0.11 > 0.6
         let start = place == nil && square == 0 && roll == nil
         let text: String = if let roll { "\(roll)" } else if let place { "#\(place + 1)" } else if start { String(localized: "Start", bundle: .app) } else { "\(square)" }
+        let bot = table.botSeats.contains(seat)
+        let avatar = bot ? nil : table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 14 * s)
         return VStack(spacing: 3 * s) {
             ZStack(alignment: .bottomTrailing) {
-                Text(text)
-                    .font(Theme.font((start ? 9 : 14) * s, .black))
-                    .foregroundStyle(light ? Theme.inkOnLight : .white)
-                    .lineLimit(1)
-                    .frame(width: 30 * s, height: 30 * s)
-                    .background(pawnColor(color), in: Circle())
-                    .padding(2 * s)
-                    .background(.white, in: Circle())
-                if table.botSeats.contains(seat) {
-                    Image(systemName: "desktopcomputer")
-                        .font(.system(size: 8 * s, weight: .bold))
-                        .foregroundStyle(Theme.ink)
-                        .frame(width: 16 * s, height: 16 * s)
-                        .background(Theme.surface, in: Circle())
-                        .overlay(Circle().stroke(Theme.line, lineWidth: 1))
-                } else if let avatar = table.players.avatar(of: seat) {
-                    // Multi-device players with an account show their avatar in the same corner.
-                    AvatarBadge(avatar: avatar, size: 18)
-                        .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                if avatar != nil || bot {
+                    if let avatar {
+                        AvatarBadge(avatar: avatar, size: 34)
+                            .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                    } else {
+                        Image(systemName: "desktopcomputer")
+                            .font(.system(size: 16 * s, weight: .semibold))
+                            .foregroundStyle(Theme.ink)
+                            .frame(width: 30 * s, height: 30 * s)
+                            .background(Theme.track, in: Circle())
+                            .padding(2 * s)
+                            .background(.white, in: Circle())
+                    }
+                    Text(text)
+                        .font(Theme.font((start ? 7 : 10) * s, .black))
+                        .foregroundStyle(light ? Theme.inkOnLight : .white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 17 * s, height: 17 * s)
+                        .background(pawnColor(color), in: Circle())
+                        .padding(1.5 * s)
+                        .background(.white, in: Circle())
+                } else {
+                    Text(text)
+                        .font(Theme.font((start ? 9 : 14) * s, .black))
+                        .foregroundStyle(light ? Theme.inkOnLight : .white)
+                        .lineLimit(1)
+                        .frame(width: 30 * s, height: 30 * s)
+                        .background(pawnColor(color), in: Circle())
+                        .padding(2 * s)
+                        .background(.white, in: Circle())
                 }
             }
             Text(displayName(seat))

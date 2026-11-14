@@ -60,10 +60,17 @@ Same result card: winner / loser, **To menu** and **Play again** (host only in a
 - Ships are voxel models (carrier with flight deck, battleship, cruiser, submarine,
   destroyer), built in `PerangKapalBoard.shipParts`; the tray draws the same boxes top-down.
 - No Rotate button: a tap on a placed ship turns it around its middle.
-- In battle the opponent's grid is large (it fills the space between the HUD columns) and
-  your own small (about a third of the size, bottom left, under the player tiles).
+- While placing, a gold cell ring follows the finger on the ocean so a mistap next to a
+  ship (thinking “rotate does nothing”) is obvious.
+- Board fit matches ludo: fills the room and dodges discrete HUD boxes (not a fixed
+  strip between full-height columns). Left 136 / right 148 like ludo; tray and fleet
+  sit in the right column with the status line under them.
+- In battle the radar is the large play grid; your ocean is small (about a third) and
+  may sit under the left player tiles.
 - Battle status in the right column: **Enemy fleet** and **Your fleet**, each with the
   ships left (e.g. 3/5) and the five ships drawn small, sunk ones faded and struck out.
+- Battle audio: miss / hit / sunk SFX + VO (Meleset! / Kena! / Kapal tenggelam!), then
+  your/their turn; win/lose at the end. Placement still has the “drag ships” line.
 
 ## Out of scope for v1
 

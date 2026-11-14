@@ -1,0 +1,61 @@
+---
+import Base from "../layouts/Base.astro";
+import Wordmark from "../components/Wordmark.astro";
+import LangSwitch from "../components/LangSwitch.astro";
+const home = import.meta.env.BASE_URL;
+const root = home.replace(/\/$/, "");
+const alternates = { id: "catatan/", en: "en/changelog/" };
+---
+
+<Base
+  title="Catatan perubahan — Krida"
+  description="Apa yang baru di setiap rilis Krida untuk Android dan iPhone."
+  lang="id"
+  alternates={alternates}
+>
+  <main>
+    <header class="nav">
+      <a class="logo" href={home}><Wordmark height={30} /></a>
+      <LangSwitch lang="id" alternates={alternates} />
+    </header>
+
+    <article class="doc">
+      <h1>Catatan perubahan</h1>
+      <p class="doc-date">Rilis terbaru dulu. Versi sama di Google Play dan App Store.</p>
+
+      <h2>1.0.2 <span class="doc-build">build 3</span></h2>
+      <p class="doc-date">14 November 2026</p>
+      <ul>
+        <li>Suara pengumuman lebih ceria (gaya arcade).</li>
+        <li>Zoom kamera dalam permainan dihapus (ludo, ular tangga, gaple).</li>
+        <li>Perang kapal: jeda lebih jelas antara miss / kena / giliran, terutama lawan komputer.</li>
+        <li>Iklan Android siap rilis Play (UMP + unit produksi).</li>
+      </ul>
+
+      <h2>1.0.1 <span class="doc-build">build 2</span></h2>
+      <p class="doc-date">14 November 2026</p>
+      <ul>
+        <li>Perbaikan bahasa Indonesia di Android (pemilih bahasa tidak lagi tertahan di Inggris).</li>
+        <li>Indikator pemain perang kapal disamakan dengan ular tangga / ludo.</li>
+        <li>Gaple: tombol Menu di kartu antar-ronde.</li>
+        <li>Congklak: kamera tetap pada seluruh papan saat menabur.</li>
+        <li>Nama Inggris perang kapal: Battleship.</li>
+      </ul>
+
+      <h2>1.0.0 <span class="doc-build">build 1</span></h2>
+      <p class="doc-date">November 2026</p>
+      <ul>
+        <li>Rilis pertama di App Store dan Google Play (uji tertutup).</li>
+        <li>Lima permainan: congklak, ular tangga, ludo, perang kapal, dan gaple.</li>
+        <li>Main gantian, lawan komputer, nearby (Bluetooth / Wi‑Fi), dan online.</li>
+      </ul>
+    </article>
+
+    <footer class="footer">
+      <a href={home}>Kembali ke Krida</a>
+      <span class="footer-copy"
+        >krida.ardeman.com · <a href={`${root}/privasi/`}>Privasi</a></span
+      >
+    </footer>
+  </main>
+</Base>

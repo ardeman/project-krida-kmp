@@ -36,6 +36,9 @@ import java.util.Locale
  * Android 13+ keeps the choice in the system per-app language setting ([LocaleManager]), so
  * the in-app picker and Settings stay in sync. Older versions store it here and apply it in
  * the activity's attachBaseContext via [wrap].
+ *
+ * Both languages ship in the base APK (`bundle.language.enableSplit = false`); a language
+ * split would omit Indonesian on English devices and the picker would appear stuck on EN.
  */
 object Language {
     enum class Lang(val tag: String) { ID("id"), EN("en") }

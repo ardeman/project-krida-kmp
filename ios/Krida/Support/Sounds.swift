@@ -13,6 +13,7 @@ final class Sounds: ObservableObject {
         case sow = "sfx_sow", store = "sfx_store", capture = "sfx_capture", turn = "sfx_turn"
         case win = "sfx_win", lose = "sfx_lose", tap = "sfx_tap"
         case die = "sfx_die", step = "sfx_step"
+        case miss = "sfx_miss", hit = "sfx_hit", sunk = "sfx_sunk"
     }
 
     enum Line: String, CaseIterable {
@@ -21,6 +22,9 @@ final class Sounds: ObservableObject {
         case pick = "vo_pick", rollAgain = "vo_roll_again", captured = "vo_captured", home = "vo_home"
         case ladder = "vo_ladder", snake = "vo_snake", pass = "vo_pass"
         case diceOff = "vo_dice_off", placeShips = "vo_place_ships"
+        case die1 = "vo_die_1", die2 = "vo_die_2", die3 = "vo_die_3"
+        case die4 = "vo_die_4", die5 = "vo_die_5", die6 = "vo_die_6"
+        case miss = "vo_miss", hit = "vo_hit", sunk = "vo_sunk"
     }
 
     @AppStorage("soundOn") var soundOn = true {
@@ -61,7 +65,10 @@ final class Sounds: ObservableObject {
     }
 
     /// Seed clicks repeat many times a move, so they sit under the voice and the music.
-    private static let volume: [Effect: Float] = [.sow: 0.45, .store: 0.6, .tap: 0.4, .die: 0.6, .step: 0.45]
+    private static let volume: [Effect: Float] = [
+        .sow: 0.45, .store: 0.6, .tap: 0.4, .die: 0.6, .step: 0.45,
+        .miss: 0.7, .hit: 0.85, .sunk: 1,
+    ]
 
     func play(_ effect: Effect) {
         guard soundOn, let pool = effects[effect], let player = pool.first(where: { !$0.isPlaying }) ?? pool.first else { return }
@@ -85,6 +92,21 @@ final class Sounds: ObservableObject {
         (Array(lines.values) + Array(linesEn.values)).filter(\.isPlaying).forEach { $0.stop() }
         player.currentTime = 0
         player.play()
+    }
+
+    /// Speak the face that just landed (1…6) on ular tangga / ludo.
+    func sayDie(_ value: Int) {
+        let line: Line
+        switch value {
+        case 1: line = .die1
+        case 2: line = .die2
+        case 3: line = .die3
+        case 4: line = .die4
+        case 5: line = .die5
+        case 6: line = .die6
+        default: return
+        }
+        say(line)
     }
 
     /// Music plays only while the app is in the foreground.

@@ -159,9 +159,11 @@ final class UlarTanggaScene {
             let hulls = board.bounds().map { part in Self.convexHull(part.map { project(Self.vec($0), tanV: base, size: size) }) }
             func place(_ k: CGFloat) -> CGPoint? {
                 let shapes = hulls.map { hull in hull.map { CGPoint(x: c.x + ($0.x - c.x) * k, y: c.y + ($0.y - c.y) * k) } }
-                let all = shapes.flatMap { $0 }
-                let x0 = all.map(\.x).min()!, x1 = all.map(\.x).max()!
-                let y0 = all.map(\.y).min()!, y1 = all.map(\.y).max()!
+                // Room size follows the main board only (like ludo). The start pad may tuck
+                // under the left HUD; counting it in the room AABB shrank the board.
+                guard let boardShape = shapes.first else { return nil }
+                let x0 = boardShape.map(\.x).min()!, x1 = boardShape.map(\.x).max()!
+                let y0 = boardShape.map(\.y).min()!, y1 = boardShape.map(\.y).max()!
                 let loX = room.minX - x0, hiX = room.maxX - x1
                 let loY = room.minY - y0, hiY = room.maxY - y1
                 guard loX <= hiX, loY <= hiY else { return nil }
@@ -174,7 +176,8 @@ final class UlarTanggaScene {
                                         y: loY + (hiY - loY) * CGFloat(j) / CGFloat(Self.fitSteps))
                         let distance = (d.x - mid.x) * (d.x - mid.x) + (d.y - mid.y) * (d.y - mid.y)
                         guard distance < bestDistance else { continue }
-                        if obstacles.contains(where: { box in shapes.contains { Self.overlaps($0, d, box) } }) { continue }
+                        // Only the main board must clear the HUD; the start pad may sit under it.
+                        if obstacles.contains(where: { Self.overlaps(boardShape, d, $0) }) { continue }
                         best = d
                         bestDistance = distance
                     }

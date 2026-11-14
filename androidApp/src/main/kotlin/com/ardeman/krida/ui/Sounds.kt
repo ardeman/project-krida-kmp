@@ -34,6 +34,10 @@ object Sounds {
         // Dice games: the die's clack on each bounce, and a pawn's softer tok on each square.
         Die(R.raw.sfx_die, 0.6f),
         Step(R.raw.sfx_step, 0.45f),
+        // Perang kapal: peg in water, peg on a ship, ship going under.
+        Miss(R.raw.sfx_miss, 0.7f),
+        Hit(R.raw.sfx_hit, 0.85f),
+        Sunk(R.raw.sfx_sunk, 1f),
     }
 
     /** Each line in Indonesian and in English; [english] picks which one is spoken. */
@@ -53,6 +57,15 @@ object Sounds {
         Pass(R.raw.vo_pass, R.raw.vo_pass_en),
         DiceOff(R.raw.vo_dice_off, R.raw.vo_dice_off_en),
         PlaceShips(R.raw.vo_place_ships, R.raw.vo_place_ships_en),
+        Die1(R.raw.vo_die_1, R.raw.vo_die_1_en),
+        Die2(R.raw.vo_die_2, R.raw.vo_die_2_en),
+        Die3(R.raw.vo_die_3, R.raw.vo_die_3_en),
+        Die4(R.raw.vo_die_4, R.raw.vo_die_4_en),
+        Die5(R.raw.vo_die_5, R.raw.vo_die_5_en),
+        Die6(R.raw.vo_die_6, R.raw.vo_die_6_en),
+        Miss(R.raw.vo_miss, R.raw.vo_miss_en),
+        Hit(R.raw.vo_hit, R.raw.vo_hit_en),
+        Sunk(R.raw.vo_sunk, R.raw.vo_sunk_en),
     }
 
     private const val PREFS = "sounds"
@@ -114,6 +127,21 @@ object Sounds {
         val id = (if (english) idsEn[line] else ids[line]) ?: return
         if (lineStream != 0) pool.stop(lineStream)
         lineStream = pool.play(id, 1f, 1f, 2, 0, 1f)
+    }
+
+    /** Speak the face that just landed (1…6) on ular tangga / ludo. */
+    fun sayDie(value: Int) {
+        say(
+            when (value) {
+                1 -> Line.Die1
+                2 -> Line.Die2
+                3 -> Line.Die3
+                4 -> Line.Die4
+                5 -> Line.Die5
+                6 -> Line.Die6
+                else -> return
+            },
+        )
     }
 
     /** Stop board effects and voice on exit; menu music and tap feedback continue. */

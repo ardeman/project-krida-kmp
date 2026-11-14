@@ -91,7 +91,7 @@
     <!-- Ular tangga -->
     <string name="ular_title">Ular tangga</string>
     <string name="ular_roll">Lempar</string>
-    <string name="ular_start">Start</string>
+    <string name="ular_start">Mulai</string>
     <string name="ular_your_turn">Giliranmu · lempar dadu</string>
     <string name="ular_turn_of">Giliran %1$s</string>
     <string name="ular_six_again">Dapat 6 · lempar lagi</string>

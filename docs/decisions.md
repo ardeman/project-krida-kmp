@@ -60,6 +60,11 @@ in the same commit as the code.
   "seeds in hand" count while sowing.
 - Seeds come in two colors, one per side: cream seeds start in seat 0's holes, tan in seat
   1's (owner, 2026-11-12). They keep their color as they are sown.
+- **No sow-path camera zoom** (owner, 2026-11-14): the board stays on the whole-board view
+  while seeds are sown (no ease in/out onto the path).
+- **No gameplay camera zoom** (owner, 2026-11-14): ludo, ular tangga and gaple stay on the
+  whole-board / whole-table view (no ease in/out onto the die, mover, pick rings or open
+  ends). Menu card previews may still frame a tight still.
 - Deferred, each its own task: multiple rounds with burnt (hangus) holes (probably a protocol
   bump) and the simultaneous first move.
 
@@ -191,6 +196,10 @@ in the same commit as the code.
 
 - Fourth game (2026-11-12). Classic Battleship; game id `perang_kapal`. Mockup approved
   ([mockups/perang-kapal.md](mockups/perang-kapal.md)).
+- **English name (owner, 2026-11-14):** show **Battleship** in English; Indonesian stays
+  **Perang kapal** (same pattern as ular tangga → Snakes & ladders).
+- **Player HUD (owner, 2026-11-14):** left-column tiles like ular tangga / ludo / gaple, not
+  congklak pills.
 - **2 seats only.** This phone is person vs computer, or two people passing the phone behind
   a "Pass the phone to …" cover (owner, 2026-11-12; first decided as vs computer only).
   Nearby / Online allow person / computer seats like the other 2-player games.
@@ -236,12 +245,12 @@ in the same commit as the code.
   seats; the host draws for a stuck seat automatically, no draw button. Off keeps the
   traditional no-draw rule.
 - **Player HUD (owner, 2026-11-13):** gaple uses ular tangga / ludo left-column tiles for
-  every seat count (2, 3 or 4), two a row — not the congklak / perang kapal pills. Same
-  rule in `docs/design.md`.
+  every seat count (2, 3 or 4), two a row — not congklak pills. Same rule in
+  `docs/design.md`. Perang kapal also uses those tiles (owner, 2026-11-14).
 - **End rings after pick (owner, 2026-11-13):** board end rings stay hidden on your turn
   until you tap a tile. One legal end → plays there immediately; both → only those two
-  rings light (camera zooms); tap a ring to place. Avoids showing both empty ends before
-  a pick so players don't tap the wrong side.
+  rings light; tap a ring to place. Avoids showing both empty ends before a pick so
+  players don't tap the wrong side. No camera zoom onto the ends (owner, 2026-11-14).
 - **Ad between rounds (owner, 2026-11-12):** against computers only, the next round may open
   with the shared frequency-capped interstitial (`Ads.afterGame`); none in rooms, none after
   "Remove ads".
@@ -283,7 +292,9 @@ in the same commit as the code.
 - Store listing text and privacy answers live in [store.md](store.md).
 - **Privacy link in the app (owner, 2026-11-13):** the menu always has a "Privacy policy"
   control that opens the site page in the app language (`/privasi/` or `/en/privacy/`).
-  No in-app terms, about, or changelog pages yet.
+  No in-app terms, about, or changelog pages yet. Public release notes live on the web
+  (`/catatan/`, `/en/changelog/`), with the source list in [changelog.md](changelog.md);
+  store “What’s New” paste blocks stay in [store.md](store.md).
 - **First store publish path (owner, 2026-11-13):** App Store — upload a build and submit
   that version for **production** App Review (no TestFlight tester track as the goal).
   Play — **closed testing** first (required before production), then production later.

@@ -65,7 +65,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Part | Where |
 |---|---|
 | Online relay (Cloudflare Worker, Durable Object per room, matchmaker, accounts in D1) | `relay/src/` |
-| Website and privacy page | `web/src/` |
+| Website (home, privacy, changelog) | `web/src/` (`privasi`/`en/privacy`, `catatan`/`en/changelog`) |
 | Brand generator | `scripts/brand.swift` → outputs listed in [brand.md](brand.md) |
 | Device install | `scripts/install-android.sh`, `scripts/install-ios.sh` (see [install.md](install.md)) |
 | Commit-message hook | `scripts/git-hooks/commit-msg` |

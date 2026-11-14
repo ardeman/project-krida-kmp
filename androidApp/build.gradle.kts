@@ -21,8 +21,8 @@ android {
         applicationId = "com.ardeman.krida"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -48,10 +48,12 @@ android {
     }
 
     // Ship as an App Bundle: Play delivers only the device's ABI and density.
+    // Keep both languages in the base APK. Language splits leave Indonesian off English
+    // devices until Play downloads it; the in-app picker then falls back to English.
     bundle {
         abi { enableSplit = true }
         density { enableSplit = true }
-        language { enableSplit = true }
+        language { enableSplit = false }
     }
 
     compileOptions {

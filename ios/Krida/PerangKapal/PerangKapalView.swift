@@ -45,8 +45,11 @@ final class PerangKapalGameModel: ObservableObject {
     /// taps the autopilot button in the timer slot.
     @Published private(set) var autoSeats = Set<Int>()
 
-    private static let botFirst: Double = 0.32
-    private static let botNext: Double = 0.26
+    /// Placement stays snappy; battle waits for shot VO to finish.
+    private static let botPlaceFirst: Double = 0.32
+    private static let botPlaceNext: Double = 0.26
+    private static let botBattleFirst: Double = 1.6
+    private static let botBattleNext: Double = 1.4
     /// How long the result of a shot stays up before the phone is passed on.
     private static let passPause: Double = 1.5
     /// A finger that moved less than this tapped.
@@ -59,7 +62,9 @@ final class PerangKapalGameModel: ObservableObject {
         scene.onViewFrame = { [weak self] frame in self?.viewFrame = frame }
         table.onUpdate = { [weak self] update in
             guard let self, self.lifetime.active else { return }
+            let before = self.state
             self.show(update.state)
+            if update.fresh { self.announce(before: before, after: update.state) }
         }
         show(table.latest)
     }
@@ -105,6 +110,72 @@ final class PerangKapalGameModel: ObservableObject {
         syncPlaceTimer()
         syncFireTimer()
         scheduleBot()
+    }
+
+    /// Voice for whose turn it is. Pass-and-play gets the chime only. A computer's turn
+    /// stays quiet — the next shot result (then "your turn") carries the beat without
+    /// stacking "opponent" on top of miss/hit.
+    private func announceTurn(_ seat: Int) {
+        if let me = table.mySeat {
+            if seat == me {
+                sounds.say(.yourTurn)
+            } else if !table.botSeats.contains(seat) {
+                sounds.say(.theirTurn)
+            }
+        } else {
+            sounds.play(.turn)
+        }
+    }
+
+    /// After a snapshot: shot SFX, then result VO, then whose turn; or the result when the
+    /// game ends. Lines are spaced so miss/hit and turn don't talk over each other.
+    private func announce(before: PerangKapalState, after: PerangKapalState) {
+        let me = table.mySeat
+        let beforeShots = before.shots.reduce(0) { $0 + $1.count }
+        let afterShots = after.shots.reduce(0) { $0 + $1.count }
+        let shot = !after.placing && after.lastHit != nil && (
+            after.lastCell?.intValue != before.lastCell?.intValue ||
+            after.lastHit?.boolValue != before.lastHit?.boolValue ||
+            after.lastSunk?.intValue != before.lastSunk?.intValue ||
+            afterShots > beforeShots
+        )
+        if after.finished && !before.finished {
+            let won = me == nil || after.winner?.intValue == me
+            sounds.play(won ? .win : .lose)
+            lifetime.launch("announce") { [self] in
+                try await Task.sleep(for: .seconds(0.4))
+                if me != nil { sounds.say(won ? .win : .lose) }
+            }
+            return
+        }
+        if shot {
+            lifetime.launch("announce") { [self] in
+                if after.lastSunk != nil {
+                    sounds.play(.sunk)
+                    try await Task.sleep(for: .seconds(0.45))
+                    sounds.say(.sunk)
+                    try await Task.sleep(for: .seconds(1.45))
+                } else if after.lastHit?.boolValue == true {
+                    sounds.play(.hit)
+                    try await Task.sleep(for: .seconds(0.35))
+                    sounds.say(.hit)
+                    try await Task.sleep(for: .seconds(0.9))
+                } else {
+                    sounds.play(.miss)
+                    try await Task.sleep(for: .seconds(0.35))
+                    sounds.say(.miss)
+                    try await Task.sleep(for: .seconds(1.2))
+                }
+                if !after.finished {
+                    try await Task.sleep(for: .seconds(0.25))
+                    announceTurn(Int(after.turn))
+                }
+            }
+            return
+        }
+        if before.placing && !after.placing && !after.finished {
+            announceTurn(Int(after.turn))
+        }
     }
 
     // MARK: Placement timer
@@ -222,16 +293,18 @@ final class PerangKapalGameModel: ObservableObject {
     // MARK: Computers
 
     /// Computers place and fire a moment after each change, one step at a time.
+    /// Battle waits for shot VO; placement stays snappy.
     func scheduleBot() {
         guard lifetime.active, !state.finished else { return lifetime.cancel("bot") }
         lifetime.launch("bot") { [self] in
             while loading { try await Task.sleep(for: .milliseconds(100)) }
-            try await Task.sleep(for: .seconds(Self.botFirst))
+            let battle = !state.placing
+            try await Task.sleep(for: .seconds(battle ? Self.botBattleFirst : Self.botPlaceFirst))
             var steps = 0
             while lifetime.active, botToMove, steps < 40 {
                 steps += 1
                 table.stepBot()
-                try await Task.sleep(for: .seconds(Self.botNext))
+                try await Task.sleep(for: .seconds(state.placing ? Self.botPlaceNext : Self.botBattleNext))
             }
         }
     }
@@ -241,8 +314,8 @@ final class PerangKapalGameModel: ObservableObject {
         return game.actingSeats(state: table.latest).contains { bots.contains($0.intValue) }
     }
 
-    func layout(size: CGSize, free: CGRect, left: CGFloat) {
-        viewFrame = scene.layout(size: size, free: free, left: left)
+    func layout(size: CGSize, room: CGRect, obstacles: [CGRect]) {
+        viewFrame = scene.layout(size: size, room: room, obstacles: obstacles)
     }
 
     // MARK: Placing and firing
@@ -272,8 +345,12 @@ final class PerangKapalGameModel: ObservableObject {
         selectedKind = (0..<Int(game.KINDS)).first { !placed.contains($0) }
     }
 
-    /// Finger on the board at `point`, down since `start`.
+    /// Finger on the board at `point`, down since `start`. The gold ring follows the cell
+    /// under the finger while placing so a mistap next to a ship is clear.
     func boardTouch(_ point: CGPoint, start: CGPoint) {
+        if canPlace {
+            scene.setHover(scene.pickCell(at: point, onRadar: false))
+        }
         guard canPlace else { return }
         if grab == nil {
             let under = scene.pickCell(at: start, onRadar: false).flatMap { ship(at: $0) }
@@ -286,6 +363,7 @@ final class PerangKapalGameModel: ObservableObject {
     }
 
     func boardRelease(start: CGPoint) {
+        scene.setHover(nil)
         let dragged = grab?.dragging == true
         grab = nil
         if dragged { endDrag() } else { tap(at: start) }
@@ -295,11 +373,14 @@ final class PerangKapalGameModel: ObservableObject {
     func trayTouch(_ kind: Int, at point: CGPoint, moved: CGFloat) {
         guard canPlace, dragCell != nil || ghost != nil || moved >= Self.slop else { return }
         selectedKind = kind
-        ghost = scene.pickCell(at: point, onRadar: false) == nil ? (kind, point) : nil
+        let cell = scene.pickCell(at: point, onRadar: false)
+        scene.setHover(cell)
+        ghost = cell == nil ? (kind, point) : nil
         drag(kind, to: point)
     }
 
     func trayRelease(_ kind: Int) {
+        scene.setHover(nil)
         if dragCell != nil || ghost != nil { endDrag() } else { select(kind) }
     }
 
@@ -524,6 +605,7 @@ private struct PerangKapalBoardView: View {
         .onDisappear { model.stop() }
         .onChange(of: boxes) { _, _ in relayout() }
         .onChange(of: size) { _, _ in relayout() }
+        .onChange(of: model.state.placing) { _, _ in relayout() }
         .onChange(of: loading) { _, now in model.loading = now }
         // A dropped guest handed to the computer may have to act right away.
         .onChange(of: table.botSeats) { _, _ in model.scheduleBot() }
@@ -537,20 +619,19 @@ private struct PerangKapalBoardView: View {
             .onEnded { model.boardRelease(start: $0.startLocation) }
     }
 
-    /// Points per board unit in the tray: the longest ship fills the column.
-    private var trayUnit: CGFloat { 152 * s / CGFloat(PerangKapalBoard.shared.shipLength(kind: 0)) }
+    /// Points per board unit in the tray: the longest ship fills the 148 pt column.
+    private var trayUnit: CGFloat { 132 * s / CGFloat(PerangKapalBoard.shared.shipLength(kind: 0)) }
 
-    /// The grids take the space between the top bar and the player pill, centred on the
-    /// screen and clear of the right column.
+    /// Ludo-style: board fills the room and dodges discrete HUD boxes. In battle the left
+    /// tiles are not obstacles so the mini ocean may sit under them.
     private func relayout() {
-        guard size.width > 0, let room = boxes["room"], let right = boxes["right"], right.width > 0 else { return }
+        guard size.width > 0, let room = boxes["room"], room.width > 0 else { return }
         let margin = 12 * s
-        let cx = size.width / 2
-        let half = min(cx - room.minX, right.minX - margin - cx)
-        let y0 = boxes["top"].map { $0.maxY + margin } ?? room.minY
-        let y1 = boxes["bottom"].map { $0.minY - margin } ?? room.maxY
-        guard half > 0, y1 > y0 else { return }
-        model.layout(size: size, free: CGRect(x: cx - half, y: y0, width: 2 * half, height: y1 - y0), left: room.minX)
+        let keys = model.state.placing
+            ? ["back", "players", "buttons", "emote", "tray", "status"]
+            : ["buttons", "emote", "fleet", "status"]
+        let obstacles = keys.compactMap { boxes[$0]?.insetBy(dx: -margin, dy: -margin) }
+        model.layout(size: size, room: room, obstacles: obstacles)
     }
 
     private func exit() {
@@ -566,11 +647,7 @@ private struct PerangKapalBoardView: View {
         table.mySeat == seat ? String(localized: "You", bundle: .app) : table.name(seat)
     }
 
-    private func pill(_ seat: Int) -> PillSeat {
-        PillSeat(name: displayName(seat), avatar: table.players.avatar(of: seat), bot: table.botSeats.contains(seat))
-    }
-
-    /// What the seat is doing, in its pill.
+    /// Short line under the name on a seat tile.
     private func seatStatus(_ seat: Int) -> String {
         let st = model.state
         let on = model.acting(seat)
@@ -581,10 +658,10 @@ private struct PerangKapalBoardView: View {
         }
         if !on { return String(localized: "waiting", bundle: .app) }
         if bot { return String(localized: "thinking…", bundle: .app) }
-        return table.isLocal(seat) ? String(localized: "Your turn · tap a radar cell", bundle: .app) : String(localized: "their turn", bundle: .app)
+        return table.isLocal(seat) ? String(localized: "Your turn", bundle: .app) : String(localized: "their turn", bundle: .app)
     }
 
-    /// Above your pill: what to do while placing, or how the last shot went.
+    /// Under the board: what to do while placing, how the last shot went, or whose turn it is.
     private var shotLine: String {
         let st = model.state
         if st.finished { return "" }
@@ -599,79 +676,90 @@ private struct PerangKapalBoardView: View {
             }
             return hit ? String(localized: "Hit!", bundle: .app) : String(localized: "Miss", bundle: .app)
         }
-        return ""
+        return model.canFire ? String(localized: "Your turn · tap a radar cell", bundle: .app) : ""
     }
 
-    /// Like congklak's: back, opponent, buttons on top; the fleets on the right; the last shot
-    /// and your pill at the bottom.
+    /// HUD like ludo: left tiles, right controls + tray/fleet; board fills the room around them.
     private var hud: some View {
         let near = model.viewer
         let far = 1 - model.viewer
-        return ZStack(alignment: .bottom) {
-            VStack(spacing: 8 * s) {
-                PillTopBar(gap: 8 * s) {
-                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
-                        .clearPunchHole(hole, .topLeading, already: 24 * s)
-                    OpponentPill(seat: pill(far), on: model.acting(far), detail: seatStatus(far), s: s)
-                    HStack(spacing: 8 * s) {
-                        SoundToggles()
-                        CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
+        return HStack(alignment: .top, spacing: 0) {
+            VStack(alignment: .leading, spacing: 8 * s) {
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    .clearPunchHole(hole, .topLeading, already: 24 * s)
+                    .modifier(hudBox("back"))
+                Spacer().frame(height: 4 * s)
+                HStack(alignment: .top, spacing: 8 * s) {
+                    ForEach(0..<2, id: \.self) { seat in
+                        VStack(spacing: 6 * s) {
+                            playerTile(seat, on: model.acting(seat))
+                            ZStack {
+                                Color.clear.frame(width: 36 * s, height: 36 * s)
+                                if !model.state.placing && !model.state.finished && table.isLocal(seat) {
+                                    let seatAuto = model.autoSeats.contains(seat)
+                                    TurnTimer(
+                                        seconds: seatAuto ? 0 : (seat == near && model.acting(seat) ? model.fireSeconds : 0),
+                                        total: model.fireTotal,
+                                        auto: seatAuto,
+                                        size: 36,
+                                        onResume: model.resumeManual
+                                    )
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                 }
-                .modifier(hudBox("top"))
-                VStack(spacing: 0) {
-                    EmoteHud(
-                        canEmote: table.canEmote,
-                        emotes: table.emotes,
-                        playerName: displayName,
-                        onSend: table.sendEmote,
-                        s: s
-                    )
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    Spacer(minLength: 0)
-                    if model.canPlace { tray }
-                    if !model.state.placing {
+                .modifier(hudBox("players"))
+                Spacer(minLength: 0)
+            }
+            .frame(width: 136 * s)
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 0) {
+                HStack(spacing: 8 * s) {
+                    SoundToggles()
+                    CircleIconButton(systemImage: "questionmark", label: "How to play") { showRules = true }
+                }
+                .modifier(hudBox("buttons"))
+                if table.canEmote { Spacer().frame(height: 8 * s) }
+                EmoteHud(
+                    canEmote: table.canEmote,
+                    emotes: table.emotes,
+                    playerName: displayName,
+                    onSend: table.sendEmote,
+                    s: s
+                )
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .modifier(hudBox("emote"))
+                Spacer(minLength: 0)
+                if model.canPlace {
+                    tray
+                        .modifier(hudBox("tray"))
+                }
+                if !model.state.placing {
+                    VStack(alignment: .trailing, spacing: 8 * s) {
                         fleetStatus("Enemy fleet", sunk: model.lost(far))
                         fleetStatus("Your fleet", sunk: model.lost(near))
-                            .padding(.top, 8 * s)
                     }
+                    .modifier(hudBox("fleet"))
                 }
-                .frame(width: 168 * s)
-                .frame(maxHeight: .infinity)
-                .modifier(hudBox("right"))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            }
-            VStack(spacing: 8 * s) {
+                Spacer().frame(height: 8 * s)
                 Group {
                     if let away = table.waiting {
                         CountdownNotice(text: away.text, seconds: away.seconds, total: Int(Krida.shared.HANDOFF_WAIT_MS / 1000), fontSize: 13)
                     } else if let notice = table.notice {
-                        Text(notice).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.error)
+                        Text(notice).font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.error)
                     } else {
                         Text(shotLine).font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted)
                     }
                 }
-                .lineLimit(1)
-                .frame(minHeight: 20 * s)
-                HStack(spacing: 10 * s) {
-                    PlayerPill(seat: pill(near), on: model.acting(near), status: seatStatus(near), s: s)
-                        .layoutPriority(0)
-                    // Fixed timer slot so the pill does not jump when the countdown / autopilot appears.
-                    if !model.state.placing && !model.state.finished && table.isLocal(near) {
-                        TurnTimer(
-                            seconds: model.fireSeconds,
-                            total: model.fireTotal,
-                            auto: model.autoSeats.contains(near),
-                            size: 40,
-                            onResume: model.resumeManual
-                        )
-                        .layoutPriority(1)
-                    }
-                }
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .modifier(hudBox("status"))
             }
-            .modifier(hudBox("bottom"))
-            // Clear of the right column on both sides, so the pill stays centred.
-            .padding(.horizontal, 176 * s)
+            .frame(width: 148 * s)
+            .frame(maxHeight: .infinity)
             .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
         }
         .modifier(hudBox("room"))
@@ -680,6 +768,71 @@ private struct PerangKapalBoardView: View {
         .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
         .padding(.vertical, 14 * s)
         .foregroundStyle(Theme.ink)
+    }
+
+    /// Seat tile: avatar large, ships left (or placed while setting up) in the corner.
+    private func playerTile(_ seat: Int, on: Bool) -> some View {
+        let st = model.state
+        let ships = st.placing
+            ? (st.fleets.indices.contains(seat) ? st.fleets[seat].count : 0)
+            : shipNames.count - model.lost(seat).count
+        let bot = table.botSeats.contains(seat)
+        let avatar = bot ? nil : table.players.avatar(of: seat)
+        let shape = RoundedRectangle(cornerRadius: 14 * s)
+        return VStack(spacing: 2 * s) {
+            ZStack(alignment: .bottomTrailing) {
+                if avatar != nil || bot {
+                    if let avatar {
+                        AvatarBadge(avatar: avatar, size: 34)
+                            .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                    } else {
+                        Image(systemName: "desktopcomputer")
+                            .font(.system(size: 16 * s, weight: .semibold))
+                            .foregroundStyle(Theme.ink)
+                            .frame(width: 30 * s, height: 30 * s)
+                            .background(Theme.track, in: Circle())
+                            .padding(2 * s)
+                            .background(.white, in: Circle())
+                    }
+                    Text(verbatim: "\(ships)")
+                        .font(Theme.font(10 * s, .black))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 17 * s, height: 17 * s)
+                        .background(seatColor(seat), in: Circle())
+                        .padding(1.5 * s)
+                        .background(.white, in: Circle())
+                } else {
+                    Text(verbatim: "\(ships)")
+                        .font(Theme.font(14 * s, .black))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .frame(width: 30 * s, height: 30 * s)
+                        .background(seatColor(seat), in: Circle())
+                        .padding(2 * s)
+                        .background(.white, in: Circle())
+                }
+            }
+            Text(displayName(seat))
+                .font(Theme.font(11 * s, .bold))
+                .foregroundStyle(on ? .white : Theme.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            Text(seatStatus(seat))
+                .font(Theme.font(10 * s, .semibold))
+                .foregroundStyle(on ? Color(hex: 0xFBE7D3) : Theme.muted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(4 * s)
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .background(on ? Theme.accent : Theme.surface, in: shape)
+        .overlay(shape.stroke(on ? .clear : Theme.line, lineWidth: 1.5))
+        .shadow(color: on ? Theme.gold.opacity(0.6) : .clear, radius: 6 * s)
+        .animation(.easeOut(duration: 0.2), value: on)
+        .accessibilityElement(children: .combine)
     }
 
     /// The five ships themselves: tap one then a cell, or drag it onto the ocean. Then Ready.

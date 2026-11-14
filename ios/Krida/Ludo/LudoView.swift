@@ -227,22 +227,14 @@ final class LudoGameModel: ObservableObject {
         _ = table.movePawn(seat: turn, pawn: pawn)
     }
 
-    /// Gold rings under legal tokens; zoom onto them; ease back out when pick ends.
-    func syncWatch() {
+    /// Gold rings under legal tokens.
+    func syncPickRings() {
         guard !animating else { return }
         if canPick, !legal.isEmpty {
-            let spots = legal.map { spot(state, turn, $0) }
-            scene.showPickRings(spots)
-            scene.watch(spots)
+            scene.showPickRings(legal.map { spot(state, turn, $0) })
         } else {
             scene.showPickRings([])
-            scene.watch(nil)
         }
-    }
-
-    /// Zoom onto the tokens the player may tap.
-    func watchLegal() {
-        syncWatch()
     }
 
     /// Pick the nearest legal token under `point` (screen / named space coords).
@@ -298,7 +290,7 @@ final class LudoGameModel: ObservableObject {
         updateReady()
         syncRollTimer()
         syncPickTimer()
-        syncWatch()
+        syncPickRings()
     }
 
     func restart() { if lifetime.active { table.restart() } }
@@ -336,14 +328,6 @@ final class LudoGameModel: ObservableObject {
         scene.recallDie(origin: table.isLocal(seat) ? nil : playerOrigins[seat])
     }
 
-    private func watchDie() {
-        let land = board.dieLanding
-        scene.watch([
-            SIMD3(land.get(index: 0), board.TOP, land.get(index: 1)),
-            SIMD3(land.get(index: 2), board.TOP, land.get(index: 3)),
-        ])
-    }
-
     private func drain() {
         guard lifetime.active, !animating else { return }
         guard !queue.isEmpty else { return idle() }
@@ -354,8 +338,6 @@ final class LudoGameModel: ObservableObject {
         afterReadyChange()
         lifetime.launch("animation") { [self] in
             defer {
-                // Always ease back out, even if the animation is cancelled mid-hop.
-                scene.watch(nil)
                 animating = false
                 if lifetime.active { drain() }
             }
@@ -364,16 +346,14 @@ final class LudoGameModel: ObservableObject {
             if update.fresh, let seat = next.lastSeat?.intValue, let roll = next.lastRoll?.intValue {
                 scene.showPickRings([])
                 let origin = table.isLocal(seat) ? nil : playerOrigins[seat]
-                // Zoom only while a seat on this phone throws and moves (pick zoom is already local-only).
-                let local = table.isLocal(seat)
                 // A pick after a multi-choice roll keeps lastRoll; only throw when this update is
                 // the roll itself (or an auto-move that applied the roll in one step).
                 let throwNow = before.roll == nil
                 if throwNow {
-                    if local { watchDie() }
                     let seconds = scene.throwDie(roll, toss: toss(for: seat), origin: origin, seat: seat)
                     // Small buffer so the last throw frame can mark landed before we hop (and recall).
                     try await Task.sleep(for: .seconds(Double(seconds) + 0.2))
+                    sounds.sayDie(roll)
                 } else {
                     _ = toss(for: seat)
                 }
@@ -384,10 +364,6 @@ final class LudoGameModel: ObservableObject {
                         LudoScene.vec(board.tokenAnchor(color: color, pawn: Int32(pawn), pos: pos.int32Value))
                     }
                     let path = Array(hops.dropLast()) + [spot(next, seat, pawn)]
-                    // Frame only the mover (start + hops). Capture yards used to pull the
-                    // camera across the board away from the piece that moves.
-                    let start = spot(before, seat, pawn)
-                    if local { scene.watch([start] + path) }
                     try await Task.sleep(for: .seconds(0.18))
                     scene.move(seat, pawn, path, seconds: Float(Double(path.count) * Self.hop), hop: 0.35)
                     // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
@@ -407,9 +383,7 @@ final class LudoGameModel: ObservableObject {
                     if home { sounds.say(.home) }
                     try await Task.sleep(for: .seconds(0.08))
                     for cap in next.lastCaptures {
-                        let fromSpot = spot(state, Int(cap.seat), Int(cap.pawn))
                         let back = spot(next, Int(cap.seat), Int(cap.pawn))
-                        if local { scene.watch([fromSpot, back]) }
                         scene.move(Int(cap.seat), Int(cap.pawn), [back], seconds: 0.35, hop: 0.5)
                     }
                     if !next.lastCaptures.isEmpty {
@@ -423,7 +397,6 @@ final class LudoGameModel: ObservableObject {
                 placeAll(next)
                 recallDie(for: next)
                 try await Task.sleep(for: .seconds(0.18))
-                scene.watch(nil)
                 try await Task.sleep(for: .seconds(0.28))
                 state = next
                 version += 1
@@ -553,12 +526,12 @@ private struct LudoBoardView: View {
         .onChange(of: size) { _, _ in relayout() }
         .onChange(of: model.canPick) { _, _ in
             model.syncPickTimer()
-            model.syncWatch()
+            model.syncPickRings()
             relayout()
         }
         .onChange(of: model.legal) { _, _ in
             model.syncPickTimer()
-            model.syncWatch()
+            model.syncPickRings()
         }
         .onChange(of: dieDown) { _, down in
             if !down { DispatchQueue.main.async { model.releaseDie(completed: false) } }

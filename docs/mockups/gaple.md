@@ -76,9 +76,9 @@ tiles, two a row — not the congklak / perang kapal pills.
   their table sides.
 - **Hand:** face up and upright. Tiles that fit are raised with a gold ring. Tap a tile:
   if it fits only one open end it plays there straight away; if it fits both, only those
-  two end rings light up (the camera zooms onto them; tap again to unpick, or tap a ring
-  to place). Rings stay hidden until a tile is picked. The opening tile of a round still
-  plays on the first tap. After a place (or unpick) the camera eases back out.
+  two end rings light up (tap again to unpick, or tap a ring to place). Rings stay hidden
+  until a tile is picked. The opening tile of a round still plays on the first tap. The
+  camera stays on the whole table.
 - **Turn timer:** 15 s (`Krida.PLAY_TURN_MS`, the same `CountdownRing` as the ludo die). At 0
   the phone plays `GapleGame.timeoutMove`: the heaviest fitting tile on the first end it fits.
   Passing needs no timer: the host skips a seat with no fitting tile by itself.
@@ -91,6 +91,7 @@ A card over the table: the headline ("Domino! You went out" / "Gaple! Nobody can
 one row per seat (or per team with partners) with pips left, points this round and total.
 The round winner's row is gold. **Next round** (host only in a room; guests see "Waiting for
 the host") with the same 15 s countdown; at 0 the host deals the next round by itself.
+**Menu** leaves the game (the card covers the HUD back button).
 
 ## Result
 

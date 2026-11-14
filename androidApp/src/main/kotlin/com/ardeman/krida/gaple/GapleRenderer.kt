@@ -187,7 +187,6 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         activeEnds = ends.toSet()
         pulseTime = 0f
         refreshRings()
-        if (activeEnds.isNotEmpty()) watchPicking(true)
     }
 
     private fun refreshRings() {

@@ -166,7 +166,9 @@ const alternates = { id: "privasi/", en: "en/privacy/" };
 
     <footer class="footer">
       <a href={home}>Kembali ke Krida</a>
-      <span class="footer-copy">krida.ardeman.com</span>
+      <span class="footer-copy"
+        >krida.ardeman.com · <a href={`${home.replace(/\/$/, "")}/catatan/`}>Catatan perubahan</a></span
+      >
     </footer>
   </main>
 </Base>

@@ -40,12 +40,9 @@ final class BoardScene {
     private var laidOutBounds: CGSize = .zero
     private var laidOutInsets: UIEdgeInsets = .zero
     private var baseFov: Float = 0
-    private var targetFov: Float = 0
-    private var currentLook = SIMD3<Float>.zero
-    private var targetLook = SIMD3<Float>.zero
     private var cameraEye = SIMD3<Float>.zero
-    private var camSettled = true
-    /// Notified when pit projections change after a camera ease.
+    private var lookAt = SIMD3<Float>.zero
+    /// Notified when pit projections change after a layout.
     var onPitsProjected: (([CGPoint]) -> Void)?
 
     init() {
@@ -88,14 +85,13 @@ final class BoardScene {
         updates = view.scene.subscribe(to: SceneEvents.Update.self) { [weak self] event in
             guard let self else { return }
             // SwiftUI can lay out before the view has its size on screen or its safe-area
-            // insets: then the zoom was set without the insets and every pit projected to
-            // (0, 0), stacking the counts in a corner and leaving no hole to tap. Redo the
-            // layout as soon as the view's own size or insets differ from what it used.
+            // insets: then every pit projected to (0, 0), stacking the counts in a corner
+            // and leaving no hole to tap. Redo the layout as soon as the view's own size or
+            // insets differ from what it used.
             if viewSize.width > 0, view.bounds.width > 0,
                view.bounds.size != laidOutBounds || view.safeAreaInsets != laidOutInsets {
                 layout(size: view.bounds.size)
             }
-            stepCamera(Float(event.deltaTime))
         }
     }
 
@@ -110,33 +106,8 @@ final class BoardScene {
         let eye = Self.floats(CongklakBoard.shared.cameraEye)
         let target = Self.floats(CongklakBoard.shared.cameraTarget)
         cameraEye = SIMD3(eye[0] * flip, eye[1], eye[2] * flip)
-        currentLook = SIMD3(target[0] * flip, target[1], target[2] * flip)
-        targetLook = currentLook
-        camera.look(at: currentLook, from: cameraEye, relativeTo: nil)
-    }
-
-    /**
-     * Gameplay: ease the camera onto `points` (a whole sow path), or back to the whole board
-     * when nil. Prefer one call per move — retargeting every pit feels dizzy at low FPS.
-     */
-    func watch(_ points: [SIMD3<Float>]?) {
-        guard viewSize.width > 0, baseFov > 0 else { return }
-        if points == nil, camSettled, abs(targetFov - baseFov) < 0.05 { return }
-        if let points, !points.isEmpty {
-            let pad: Float = 1.1
-            let x0 = points.map(\.x).min()! - pad, x1 = points.map(\.x).max()! + pad
-            let z0 = points.map(\.z).min()! - pad, z1 = points.map(\.z).max()! + pad
-            let y = points.map(\.y).reduce(0, +) / Float(points.count)
-            targetLook = SIMD3((x0 + x1) / 2, y, (z0 + z1) / 2)
-            // Soft zoom: a full sow path already spans much of the board.
-            targetFov = max(baseFov * 0.85, 18)
-        } else {
-            let flip: Float = viewSeat == 1 ? -1 : 1
-            let target = Self.floats(CongklakBoard.shared.cameraTarget)
-            targetLook = SIMD3(target[0] * flip, target[1], target[2] * flip)
-            targetFov = baseFov
-        }
-        camSettled = false
+        lookAt = SIMD3(target[0] * flip, target[1], target[2] * flip)
+        camera.look(at: lookAt, from: cameraEye, relativeTo: nil)
     }
 
     /// Call when the view size changes: keeps the board's width in frame and re-projects pits.
@@ -156,29 +127,9 @@ final class BoardScene {
         let tanHalf = tan(half) * Float(size.width / safeWidth)
         let aspect = Float(size.width / size.height)
         baseFov = 2 * atan(tanHalf / aspect) * 180 / .pi
-        if camSettled {
-            targetFov = baseFov
-            camera.camera.fieldOfViewInDegrees = baseFov
-        }
+        camera.camera.fieldOfViewInDegrees = baseFov
+        camera.look(at: lookAt, from: cameraEye, relativeTo: nil)
         projectPits()
-    }
-
-    private func stepCamera(_ dt: Float) {
-        guard !camSettled else { return }
-        let k = 1 - exp(-min(dt, Self.maxCameraDt) / Self.cameraTau)
-        currentLook += (targetLook - currentLook) * k
-        let fov = camera.camera.fieldOfViewInDegrees + (targetFov - camera.camera.fieldOfViewInDegrees) * k
-        camera.camera.fieldOfViewInDegrees = fov
-        camera.look(at: currentLook, from: cameraEye, relativeTo: nil)
-        projectPits()
-        let done = abs(targetFov - fov) < 0.05 && length(targetLook - currentLook) < 0.01
-        if done {
-            currentLook = targetLook
-            camera.camera.fieldOfViewInDegrees = targetFov
-            camera.look(at: currentLook, from: cameraEye, relativeTo: nil)
-            camSettled = true
-            projectPits()
-        }
     }
 
     private func projectPits() {
@@ -188,9 +139,6 @@ final class BoardScene {
         }
         onPitsProjected?(pitPoints)
     }
-
-    private static let cameraTau: Float = 0.5
-    private static let maxCameraDt: Float = 1 / 30
 
     /// Shows gold rings around exactly these holes.
     func showRings(_ pits: Set<Int>) {

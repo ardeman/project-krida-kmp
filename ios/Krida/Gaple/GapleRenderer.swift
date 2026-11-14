@@ -233,7 +233,6 @@ final class GapleRenderer {
         activeEnds = Set(ends)
         pulseTime = 0
         refreshRings()
-        if !activeEnds.isEmpty { watchPicking(true) }
     }
 
     private func refreshRings() {

@@ -387,7 +387,7 @@
     <string name="invite_card_detail">%1$s · room %2$s · %3$d of %4$d players</string>
     <string name="invite_not_now">Not now</string>
     <!-- Perang kapal -->
-    <string name="perang_kapal_title">Perang kapal</string>
+    <string name="perang_kapal_title">Battleship</string>
     <string name="perang_kapal_card_players">2 players</string>
     <string name="perang_kapal_card_tagline">Sink the fleet.</string>
     <string name="perang_kapal_player_lost">A player disconnected. The computer takes over after 15 seconds.</string>

@@ -69,7 +69,7 @@ struct PerangKapalPreview: View {
         board.focus = [PerangKapalBoard.shared.TOP, PerangKapalBoard.shared.TOP + PerangKapalBoard.shared.SHIP_H].flatMap { y in
             [SIMD3(-x, 0, -z), SIMD3(x, 0, -z), SIMD3(-x, 0, z), SIMD3(x, 0, z)].map { $0 + SIMD3(0, y, 0) }
         }
-        frame = board.layout(size: size, free: CGRect(origin: .zero, size: size), left: 0)
+        frame = board.layout(size: size, room: CGRect(origin: .zero, size: size))
         board.view.frame = CGRect(origin: .zero, size: frame.size)
         scene = board
         snapshot(board, size: size, tries: 4)

@@ -13,8 +13,7 @@ import java.nio.ByteBuffer
 import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.hypot
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.sqrt
 import kotlin.math.tan
 
 object PerangKapalGlb {
@@ -66,6 +65,8 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
 
     private var battle = false
     private var room: FloatArray? = null
+    /** Ocean cell under the finger while placing; null when none. Reuses the gold ring. */
+    private var hoverCell: Int? = null
     /** Pixel shift so the look-at lands in the free HUD box (Filament's matrix omits setShift). */
     private var shiftX = 0f
     private var shiftY = 0f
@@ -112,11 +113,36 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         placeShots(state.shots.getOrElse(foe) { emptyList() }, PerangKapalGame.occupied(mine), grid = 0)
         placeShots(state.shots.getOrElse(mySeat) { emptyList() }, PerangKapalGame.occupied(sunk), grid = 1)
         val last = state.lastCell.takeIf { battle && state.lastHit != null }
-        if (last == null) show(ring, false) else {
+        if (last != null) {
+            hoverCell = null
             setTransform(ring, at(if (state.lastSeat == mySeat) 1 else 0, last, 0f))
             show(ring, true)
+        } else {
+            applyHoverRing()
         }
         invalidate()
+    }
+
+    /**
+     * Gold ring on the ocean cell under the finger while placing, so a mistap next to a ship
+     * is obvious (tap a ship cell to turn it). Cleared when [cell] is null or in battle.
+     */
+    fun setHover(cell: Int?) {
+        val next = cell.takeUnless { battle }
+        if (hoverCell == next) return
+        hoverCell = next
+        applyHoverRing()
+        invalidate()
+    }
+
+    private fun applyHoverRing() {
+        val cell = hoverCell
+        if (battle || cell == null) {
+            show(ring, false)
+        } else {
+            setTransform(ring, at(0, cell, 0f))
+            show(ring, true)
+        }
     }
 
     /** The cell of the radar (in battle) or of the ocean (while placing) under a screen point. */
@@ -237,41 +263,62 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         camera.setShift(0.0, 0.0)
         camera.setProjection(base, aspect, 0.5, 80.0, Camera.Fov.VERTICAL)
 
-        // Fit the play grid into the free HUD box (iOS shifts the view the same way). Horizontally
-        // the free strip is centred on the screen; vertically the whole band between top and
-        // bottom HUD is used, with a camera shift so the look-at sits on the free mid-point.
-        // In battle that grid is the radar; the small ocean may reach under the left column.
-        // The menu preview has no HUD: its focus fills the whole view.
+        // Same idea as ludo / ular tangga: largest play grid in `room` that misses the HUD
+        // boxes. In battle the radar is the play grid (must clear obstacles); the mini ocean
+        // only has to stay inside the room (it may sit under the left tiles).
         val room = room ?: focus?.let { floatArrayOf(0f, 0f, width.toFloat(), height.toFloat()) } ?: return
         val cx = width / 2f
         val cy = height / 2f
-        var left = room[0]
-        var right = room[2]
-        for (o in obstacles) {
-            if ((o[0] + o[2]) / 2 < cx) left = max(left, o[2]) else right = min(right, o[0])
+        val play = focus ?: PerangKapalBoard.bounds(if (battle) PerangKapalBoard.RADAR_OFFSET_X else 0f)
+        val playShot = play.map { project(it[0], it[1], it[2]) }
+        val roomShot = if (battle && focus == null) {
+            playShot + PerangKapalBoard.miniBounds().map { project(it[0], it[1], it[2]) }
+        } else {
+            playShot
         }
-        val halfW = min(cx - left, right - cx)
-        val freeTop = room[1]
-        val freeBottom = room[3]
-        val halfH = (freeBottom - freeTop) / 2f
-        if (halfW <= 1f || halfH <= 1f) return
-        val freeMidX = cx
-        val freeMidY = (freeTop + freeBottom) / 2f
-        val corners = focus ?: PerangKapalBoard.bounds(if (battle) PerangKapalBoard.RADAR_OFFSET_X else 0f)
-        val shot = corners.map { project(it[0], it[1], it[2]) }
-        val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
-        val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)
-        // Scaling the picture by k around the centre is the same as dividing the tangent by k.
-        var k = min(halfW / needW, halfH / needH)
-        if (battle) {
-            // The small ocean must not leave the room on the left.
-            val reach = cx - PerangKapalBoard.miniBounds().minOf { project(it[0], it[1], it[2])[0] }
-            if (reach > 0f) k = min(k, (freeMidX - room[0]) / reach)
+        fun place(k: Float): FloatArray? {
+            fun scaled(pts: List<FloatArray>) = pts.map {
+                floatArrayOf(cx + (it[0] - cx) * k, cy + (it[1] - cy) * k)
+            }
+            val roomPts = scaled(roomShot)
+            val x0 = roomPts.minOf { it[0] }; val x1 = roomPts.maxOf { it[0] }
+            val y0 = roomPts.minOf { it[1] }; val y1 = roomPts.maxOf { it[1] }
+            val loX = room[0] - x0; val hiX = room[2] - x1
+            val loY = room[1] - y0; val hiY = room[3] - y1
+            if (loX > hiX || loY > hiY) return null
+            val playPts = scaled(playShot)
+            val midX = (loX + hiX) / 2f; val midY = (loY + hiY) / 2f
+            var best: FloatArray? = null
+            var bestD = Float.MAX_VALUE
+            for (i in 0..FIT_STEPS) for (j in 0..FIT_STEPS) {
+                val sx = loX + (hiX - loX) * i / FIT_STEPS
+                val sy = loY + (hiY - loY) * j / FIT_STEPS
+                val d = (sx - midX) * (sx - midX) + (sy - midY) * (sy - midY)
+                if (d >= bestD) continue
+                val px0 = playPts.minOf { it[0] } + sx; val px1 = playPts.maxOf { it[0] } + sx
+                val py0 = playPts.minOf { it[1] } + sy; val py1 = playPts.maxOf { it[1] } + sy
+                if (obstacles.any { box -> px0 < box[2] && px1 > box[0] && py0 < box[3] && py1 > box[1] }) continue
+                best = floatArrayOf(sx, sy)
+                bestD = d
+            }
+            return best
         }
+        var lo = 0.05f
+        var hi = 20f
+        repeat(20) {
+            val mid = sqrt(lo * hi)
+            if (place(mid) != null) lo = mid else hi = mid
+        }
+        val k = lo
+        val shift = place(k) ?: floatArrayOf(0f, 0f)
         val fov = Math.toDegrees(2 * atan(tan(Math.toRadians(base / 2)) / k))
-        shiftX = freeMidX - cx
-        shiftY = freeMidY - cy
+        shiftX = shift[0]
+        shiftY = shift[1]
         camera.setProjection(fov, aspect, 0.5, 80.0, Camera.Fov.VERTICAL)
         camera.setShift((shiftX / (width / 2f)).toDouble(), (-shiftY / (height / 2f)).toDouble())
+    }
+
+    private companion object {
+        const val FIT_STEPS = 24
     }
 }

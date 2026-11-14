@@ -169,17 +169,6 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         renderer?.recallDie(if (table.isLocal(next.turn)) null else playerOrigins[next.turn])
     }
 
-    /** Ease in on the board centre while the die flies. */
-    fun watchDie() {
-        val land = UlarTanggaBoard.dieLanding
-        renderer?.watch(
-            listOf(
-                floatArrayOf(land[0], UlarTanggaBoard.TOP, land[1]),
-                floatArrayOf(land[2], UlarTanggaBoard.TOP, land[3]),
-            ),
-        )
-    }
-
     fun spot(s: UlarTanggaState, seat: Int): FloatArray {
         val square = s.positions[seat]
         return UlarTanggaBoard.pieceSpot(square, seat, s.positions.count { it == square } > 1)
@@ -215,15 +204,13 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     val toss = pendingToss[0]?.takeIf { table.isLocal(thrower) } ?: UlarTanggaRenderer.Toss.Short
                     pendingToss[0] = null
                     val origin = if (table.isLocal(thrower)) null else playerOrigins[thrower]
-                    // Zoom only while a seat on this phone throws.
-                    if (table.isLocal(thrower)) watchDie()
                     val seconds = renderer?.throwDie(value, toss, origin, thrower) ?: 0f
                     delay((seconds * 1000).toLong() + 150)
+                    Sounds.sayDie(value)
                     die = value
                     state = next
                     delay(450)
                     recallDie(next)
-                    renderer?.watch(null)
                     if (!next.opening) {
                         // The order is set: show every throw a moment, then the tiles line up in order.
                         offHold = true
@@ -236,17 +223,14 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     val toss = pendingToss[0]?.takeIf { table.isLocal(seat) } ?: UlarTanggaRenderer.Toss.Short
                     pendingToss[0] = null
                     val origin = if (table.isLocal(seat)) null else playerOrigins[seat]
-                    val local = table.isLocal(seat)
-                    // Zoom only while a seat on this phone throws and moves.
-                    if (local) watchDie()
                     val seconds = renderer?.throwDie(roll, toss, origin, seat) ?: 0f
                     delay((seconds * 1000).toLong() + 200)
+                    Sounds.sayDie(roll)
                     die = roll
                     val play = UlarTanggaGame.play(state, seat, roll)
                     val r = renderer
                     for (square in play.steps) {
                         val at = UlarTanggaBoard.pieceSpot(square, seat, false)
-                        if (local) r?.watch(listOf(at))
                         r?.move(seat, listOf(at), HOP_MS / 1000f * 0.9f, hop = 0.7f)
                         Sounds.play(Sounds.Effect.Step)
                         delay(HOP_MS)
@@ -259,15 +243,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                         val seconds = pathLength(path) / JUMP_UNITS_PER_SECOND + 0.2f
                         Sounds.play(if (ladder) Sounds.Effect.Store else Sounds.Effect.Capture)
                         Sounds.say(if (ladder) Sounds.Line.Ladder else Sounds.Line.Snake)
-                        if (local) r?.watch(path)
                         r?.move(seat, path.drop(1), seconds)
                         delay((seconds * 1000).toLong() + 80)
                     }
                     repeat(next.positions.size) { renderer?.move(it, listOf(spot(next, it)), SETTLE_MS / 1000f) }
                     delay(SETTLE_MS)
                     recallDie(next)
-                    r?.watch(null)
                     delay(280L)
+                    // Let "Ular!" / "Tangga!" finish before "Lempar lagi" cuts in.
+                    if (play.jumpTo != null && play.state.turn == play.state.lastSeat) delay(500L)
                     state = next
                     announce(table, play.state, landed == UlarTanggaGame.LAST || play.jumpTo == UlarTanggaGame.LAST)
                 } else {
@@ -279,8 +263,6 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
                     recallDie(next)
                 }
             } finally {
-                // Always ease back out after a throw or hop, even if cancelled mid-move.
-                renderer?.watch(null)
                 animating = false
             }
             drain()
@@ -634,7 +616,7 @@ private fun status(table: UlarTanggaTable, state: UlarTanggaState, busy: Boolean
     }
 }
 
-/** A seat as a square tile: its square (or finishing place) inside a circle in its color, the name below. */
+/** A seat as a square tile: avatar (or bot) large, square / finish / dice-off in the corner. */
 @Composable
 private fun PlayerTile(
     table: UlarTanggaTable,
@@ -651,6 +633,15 @@ private fun PlayerTile(
     val color = seatColor(state, seat)
     // Dark digits on a light pawn color (yellow), white on the rest.
     val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.inkOnLight else Color.White
+    val start = place < 0 && square == 0 && roll == null
+    val status = when {
+        roll != null -> roll.toString()
+        place >= 0 -> "#${place + 1}"
+        start -> stringResource(R.string.ular_start)
+        else -> square.toString()
+    }
+    val bot = seat in table.botSeats
+    val avatar = table.players.avatarOf(seat).takeUnless { bot }
     Column(
         modifier.aspectRatio(1f)
             .alpha(if (out) 0.4f else 1f)
@@ -663,34 +654,38 @@ private fun PlayerTile(
         verticalArrangement = Arrangement.Center,
     ) {
         Box {
-            Box(
-                Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                // During the dice-off the circle shows the seat's throw.
-                val start = place < 0 && square == 0 && roll == null
-                Text(
-                    when {
-                        roll != null -> roll.toString()
-                        place >= 0 -> "#${place + 1}"
-                        start -> stringResource(R.string.ular_start)
-                        else -> square.toString()
-                    },
-                    style = Theme.font(if (start) 9 else 14, FontWeight.Black, digits).copy(lineHeight = 14.sp),
-                    maxLines = 1,
-                )
-            }
-            if (seat in table.botSeats) {
+            if (avatar != null || bot) {
+                if (avatar != null) {
+                    AvatarBadge(avatar, size = 34.dp, modifier = Modifier.border(1.5.dp, Color.White, CircleShape))
+                } else {
+                    Box(
+                        Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(Theme.track, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = Theme.ink, modifier = Modifier.size(18.dp))
+                    }
+                }
                 Box(
-                    Modifier.align(Alignment.BottomEnd).padding(0.dp).size(16.dp).background(Theme.surface, CircleShape).border(1.dp, Theme.line, CircleShape),
+                    Modifier.align(Alignment.BottomEnd).size(20.dp)
+                        .background(Color.White, CircleShape).padding(1.5.dp).background(color, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = Theme.ink, modifier = Modifier.size(10.dp))
+                    Text(
+                        status,
+                        style = Theme.font(if (start) 7 else 10, FontWeight.Black, digits).copy(lineHeight = 10.sp),
+                        maxLines = 1,
+                    )
                 }
             } else {
-                // Multi-device players with an account show their avatar in the same corner.
-                table.players.avatarOf(seat)?.let {
-                    AvatarBadge(it, size = 18.dp, modifier = Modifier.align(Alignment.BottomEnd).border(1.5.dp, Color.White, CircleShape))
+                Box(
+                    Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        status,
+                        style = Theme.font(if (start) 9 else 14, FontWeight.Black, digits).copy(lineHeight = 14.sp),
+                        maxLines = 1,
+                    )
                 }
             }
         }
@@ -781,7 +776,9 @@ private fun announce(table: UlarTanggaTable, after: UlarTanggaState, reached: Bo
             if (me != null) Sounds.say(if (won) Sounds.Line.Win else Sounds.Line.Lose)
         }
         reached -> Sounds.play(Sounds.Effect.Win)
-        after.turn != after.lastSeat -> announceTurn(table, after.turn)
+        // Same seat again (a six with "roll again"): same line as ludo.
+        after.turn == after.lastSeat -> if (table.isLocal(after.turn)) Sounds.say(Sounds.Line.RollAgain)
+        else -> announceTurn(table, after.turn)
     }
 }
 

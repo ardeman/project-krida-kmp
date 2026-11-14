@@ -171,7 +171,6 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         table.onUpdate = null
         queue.clear()
         renderer?.highlightEnds(emptyList())
-        renderer?.watch(null)
         table.leave()
         Sounds.stopGameAudio()
     }
@@ -233,12 +232,10 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     val myTurn = settled && !state.roundOver && !state.finished && state.turn == me
     val playable = if (myTurn) GapleGame.playable(state, me) else emptyList()
     LaunchedEffect(myTurn) { if (!myTurn) picking = null }
-    // Only the ends this tile can join light up; zoom onto them while picking.
+    // Only the ends this tile can join light up while picking.
     LaunchedEffect(picking, renderer, state.line.size, state.leftEnd, state.rightEnd) {
         val r = renderer ?: return@LaunchedEffect
-        val ends = picking?.let { GapleGame.endsFor(state, it) }.orEmpty()
-        r.highlightEnds(ends)
-        r.watchPicking(ends.isNotEmpty())
+        r.highlightEnds(picking?.let { GapleGame.endsFor(state, it) }.orEmpty())
     }
 
     // Once your timer runs out, the phone plays your turns after a short pause
@@ -514,7 +511,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             )
         }
 
-        if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onNext = ::deal)
+        if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onExit = ::exit, onNext = ::deal)
         if (settled && state.finished) ResultCard(
             table, state,
             onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
@@ -572,7 +569,7 @@ private fun Pill(text: String, color: Color) {
     )
 }
 
-/** Seat tile for every seat count, two a row like ludo / ular tangga: score inside the colour circle. */
+/** Seat tile for every seat count, two a row like ludo / ular tangga: avatar large, score in the corner. */
 @Composable
 private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Boolean, modifier: Modifier = Modifier) {
     val color = pawnColor(seat)
@@ -582,6 +579,8 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
     val team = if (state.partners) " · ${if (state.team(seat) == 0) "A" else "B"}" else ""
     // Dark digits on a light pawn colour (yellow), white on the rest.
     val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.inkOnLight else Color.White
+    val bot = seat in table.botSeats
+    val avatar = table.players.avatarOf(seat).takeUnless { bot }
     Column(
         modifier.clip(shape)
             .background(if (on) Theme.chip else Theme.surface)
@@ -590,31 +589,35 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box {
-            Box(
-                Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("$score", style = Theme.font(14, FontWeight.Black, digits), maxLines = 1)
-            }
-            if (seat in table.botSeats) {
+            if (avatar != null || bot) {
+                if (avatar != null) {
+                    AvatarBadge(avatar, size = 34.dp, modifier = Modifier.border(1.5.dp, Color.White, CircleShape))
+                } else {
+                    Box(
+                        Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(Theme.track, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.ic_computer),
+                            contentDescription = null,
+                            tint = Theme.ink,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                }
                 Box(
-                    Modifier.align(Alignment.BottomEnd).size(16.dp)
-                        .background(Theme.surface, CircleShape).border(1.dp, Theme.line, CircleShape),
+                    Modifier.align(Alignment.BottomEnd).size(20.dp)
+                        .background(Color.White, CircleShape).padding(1.5.dp).background(color, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        painterResource(R.drawable.ic_computer),
-                        contentDescription = null,
-                        tint = Theme.ink,
-                        modifier = Modifier.size(10.dp),
-                    )
+                    Text("$score", style = Theme.font(10, FontWeight.Black, digits), maxLines = 1)
                 }
             } else {
-                table.players.avatarOf(seat)?.let {
-                    AvatarBadge(
-                        it, size = 18.dp,
-                        modifier = Modifier.align(Alignment.BottomEnd).border(1.5.dp, Color.White, CircleShape),
-                    )
+                Box(
+                    Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(color, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("$score", style = Theme.font(14, FontWeight.Black, digits), maxLines = 1)
                 }
             }
         }
@@ -763,7 +766,14 @@ private fun ScoreTable(table: GapleTable, state: GapleState, rows: List<ScoreRow
 }
 
 @Composable
-private fun RoundCard(table: GapleTable, state: GapleState, seconds: Int, total: Int, onNext: () -> Unit) {
+private fun RoundCard(
+    table: GapleTable,
+    state: GapleState,
+    seconds: Int,
+    total: Int,
+    onExit: () -> Unit,
+    onNext: () -> Unit,
+) {
     val winner = state.roundWinner
     val title = when {
         state.roundEnd == "gaple" -> stringResource(R.string.gaple_gaple)
@@ -782,6 +792,8 @@ private fun RoundCard(table: GapleTable, state: GapleState, seconds: Int, total:
                 Text(stringResource(R.string.gaple_waiting_host), style = Theme.font(14, FontWeight.Bold, Theme.muted))
             }
         }
+        // The card covers the HUD back button; leave without waiting for the next deal.
+        SecondaryButton(stringResource(R.string.congklak_to_menu), onExit, Modifier.fillMaxWidth(), tint = Theme.muted)
     }
 }
 

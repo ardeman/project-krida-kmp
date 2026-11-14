@@ -195,75 +195,53 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         // itself (or an auto-move that applied the roll in one step). Re-throwing on pick looked
         // like the die rolling the same face again.
         val throwNow = before.roll == null
-        // Zoom only while a seat on this phone throws and moves (pick zoom is already local-only).
-        val local = table.isLocal(seat)
-        try {
-            r.showPickRings(emptyList())
-            if (throwNow) {
-                // Ease in on the board centre while the die flies.
-                val land = LudoBoard.dieLanding
-                if (local) {
-                    r.watch(
-                        listOf(
-                            floatArrayOf(land[0], LudoBoard.TOP, land[1]),
-                            floatArrayOf(land[2], LudoBoard.TOP, land[3]),
-                        ),
-                    )
-                }
-                val flight = r.throwDie(roll, toss, origin, seat)
-                // Small buffer so the last throw frame can mark Landed before we hop (and recall).
-                delay((flight * 1000).toLong() + 200L)
-            }
-
-            val pawn = after.lastPawn
-            if (pawn != null && after.lastFrom != null && after.lastTo != null) {
-                val color = after.color(seat)
-                val fromPos = after.lastFrom!!
-                // Hop square by square; the last hop lands on top of a tower or beside another colour.
-                val path = LudoGame.walk(fromPos, after.lastTo!!).map {
-                    LudoBoard.tokenAnchor(color, pawn, it)
-                }.dropLast(1) + listOf(spot(after, seat, pawn))
-                // Frame only the mover (start + hops). Capture yards used to pull the
-                // camera across the board away from the piece that moves.
-                val start = spot(before, seat, pawn)
-                if (local) r.watch(listOf(start) + path)
-                delay(180L)
-                r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
-                // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
-                val captured = after.lastCaptures.map { it.seat to it.pawn }.toSet()
-                for (s in after.tokens.indices) for (p in 0 until LudoGame.PAWNS) {
-                    if ((s == seat && p == pawn) || (s to p) in captured) continue
-                    val to = spot(after, s, p)
-                    if (!to.contentEquals(spot(before, s, p))) r.move(s, p, listOf(to), 0.25f, hop = 0.15f)
-                }
-                // The same tok on each square as ular tangga.
-                repeat(path.size) {
-                    Sounds.play(Sounds.Effect.Step)
-                    delay(HOP_MS)
-                }
-                if (after.lastTo == LudoGame.FINISH) Sounds.say(Sounds.Line.Home)
-                delay(80L)
-                for (cap in after.lastCaptures) {
-                    val from = spot(before, cap.seat, cap.pawn)
-                    val to = spot(after, cap.seat, cap.pawn)
-                    if (local) r.watch(listOf(from, to))
-                    r.move(cap.seat, cap.pawn, listOf(to), 0.35f, hop = 0.5f)
-                }
-                if (after.lastCaptures.isNotEmpty()) {
-                    Sounds.play(Sounds.Effect.Capture)
-                    Sounds.say(Sounds.Line.Captured)
-                    delay(400L)
-                }
-                // Let "Kena!" / "Masuk rumah!" finish before the turn line cuts in.
-                if (after.lastCaptures.isNotEmpty() || after.lastTo == LudoGame.FINISH) delay(500L)
-            }
-            placeAll(after)
-            r.recallDie(if (table.isLocal(after.turn)) null else playerOrigins[after.turn])
-            delay(180L)
-        } finally {
-            // Always ease back out, even if the animation is cancelled mid-hop.
-            r.watch(null)
+        r.showPickRings(emptyList())
+        if (throwNow) {
+            val flight = r.throwDie(roll, toss, origin, seat)
+            // Small buffer so the last throw frame can mark Landed before we hop (and recall).
+            delay((flight * 1000).toLong() + 200L)
+            Sounds.sayDie(roll)
         }
+
+        val pawn = after.lastPawn
+        if (pawn != null && after.lastFrom != null && after.lastTo != null) {
+            val color = after.color(seat)
+            val fromPos = after.lastFrom!!
+            // Hop square by square; the last hop lands on top of a tower or beside another colour.
+            val path = LudoGame.walk(fromPos, after.lastTo!!).map {
+                LudoBoard.tokenAnchor(color, pawn, it)
+            }.dropLast(1) + listOf(spot(after, seat, pawn))
+            delay(180L)
+            r.move(seat, pawn, path, (path.size * HOP_MS) / 1000f, hop = 0.35f)
+            // Tokens the mover leaves or joins settle (a tower shrinks, a colour moves aside).
+            val captured = after.lastCaptures.map { it.seat to it.pawn }.toSet()
+            for (s in after.tokens.indices) for (p in 0 until LudoGame.PAWNS) {
+                if ((s == seat && p == pawn) || (s to p) in captured) continue
+                val to = spot(after, s, p)
+                if (!to.contentEquals(spot(before, s, p))) r.move(s, p, listOf(to), 0.25f, hop = 0.15f)
+            }
+            // The same tok on each square as ular tangga.
+            repeat(path.size) {
+                Sounds.play(Sounds.Effect.Step)
+                delay(HOP_MS)
+            }
+            if (after.lastTo == LudoGame.FINISH) Sounds.say(Sounds.Line.Home)
+            delay(80L)
+            for (cap in after.lastCaptures) {
+                val to = spot(after, cap.seat, cap.pawn)
+                r.move(cap.seat, cap.pawn, listOf(to), 0.35f, hop = 0.5f)
+            }
+            if (after.lastCaptures.isNotEmpty()) {
+                Sounds.play(Sounds.Effect.Capture)
+                Sounds.say(Sounds.Line.Captured)
+                delay(400L)
+            }
+            // Let "Kena!" / "Masuk rumah!" finish before the turn line cuts in.
+            if (after.lastCaptures.isNotEmpty() || after.lastTo == LudoGame.FINISH) delay(500L)
+        }
+        placeAll(after)
+        r.recallDie(if (table.isLocal(after.turn)) null else playerOrigins[after.turn])
+        delay(180L)
         delay(280L)
     }
 
@@ -321,17 +299,14 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         if (canRoll) renderer?.recallDie(null)
     }
 
-    // Gold rings on the board under legal tokens; zoom onto them; ease back out when pick ends.
+    // Gold rings on the board under legal tokens.
     LaunchedEffect(canPick, legal, renderer, animating, state.turn, state.roll, state.tokens) {
         val r = renderer ?: return@LaunchedEffect
         if (animating) return@LaunchedEffect
         if (canPick && legal.isNotEmpty()) {
-            val spots = legal.map { spot(state, state.turn, it) }
-            r.showPickRings(spots)
-            r.watch(spots)
+            r.showPickRings(legal.map { spot(state, state.turn, it) })
         } else {
             r.showPickRings(emptyList())
-            r.watch(null)
         }
     }
 
