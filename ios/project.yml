@@ -57,6 +57,9 @@ targets:
     info:
       path: Krida/Info.plist
       properties:
+        # Keep these as build-setting refs so xcodegen does not hardcode 1.0 / 1.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Krida
         UILaunchScreen:
           UIColorName: Backdrop
