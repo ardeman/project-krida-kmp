@@ -76,6 +76,13 @@
     <string name="music_on">Turn music on</string>
     <string name="music_off">Turn music off</string>
     <string name="shop_remove_ads">Remove ads</string>
+    <!-- Shown before a full-screen ad (AdMob forbids overlays on the creative itself). -->
+    <string name="ads_gate_interstitial_title">A short ad</string>
+    <string name="ads_gate_interstitial_body">Remove ads once, or continue to watch.</string>
+    <string name="ads_gate_rewarded_title">Hint</string>
+    <string name="ads_gate_rewarded_body">Watch an ad for a hint, or remove ads for free hints.</string>
+    <string name="ads_gate_continue">Continue</string>
+    <string name="ads_gate_watch">Watch ad</string>
     <string name="ads_privacy">Ad privacy</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="menu_more">More options below</string>

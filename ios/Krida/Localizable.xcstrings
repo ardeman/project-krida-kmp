@@ -481,6 +481,22 @@
         }
       }
     },
+    "A short ad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A short ad"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iklan sebentar"
+          }
+        }
+      }
+    },
     "A six · roll again": {
       "localizations": {
         "en": {
@@ -1456,6 +1472,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Petunjuk"
+          }
+        }
+      }
+    },
+    "Watch an ad for a hint, or remove ads for free hints.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch an ad for a hint, or remove ads for free hints."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tonton iklan untuk petunjuk, atau hapus iklan agar petunjuk gratis."
           }
         }
       }
@@ -2719,6 +2751,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hapus iklan"
+          }
+        }
+      }
+    },
+    "Remove ads once, or continue to watch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove ads once, or continue to watch."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hapus iklan sekali, atau lanjut menonton."
           }
         }
       }
@@ -5857,6 +5905,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lanjut"
+          }
+        }
+      }
+    },
+    "Watch ad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Watch ad"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tonton iklan"
           }
         }
       }

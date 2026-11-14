@@ -40,8 +40,10 @@ in the same commit as the code.
   tapped option does.
 - **Ads:** banner on menus only (not in game, not in room lobbies), interstitial after every
   finished game when one is ready (Menu / Play again / next Gaple round against computers),
-  rewarded ad for a hint from the hard bot. A one-time "Remove ads" purchase turns them off.
-  Audience General / 13+, not Families. (Owner 2026-11-14: every finish, not every other.)
+  rewarded ad for a hint from the hard bot. Before each full-screen ad, a short gate offers
+  "Remove ads" (AdMob forbids overlaying the creative). A one-time "Remove ads" purchase
+  turns them off. Audience General / 13+, not Families. (Owner 2026-11-14: every finish;
+  remove-ads on interstitial/rewarded via gate.)
 
 ## Language and audio
 

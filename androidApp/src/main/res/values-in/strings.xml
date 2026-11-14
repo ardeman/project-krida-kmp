@@ -72,6 +72,12 @@
     <string name="music_on">Nyalakan musik</string>
     <string name="music_off">Matikan musik</string>
     <string name="shop_remove_ads">Hapus iklan</string>
+    <string name="ads_gate_interstitial_title">Iklan sebentar</string>
+    <string name="ads_gate_interstitial_body">Hapus iklan sekali, atau lanjut menonton.</string>
+    <string name="ads_gate_rewarded_title">Petunjuk</string>
+    <string name="ads_gate_rewarded_body">Tonton iklan untuk petunjuk, atau hapus iklan agar petunjuk gratis.</string>
+    <string name="ads_gate_continue">Lanjut</string>
+    <string name="ads_gate_watch">Tonton iklan</string>
     <string name="ads_privacy">Privasi iklan</string>
     <string name="privacy_policy">Kebijakan privasi</string>
     <string name="menu_more">Pilihan lain di bawah</string>

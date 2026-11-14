@@ -11,7 +11,10 @@ struct KridaApp: App {
     var body: some Scene {
         WindowGroup {
             // Every screen inside the landscape stage: it sets `uiScale` and `punchHole`.
-            LandscapeStage { ContentView(roomCode: $roomCode) }
+            LandscapeStage {
+                ContentView(roomCode: $roomCode)
+                    .overlay { AdGateOverlay() }
+            }
                 // A game: no clock over the cards (iPad windows, the unfolded Duo).
                 .statusBarHidden()
                 // The app language, switched in-app without a relaunch (see Language).

@@ -5,7 +5,8 @@ import SwiftUI
 /// AdMob: a banner on the menus, an interstitial after every finished game (when one is ready),
 /// and a rewarded ad that pays for a hint. Owning "Remove ads" ([removed]) turns all of it off;
 /// hints are then free. Nothing is requested before the UMP consent flow allows it.
-/// Mirrors androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
+/// Full-screen ads open behind a short gate with "Remove ads" (AdMob forbids overlaying the
+/// creative). Mirrors androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
 @MainActor
 final class Ads: NSObject, ObservableObject {
     static let shared = Ads()
@@ -19,6 +20,8 @@ final class Ads: NSObject, ObservableObject {
     @Published private(set) var started = false
     /// Price of "Remove ads" from the App Store; nil hides the buy button.
     @Published private(set) var removeAdsPrice: String?
+    /// Pre-ad gate: title/body/continue label and callbacks. Nil when nothing is pending.
+    @Published private(set) var gate: AdGate?
 
     private var store: Store!
     private var interstitial: InterstitialAd?
@@ -74,9 +77,18 @@ final class Ads: NSObject, ObservableObject {
             loadInterstitial()
             return then()
         }
-        interstitial = nil
-        onClosed = { [weak self] in self?.loadInterstitial(); then() }
-        ad.present(from: nil)
+        presentGate(
+            title: String(localized: "A short ad", bundle: .app),
+            body: String(localized: "Remove ads once, or continue to watch.", bundle: .app),
+            continueLabel: String(localized: "Continue", bundle: .app),
+            onContinue: { [weak self] in
+                guard let self else { return }
+                self.interstitial = nil
+                self.onClosed = { [weak self] in self?.loadInterstitial(); then() }
+                ad.present(from: nil)
+            },
+            onSkip: then
+        )
     }
 
     /// Runs [onReward] once the player has watched a rewarded ad. Free when ads are removed,
@@ -86,13 +98,29 @@ final class Ads: NSObject, ObservableObject {
             loadRewarded()
             return onReward()
         }
-        rewarded = nil
-        var earned = false
-        onClosed = { [weak self] in
-            self?.loadRewarded()
-            if earned { onReward() }
-        }
-        ad.present(from: nil) { earned = true }
+        presentGate(
+            title: String(localized: "Hint", bundle: .app),
+            body: String(localized: "Watch an ad for a hint, or remove ads for free hints.", bundle: .app),
+            continueLabel: String(localized: "Watch ad", bundle: .app),
+            onContinue: { [weak self] in
+                guard let self else { return }
+                self.rewarded = nil
+                var earned = false
+                self.onClosed = { [weak self] in
+                    self?.loadRewarded()
+                    if earned { onReward() }
+                }
+                ad.present(from: nil) { earned = true }
+            },
+            onSkip: onReward
+        )
+    }
+
+    /// Continue from the gate into the full-screen ad.
+    func continueGate() {
+        let action = gate?.onContinue
+        gate = nil
+        action?()
     }
 
     private func startAds() {
@@ -111,6 +139,7 @@ final class Ads: NSObject, ObservableObject {
         if value {
             interstitial = nil
             rewarded = nil
+            finishGateAsSkipped()
         } else {
             startAds()
         }
@@ -119,6 +148,27 @@ final class Ads: NSObject, ObservableObject {
 
     private func updatePrice() {
         removeAdsPrice = removed ? nil : store.price
+    }
+
+    private func presentGate(
+        title: String,
+        body: String,
+        continueLabel: String,
+        onContinue: @escaping () -> Void,
+        onSkip: @escaping () -> Void
+    ) {
+        // No IAP price yet: don't add a tap with no remove option.
+        guard removeAdsPrice != nil else {
+            onContinue()
+            return
+        }
+        gate = AdGate(title: title, body: body, continueLabel: continueLabel, onContinue: onContinue, onSkip: onSkip)
+    }
+
+    private func finishGateAsSkipped() {
+        let skip = gate?.onSkip
+        gate = nil
+        skip?()
     }
 
     private func loadInterstitial() {
@@ -150,6 +200,15 @@ final class Ads: NSObject, ObservableObject {
     }
 }
 
+/// Content for the pre-ad sheet (Remove ads + continue/watch).
+struct AdGate {
+    let title: String
+    let body: String
+    let continueLabel: String
+    let onContinue: () -> Void
+    let onSkip: () -> Void
+}
+
 extension Ads: FullScreenContentDelegate {
     nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Task { @MainActor in closed() }
@@ -157,6 +216,39 @@ extension Ads: FullScreenContentDelegate {
 
     nonisolated func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         Task { @MainActor in closed() }
+    }
+}
+
+/// Pre-ad gate hosted at the app root so it covers game screens too.
+struct AdGateOverlay: View {
+    @ObservedObject private var ads = Ads.shared
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        if let gate = ads.gate {
+            ZStack {
+                Color.black.opacity(0.45).ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 12 * s) {
+                    Text(gate.title).font(Theme.font(20 * s, .black)).foregroundStyle(Theme.ink)
+                    Text(gate.body).font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
+                    HStack(spacing: 10 * s) {
+                        Button("Remove ads", action: ads.buyRemoveAds)
+                            .buttonStyle(SecondaryButtonStyle())
+                            .frame(maxWidth: .infinity)
+                        Button(gate.continueLabel, action: ads.continueGate)
+                            .buttonStyle(PrimaryButtonStyle())
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.horizontal, 24 * s)
+                .padding(.vertical, 22 * s)
+                .frame(maxWidth: 420 * s)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
+                .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
+                .padding(24 * s)
+            }
+            .allowsHitTesting(true)
+        }
     }
 }
 

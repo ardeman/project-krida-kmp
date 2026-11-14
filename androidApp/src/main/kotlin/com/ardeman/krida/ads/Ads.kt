@@ -5,23 +5,43 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.ardeman.krida.R
+import com.ardeman.krida.ui.PrimaryButton
+import com.ardeman.krida.ui.SecondaryButton
+import com.ardeman.krida.ui.Theme
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -42,7 +62,9 @@ import com.google.android.ump.UserMessagingPlatform
  * AdMob: a banner on the menus, an interstitial after every finished game (when one is
  * ready), and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all
  * of it off; hints are then free. Nothing is requested before the UMP consent flow allows it.
- * Ad unit ids live in res/values/ads.xml (real ids in release; Google's test ids in debug).
+ * Full-screen ads open behind a short gate with "Hapus iklan" (AdMob forbids overlaying the
+ * creative). Ad unit ids live in res/values/ads.xml (real ids in release; Google's test ids
+ * in debug).
  */
 object Ads {
 
@@ -69,6 +91,8 @@ object Ads {
     private var rewarded: RewardedAd? = null
     private var loadingInterstitial = false
     private var loadingRewarded = false
+    private var gateView: ComposeView? = null
+    private var gateOnSkip: (() -> Unit)? = null
 
     /** Price of "Hapus iklan" from Play; null hides the button. */
     val removeAdsPrice: String? get() = if (removed) null else Billing.price
@@ -119,7 +143,8 @@ object Ads {
 
     /**
      * Call when the player leaves a finished game; [then] runs after the interstitial
-     * closes, or immediately if ads are off / none ready yet.
+     * closes, or immediately if ads are off / none ready yet. When an ad is ready and
+     * "Hapus iklan" is available, a gate offers remove-ads before the creative.
      */
     fun afterGame(activity: Activity, then: () -> Unit) {
         val ad = interstitial
@@ -127,14 +152,24 @@ object Ads {
             loadInterstitial()
             return then()
         }
-        interstitial = null
-        ad.fullScreenContentCallback = closed { loadInterstitial(); then() }
-        ad.show(activity)
+        presentGate(
+            activity,
+            title = R.string.ads_gate_interstitial_title,
+            body = R.string.ads_gate_interstitial_body,
+            continueLabel = R.string.ads_gate_continue,
+            onContinue = {
+                interstitial = null
+                ad.fullScreenContentCallback = closed { loadInterstitial(); then() }
+                ad.show(activity)
+            },
+            onSkip = then,
+        )
     }
 
     /**
      * Runs [onReward] once the player has watched a rewarded ad. Free when ads are removed,
      * and when no ad could be loaded (offline, no fill): the player asked, so don't punish them.
+     * When an ad is ready and "Hapus iklan" is available, a gate offers remove-ads first.
      */
     fun rewarded(activity: Activity, onReward: () -> Unit) {
         val ad = rewarded
@@ -142,10 +177,19 @@ object Ads {
             loadRewarded()
             return onReward()
         }
-        rewarded = null
-        var earned = false
-        ad.fullScreenContentCallback = closed { loadRewarded(); if (earned) onReward() }
-        ad.show(activity) { earned = true }
+        presentGate(
+            activity,
+            title = R.string.ads_gate_rewarded_title,
+            body = R.string.ads_gate_rewarded_body,
+            continueLabel = R.string.ads_gate_watch,
+            onContinue = {
+                rewarded = null
+                var earned = false
+                ad.fullScreenContentCallback = closed { loadRewarded(); if (earned) onReward() }
+                ad.show(activity) { earned = true }
+            },
+            onSkip = onReward,
+        )
     }
 
     /**
@@ -210,7 +254,90 @@ object Ads {
             interstitial = null
             rewarded = null
             main.removeCallbacksAndMessages(null)
+            // Purchase completed while the pre-ad gate is up: skip the creative.
+            finishGateAsSkipped()
         }
+    }
+
+    /**
+     * Branded sheet before a full-screen ad with "Hapus iklan". Skipped when the IAP price
+     * is unknown so we don't add a tap with no remove option.
+     */
+    private fun presentGate(
+        activity: Activity,
+        title: Int,
+        body: Int,
+        continueLabel: Int,
+        onContinue: () -> Unit,
+        onSkip: () -> Unit,
+    ) {
+        if (removeAdsPrice == null) {
+            onContinue()
+            return
+        }
+        dismissGateView()
+        gateOnSkip = onSkip
+        val parent = activity.findViewById<ViewGroup>(android.R.id.content)
+        val view = ComposeView(activity).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            )
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            setContent {
+                LaunchedEffect(removed) {
+                    if (removed) finishGateAsSkipped()
+                }
+                Box(
+                    Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val shape = RoundedCornerShape(20.dp)
+                    Column(
+                        Modifier
+                            .widthIn(max = 420.dp)
+                            .padding(24.dp)
+                            .clip(shape)
+                            .background(Theme.surface)
+                            .border(1.5.dp, Theme.line, shape)
+                            .padding(horizontal = 24.dp, vertical = 22.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text(stringResource(title), style = Theme.font(20, FontWeight.Black, Theme.ink))
+                        Text(stringResource(body), style = Theme.font(14, FontWeight.Bold, Theme.muted))
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            SecondaryButton(
+                                stringResource(R.string.shop_remove_ads),
+                                onClick = { buyRemoveAds(activity) },
+                                Modifier.weight(1f),
+                            )
+                            PrimaryButton(
+                                stringResource(continueLabel),
+                                onClick = {
+                                    dismissGateView()
+                                    onContinue()
+                                },
+                                Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        gateView = view
+        parent.addView(view)
+    }
+
+    private fun finishGateAsSkipped() {
+        val skip = gateOnSkip
+        dismissGateView()
+        skip?.invoke()
+    }
+
+    private fun dismissGateView() {
+        gateView?.let { (it.parent as? ViewGroup)?.removeView(it) }
+        gateView = null
+        gateOnSkip = null
     }
 
     private fun loadInterstitial(attempt: Int = 0) {

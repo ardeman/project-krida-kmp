@@ -123,7 +123,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   until Play links. Next: promote **1.0.2** to Play **production**, then retry Finish
   setup / Link to Play. AAB: `~/Desktop/krida-1.0.2-release.aab`.
   Interstitial after **every** finished game when ready (was every other; Android + iOS,
-  2026-11-14) — see `docs/decisions.md`.
+  2026-11-14). Pre-ad gate with **Remove ads** before interstitial and rewarded (can't
+  overlay AdMob creatives) — see `docs/decisions.md`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
