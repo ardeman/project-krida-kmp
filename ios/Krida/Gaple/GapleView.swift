@@ -28,7 +28,7 @@ final class GapleGameModel: ObservableObject {
     private var turnKey: String?
     private var roundKey: String?
     /// Set once this round end deals (button or countdown), so an ad never shows twice.
-    private var dealing = false
+    @Published private(set) var dealing = false
 
     private static let botPause: Double = 0.65
     private static let settle: Double = 0.25
@@ -92,6 +92,7 @@ final class GapleGameModel: ObservableObject {
                 sounds.play(.turn)
             }
             animating = false
+            syncEndHighlight()
             drain()
         }
     }
@@ -205,15 +206,22 @@ final class GapleGameModel: ObservableObject {
     private func syncEndHighlight() {
         let ends = picking.map { game.endsFor(state: state, tile: $0).map(\.intValue) } ?? []
         renderer.highlightEnds(ends)
+        renderer.highlightHand(playable: playable, picking: picking)
     }
 
-    /// A tap near one of the two pulsing rings plays the picked tile there.
+    /// A tap on your voxel hand, or near a lit end ring while picking.
     func tapBoard(_ point: CGPoint, reach: CGFloat) {
-        guard picking != nil else { return }
-        let hit = (0..<2).compactMap { end in renderer.endOnScreen(end).map { (end, $0) } }
-            .min { hypot($0.1.x - point.x, $0.1.y - point.y) < hypot($1.1.x - point.x, $1.1.y - point.y) }
-        guard let hit, hypot(hit.1.x - point.x, hit.1.y - point.y) <= reach else { return }
-        playEnd(hit.0)
+        if picking != nil {
+            let hit = (0..<2).compactMap { end in renderer.endOnScreen(end).map { (end, $0) } }
+                .min { hypot($0.1.x - point.x, $0.1.y - point.y) < hypot($1.1.x - point.x, $1.1.y - point.y) }
+            if let hit, hypot(hit.1.x - point.x, hit.1.y - point.y) <= reach {
+                playEnd(hit.0)
+                return
+            }
+        }
+        if let tile = renderer.handTileAt(point, reach: reach) {
+            play(tile)
+        }
     }
 
     /// Deals the next round; against computers an interstitial may run first when one is ready.
@@ -275,10 +283,6 @@ struct GapleView: View {
     }
 }
 
-private let ivory = Color(hex: 0xFBF3E0)
-private let pipColor = Color(hex: 0x2A211E)
-private let pipRed = Color(hex: 0xBF2A2E)
-
 /// Rows of the round table: per seat, or per team with partners.
 private struct ScoreRow {
     let seats: [Int]
@@ -306,7 +310,6 @@ private struct GapleBoardView: View {
     @StateObject private var model: GapleGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
-    @State private var handSpace: CGFloat = 0
     @State private var size: CGSize = .zero
     @State private var boxes: [String: CGRect] = [:]
     @State private var sideInsets = EdgeInsets()
@@ -341,17 +344,20 @@ private struct GapleBoardView: View {
     private var board: some View {
         GeometryReader { geo in
             ZStack(alignment: .topLeading) {
-                // Picking an end: tap near one of the two pulsing rings.
+                hud
+                // Full-height centre taps (hand sits on the near rim); inset past side chrome.
                 Color.clear
                     .contentShape(Rectangle())
-                    .onTapGesture(coordinateSpace: .named(Self.space)) { model.tapBoard($0, reach: 64 * s) }
-                    .allowsHitTesting(model.picking != nil)
+                    .padding(.leading, 128 * s + 24 * s)
+                    .padding(.trailing, 136 * s + 24 * s)
+                    .padding(.leading, max(sideInsets.leading - 24 * s, 0))
+                    .padding(.trailing, max(sideInsets.trailing - 24 * s, 0))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onTapGesture(coordinateSpace: .named(Self.space)) { model.tapBoard($0, reach: 110 * s) }
                     .accessibilityElement()
-                    .accessibilityHidden(model.picking == nil)
-                    .accessibilityLabel(Text("Tap an end"))
+                    .accessibilityLabel(Text("Board"))
                     .accessibilityAction(named: Text("Left end")) { model.playEnd(Int(GapleGame.shared.LEFT)) }
                     .accessibilityAction(named: Text("Right end")) { model.playEnd(Int(GapleGame.shared.RIGHT)) }
-                hud
                 notices
                 if model.roundCard { roundCard }
                 if model.settled && state.finished { resultCard }
@@ -380,24 +386,29 @@ private struct GapleBoardView: View {
         .sheet(isPresented: $showRules) { GapleRulesSheet(partners: state.partners, drawing: drawing) }
     }
 
-    /// The table takes the space the HUD leaves: between the side columns, above the hand.
+    /// The table fills the strip between the side columns. Your hand is voxels on the rim.
     private func relayout() {
         guard size.width > 0, let room = boxes["room"],
               let left = boxes["left"], left.width > 0,
-              let right = boxes["right"], right.width > 0,
-              let hand = boxes["hand"], let pills = boxes["pills"] else { return }
-        let margin = 8 * s
+              let right = boxes["right"], right.width > 0 else { return }
+        let margin = 4 * s
         let x0 = left.maxX + margin
-        let y0 = max(room.minY, pills.maxY + margin)
+        let y0 = room.minY + margin
         let x1 = right.minX - margin
-        let y1 = min(room.maxY, hand.minY - margin)
+        let y1 = room.maxY
         guard x1 > x0, y1 > y0 else { return }
         model.layout(size: size, free: CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0))
     }
 
-    private func exit() {
+    private func leave() {
         model.stop()
         onExit()
+    }
+
+    /// Back / Menu: stop the board (and its audio) first, then interstitial, then navigate.
+    private func exit() {
+        model.stop()
+        ads.afterGame(then: onExit)
     }
 
     private func hudBox(_ key: String) -> some ViewModifier {
@@ -436,6 +447,7 @@ private struct GapleBoardView: View {
                         .foregroundStyle(Theme.muted)
                         .lineLimit(1)
                 }
+                pills
                 VStack(spacing: 8 * s) {
                     ForEach(rows, id: \.self) { pair in
                         HStack(spacing: 8 * s) {
@@ -448,18 +460,10 @@ private struct GapleBoardView: View {
                 }
                 Spacer(minLength: 0)
             }
-            .frame(width: 150 * s)
+            .frame(width: 128 * s)
             .frame(maxHeight: .infinity)
             .modifier(hudBox("left"))
-            VStack(spacing: 0) {
-                pills
-                    .frame(minHeight: 32 * s)
-                    .modifier(hudBox("pills"))
-                Spacer(minLength: 0)
-                handRow.modifier(hudBox("hand"))
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { handSpace = $0 }
+            Spacer(minLength: 0)
             VStack(alignment: .trailing, spacing: 0) {
                 HStack(spacing: 8 * s) {
                     SoundToggles()
@@ -490,7 +494,7 @@ private struct GapleBoardView: View {
                 .padding(.top, 10 * s)
                 .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
             }
-            .frame(width: 160 * s)
+            .frame(width: 136 * s)
             .frame(maxHeight: .infinity)
             .modifier(hudBox("right"))
         }
@@ -502,7 +506,7 @@ private struct GapleBoardView: View {
         .foregroundStyle(Theme.ink)
     }
 
-    /// Whose turn it is and the last thing that happened.
+    /// Status pills in the left column: whose turn it is and the last thing that happened.
     private var pills: some View {
         let turn: String? = if state.roundOver || state.finished {
             nil
@@ -525,7 +529,7 @@ private struct GapleBoardView: View {
             .map { String(localized: "\(seatName($0.offset)) drew \($0.element.intValue)", bundle: .app) }
         let passes = draws + state.lastPasses.map { String(localized: "\(seatName($0.intValue)): Pass", bundle: .app) }
         let events = Array(([played].compactMap { $0 } + passes).suffix(2))
-        return HStack(spacing: 8 * s) {
+        return VStack(alignment: .leading, spacing: 4 * s) {
             ForEach(events.indices, id: \.self) { pill(events[$0], color: Theme.muted) }
             if let turn { pill(turn, color: Theme.ink) }
         }
@@ -603,31 +607,6 @@ private struct GapleBoardView: View {
         .overlay(shape.stroke(on ? color : Theme.line, lineWidth: on ? 2 : 1.5))
         .animation(.easeOut(duration: 0.2), value: on)
         .accessibilityElement(children: .combine)
-    }
-
-    /// Your hand, upright. Tiles that fit are raised with a gold ring.
-    private var handRow: some View {
-        let playable = model.playable
-        // Seven tiles at full size; a hand that grew by drawing shrinks to fit the width.
-        let count = CGFloat(model.hand.count)
-        let gap = (count > 9 ? 3 : 6) * s
-        let width = count > 0 && handSpace > 0 ? min(34 * s, (handSpace - gap * (count - 1)) / count) : 34 * s
-        return HStack(alignment: .bottom, spacing: gap) {
-            ForEach(model.hand.indices, id: \.self) { i in
-                let tile = model.hand[i]
-                let fits = playable.contains(tile)
-                let ring: Color? = tile == model.picking ? Theme.accent : fits ? Theme.gold : nil
-                GapleTileFace(tile: tile, width: width, ring: ring, dim: !playable.isEmpty && !fits)
-                    .offset(y: fits ? -10 * s : 0)
-                    .animation(.easeOut(duration: 0.2), value: fits)
-                    .onTapGesture { if fits { model.play(tile) } }
-                    .accessibilityElement()
-                    .accessibilityLabel(Text("Tile \(Int(tile.a))|\(Int(tile.b))"))
-                    .accessibilityAddTraits(fits ? .isButton : [])
-                    .accessibilityAction { if fits { model.play(tile) } }
-            }
-        }
-        .padding(.top, 10 * s)
     }
 
     @ViewBuilder
@@ -720,13 +699,18 @@ private struct GapleBoardView: View {
             Text(title).font(Theme.font(20 * s, .black)).multilineTextAlignment(.center)
             scoreTable(scoreRows(state))
             HStack(spacing: 12 * s) {
-                CountdownRing(seconds: model.roundSeconds, total: model.total, size: 40)
-                if table.isHost {
+                if !model.dealing {
+                    CountdownRing(seconds: model.roundSeconds, total: model.total, size: 40)
+                }
+                if !table.isHost {
+                    Text("Waiting for the host").font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
+                } else if model.dealing {
+                    // Ad (if any) then next deal — no second tap after the interstitial closes.
+                    Text("Starting next round…").font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
+                } else {
                     Button(action: model.nextRound) { Text("Next round").frame(maxWidth: .infinity) }
                         .buttonStyle(PrimaryButtonStyle(height: 44))
                         .frame(width: 200 * s)
-                } else {
-                    Text("Waiting for the host").font(Theme.font(14 * s, .bold)).foregroundStyle(Theme.muted)
                 }
             }
             // The card covers the HUD back button; leave without waiting for the next deal.
@@ -754,56 +738,13 @@ private struct GapleBoardView: View {
             Text("First to 100 points").font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted)
             scoreTable(scoreRows(state).sorted { $0.total > $1.total })
             HStack(spacing: 10 * s) {
-                Button { ads.afterGame(then: exit) } label: { Text("Menu").frame(maxWidth: .infinity) }
+                Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
                     .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
                 if table.isHost {
                     Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }
                         .buttonStyle(PrimaryButtonStyle(height: 48))
                 }
             }
-        }
-    }
-}
-
-/// A domino face, upright: `tile.a` on top.
-struct GapleTileFace: View {
-    let tile: GapleTile
-    let width: CGFloat
-    let ring: Color?
-    let dim: Bool
-
-    var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 6)
-        Canvas { context, size in
-            let half = size.height / 2
-            context.fill(
-                Path(CGRect(x: size.width * 0.15, y: half - 0.75, width: size.width * 0.7, height: 1.5)),
-                with: .color(pipColor.opacity(0.6)))
-            Self.pips(Int(tile.a), CGRect(x: 0, y: 0, width: size.width, height: half), dim, &context)
-            Self.pips(Int(tile.b), CGRect(x: 0, y: half, width: size.width, height: half), dim, &context)
-        }
-        .padding(3)
-        .frame(width: width, height: width * 2)
-        .background(ivory.opacity(dim ? 0.7 : 1), in: shape)
-        .overlay(shape.stroke(ring ?? Color(hex: 0xCBB89A), lineWidth: ring != nil ? 2.5 : 1))
-    }
-
-    private static func pips(_ value: Int, _ area: CGRect, _ dim: Bool, _ context: inout GraphicsContext) {
-        let d: CGFloat = 0.28
-        let spots: [(CGFloat, CGFloat)] = switch value {
-        case 1: [(0, 0)]
-        case 2: [(-d, -d), (d, d)]
-        case 3: [(-d, -d), (0, 0), (d, d)]
-        case 4: [(-d, -d), (d, -d), (-d, d), (d, d)]
-        case 5: [(-d, -d), (d, -d), (0, 0), (-d, d), (d, d)]
-        case 6: [(-d, -d), (-d, 0), (-d, d), (d, -d), (d, 0), (d, d)]
-        default: []
-        }
-        let r = min(area.width, area.height) * 0.09
-        let color = (value == 1 ? pipRed : pipColor).opacity(dim ? 0.55 : 1)
-        for (x, y) in spots {
-            let c = CGPoint(x: area.minX + area.width * (0.5 + x), y: area.minY + area.height * (0.5 + y))
-            context.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)), with: .color(color))
         }
     }
 }

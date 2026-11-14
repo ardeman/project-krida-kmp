@@ -85,6 +85,11 @@
     <string name="ads_gate_watch">Watch ad</string>
     <string name="ads_privacy">Ad privacy</string>
     <string name="privacy_policy">Privacy policy</string>
+    <string name="update_check">Check for update</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_up_to_date">You\'re up to date</string>
+    <string name="update_available">Update available</string>
+    <string name="update_failed">Couldn\'t check</string>
     <string name="menu_more">More options below</string>
     <string name="hint">Hint (watch an ad)</string>
     <string name="hint_free">Hint</string>
@@ -461,6 +466,7 @@
     <string name="gaple_col_points">Points</string>
     <string name="gaple_col_total">Total</string>
     <string name="gaple_next_round">Next round</string>
+    <string name="gaple_starting_round">Starting next round…</string>
     <string name="gaple_waiting_host">Waiting for the host</string>
     <string name="gaple_target">First to 100 points</string>
     <string name="gaple_team_wins">Team %1$s wins</string>

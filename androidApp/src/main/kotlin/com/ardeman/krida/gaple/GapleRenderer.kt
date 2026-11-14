@@ -14,6 +14,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan
 import kotlin.math.exp
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
@@ -26,6 +27,8 @@ object GapleGlb {
     fun ring(end: Int) = "ring$end"
     /** Face-down tiles: up to three other hands of seven. */
     const val BACKS = 3 * GapleGame.HAND
+    /** Gold rings under your playable hand tiles on the rim. */
+    const val HAND_RINGS = GapleGame.HAND
 
     fun build(): ByteBuffer {
         val glb = GlbWriter()
@@ -35,20 +38,24 @@ object GapleGlb {
         for (i in 0 until BACKS) glb.node(back(i), back)
         val ring = glb.mesh(GapleScene.ringMesh())
         for (end in 0..1) glb.node(ring(end), ring)
+        for (i in 0 until HAND_RINGS) glb.node(handRing(i), ring)
         return glb.build()
     }
+
+    fun handRing(i: Int) = "handRing$i"
 }
 
 /**
- * Filament gaple table: the line of play on the felt, the other hands face down on the rim
- * (face up at a round end), and dashed gold rings on the open ends. Your own hand is drawn by
- * the screen. Main thread only.
+ * Filament gaple table: the line of play on the felt, every hand as voxels on the rim
+ * (yours face up; others face down, face up at a round end), and dashed gold rings on the
+ * open ends and under your playable tiles. Main thread only.
  */
 class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb.build()) {
 
     private val tiles = IntArray(GapleGame.SET.size) { entity(GapleGlb.tile(it)) }
     private val backs = IntArray(GapleGlb.BACKS) { entity(GapleGlb.back(it)) }
     private val rings = IntArray(2) { entity(GapleGlb.ring(it)) }
+    private val handRings = IntArray(GapleGlb.HAND_RINGS) { entity(GapleGlb.handRing(it)) }
 
     private var room: FloatArray? = null
     private var obstacles: List<FloatArray> = emptyList()
@@ -70,6 +77,12 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
     /** Ends whose rings are shown and pulsing while the player picks; empty when idle. */
     private var activeEnds: Set<Int> = emptySet()
     private var pulseTime = 0f
+    /** Your hand tiles on the near rim: tile + world centre, for taps. */
+    private var handAt: List<Pair<GapleTile, FloatArray>> = emptyList()
+    private var playableHand: Set<GapleTile> = emptySet()
+    private var pickingHand: GapleTile? = null
+    private var handViewer = 0
+    private var handState: GapleState? = null
 
     /** Gameplay zoom onto the open ends while a tile is picked; null = whole table. */
     private var watchPoints: List<FloatArray>? = null
@@ -86,7 +99,7 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
     private var flight: Flight? = null
 
     init {
-        (tiles + backs + rings).forEach { show(it, false) }
+        (tiles + backs + rings + handRings).forEach { show(it, false) }
     }
 
     /** Fits the table between the HUD boxes on the left, right and bottom of [room]. */
@@ -146,8 +159,27 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
                 setTransform(tiles[index], moved(m, from[0], 1.5f, from[2]))
             }
         }
-        // Other hands on the rim: face down while the round runs, face up at its end.
+        // Hands on the rim: yours face up; others face down (face up at a round end).
         var b = 0
+        val mine = state.hands.getOrNull(viewer).orEmpty()
+        val mySide = GapleScene.side(viewer, viewer, state.players)
+        val handCenters = ArrayList<Pair<GapleTile, FloatArray>>(mine.size)
+        mine.forEachIndexed { i, tile ->
+            val index = GapleGame.SET.indexOf(tile)
+            if (index < 0 || shown[index]) return@forEachIndexed
+            val lift = when {
+                pickingHand == tile -> GapleScene.HAND_LIFT_PICKING
+                tile in playableHand -> GapleScene.HAND_LIFT_PLAYABLE
+                else -> 0f
+            }
+            val m = GapleScene.handMatrix(mySide, i, mine.size, lift, GapleScene.HAND_SCALE)
+            setTransform(tiles[index], m)
+            shown[index] = true
+            handCenters.add(tile to floatArrayOf(m[12], m[13], m[14]))
+        }
+        handAt = handCenters
+        handViewer = viewer
+        handState = state
         for (seat in 0 until state.players) {
             if (seat == viewer) continue
             val side = GapleScene.side(seat, viewer, state.players)
@@ -171,12 +203,57 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         }
         for (i in b until backs.size) show(backs[i], false)
         tiles.forEachIndexed { i, e -> show(e, shown[i]) }
+        placeHandRings()
 
         val ends = if (state.roundOver || state.line.isEmpty()) listOf(null, null) else listOf(layout.left, layout.right)
         ends.forEachIndexed { end, pose ->
             ringAt[end] = pose?.let(GapleScene::ringCenter)
         }
         refreshRings()
+    }
+
+    /**
+     * Raises playable tiles and puts gold rings under them; [picking] gets the higher lift.
+     * Call after [applyState] when the legal set changes.
+     */
+    fun highlightHand(playable: Collection<GapleTile>, picking: GapleTile?) {
+        val same = playableHand == playable.toSet() && pickingHand == picking
+        if (same) return
+        playableHand = playable.toSet()
+        pickingHand = picking
+        val state = handState ?: return
+        applyState(state, handViewer, animate = false)
+    }
+
+    private fun placeHandRings() {
+        var r = 0
+        for ((tile, c) in handAt) {
+            if (tile !in playableHand && tile != pickingHand) continue
+            if (r >= handRings.size) break
+            val s = GapleScene.HAND_SCALE * if (tile == pickingHand) 1.15f else 1f
+            setTransform(handRings[r], scaled(floatArrayOf(c[0], 0f, c[2]), s))
+            show(handRings[r], true)
+            r++
+        }
+        for (i in r until handRings.size) show(handRings[i], false)
+    }
+
+    /** Nearest hand tile under ([x], [y]) within [reach] px, or null. */
+    fun handTileAt(x: Float, y: Float, reach: Float): GapleTile? {
+        if (width <= 1 || handAt.isEmpty()) return null
+        var best: GapleTile? = null
+        var bestD = reach
+        val shiftOk = shiftInProjection()
+        for ((tile, c) in handAt) {
+            val p = project(c[0], c[1], c[2])
+            val s = if (shiftOk) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
+            val d = hypot(s[0] - x, s[1] - y)
+            if (d < bestD) {
+                bestD = d
+                best = tile
+            }
+        }
+        return best
     }
 
     /**
@@ -371,11 +448,12 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         val freeMidX = (left + right) / 2
         val freeMidY = (top + bottom) / 2
         if (points == null || points.isEmpty()) {
-            val shot = GapleScene.bounds().map(::screen)
+            // Felt only: rim may sit under the HUD so the playable table fills the strip.
+            val shot = GapleScene.fitBounds().map(::screen)
             val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
             val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)
             val k = min(halfW / needW, halfH / needH).coerceAtLeast(1e-3f)
-            // May be wider than [base]: the whole table has to fit the free box.
+            // May be wider than [base]: the felt has to fit the free box.
             val fov = (atan(tanBase / k) * 360f / PI.toFloat()).coerceAtLeast(MIN_FOV)
             return floatArrayOf(fov, freeMidX - cx, freeMidY - cy)
         }

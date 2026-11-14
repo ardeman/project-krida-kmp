@@ -100,12 +100,13 @@ Real users will try online play first; don't push for these, ask whether feedbac
   Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
 - Play app signing SHA-256 added to `web/public/.well-known/assetlinks.json` (2026-11-14;
   keep upload + debug fingerprints too). Live after the next web deploy.
-- App Store version **1.0** (`WAITING_FOR_REVIEW`, resubmitted 2026-11-13 via Zen after a
-  Developer Reject to add creatives): listing (id+en, no Android per 2.3.10), age 4+,
-  Games/Board, free pricing, worldwide, build **1**, review contact, App Privacy published
-  from `docs/store.md`. Screenshots from Pamer framed exports (iPhone 6.7″+6.5″, iPad 12.9″,
-  iPhone Duo outer — en+id). Header + search creatives uploaded for Indonesian and English
-  (U.S.) from `.tmp/pamer-exports/creatives/`. IAP `hapus_iklan` went with the version.
+- App Store version **1.0** (build **1**): rejected 2026-11-14 for guideline **2.1**
+  (demo account / Sign-in required checked with empty credentials). Fixed same day:
+  unchecked Sign-in required, Notes + Reply that sign-in is optional (Apple/Google for
+  friends only; no username/password), resubmitted → **Waiting for Review**. Listing
+  (id+en, no Android per 2.3.10), age 4+, Games/Board, free, worldwide, App Privacy from
+  `docs/store.md`. Review-notes template in `docs/store.md`. IAP `hapus_iklan` with the
+  version.
 - Store listing copy in `docs/store.md` updated for all five games (2026-11-13). Graphics:
   editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
   iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.
@@ -121,14 +122,20 @@ Real users will try online play first; don't push for these, ask whether feedbac
   **Link to Google Play** still returns “Couldn't find any matching Google Play apps”
   (closed tracks aren’t publicly searchable; store URL 404). **Continue** stays disabled
   until Play links. Next: promote **1.0.2** to Play **production**, then retry Finish
-  setup / Link to Play. Closed **1.0.3 / versionCode 4** AAB for Alpha (interstitial every finish + Remove-ads gate). AAB: `~/Desktop/krida-1.0.3-release.aab`.
-  Interstitial after **every** finished game when ready (was every other; Android + iOS,
-  2026-11-14).   Pre-ad gate with **Remove ads** before interstitial and rewarded (can't
-  overlay AdMob creatives) — see `docs/decisions.md`. Remove-ads button and
-  gate no longer wait for a loaded price string (closed testers). Play product
-  `hapus_iklan` is active (1 purchase option, 2026-11-14). For **free test**
-  purchases add the closed Google Group to account **License testing**; real
-  money works for opted-in closed testers on a Play install without that.
+  setup / Link to Play.   Closed **1.0.3 / versionCode 4** AAB for Alpha (interstitial every finish + Remove-ads gate). AAB: `~/Desktop/krida-1.0.3-release.aab`.
+  Interstitial when leaving a game (HUD back or result Menu) and on Play again /
+  next Gaple round against computers, when ready (Android + iOS, 2026-11-14).
+  Interstitial plays immediately (no confirm gate); rewarded still uses a
+  **Remove ads** gate (can't overlay AdMob creatives) — see `docs/decisions.md`.
+  Remove-ads button and gate no longer wait for a loaded price string (closed
+  testers). Play product
+  `hapus_iklan` is active (1 purchase option, 2026-11-14). Account **License
+  testing** set to Google Groups `google-tester-indonesia@googlegroups.com`
+  with `RESPOND_NORMALLY` (2026-11-14; replaced Email lists selection). Real
+  money still works for opted-in closed testers on a Play install without that.
+  **1.0.4 / versionCode 5** (2026-11-14): quit interstitial (no gate), in-app
+  update check, larger gaple board with voxel hand on the rim. AAB:
+  `~/Desktop/krida-1.0.4-release.aab`. IPA uploaded to App Store Connect.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 

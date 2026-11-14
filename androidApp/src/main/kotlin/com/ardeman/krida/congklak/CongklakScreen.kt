@@ -247,9 +247,15 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         if (table.play(seat, hole) && table is GuestTable) waiting = true
     }
 
-    fun exit() {
+    fun leave() {
         lifetime.stop()
         onExit()
+    }
+
+    /** Back / Menu: stop the board (and its audio) first, then interstitial, then navigate. */
+    fun exit() {
+        lifetime.stop()
+        activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
 
     // Turn timer: while a player on this device picks a pit, a countdown runs; at 0 the
@@ -470,7 +476,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             val local = table.mySeat == null || table.botLevel != null
             GameOver(
                 table, seats, state,
-                onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
+                onExit = ::exit,
                 onRestart = { if (local && activity != null) Ads.afterGame(activity, table::restart) else table.restart() },
             )
         }

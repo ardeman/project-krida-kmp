@@ -118,22 +118,22 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
-**Version:** marketing `1.0.3`, Android `versionCode` / iOS build `4` (see [changelog.md](changelog.md)).
+**Version:** marketing `1.0.4`, Android `versionCode` / iOS build `5` (see [changelog.md](changelog.md)).
 Paste the matching language block into Play “Release notes” (≤ 500) and App Store
 “What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
 notes go on the store form.
 
-### What’s New — 1.0.3 (id)
+### What’s New — 1.0.4 (id)
 
-> Iklan penuh layar setiap selesai main (bukan selang-seling).
-> Tombol Hapus iklan sebelum iklan interstitial / rewarded.
-> Hapus iklan tetap tersedia untuk penguji closed testing.
+> Iklan penuh layar saat keluar permainan (tombol kembali atau Menu), langsung tanpa konfirmasi.
+> Periksa pembaruan di menu; juga dicek otomatis saat buka aplikasi.
+> Meja gaple lebih besar; tangan pemain memakai ubin voxel di bibir meja.
 
-### What’s New — 1.0.3 (en-US)
+### What’s New — 1.0.4 (en-US)
 
-> Full-screen ad after every finished game (not every other).
-> Remove ads offered before interstitial and rewarded ads.
-> Remove ads stays available for closed testers.
+> Full-screen ad when leaving a game (back button or Menu), with no confirm step.
+> Check for update on the menu; also checked automatically on launch.
+> Larger gaple table; your hand is voxel tiles on the rim.
 
 **Graphics:** shipping files in `docs/brand/store/` (Play icon 512×512, feature graphic
 1024×500, phone screenshots). The screenshot editor lives in Pamer Studio at
@@ -147,6 +147,22 @@ to the required pixel sizes.
 |---|---|
 | Privacy policy | https://krida.ardeman.com/privasi/ |
 | Sign-in details (app access) | All functionality is available without special access |
+
+## App Store: App Review Information
+
+**Sign-in / demo account (guideline 2.1):** Sign-in is optional. There is no
+username/password login — only optional Sign in with Apple or Google for friends and
+invites. Every game mode works without an account (vs computer, pass-and-play, nearby,
+online rooms). Leave the Account screen without signing in to review gameplay.
+
+Paste into App Review Information → Notes (and into Reply to App Review when rejected
+for a missing demo account):
+
+> Sign-in is optional. Krida does not require an account to play. All five games work
+> fully without signing in (vs computer, pass-and-play, nearby Bluetooth/Wi-Fi, and
+> online rooms via code / public lobby / quick match). Optional Sign in with Apple or
+> Google only unlocks friends and invites. There is no username/password login, so a
+> demo username and password cannot be provided. Please review while signed out.
 | Ads | Yes, the app contains ads |
 | Content rating (IARC) | Category Game. Violence, sexuality, language, controlled substances, gambling: No. Users interact or exchange content: No (nearby and online only send game moves and seat names, no free-text chat). Shares location with other users: No. Digital purchases: Yes |
 | Target audience | 13–15, 16–17, 18+ (no age group under 13, so the app stays out of the Families program) |

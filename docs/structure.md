@@ -57,6 +57,7 @@ A change to one side usually needs the same change in the file on the same row.
 | LAN | `lan/LanTransport.kt` | `Transport/LanTransport.swift` |
 | Online (WebSocket to the relay) | `online/OnlineTransport.kt` | `Transport/OnlineTransport.swift` |
 | Ads, remove-ads purchase | `ads/Ads.kt`, `ads/Billing.kt` | `Ads/Ads.swift`, `Store.swift`, `AdIds.swift` |
+| Check for update (menu) | `update/AppUpdate.kt` | `Support/AppUpdate.swift` |
 | Strings | `res/values/strings.xml` (EN), `res/values-in/strings.xml` (ID) | `Localizable.xcstrings`, `InfoPlist.xcstrings` |
 | Audio | `res/raw/` | `Audio/` |
 

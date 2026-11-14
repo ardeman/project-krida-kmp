@@ -2,11 +2,12 @@
 import SwiftUI
 @preconcurrency import UserMessagingPlatform
 
-/// AdMob: a banner on the menus, an interstitial after every finished game (when one is ready),
-/// and a rewarded ad that pays for a hint. Owning "Remove ads" ([removed]) turns all of it off;
-/// hints are then free. Nothing is requested before the UMP consent flow allows it.
-/// Full-screen ads open behind a short gate with "Remove ads" (AdMob forbids overlaying the
-/// creative). Mirrors androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
+/// AdMob: a banner on the menus, an interstitial when leaving a game or restarting after a
+/// finish (when one is ready), and a rewarded ad that pays for a hint. Owning "Remove ads"
+/// ([removed]) turns all of it off; hints are then free. Nothing is requested before the UMP
+/// consent flow allows it. Interstitials show as soon as one is ready; rewarded ads still open
+/// behind a short gate with "Remove ads" (AdMob forbids overlaying the creative). Mirrors
+/// androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
 @MainActor
 final class Ads: NSObject, ObservableObject {
     static let shared = Ads()
@@ -70,25 +71,17 @@ final class Ads: NSObject, ObservableObject {
 
     func showPrivacyOptions() { ConsentForm.presentPrivacyOptionsForm(from: nil) { _ in } }
 
-    /// Call when the player leaves a finished game; [then] runs after the interstitial
-    /// closes, or immediately if ads are off / none ready yet.
+    /// Call when the player leaves a game (back / Menu) or restarts after a finish; [then]
+    /// runs after the interstitial closes, or immediately if ads are off / none ready yet.
+    /// No confirm gate — the creative plays straight away when one is loaded.
     func afterGame(then: @escaping () -> Void) {
         guard !removed, let ad = interstitial else {
             loadInterstitial()
             return then()
         }
-        presentGate(
-            title: String(localized: "A short ad", bundle: .app),
-            body: String(localized: "Remove ads once, or continue to watch.", bundle: .app),
-            continueLabel: String(localized: "Continue", bundle: .app),
-            onContinue: { [weak self] in
-                guard let self else { return }
-                self.interstitial = nil
-                self.onClosed = { [weak self] in self?.loadInterstitial(); then() }
-                ad.present(from: nil)
-            },
-            onSkip: then
-        )
+        interstitial = nil
+        onClosed = { [weak self] in self?.loadInterstitial(); then() }
+        ad.present(from: nil)
     }
 
     /// Runs [onReward] once the player has watched a rewarded ad. Free when ads are removed,

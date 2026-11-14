@@ -634,9 +634,15 @@ private struct PerangKapalBoardView: View {
         model.layout(size: size, room: room, obstacles: obstacles)
     }
 
-    private func exit() {
+    private func leave() {
         model.stop()
         onExit()
+    }
+
+    /// Back / Menu: stop the board (and its audio) first, then interstitial, then navigate.
+    private func exit() {
+        model.stop()
+        ads.afterGame(then: onExit)
     }
 
     private func hudBox(_ key: String) -> some ViewModifier {
@@ -946,7 +952,7 @@ private struct PerangKapalBoardView: View {
                     .font(Theme.font(14 * s, .bold))
                     .foregroundStyle(Theme.muted)
                 HStack(spacing: 10 * s) {
-                    Button { ads.afterGame(then: exit) } label: { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
                     if table.canRestart {
                         Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }

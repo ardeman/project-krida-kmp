@@ -370,9 +370,15 @@ private struct CongklakBoardView: View {
         boardScale = size.width / LandscapeStage<EmptyView>.designSize.width
     }
 
-    private func exit() {
+    private func leave() {
         model.stop()
         onExit()
+    }
+
+    /// Back / Menu: stop the board (and its audio) first, then interstitial, then navigate.
+    private func exit() {
+        model.stop()
+        ads.afterGame(then: onExit)
     }
 
     /// Interstitials only where nobody waits on this device: local games, or leaving to the menu.
@@ -561,7 +567,7 @@ private struct CongklakBoardView: View {
                     scoreTile(farSeat, winner: winner)
                 }
                 HStack(spacing: 10 * s) {
-                    Button { ads.afterGame(then: exit) } label: { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
                         Button(action: restart) { Text("Play again").frame(maxWidth: .infinity) }

@@ -319,11 +319,6 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         }
     }
 
-    fun exit() {
-        lifetime.stop()
-        onExit()
-    }
-
     // Placement timer: while a player on this phone places their fleet, a countdown runs; at 0
     // the phone places the ships still missing (PerangKapalGame.timeoutFleet) and taps Ready.
     // The pass cover and waiting on the other side stop it; each placing turn starts afresh.
@@ -379,8 +374,20 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         if (table.fire(seat, move.fire ?: return@LaunchedEffect)) Sounds.play(Sounds.Effect.Tap)
     }
 
-    BackHandler(onBack = ::exit)
     val activity = LocalActivity.current
+
+    fun leave() {
+        lifetime.stop()
+        onExit()
+    }
+
+    /** Back / Menu: stop the board (and its audio) first, then interstitial, then navigate. */
+    fun exit() {
+        lifetime.stop()
+        activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
+    }
+
+    BackHandler(onBack = ::exit)
     val turned = LocalStageTurned.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -661,7 +668,7 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         }
         if (state.finished) ResultCard(
             table, state,
-            onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
+            onExit = ::exit,
             onRestart = {
                 selectedKind = 0
                 activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart()

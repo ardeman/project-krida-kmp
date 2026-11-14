@@ -38,12 +38,13 @@ in the same commit as the code.
   1 person. Congklak: seat 1 is always a person.
 - **Rule chips explain themselves:** a hint line under the options says what the chosen or last
   tapped option does.
-- **Ads:** banner on menus only (not in game, not in room lobbies), interstitial after every
-  finished game when one is ready (Menu / Play again / next Gaple round against computers),
-  rewarded ad for a hint from the hard bot. Before each full-screen ad, a short gate offers
-  "Remove ads" (AdMob forbids overlaying the creative). A one-time "Remove ads" purchase
-  turns them off. Audience General / 13+, not Families. (Owner 2026-11-14: every finish;
-  remove-ads on interstitial/rewarded via gate.)
+- **Ads:** banner on menus only (not in game, not in room lobbies), interstitial when leaving
+  a game (HUD back or result Menu) and after Play again / next Gaple round against computers,
+  when one is ready — plays immediately, no confirm gate (owner 2026-11-14); rewarded ad for a
+  hint from the hard bot still opens behind a short gate with "Remove ads" (AdMob forbids
+  overlaying the creative). A one-time "Remove ads" purchase turns them off. Audience
+  General / 13+, not Families. (Owner 2026-11-14: every finish; also on quit via back or Menu;
+  interstitial no gate; rewarded keeps gate.)
 
 ## Language and audio
 
@@ -250,6 +251,10 @@ in the same commit as the code.
 - **Player HUD (owner, 2026-11-13):** gaple uses ular tangga / ludo left-column tiles for
   every seat count (2, 3 or 4), two a row — not congklak pills. Same rule in
   `docs/design.md`. Perang kapal also uses those tiles (owner, 2026-11-14).
+- **Larger table on screen (owner, 2026-11-14):** camera fit uses the felt
+  (`GapleScene.fitBounds`); left/right hands sit on the felt edge (not the outer rim) so
+  they stay clear of the seat tiles without shrinking the board. Your hand is larger
+  face-up voxels on the near rim; status pills sit in the left column.
 - **End rings after pick (owner, 2026-11-13):** board end rings stay hidden on your turn
   until you tap a tile. One legal end → plays there immediately; both → only those two
   rings light; tap a ring to place. Avoids showing both empty ends before a pick so

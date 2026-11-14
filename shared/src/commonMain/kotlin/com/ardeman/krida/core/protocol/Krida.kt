@@ -46,6 +46,12 @@ object Krida {
     const val PRIVACY_URL_ID: String = "$SITE_URL/privasi/"
     const val PRIVACY_URL_EN: String = "$SITE_URL/en/privacy/"
 
+    /** Store listings opened by "Check for update" (menu). */
+    const val PLAY_STORE_URL: String = "https://play.google.com/store/apps/details?id=com.ardeman.krida"
+    /** App Store numeric id (App Store Connect). Empty iTunes lookup until the app is public. */
+    const val APP_STORE_ID: String = "6832093929"
+    const val APP_STORE_URL: String = "https://apps.apple.com/app/id$APP_STORE_ID"
+
     const val RELAY_URL: String = "wss://krida-relay.ardeman.com"
 
     /** How long a transport keeps reopening a dropped link (online socket) before giving up. */

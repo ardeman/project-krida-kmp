@@ -161,6 +161,7 @@ struct ContentView: View {
         .onAppear { UIApplication.shared.isIdleTimerDisabled = keepAwake }
         .onChange(of: keepAwake) { _, on in UIApplication.shared.isIdleTimerDisabled = on }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+        .onAppear { AppUpdate.shared.checkOnLaunch() }
         // Launch args for simulator screenshots, UI tests and promo recording (pass after `--` to simctl).
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklak") { startPassAndPlay() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklakComputer") { startVsComputer(.normal) } }
@@ -729,13 +730,25 @@ struct ContentView: View {
     }
 }
 
-/// Privacy policy (always); "Restore purchases" while ads are on; "Ad privacy" where required.
-/// "Remove ads" sits beside the banner.
+/// Privacy policy (always); "Check for update"; "Restore purchases" while ads are on;
+/// "Ad privacy" where required. "Remove ads" sits beside the banner.
 private struct AdButtons: View {
     @ObservedObject private var ads = Ads.shared
     @ObservedObject private var language = Language.shared
+    @ObservedObject private var appUpdate = AppUpdate.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.uiScale) private var s
+
+    private var updateLabel: LocalizedStringKey {
+        switch appUpdate.status {
+        case .checking: "Checking…"
+        case .upToDate: "You're up to date"
+        case .available: "Update available"
+        case .notListed: "Not on the App Store yet"
+        case .failed: "Couldn't check"
+        case .idle: "Check for update"
+        }
+    }
 
     var body: some View {
         HStack(spacing: 8 * s) {
@@ -743,6 +756,15 @@ private struct AdButtons: View {
                 Sounds.shared.play(.tap)
                 let url = language.code == .id ? Krida.shared.PRIVACY_URL_ID : Krida.shared.PRIVACY_URL_EN
                 if let link = URL(string: url) { openURL(link) }
+            }
+            .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+            Button(updateLabel) {
+                Sounds.shared.play(.tap)
+                switch appUpdate.status {
+                case .available: appUpdate.openStore()
+                case .checking: break
+                default: appUpdate.check()
+                }
             }
             .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
             if !ads.removed {

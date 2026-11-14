@@ -11,6 +11,20 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
+## 1.0.4 (build 5) — 2026-11-14
+
+### id
+
+- Iklan penuh layar saat keluar permainan (tombol kembali atau Menu), langsung tanpa konfirmasi.
+- Periksa pembaruan di menu; juga dicek otomatis saat buka aplikasi.
+- Meja gaple lebih besar; tangan pemain memakai ubin voxel di bibir meja.
+
+### en-US
+
+- Full-screen ad when leaving a game (back button or Menu), with no confirm step.
+- Check for update on the menu; also checked automatically on launch.
+- Larger gaple table; your hand is voxel tiles on the rim.
+
 ## 1.0.3 (build 4) — 2026-11-14
 
 ### id

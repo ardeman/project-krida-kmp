@@ -80,6 +80,11 @@
     <string name="ads_gate_watch">Tonton iklan</string>
     <string name="ads_privacy">Privasi iklan</string>
     <string name="privacy_policy">Kebijakan privasi</string>
+    <string name="update_check">Cek pembaruan</string>
+    <string name="update_checking">Memeriksa…</string>
+    <string name="update_up_to_date">Sudah versi terbaru</string>
+    <string name="update_available">Pembaruan tersedia</string>
+    <string name="update_failed">Tidak bisa memeriksa</string>
     <string name="menu_more">Pilihan lain di bawah</string>
     <string name="hint">Petunjuk (tonton iklan)</string>
     <string name="hint_free">Petunjuk</string>
@@ -448,6 +453,7 @@
     <string name="gaple_col_points">Poin</string>
     <string name="gaple_col_total">Total</string>
     <string name="gaple_next_round">Ronde berikutnya</string>
+    <string name="gaple_starting_round">Memulai ronde berikutnya…</string>
     <string name="gaple_waiting_host">Menunggu tuan rumah</string>
     <string name="gaple_target">Pertama ke 100 poin</string>
     <string name="gaple_team_wins">Tim %1$s menang</string>

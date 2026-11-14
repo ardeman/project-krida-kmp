@@ -21,8 +21,8 @@ android {
         applicationId = "com.ardeman.krida"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -86,6 +86,8 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.ump)
     implementation(libs.billing)
+    // Play In-App Updates for "Check for update" on the menu (Play installs only).
+    implementation(libs.app.update)
     // play-services-ads pulls in an old Fragment that breaks registerForActivityResult.
     implementation(libs.fragment)
     // QR join: Play services shows the scanner, so no camera permission and no ML model in the APK.

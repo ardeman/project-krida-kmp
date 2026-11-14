@@ -31,8 +31,10 @@ import kotlinx.coroutines.launch
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import com.ardeman.krida.update.AppUpdate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -214,6 +216,11 @@ class MainActivity : ComponentActivity() {
             pendingAction = null
         }
 
+    private val appUpdateLauncher =
+        registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            AppUpdate.onUpdateFlowResult(result.resultCode)
+        }
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(Language.wrap(newBase))
     }
@@ -249,6 +256,7 @@ class MainActivity : ComponentActivity() {
         GapleSettings.init(this)
         LastRoom.init(this)
         Account.init(this)
+        AppUpdate.bind(appUpdateLauncher)
         // Language and theme changes recreate this activity with its original launch intent.
         // Apply a room link only on the initial launch so leaving it is not undone later.
         if (savedInstanceState == null) {
@@ -404,6 +412,12 @@ class MainActivity : ComponentActivity() {
         foreground = true
         Sounds.setActive(true)
         Ads.refresh()
+        AppUpdate.checkOnLaunch(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        AppUpdate.resumeIfNeeded(this)
     }
 
     override fun onStop() {
@@ -546,6 +560,20 @@ class MainActivity : ComponentActivity() {
      */
     @Composable
     private fun AdButtons() {
+        val updateStatus = AppUpdate.status
+        LaunchedEffect(updateStatus) {
+            if (updateStatus == AppUpdate.Status.UpToDate || updateStatus == AppUpdate.Status.Failed) {
+                kotlinx.coroutines.delay(2_500)
+                AppUpdate.clearStatus()
+            }
+        }
+        val updateLabel = when (updateStatus) {
+            AppUpdate.Status.Checking -> stringResource(R.string.update_checking)
+            AppUpdate.Status.UpToDate -> stringResource(R.string.update_up_to_date)
+            AppUpdate.Status.Available -> stringResource(R.string.update_available)
+            AppUpdate.Status.Failed -> stringResource(R.string.update_failed)
+            AppUpdate.Status.Idle -> stringResource(R.string.update_check)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SecondaryButton(
                 stringResource(R.string.privacy_policy),
@@ -556,6 +584,17 @@ class MainActivity : ComponentActivity() {
                         Krida.PRIVACY_URL_EN
                     }
                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                },
+                tint = Theme.muted,
+            )
+            SecondaryButton(
+                updateLabel,
+                onClick = {
+                    when (AppUpdate.status) {
+                        AppUpdate.Status.Available -> AppUpdate.openStore(this@MainActivity)
+                        AppUpdate.Status.Checking -> Unit
+                        else -> AppUpdate.check(this@MainActivity)
+                    }
                 },
                 tint = Theme.muted,
             )

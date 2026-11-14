@@ -37,17 +37,22 @@ object GapleScene {
     private val GOLD = floatArrayOf(0.95f, 0.72f, 0.29f)
     private val TOP_ONLY = floatArrayOf(1f, 0.82f, 0.9f)
 
-    /** Corners of the table with the rim, low and high, for fitting the camera. */
-    fun bounds(): List<FloatArray> {
-        val x = FELT_X + RIM
-        val z = FELT_Z + RIM
-        return listOf(0f, TILE_H).flatMap { y ->
+    /** Corners of the table with the rim, low and high (mesh / preview). */
+    fun bounds(): List<FloatArray> = boxCorners(FELT_X + RIM, FELT_Z + RIM)
+
+    /**
+     * Camera fit box: the felt. Side hands sit on the felt edge (not the outer rim) so they
+     * stay in this box; the near rim can still tuck under your larger hand.
+     */
+    fun fitBounds(): List<FloatArray> = boxCorners(FELT_X, FELT_Z)
+
+    private fun boxCorners(x: Float, z: Float): List<FloatArray> =
+        listOf(0f, TILE_H).flatMap { y ->
             listOf(
                 floatArrayOf(-x, y, -z), floatArrayOf(x, y, -z),
                 floatArrayOf(-x, y, z), floatArrayOf(x, y, z),
             )
         }
-    }
 
     /** Wooden table with a felt top, two tones in big squares so the tilt reads. */
     fun tableMesh(): VoxelMesh {
@@ -167,32 +172,59 @@ object GapleScene {
         }
     }
 
+    /** Lift above the rim for a playable tile in your hand. */
+    const val HAND_LIFT_PLAYABLE = 0.55f
+    /** Extra lift while that tile is picked (waiting for an end tap). */
+    const val HAND_LIFT_PICKING = 0.85f
+    /** Your face-up hand is drawn larger than the line / opponent backs so pips stay readable. */
+    const val HAND_SCALE = 1.7f
+
     /**
-     * Column-major matrix for face-down tile [index] of [count] in the hand on [side] (see
-     * [side]); the tiles point at the table's centre and lie in a row along the rim.
+     * Column-major matrix for tile [index] of [count] in the hand on [side] (see [side]);
+     * the tiles point at the table's centre and lie in a row along the rim. [lift] raises a
+     * face-up tile; [scale] enlarges your own hand.
      */
-    fun handMatrix(side: Int, index: Int, count: Int): FloatArray {
+    fun handMatrix(side: Int, index: Int, count: Int): FloatArray =
+        handMatrix(side, index, count, 0f, 1f)
+
+    fun handMatrix(side: Int, index: Int, count: Int, lift: Float): FloatArray =
+        handMatrix(side, index, count, lift, 1f)
+
+    fun handMatrix(side: Int, index: Int, count: Int, lift: Float, scale: Float): FloatArray {
         // Hands that grew by drawing close up so they stay on the rim.
         val span = if (side == 1 || side == 3) 2 * FELT_Z - 2f else 2 * FELT_X - 4f
-        val step = if (count > 1) minOf(HAND_STEP, span / (count - 1)) else HAND_STEP
+        val minStep = HAND_STEP * scale
+        val step = if (count > 1) minOf(minStep, span / (count - 1)) else minStep
         val offset = (index - (count - 1) / 2f) * step
-        val edge = RIM / 2
-        return when (side) {
-            1 -> matrix(1f, 0f, -FELT_X - edge, 0f, offset)
-            3 -> matrix(1f, 0f, FELT_X + edge, 0f, offset)
-            0 -> matrix(0f, 1f, offset, 0f, FELT_Z + edge)
-            else -> matrix(0f, 1f, offset, 0f, -FELT_Z - edge)
+        // Near/far: outer rim (under your HUD hand). Left/right: on the felt edge so a
+        // felt-only camera fit keeps them clear of the seat-tile columns.
+        val nearEdge = RIM / 2
+        val sideInset = 0.55f
+        val m = when (side) {
+            1 -> matrix(1f, 0f, -FELT_X + sideInset, lift, offset)
+            3 -> matrix(1f, 0f, FELT_X - sideInset, lift, offset)
+            0 -> matrix(0f, 1f, offset, lift, FELT_Z + nearEdge)
+            else -> matrix(0f, 1f, offset, lift, -FELT_Z - nearEdge)
         }
+        if (scale != 1f) {
+            for (i in 0..2) {
+                m[i] *= scale
+                m[4 + i] *= scale
+                m[8 + i] *= scale
+            }
+        }
+        return m
     }
 
     /** Where a played tile flies in from: the middle of [side]'s hand. */
     fun handCenter(side: Int): FloatArray {
-        val edge = RIM / 2
+        val nearEdge = RIM / 2
+        val sideInset = 0.55f
         return when (side) {
-            1 -> floatArrayOf(-FELT_X - edge, 0f, 0f)
-            3 -> floatArrayOf(FELT_X + edge, 0f, 0f)
-            0 -> floatArrayOf(0f, 0f, FELT_Z + edge)
-            else -> floatArrayOf(0f, 0f, -FELT_Z - edge)
+            1 -> floatArrayOf(-FELT_X + sideInset, 0f, 0f)
+            3 -> floatArrayOf(FELT_X - sideInset, 0f, 0f)
+            0 -> floatArrayOf(0f, 0f, FELT_Z + nearEdge)
+            else -> floatArrayOf(0f, 0f, -FELT_Z - nearEdge)
         }
     }
 

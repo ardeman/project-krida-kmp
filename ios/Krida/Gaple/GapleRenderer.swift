@@ -4,9 +4,9 @@ import Shared
 import UIKit
 
 /// Draws the shared voxel gaple table (`GapleScene` in shared/) with RealityKit: the line of
-/// play on the felt, the other hands face down on the rim (face up at a round end), and dashed
-/// gold rings on the open ends. Your own hand is drawn by the screen. Port of Android's
-/// `GapleRenderer`.
+/// play on the felt, every hand as voxels on the rim (yours face up; others face down, face
+/// up at a round end), and dashed gold rings on the open ends and under your playable tiles.
+/// Port of Android's `GapleRenderer`.
 ///
 /// The view is as large as the screen and is offset so the table sits in the middle of the
 /// space the HUD leaves free (`viewFrame`); the field of view is chosen so the table fills it.
@@ -25,11 +25,18 @@ final class GapleRenderer {
     private var tiles: [ModelEntity] = []
     private var backs: [ModelEntity] = []
     private var rings: [ModelEntity] = []
+    private var handRings: [ModelEntity] = []
     /// Ring centres on the felt, for taps; nil when an end has no ring.
     private var ringAt: [SIMD3<Float>?] = [nil, nil]
     /// Ends whose rings are shown and pulsing while the player picks; empty when idle.
     private var activeEnds: Set<Int> = []
     private var pulseTime: Float = 0
+    /// Your hand tiles on the near rim: tile + world centre, for taps.
+    private var handAt: [(GapleTile, SIMD3<Float>)] = []
+    private var playableHand: [GapleTile] = []
+    private var pickingHand: GapleTile?
+    private var handViewer = 0
+    private var handState: GapleState?
 
     /// A tile flying from its player's side to its place in the line.
     private struct Flight {
@@ -65,6 +72,7 @@ final class GapleRenderer {
 
     /// Face-down tiles: up to three other hands of seven.
     private static let backCount = 3 * Int(GapleGame.shared.HAND)
+    private static let handRingCount = Int(GapleGame.shared.HAND)
 
     init() {
         view = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
@@ -103,6 +111,12 @@ final class GapleRenderer {
             e.isEnabled = false
             anchor.addChild(e)
             rings.append(e)
+        }
+        for _ in 0..<Self.handRingCount {
+            let e = ModelEntity(mesh: ringMesh, materials: [material])
+            e.isEnabled = false
+            anchor.addChild(e)
+            handRings.append(e)
         }
         anchor.addChild(camera)
         view.scene.addAnchor(anchor)
@@ -197,8 +211,29 @@ final class GapleRenderer {
                 }
             }
         }
-        // Other hands on the rim: face down while the round runs, face up at its end.
+        // Hands on the rim: yours face up; others face down (face up at a round end).
         var b = 0
+        let mine = state.hands.indices.contains(viewer) ? state.hands[viewer] : []
+        let mySide = scene.side(seat: Int32(viewer), viewer: Int32(viewer), players: Int32(players))
+        var centers: [(GapleTile, SIMD3<Float>)] = []
+        for (i, tile) in mine.enumerated() {
+            guard let index = set.firstIndex(of: tile), !shown[index] else { continue }
+            let lift: Float
+            if pickingHand == tile {
+                lift = scene.HAND_LIFT_PICKING
+            } else if playableHand.contains(where: { $0 == tile }) {
+                lift = scene.HAND_LIFT_PLAYABLE
+            } else {
+                lift = 0
+            }
+            let m = Self.matrix(scene.handMatrix(side: mySide, index: Int32(i), count: Int32(mine.count), lift: lift, scale: scene.HAND_SCALE))
+            tiles[index].transform = Transform(matrix: m)
+            shown[index] = true
+            centers.append((tile, SIMD3(m.columns.3.x, m.columns.3.y, m.columns.3.z)))
+        }
+        handAt = centers
+        handViewer = viewer
+        handState = state
         for seat in 0..<players where seat != viewer {
             let side = scene.side(seat: Int32(seat), viewer: Int32(viewer), players: Int32(players))
             let hand = state.hands.indices.contains(seat) ? state.hands[seat] : []
@@ -219,12 +254,52 @@ final class GapleRenderer {
         }
         for i in b..<backs.count { backs[i].isEnabled = false }
         for (i, e) in tiles.enumerated() { e.isEnabled = shown[i] }
+        placeHandRings()
 
         let ends: [GapleEndPose?] = state.roundOver || layout == nil ? [nil, nil] : [layout?.left, layout?.right]
         for (end, pose) in ends.enumerated() {
             ringAt[end] = pose.map { Self.vec(scene.ringCenter(end: $0)) }
         }
         refreshRings()
+    }
+
+    /// Raises playable tiles and puts gold rings under them; `picking` gets the higher lift.
+    func highlightHand(playable: [GapleTile], picking: GapleTile?) {
+        guard playableHand != playable || pickingHand != picking else { return }
+        playableHand = playable
+        pickingHand = picking
+        guard let state = handState else { return }
+        apply(state, viewer: handViewer, animate: false)
+    }
+
+    private func placeHandRings() {
+        var r = 0
+        for (tile, c) in handAt {
+            let on = tile == pickingHand || playableHand.contains(where: { $0 == tile })
+            guard on, r < handRings.count else { continue }
+            let s = scene.HAND_SCALE * (tile == pickingHand ? 1.15 : 1)
+            handRings[r].transform = Self.ring(SIMD3(c.x, 0, c.z), scale: s)
+            handRings[r].isEnabled = true
+            r += 1
+        }
+        for i in r..<handRings.count { handRings[i].isEnabled = false }
+    }
+
+    /// Nearest hand tile under `point` within `reach` pt, or nil.
+    func handTileAt(_ point: CGPoint, reach: CGFloat) -> GapleTile? {
+        guard screen.width > 0, !handAt.isEmpty else { return nil }
+        var best: GapleTile?
+        var bestD = reach
+        for (tile, c) in handAt {
+            let p = project(c, tanV: tanHalf)
+            let s = CGPoint(x: p.x + viewFrame.minX, y: p.y + viewFrame.minY)
+            let d = hypot(s.x - point.x, s.y - point.y)
+            if d < bestD {
+                bestD = d
+                best = tile
+            }
+        }
+        return best
     }
 
     /// Shows and pulses only the given end rings (0 left, 1 right) so a picked tile's legal
@@ -315,7 +390,8 @@ final class GapleRenderer {
         screen = size
         self.free = free
         let baseTan = tan(scene.CAMERA_VERTICAL_FOV_DEGREES * .pi / 360)
-        let points = focus ?? scene.bounds().map(Self.vec)
+        // Felt only when not framing a preview focus: rim may tuck under the HUD.
+        let points = focus ?? scene.fitBounds().map(Self.vec)
         let c = CGPoint(x: size.width / 2, y: size.height / 2)
         let shot = points.map { project($0, tanV: baseTan) }
         let halfW = max(shot.map { abs($0.x - c.x) }.max() ?? 1, 1)

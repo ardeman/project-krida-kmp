@@ -108,9 +108,8 @@ import kotlinx.coroutines.launch
 private const val BOT_PAUSE_MS = 650L
 private const val SETTLE_MS = 250L
 private const val ROOM = "room"
-private val IVORY = Color(0xFFFBF3E0)
-private val PIP = Color(0xFF2A211E)
-private val PIP_RED = Color(0xFFBF2A2E)
+/** HUD that may cover the wooden rim; must not shrink the camera free box. */
+private val OVERLAY_HUD = setOf(ROOM, "rollTimer")
 
 @Composable
 fun GapleScreen(table: GapleTable, onExit: () -> Unit) {
@@ -237,6 +236,9 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         val r = renderer ?: return@LaunchedEffect
         r.highlightEnds(picking?.let { GapleGame.endsFor(state, it) }.orEmpty())
     }
+    LaunchedEffect(playable, picking, renderer, state) {
+        renderer?.highlightHand(playable, picking)
+    }
 
     // Once your timer runs out, the phone plays your turns after a short pause
     // (Krida.AUTO_PLAY_MS) instead of a countdown, until you tap a tile yourself or
@@ -331,9 +333,15 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         deal()
     }
 
-    fun exit() {
+    fun leave() {
         lifetime.stop()
         onExit()
+    }
+
+    /** Back / Menu: stop the board (and its audio) first, then interstitial, then navigate. */
+    fun exit() {
+        lifetime.stop()
+        activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
 
     BackHandler(onBack = ::exit)
@@ -378,32 +386,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             )
         }
 
-        // Picking an end: tap near one of the two pulsing rings.
-        if (picking != null) {
-            val reach = with(LocalDensity.current) { 64.dp.toPx() }
-            val leftLabel = stringResource(R.string.gaple_end_left)
-            val rightLabel = stringResource(R.string.gaple_end_right)
-            Box(
-                Modifier.fillMaxSize()
-                    .semantics {
-                        customActions = listOf(
-                            CustomAccessibilityAction(leftLabel) { playEnd(GapleGame.LEFT); true },
-                            CustomAccessibilityAction(rightLabel) { playEnd(GapleGame.RIGHT); true },
-                        )
-                    }
-                    .pointerInput(renderer, picking) {
-                        detectTapGestures { tap ->
-                            val r = renderer ?: return@detectTapGestures
-                            val hit = (0..1).mapNotNull { end -> r.endOnScreen(end)?.let { end to it } }
-                                .minByOrNull { (_, xy) -> hypot(xy[0] - tap.x, xy[1] - tap.y) }
-                                ?: return@detectTapGestures
-                            if (hypot(hit.second[0] - tap.x, hit.second[1] - tap.y) <= reach) playEnd(hit.first)
-                        }
-                    },
-            )
-        }
-
-        // The table takes the largest free space the HUD leaves.
+        // The table fills the strip between the side columns. Your hand is voxels on the rim.
         val hud = remember { mutableStateMapOf<String, FloatArray>() }
         fun Modifier.hud(key: String) = onGloballyPositioned {
             val p = it.positionInWindow()
@@ -412,12 +395,12 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                 p.x - viewOrigin[0] + it.size.width, p.y - viewOrigin[1] + it.size.height,
             )
         }
-        val margin = with(LocalDensity.current) { 8.dp.toPx() }
+        val margin = with(LocalDensity.current) { 4.dp.toPx() }
         LaunchedEffect(renderer) {
             val r = renderer ?: return@LaunchedEffect
             snapshotFlow { hud.toMap() }.collect { boxes ->
                 val room = boxes[ROOM] ?: return@collect
-                val obstacles = boxes.filterKeys { it != ROOM }.toSortedMap().values.map {
+                val obstacles = boxes.filterKeys { it !in OVERLAY_HUD }.toSortedMap().values.map {
                     floatArrayOf(it[0] - margin, it[1] - margin, it[2] + margin, it[3] + margin)
                 }
                 r.fitBoard(room, obstacles)
@@ -427,9 +410,26 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         val youLabel = stringResource(R.string.bot_you)
         fun seatOn(seat: Int) = seat == state.turn && !state.roundOver && !state.finished
 
-        // Same left-column tiles for every seat count (2, 3 or 4), two a row like ular tangga / ludo.
-        Row(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM)) {
-            Column(Modifier.width(150.dp).fillMaxHeight().hud("left"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val reach = with(LocalDensity.current) { 110.dp.toPx() }
+        val leftLabel = stringResource(R.string.gaple_end_left)
+        val rightLabel = stringResource(R.string.gaple_end_right)
+        val sidePad = 24.dp
+        val leftW = 128.dp
+        val rightW = 136.dp
+
+        // Side chrome only (aligned columns). Drawn under the tap layer; empty centre does not
+        // block because the tap layer's padding keeps side hits for these columns.
+        Box(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(gameInsets)
+                .padding(horizontal = sidePad, vertical = 14.dp)
+                .hud(ROOM),
+        ) {
+            Column(
+                Modifier.width(leftW).fillMaxHeight().align(Alignment.CenterStart).hud("left"),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
                 Text(stringResource(R.string.gaple_title), style = Theme.font(18, FontWeight.Black, Theme.ink))
                 Text(
@@ -440,6 +440,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                     stringResource(R.string.gaple_pile, GapleGame.asideCount(state)),
                     style = Theme.font(12, FontWeight.Bold, Theme.muted),
                 )
+                EventPills(table, state, myTurn, picking != null, Modifier.fillMaxWidth())
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     (0 until state.players).toList().chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -451,18 +452,10 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                     }
                 }
             }
-            Column(Modifier.weight(1f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                EventPills(table, state, myTurn, picking != null, Modifier.heightIn(min = 32.dp).hud("pills"))
-                Spacer(Modifier.weight(1f))
-                Hand(
-                    hand = state.hands.getOrNull(me).orEmpty(),
-                    playable = playable.toSet(),
-                    picking = picking,
-                    onTap = ::play,
-                    modifier = Modifier.hud("hand"),
-                )
-            }
-            Column(Modifier.width(160.dp).fillMaxHeight().hud("right"), horizontalAlignment = Alignment.End) {
+            Column(
+                Modifier.width(rightW).fillMaxHeight().align(Alignment.CenterEnd).hud("right"),
+                horizontalAlignment = Alignment.End,
+            ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SoundToggles()
                     CircleIconButton(R.drawable.ic_help, stringResource(R.string.congklak_rules_title), { showRules = true })
@@ -494,6 +487,44 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             }
         }
 
+        // On top of the board, inset past the side columns so chrome stays tappable. Full
+        // height covers the near-rim hand (often below the old centre strip).
+        var tapOrigin by remember { mutableStateOf(floatArrayOf(0f, 0f)) }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(gameInsets)
+                .padding(start = sidePad + leftW, end = sidePad + rightW)
+                .onGloballyPositioned {
+                    val p = it.positionInWindow()
+                    tapOrigin = floatArrayOf(p.x - viewOrigin[0], p.y - viewOrigin[1])
+                }
+                .semantics {
+                    if (picking != null) {
+                        customActions = listOf(
+                            CustomAccessibilityAction(leftLabel) { playEnd(GapleGame.LEFT); true },
+                            CustomAccessibilityAction(rightLabel) { playEnd(GapleGame.RIGHT); true },
+                        )
+                    }
+                }
+                .pointerInput(renderer, picking, playable, tapOrigin[0], tapOrigin[1]) {
+                    detectTapGestures { tap ->
+                        val r = renderer ?: return@detectTapGestures
+                        val x = tap.x + tapOrigin[0]
+                        val y = tap.y + tapOrigin[1]
+                        if (picking != null) {
+                            val hit = (0..1).mapNotNull { end -> r.endOnScreen(end)?.let { end to it } }
+                                .minByOrNull { (_, xy) -> hypot(xy[0] - x, xy[1] - y) }
+                            if (hit != null && hypot(hit.second[0] - x, hit.second[1] - y) <= reach) {
+                                playEnd(hit.first)
+                                return@detectTapGestures
+                            }
+                        }
+                        r.handTileAt(x, y, reach)?.let(::play)
+                    }
+                },
+        )
+
         table.waiting?.let { away ->
             CountdownNotice(
                 stringResource(R.string.online_waiting_for, away.name),
@@ -511,10 +542,15 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             )
         }
 
-        if (roundCard) RoundCard(table, state, roundSeconds, turnTotal, onExit = ::exit, onNext = ::deal)
+        if (roundCard) RoundCard(
+            table, state, roundSeconds, turnTotal,
+            dealing = dealing,
+            onExit = ::exit,
+            onNext = ::deal,
+        )
         if (settled && state.finished) ResultCard(
             table, state,
-            onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
+            onExit = ::exit,
             onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
         )
         if (showRules) RulesSheet(state.partners, drawing(state)) { showRules = false }
@@ -532,7 +568,7 @@ private fun seatName(table: GapleTable, seat: Int): String =
 @Composable
 private fun teamName(team: Int) = stringResource(R.string.gaple_team, if (team == 0) "A" else "B")
 
-/** Pills at the top of the felt: whose turn it is and the last thing that happened. */
+/** Status pills in the left column: whose turn it is and the last thing that happened. */
 @Composable
 private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, picking: Boolean, modifier: Modifier) {
     val turn = when {
@@ -551,7 +587,7 @@ private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, pi
             else stringResource(R.string.gaple_plays, table.name(seat), it.left, it.right)
         }
     }
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         (listOfNotNull(played) + passes).takeLast(2).forEach { Pill(it, Theme.muted) }
         turn?.let { Pill(it, Theme.ink) }
     }
@@ -630,79 +666,6 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
     }
 }
 
-/** Your hand, upright. Tiles that fit are raised with a gold ring. */
-@Composable
-private fun Hand(
-    hand: List<GapleTile>,
-    playable: Set<GapleTile>,
-    picking: GapleTile?,
-    onTap: (GapleTile) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    // Seven tiles at full size; a hand that grew by drawing shrinks to fit the width.
-    BoxWithConstraints(modifier.padding(top = 10.dp)) {
-        val gap = if (hand.size > 9) 3.dp else 6.dp
-        val width = if (hand.isEmpty()) 34.dp else minOf(34.dp, (maxWidth - gap * (hand.size - 1)) / hand.size)
-        Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.Bottom) {
-            hand.forEach { tile ->
-                val fits = tile in playable
-                val lift by animateDpAsState(if (fits) (-10).dp else 0.dp, label = "lift")
-                val label = stringResource(R.string.gaple_tile, tile.a, tile.b)
-                TileFace(
-                    tile,
-                    width = width,
-                    ring = when {
-                        tile == picking -> Theme.accent
-                        fits -> Theme.gold
-                        else -> null
-                    },
-                    dim = playable.isNotEmpty() && !fits,
-                    modifier = Modifier.offset(y = lift)
-                        .then(if (fits) Modifier.clickable(role = Role.Button) { onTap(tile) } else Modifier)
-                        .semantics { contentDescription = label },
-                )
-            }
-        }
-    }
-}
-
-/** A domino face, upright: [GapleTile.a] on top. */
-@Composable
-private fun TileFace(tile: GapleTile, width: Dp, ring: Color?, dim: Boolean, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(6.dp)
-    Box(
-        modifier.size(width, width * 2)
-            .clip(shape)
-            .background(IVORY.copy(alpha = if (dim) 0.7f else 1f))
-            .border(if (ring != null) 2.5.dp else 1.dp, ring ?: Color(0xFFCBB89A), shape),
-    ) {
-        Canvas(Modifier.fillMaxSize().padding(3.dp)) {
-            val half = size.height / 2
-            drawRect(PIP.copy(alpha = 0.6f), Offset(size.width * 0.15f, half - 0.75f), Size(size.width * 0.7f, 1.5f))
-            pips(tile.a, Offset(0f, 0f), Size(size.width, half), dim)
-            pips(tile.b, Offset(0f, half), Size(size.width, half), dim)
-        }
-    }
-}
-
-private fun DrawScope.pips(value: Int, origin: Offset, area: Size, dim: Boolean) {
-    val d = 0.28f
-    val spots = when (value) {
-        1 -> listOf(0f to 0f)
-        2 -> listOf(-d to -d, d to d)
-        3 -> listOf(-d to -d, 0f to 0f, d to d)
-        4 -> listOf(-d to -d, d to -d, -d to d, d to d)
-        5 -> listOf(-d to -d, d to -d, 0f to 0f, -d to d, d to d)
-        6 -> listOf(-d to -d, -d to 0f, -d to d, d to -d, d to 0f, d to d)
-        else -> emptyList()
-    }
-    val r = minOf(area.width, area.height) * 0.09f
-    val color = (if (value == 1) PIP_RED else PIP).copy(alpha = if (dim) 0.55f else 1f)
-    for ((x, y) in spots) {
-        drawCircle(color, r, Offset(origin.x + area.width * (0.5f + x), origin.y + area.height * (0.5f + y)))
-    }
-}
-
 @Composable
 private fun CardFrame(content: @Composable () -> Unit) {
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.28f)), contentAlignment = Alignment.Center) {
@@ -771,6 +734,7 @@ private fun RoundCard(
     state: GapleState,
     seconds: Int,
     total: Int,
+    dealing: Boolean,
     onExit: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -785,11 +749,14 @@ private fun RoundCard(
         Text(title, style = Theme.font(20, FontWeight.Black, Theme.ink))
         ScoreTable(table, state, scoreRows(state))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CountdownRing(seconds, total, size = 40.dp)
-            if (table.isHost) {
-                PrimaryButton(stringResource(R.string.gaple_next_round), onNext, Modifier.width(200.dp))
-            } else {
+            if (!dealing) CountdownRing(seconds, total, size = 40.dp)
+            if (!table.isHost) {
                 Text(stringResource(R.string.gaple_waiting_host), style = Theme.font(14, FontWeight.Bold, Theme.muted))
+            } else if (dealing) {
+                // Ad (if any) then next deal — no second tap after the interstitial closes.
+                Text(stringResource(R.string.gaple_starting_round), style = Theme.font(14, FontWeight.Bold, Theme.muted))
+            } else {
+                PrimaryButton(stringResource(R.string.gaple_next_round), onNext, Modifier.width(200.dp))
             }
         }
         // The card covers the HUD back button; leave without waiting for the next deal.

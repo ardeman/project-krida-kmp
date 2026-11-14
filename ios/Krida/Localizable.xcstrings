@@ -6357,6 +6357,22 @@
         }
       }
     },
+    "Starting next round…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting next round…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memulai ronde berikutnya…"
+          }
+        }
+      }
+    },
     "Waiting for the host": {
       "localizations": {
         "en": {
@@ -6753,6 +6769,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kebijakan privasi"
+          }
+        }
+      }
+    },
+    "Check for update": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for update"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cek pembaruan"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memeriksa…"
+          }
+        }
+      }
+    },
+    "You're up to date": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You're up to date"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah versi terbaru"
+          }
+        }
+      }
+    },
+    "Update available": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update available"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pembaruan tersedia"
+          }
+        }
+      }
+    },
+    "Not on the App Store yet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not on the App Store yet"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belum di App Store"
+          }
+        }
+      }
+    },
+    "Couldn't check": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak bisa memeriksa"
           }
         }
       }

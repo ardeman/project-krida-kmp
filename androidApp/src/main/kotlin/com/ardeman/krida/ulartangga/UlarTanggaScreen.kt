@@ -348,9 +348,15 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         }
     }
 
-    fun exit() {
+    fun leave() {
         lifetime.stop()
         onExit()
+    }
+
+    /** Back / Menu: stop the board (and its audio) first, then interstitial, then navigate. */
+    fun exit() {
+        lifetime.stop()
+        activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
 
     BackHandler(onBack = ::exit)
@@ -581,7 +587,7 @@ private fun Board(table: UlarTanggaTable, onExit: () -> Unit, onFirstFrame: () -
         AnimatedVisibility(state.finished && !animating, enter = fadeIn(), exit = fadeOut()) {
             GameOver(
                 table, state,
-                onExit = { activity?.let { Ads.afterGame(it, ::exit) } ?: exit() },
+                onExit = ::exit,
                 onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
             )
         }

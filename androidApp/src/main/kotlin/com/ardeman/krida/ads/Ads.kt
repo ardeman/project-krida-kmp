@@ -59,12 +59,12 @@ import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 
 /**
- * AdMob: a banner on the menus, an interstitial after every finished game (when one is
- * ready), and a rewarded ad that pays for a hint. Owning "Hapus iklan" ([removed]) turns all
- * of it off; hints are then free. Nothing is requested before the UMP consent flow allows it.
- * Full-screen ads open behind a short gate with "Hapus iklan" (AdMob forbids overlaying the
- * creative). Ad unit ids live in res/values/ads.xml (real ids in release; Google's test ids
- * in debug).
+ * AdMob: a banner on the menus, an interstitial when leaving a game or restarting after a
+ * finish (when one is ready), and a rewarded ad that pays for a hint. Owning "Hapus iklan"
+ * ([removed]) turns all of it off; hints are then free. Nothing is requested before the UMP
+ * consent flow allows it. Interstitials show as soon as one is ready; rewarded ads still open
+ * behind a short gate with "Hapus iklan" (AdMob forbids overlaying the creative). Ad unit ids
+ * live in res/values/ads.xml (real ids in release; Google's test ids in debug).
  */
 object Ads {
 
@@ -142,9 +142,9 @@ object Ads {
     fun showPrivacyOptions(activity: Activity) = UserMessagingPlatform.showPrivacyOptionsForm(activity) { }
 
     /**
-     * Call when the player leaves a finished game; [then] runs after the interstitial
-     * closes, or immediately if ads are off / none ready yet. When an ad is ready and
-     * "Hapus iklan" is available, a gate offers remove-ads before the creative.
+     * Call when the player leaves a game (back / Menu) or restarts after a finish; [then]
+     * runs after the interstitial closes, or immediately if ads are off / none ready yet.
+     * No confirm gate — the creative plays straight away when one is loaded.
      */
     fun afterGame(activity: Activity, then: () -> Unit) {
         val ad = interstitial
@@ -152,18 +152,9 @@ object Ads {
             loadInterstitial()
             return then()
         }
-        presentGate(
-            activity,
-            title = R.string.ads_gate_interstitial_title,
-            body = R.string.ads_gate_interstitial_body,
-            continueLabel = R.string.ads_gate_continue,
-            onContinue = {
-                interstitial = null
-                ad.fullScreenContentCallback = closed { loadInterstitial(); then() }
-                ad.show(activity)
-            },
-            onSkip = then,
-        )
+        interstitial = null
+        ad.fullScreenContentCallback = closed { loadInterstitial(); then() }
+        ad.show(activity)
     }
 
     /**
@@ -383,10 +374,14 @@ object Ads {
         main.postDelayed({ if (started && !removed) load() }, delayMs)
     }
 
-    /** Calls [done] once when a full-screen ad goes away, shown or not. */
+    /** Calls [done] on the main thread once when a full-screen ad goes away, shown or not. */
     private fun closed(done: () -> Unit) = object : FullScreenContentCallback() {
-        override fun onAdDismissedFullScreenContent() = done()
-        override fun onAdFailedToShowFullScreenContent(error: AdError) = done()
+        override fun onAdDismissedFullScreenContent() {
+            main.post(done)
+        }
+        override fun onAdFailedToShowFullScreenContent(error: AdError) {
+            main.post(done)
+        }
     }
 
     private fun prefs() = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
