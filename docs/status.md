@@ -135,7 +135,9 @@ Real users will try online play first; don't push for these, ask whether feedbac
   money still works for opted-in closed testers on a Play install without that.
   **1.0.4 / versionCode 5** (2026-11-14): quit interstitial (no gate), in-app
   update check, larger gaple board with voxel hand on the rim. AAB:
-  `~/Desktop/krida-1.0.4-release.aab`. IPA uploaded to App Store Connect.
+  `~/Desktop/krida-1.0.4-release.aab` — Play closed testing **sent for review**
+  (5 / 1.0.4). IPA build **5** on App Store Connect version **1.0.4** —
+  **Waiting for Review**.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
