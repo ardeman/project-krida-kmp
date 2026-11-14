@@ -34,6 +34,8 @@ internal object Billing : PurchasesUpdatedListener {
     private val main = Handler(Looper.getMainLooper())
     private var client: BillingClient? = null
     private var product: ProductDetails? = null
+    /** Activity waiting for [product] so a closed-tester tap still opens Play's sheet. */
+    private var pendingBuy: Activity? = null
     private lateinit var productId: String
     private lateinit var onOwned: (Boolean) -> Unit
 
@@ -71,7 +73,15 @@ internal object Billing : PurchasesUpdatedListener {
 
     fun buy(activity: Activity) {
         val c = client ?: return
-        val p = product ?: return loadProduct()
+        val p = product
+        if (p == null) {
+            // Closed / first launch: product may still be loading — open the sheet when ready.
+            pendingBuy = activity
+            loadProduct()
+            refresh()
+            return
+        }
+        pendingBuy = null
         val params = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(listOf(BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(p).build()))
             .build()
@@ -104,6 +114,7 @@ internal object Billing : PurchasesUpdatedListener {
             main.post {
                 product = p
                 price = p?.oneTimePurchaseOfferDetails?.formattedPrice
+                pendingBuy?.let { buy(it) }
             }
         }
     }

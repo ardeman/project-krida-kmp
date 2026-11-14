@@ -761,14 +761,14 @@ private struct AdButtons: View {
 }
 
 /// "Remove ads" beside the banner where the ad is: the cards above keep the full height.
-/// The price shows in the App Store sheet, not on the button. Only while the banner shows and
-/// the App Store knows the product. Same as Android.
+/// The price shows in the App Store sheet, not on the button. Shown whenever ads are on —
+/// don't wait for a price string (closed testers / slow StoreKit). Same as Android.
 private struct RemoveAdsButton: View {
     @ObservedObject private var ads = Ads.shared
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if !ads.removed && ads.started && ads.removeAdsPrice != nil {
+        if !ads.removed && ads.started {
             Button(action: ads.buyRemoveAds) {
                 Text("Remove ads").font(Theme.font(14 * s)).foregroundStyle(Theme.accent)
                 .lineLimit(1)

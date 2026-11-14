@@ -572,7 +572,8 @@ class MainActivity : ComponentActivity() {
      */
     @Composable
     private fun RemoveAdsButton() {
-        if (Ads.removeAdsPrice == null) return
+        // Don't wait for Play's price string — closed testers / slow Billing still need a
+        // way in; the purchase sheet shows the price.
         val shape = RoundedCornerShape(14.dp)
         Box(
             Modifier.height(50.dp).clip(shape).background(Theme.surface).border(1.5.dp, Theme.accent, shape)

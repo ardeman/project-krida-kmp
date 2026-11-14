@@ -157,11 +157,8 @@ final class Ads: NSObject, ObservableObject {
         onContinue: @escaping () -> Void,
         onSkip: @escaping () -> Void
     ) {
-        // No IAP price yet: don't add a tap with no remove option.
-        guard removeAdsPrice != nil else {
-            onContinue()
-            return
-        }
+        // Always offer Remove ads when a creative is ready (closed testers included);
+        // don't gate the sheet on a loaded price string.
         gate = AdGate(title: title, body: body, continueLabel: continueLabel, onContinue: onContinue, onSkip: onSkip)
     }
 

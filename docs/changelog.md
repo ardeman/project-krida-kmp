@@ -11,6 +11,20 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
+## 1.0.3 (build 4) — 2026-11-14
+
+### id
+
+- Iklan penuh layar setiap selesai main (bukan selang-seling).
+- Tombol Hapus iklan sebelum iklan interstitial / rewarded.
+- Hapus iklan tetap tersedia untuk penguji closed testing.
+
+### en-US
+
+- Full-screen ad after every finished game (not every other).
+- Remove ads offered before interstitial and rewarded ads.
+- Remove ads stays available for closed testers.
+
 ## 1.0.2 (build 3) — 2026-11-14
 
 ### id

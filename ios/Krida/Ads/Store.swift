@@ -38,7 +38,8 @@ final class Store {
     }
 
     func buy() async {
-        guard let product else { return await loadProduct() }
+        if product == nil { await loadProduct() }
+        guard let product else { return }
         // Cancelled, pending (Ask to Buy) or failed: nothing changes until `Transaction.updates` says so.
         guard case .success(.verified(let t)) = try? await product.purchase() else { return }
         await t.finish()

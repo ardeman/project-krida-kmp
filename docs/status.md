@@ -121,10 +121,14 @@ Real users will try online play first; don't push for these, ask whether feedbac
   **Link to Google Play** still returns “Couldn't find any matching Google Play apps”
   (closed tracks aren’t publicly searchable; store URL 404). **Continue** stays disabled
   until Play links. Next: promote **1.0.2** to Play **production**, then retry Finish
-  setup / Link to Play. AAB: `~/Desktop/krida-1.0.2-release.aab`.
+  setup / Link to Play. Closed **1.0.3 / versionCode 4** AAB for Alpha (interstitial every finish + Remove-ads gate). AAB: `~/Desktop/krida-1.0.3-release.aab`.
   Interstitial after **every** finished game when ready (was every other; Android + iOS,
-  2026-11-14). Pre-ad gate with **Remove ads** before interstitial and rewarded (can't
-  overlay AdMob creatives) — see `docs/decisions.md`.
+  2026-11-14).   Pre-ad gate with **Remove ads** before interstitial and rewarded (can't
+  overlay AdMob creatives) — see `docs/decisions.md`. Remove-ads button and
+  gate no longer wait for a loaded price string (closed testers). Play product
+  `hapus_iklan` is active (1 purchase option, 2026-11-14). For **free test**
+  purchases add the closed Google Group to account **License testing**; real
+  money works for opted-in closed testers on a Play install without that.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 

@@ -260,8 +260,8 @@ object Ads {
     }
 
     /**
-     * Branded sheet before a full-screen ad with "Hapus iklan". Skipped when the IAP price
-     * is unknown so we don't add a tap with no remove option.
+     * Branded sheet before a full-screen ad with "Hapus iklan". Always offered when a
+     * creative is ready (including closed testers) so purchase isn't gated on a price string.
      */
     private fun presentGate(
         activity: Activity,
@@ -271,10 +271,6 @@ object Ads {
         onContinue: () -> Unit,
         onSkip: () -> Unit,
     ) {
-        if (removeAdsPrice == null) {
-            onContinue()
-            return
-        }
         dismissGateView()
         gateOnSkip = onSkip
         val parent = activity.findViewById<ViewGroup>(android.R.id.content)
