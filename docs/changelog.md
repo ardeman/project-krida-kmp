@@ -11,7 +11,10 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
-## 1.0.4 (build 5) — 2026-11-14
+## 1.0.4 (Android build 5 / iOS build 6) — 2026-11-14
+
+iOS build 6 (2026-11-15): App Tracking Transparency after UMP consent (App Review 5.1.2).
+Store “What’s New” text unchanged from build 5.
 
 ### id
 

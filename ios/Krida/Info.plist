@@ -43,6 +43,8 @@
 	<string>Krida uses the camera to scan a friend's room QR code.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Krida looks for friends on the same Wi-Fi to play together.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Krida uses this identifier to show you personalized ads.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

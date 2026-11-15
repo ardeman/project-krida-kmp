@@ -76,6 +76,23 @@
           }
         }
       }
+    },
+    "NSUserTrackingUsageDescription" : {
+      "comment" : "Privacy - Tracking Usage Description (ATT)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida uses this identifier to show you personalized ads."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krida memakai pengenal ini untuk menampilkan iklan yang dipersonalisasi."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

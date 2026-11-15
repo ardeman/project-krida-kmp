@@ -118,7 +118,7 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
-**Version:** marketing `1.0.4`, Android `versionCode` / iOS build `5` (see [changelog.md](changelog.md)).
+**Version:** marketing `1.0.4`, Android `versionCode` `5` / iOS build `6` (see [changelog.md](changelog.md)).
 Paste the matching language block into Play “Release notes” (≤ 500) and App Store
 “What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
 notes go on the store form.
@@ -156,13 +156,22 @@ invites. Every game mode works without an account (vs computer, pass-and-play, n
 online rooms). Leave the Account screen without signing in to review gameplay.
 
 Paste into App Review Information → Notes (and into Reply to App Review when rejected
-for a missing demo account):
+for sign-in, ATT, or IAP):
 
 > Sign-in is optional. Krida does not require an account to play. All five games work
 > fully without signing in (vs computer, pass-and-play, nearby Bluetooth/Wi-Fi, and
 > online rooms via code / public lobby / quick match). Optional Sign in with Apple or
 > Google only unlocks friends and invites. There is no username/password login, so a
 > demo username and password cannot be provided. Please review while signed out.
+>
+> App Tracking Transparency: on first launch, after any GDPR / UMP consent sheet (EEA
+> and similar), the system ATT prompt appears before ads are requested. Usage string:
+> "Krida uses this identifier to show you personalized ads." Reinstall the app (or
+> reset Advertising → Allow Apps to Request to Track) to see the prompt again.
+>
+> In-App Purchase: non-consumable product id `hapus_iklan` ("Remove ads") — buy from the
+> menu footer or the pre-hint sheet. Restore purchases is on the same menu.
+
 | Ads | Yes, the app contains ads |
 | Content rating (IARC) | Category Game. Violence, sexuality, language, controlled substances, gambling: No. Users interact or exchange content: No (nearby and online only send game moves and seat names, no free-text chat). Shares location with other users: No. Digital purchases: Yes |
 | Target audience | 13–15, 16–17, 18+ (no age group under 13, so the app stays out of the Families program) |
@@ -238,10 +247,21 @@ those rows are marked conservatively (everything "shared") and Google's page is 
 
 ## App Store Connect: App Privacy
 
-Data used to track you: **none** (the app shows no App Tracking Transparency prompt, so AdMob
-gets no IDFA). Privacy Nutrition Labels:
+Data used to track you: **Yes** — Identifiers → Device ID (IDFA via AdMob), used for
+**Third-Party Advertising** when the player allows tracking in the ATT prompt. If they
+deny ATT, AdMob still serves ads without IDFA (no tracking). Update this in App Store
+Connect (Account Holder or Admin) before resubmitting after the 2026-11-15 5.1.2 rejection.
 
-**Data Not Linked to You** (no accounts):
+Privacy Nutrition Labels:
+
+**Data Used to Track You:**
+
+| Data | Purposes | Source |
+|---|---|---|
+| Identifiers → Device ID | Third-Party Advertising | AdMob (IDFA after ATT allow) |
+
+**Data Not Linked to You** (no accounts; same types may also appear under tracking when used
+for that purpose):
 
 | Data | Purposes | Source |
 |---|---|---|
@@ -257,6 +277,14 @@ gets no IDFA). Privacy Nutrition Labels:
 Under **Data Linked to You** (only for players who sign in):
 Contact Info → Name and Identifiers → User ID, both for App Functionality. The app offers
 in-app account deletion (App Review guideline 5.1.1(v)).
+
+### In-App Purchase (`hapus_iklan`) — submit with the app version
+
+App Review 2.1(b) requires the Remove-ads product in the same submission as the binary:
+
+1. App Store Connect → Monetization → In-App Purchases → `hapus_iklan` (Ready to Submit).
+2. Add a review screenshot of the menu “Remove ads” control (or the pre-hint gate).
+3. On the version page, add the IAP to the submission with the new build, then submit.
 
 Purchases are handled by the App Store and not collected by the app. Check against Google's
 [iOS data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure) before

@@ -1,13 +1,15 @@
+import AppTrackingTransparency
 @preconcurrency import GoogleMobileAds
 import SwiftUI
 @preconcurrency import UserMessagingPlatform
 
 /// AdMob: a banner on the menus, an interstitial when leaving a game or restarting after a
 /// finish (when one is ready), and a rewarded ad that pays for a hint. Owning "Remove ads"
-/// ([removed]) turns all of it off; hints are then free. Nothing is requested before the UMP
-/// consent flow allows it. Interstitials show as soon as one is ready; rewarded ads still open
-/// behind a short gate with "Remove ads" (AdMob forbids overlaying the creative). Mirrors
-/// androidApp/.../ads/Ads.kt. Ad unit ids live in AdIds.swift.
+/// ([removed]) turns all of it off; hints are then free. Launch order: UMP consent (where
+/// required), then App Tracking Transparency, then ad requests — Apple 5.1.2. Interstitials
+/// show as soon as one is ready; rewarded ads still open behind a short gate with "Remove
+/// ads" (AdMob forbids overlaying the creative). Mirrors androidApp/.../ads/Ads.kt. Ad unit
+/// ids live in AdIds.swift.
 @MainActor
 final class Ads: NSObject, ObservableObject {
     static let shared = Ads()
@@ -40,9 +42,9 @@ final class Ads: NSObject, ObservableObject {
         store.onChange = { [weak self] in self?.updatePrice() }
     }
 
-    /// Call once at launch: asks for consent where the rules require it, then starts AdMob.
+    /// Call once at launch: UMP consent (if required), then ATT, then AdMob.
     func start() {
-        // UI tests / store shots (`-skipAds`): paid "Remove ads" layout — no UMP, no ad units.
+        // UI tests / store shots (`-skipAds`): paid "Remove ads" layout — no UMP, no ATT, no ads.
         if ProcessInfo.processInfo.arguments.contains("-skipAds") {
             skipAds = true
             removed = true
@@ -50,16 +52,22 @@ final class Ads: NSObject, ObservableObject {
             removeAdsPrice = nil
             return
         }
-        // Consent given in an earlier session lets ads start without waiting for the update.
-        startAds()
         Task {
             let consent = ConsentInformation.shared
             if (try? await consent.requestConsentInfoUpdate(with: RequestParameters())) != nil {
                 try? await ConsentForm.loadAndPresentIfRequired(from: nil)
                 privacyOptionsRequired = consent.privacyOptionsRequirementStatus == .required
             }
+            // After any GDPR / IDFA explainer sheet; no-op if already decided or not required.
+            await requestTrackingAuthorizationIfNeeded()
             startAds()
         }
+    }
+
+    /// System ATT prompt. Must run before ad requests that can use IDFA (guideline 5.1.2).
+    private func requestTrackingAuthorizationIfNeeded() async {
+        guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else { return }
+        _ = await ATTrackingManager.requestTrackingAuthorization()
     }
 
     /// Re-reads purchases, e.g. when the app comes back to the foreground.

@@ -22,6 +22,8 @@ targets:
       - path: Krida
     dependencies:
       - package: GoogleMobileAds
+      # Linked so UMP / our launch path can show the system ATT prompt (App Review 5.1.2).
+      - sdk: AppTrackingTransparency.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ardeman.krida
@@ -32,7 +34,7 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         MARKETING_VERSION: "1.0.4"
-        CURRENT_PROJECT_VERSION: "5"
+        CURRENT_PROJECT_VERSION: "6"
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "5.0"
         # Kotlin Multiplatform "Shared" framework built by the pre-build script below.
@@ -81,6 +83,8 @@ targets:
         NSBluetoothAlwaysUsageDescription: "Krida uses Bluetooth to play with friends nearby, without internet."
         NSLocalNetworkUsageDescription: "Krida looks for friends on the same Wi-Fi to play together."
         NSCameraUsageDescription: "Krida uses the camera to scan a friend's room QR code."
+        # Required for ATTrackingManager / AdMob personalized ads (App Review 5.1.2).
+        NSUserTrackingUsageDescription: "Krida uses this identifier to show you personalized ads."
         # AdMob app id (real, from the AdMob console); ad unit ids are in Ads/AdIds.swift.
         GADApplicationIdentifier: ca-app-pub-4887874546732768~9588102946
         # Google's SKAdNetwork ids (its own first, then third-party buyers), copied 2026-11-08 from
