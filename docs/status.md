@@ -137,12 +137,10 @@ Real users will try online play first; don't push for these, ask whether feedbac
   update check, larger gaple board with voxel hand on the rim. AAB:
   `~/Desktop/krida-1.0.4-release.aab` — Play closed testing **sent for review**
   (5 / 1.0.4). App Store **1.0.4** rejected 2026-11-15 (**5.1.2** ATT + **2.1(b)**
-  IAP). Code fix committed (`47c12f9`); IPA **build 6** uploaded and attached to
-  1.0.4; encryption `usesNonExemptEncryption=false`; Review Notes + `usesIdfa`
-  updated. **Still open (owner in Connect):** App Privacy → mark **Device ID**
-  as **Data Used to Track You** / Third-Party Advertising (banner already warns
-  about `NSUserTrackingUsageDescription`); then Edit the rejected submission,
-  add **`hapus_iklan`** (screenshot already on the product), Resubmit. Details in
+  IAP). Fixed and resubmitted 2026-11-15: ATT after UMP (`47c12f9`), IPA **build 6**,
+  App Privacy Device ID tracking published, Review Notes + `usesIdfa`, encryption
+  exempt. Cancelled the version-only queue, then one submission with **1.0.4** +
+  **`hapus_iklan`** → **Waiting for Review** (submission `304d7db3…`). Details in
   `docs/store.md`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
