@@ -123,6 +123,12 @@ import com.ardeman.krida.gaple.GaplePreview
 import com.ardeman.krida.gaple.GapleScreen
 import com.ardeman.krida.gaple.GapleSettings
 import com.ardeman.krida.gaple.GapleTable
+import com.ardeman.krida.werewolf.WerewolfPreview
+import com.ardeman.krida.werewolf.WerewolfScreen
+import com.ardeman.krida.werewolf.WerewolfSettings
+import com.ardeman.krida.werewolf.WerewolfTable
+import com.ardeman.krida.core.games.WerewolfBot
+import com.ardeman.krida.core.games.WerewolfGame
 import com.ardeman.krida.ludo.LudoHostTable
 import com.ardeman.krida.ludo.LudoPreview
 import com.ardeman.krida.ludo.LudoScreen
@@ -196,6 +202,7 @@ class MainActivity : ComponentActivity() {
     private var ludoTable by mutableStateOf<LudoTable?>(null)
     private var perangKapalTable by mutableStateOf<PerangKapalTable?>(null)
     private var gapleTable by mutableStateOf<GapleTable?>(null)
+    private var werewolfTable by mutableStateOf<WerewolfTable?>(null)
     private var permissionDenied by mutableStateOf(false)
     /** A string resource under the join screen's code: the scanner failed or read another QR. */
     private var joinError by mutableStateOf<Int?>(null)
@@ -254,6 +261,7 @@ class MainActivity : ComponentActivity() {
         LudoSettings.init(this)
         PerangKapalSettings.init(this)
         GapleSettings.init(this)
+        WerewolfSettings.init(this)
         LastRoom.init(this)
         Account.init(this)
         AppUpdate.bind(appUpdateLauncher)
@@ -281,9 +289,10 @@ class MainActivity : ComponentActivity() {
                 val ludo = ludoTable ?: r?.ludo
                 val perang = perangKapalTable ?: r?.perangKapal
                 val gaple = gapleTable ?: r?.gaple
+                val werewolf = werewolfTable ?: r?.werewolf
                 // Games and rooms can sit idle between turns / while waiting for a friend;
                 // keep the screen awake so the phone doesn't sleep mid-session.
-                val keepAwake = gaple != null || perang != null || ludo != null || ular != null || table != null || r != null
+                val keepAwake = werewolf != null || gaple != null || perang != null || ludo != null || ular != null || table != null || r != null
                 DisposableEffect(keepAwake) {
                     val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                     if (keepAwake) window.addFlags(flag) else window.clearFlags(flag)
@@ -298,6 +307,7 @@ class MainActivity : ComponentActivity() {
                     onDispose { Invites.stop() }
                 }
                 when {
+                    werewolf != null -> WerewolfScreen(werewolf, onExit = { werewolfTable = null; room = null; joining = false })
                     gaple != null -> GapleScreen(gaple, onExit = { gapleTable = null; room = null; joining = false })
                     perang != null -> PerangKapalScreen(perang, onExit = { perangKapalTable = null; room = null; joining = false })
                     ludo != null -> LudoScreen(ludo, onExit = { ludoTable = null; room = null; joining = false })
@@ -340,6 +350,7 @@ class MainActivity : ComponentActivity() {
                                 })
                                 PerangKapalGame.id -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
                                 GapleGame.id -> gapleTable = GapleHostTable.vsComputer(you, count - 1) { computer }
+                                WerewolfGame.id -> playingQuickMatch = false
                                 else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             }
                             playingQuickMatch = false
@@ -386,7 +397,7 @@ class MainActivity : ComponentActivity() {
         // on the account screen once the menus are back.
         if (Account.handleLink(intent.data)) { showingAccount = true; return }
         // A running game or lobby stays; the link only applies from the menus.
-        if (room == null && passAndPlay == null && ularTable == null && ludoTable == null && perangKapalTable == null && gapleTable == null) {
+        if (room == null && passAndPlay == null && ularTable == null && ludoTable == null && perangKapalTable == null && gapleTable == null && werewolfTable == null) {
             if (Account.handleFriendLink(intent.data)) { joining = false; showingAccount = true; return }
             intent.data?.toString()?.let(::openRoomLink)
         }
@@ -666,11 +677,18 @@ class MainActivity : ComponentActivity() {
         val ludo = game == Game.LUDO
         val kapal = game == Game.PERANG_KAPAL
         val gaple = game == Game.GAPLE
+        val werewolf = game == Game.WEREWOLF
         val multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         val nearby = place != Place.PHONE
         val online = nearby && place == Place.ONLINE
         val lan = nearby && !online && nearbyLink == NearbyLink.WIFI
+        LaunchedEffect(werewolf) {
+            if (werewolf && place == Place.PHONE) place = Place.NEARBY
+        }
+        LaunchedEffect(werewolf, nearby, online) {
+            if (werewolf && nearby && !online) nearbyLink = NearbyLink.WIFI
+        }
         // Congklak's second seat: a person on this phone or the computer.
         var congklakSeats by rememberSaveable { mutableStateOf(LocalSeats.encode(listOf(LocalSeat.PERSON, LocalSeat.PERSON))) }
         val congklak = LocalSeats.decode(congklakSeats, 2, listOf(LocalSeat.PERSON, LocalSeat.PERSON))
@@ -708,16 +726,17 @@ class MainActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             SettingRow(stringResource(R.string.play_where)) {
+                val places = if (werewolf) Place.entries.filter { it != Place.PHONE } else Place.entries
                 Segmented(
-                    options = Place.entries.map { it to stringResource(it.label) },
+                    options = places.map { it to stringResource(it.label) },
                     current = place,
                     label = stringResource(R.string.play_where),
                     onChange = { place = it },
-                    icons = Place.entries.map { it.icon },
+                    icons = places.map { it.icon },
                     fill = true,
                 )
             }
-            if (nearby && !online) {
+            if (nearby && !online && !werewolf) {
                 SettingRow(stringResource(R.string.nearby_link)) {
                     Segmented(
                         options = NearbyLink.entries.map { it to stringResource(it.label) },
@@ -730,6 +749,15 @@ class MainActivity : ComponentActivity() {
             }
             // In a nearby room everyone who joins plays, up to 4. Perang kapal on this phone
             // has its own two tiles below (the second: computer or person).
+            if (werewolf) SettingRow(stringResource(R.string.play_players)) {
+                Segmented(
+                    options = (WerewolfSettings.MIN_SEATS..WerewolfSettings.MAX_SEATS).map { it to "$it" },
+                    current = WerewolfSettings.targetSeats,
+                    label = stringResource(R.string.play_players),
+                    onChange = WerewolfSettings::chooseSeats,
+                    fill = true,
+                )
+            }
             if (!nearby && gaple) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
@@ -782,7 +810,7 @@ class MainActivity : ComponentActivity() {
             // The action row: what this choice means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(if (!multi && !gaple && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
+            SettingRow(if (werewolf && !nearby) stringResource(R.string.play_level) else if (!multi && !gaple && !werewolf && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
@@ -791,14 +819,16 @@ class MainActivity : ComponentActivity() {
                                 ludo -> R.string.ludo_detail_online
                                 kapal -> R.string.perang_kapal_detail_online
                                 gaple -> R.string.gaple_detail_online
+                                werewolf -> R.string.werewolf_detail_online
                                 else -> R.string.online_detail
                             }))
-                            lan -> Detail(stringResource(R.string.nearby_detail_wifi))
+                            lan -> Detail(stringResource(if (werewolf) R.string.werewolf_detail_nearby else R.string.nearby_detail_wifi))
                             nearby -> Detail(stringResource(when {
                                 ular -> R.string.ular_detail_nearby
                                 ludo -> R.string.ludo_detail_nearby
                                 kapal -> R.string.perang_kapal_detail_nearby
                                 gaple -> R.string.gaple_detail_nearby
+                                werewolf -> R.string.werewolf_detail_nearby
                                 else -> R.string.nearby_detail
                             }))
                             gaple -> Detail(stringResource(R.string.gaple_detail_computer))
@@ -823,6 +853,7 @@ class MainActivity : ComponentActivity() {
                                         ludo -> LudoGame.id
                                         kapal -> PerangKapalGame.id
                                         gaple -> GapleGame.id
+                                        werewolf -> WerewolfGame.id
                                         else -> CongklakGame.id
                                     }
                                     joining = true
@@ -842,6 +873,7 @@ class MainActivity : ComponentActivity() {
                                             ludo -> LudoGame.id
                                             kapal -> PerangKapalGame.id
                                             gaple -> GapleGame.id
+                                            werewolf -> WerewolfGame.id
                                             else -> CongklakGame.id
                                         }
                                         creatingOnlineRoom = true
@@ -855,13 +887,15 @@ class MainActivity : ComponentActivity() {
                                                     ludo -> NearbyRoom.Game.LUDO
                                                     kapal -> NearbyRoom.Game.PERANG_KAPAL
                                                     gaple -> NearbyRoom.Game.GAPLE
+                                                    werewolf -> NearbyRoom.Game.WEREWOLF
                                                     else -> NearbyRoom.Game.CONGKLAK
                                                 },
-                                                lan = lan,
+                                                lan = werewolf || lan,
+                                                seats = WerewolfSettings.targetSeats.takeIf { werewolf },
                                                 avatar = myAvatar,
                                             )
                                         }
-                                        if (lan) startHost() else withBlePermissions { startHost() }
+                                        if (werewolf || lan) startHost() else withBlePermissions { startHost() }
                                     }
                                     gaple -> gapleTable = GapleHostTable.vsComputer(you, computers) { n ->
                                         if (computers == 1) computer else computerN[n - 1]
@@ -1105,6 +1139,7 @@ private enum class Game(val title: Int, val players: Int, val tagline: Int, val 
     LUDO(R.string.ludo_title, R.string.ludo_card_players, R.string.ludo_card_tagline, Color(0xFF3D6EB5), Color(0xFF2A5085)),
     PERANG_KAPAL(R.string.perang_kapal_title, R.string.perang_kapal_card_players, R.string.perang_kapal_card_tagline, Color(0xFF1B4F72), Color(0xFF123A54)),
     GAPLE(R.string.gaple_title, R.string.gaple_card_players, R.string.gaple_card_tagline, Color(0xFF7B2D3B), Color(0xFF5A1F2B)),
+    WEREWOLF(R.string.werewolf_title, R.string.werewolf_card_players, R.string.werewolf_card_tagline, Color(0xFF1A2332), Color(0xFF0F1520)),
 }
 
 private fun nearbyGame(id: String) = when (id) {
@@ -1112,6 +1147,7 @@ private fun nearbyGame(id: String) = when (id) {
     UlarTanggaGame.id -> NearbyRoom.Game.ULAR_TANGGA
     PerangKapalGame.id -> NearbyRoom.Game.PERANG_KAPAL
     GapleGame.id -> NearbyRoom.Game.GAPLE
+    WerewolfGame.id -> NearbyRoom.Game.WEREWOLF
     else -> NearbyRoom.Game.CONGKLAK
 }
 
@@ -1121,7 +1157,28 @@ private fun GameRoomOptions(game: Any, onPhone: Boolean = false) {
     val ludo = game == Game.LUDO || game == LudoGame.id
     val kapal = game == Game.PERANG_KAPAL || game == PerangKapalGame.id
     val gaple = game == Game.GAPLE || game == GapleGame.id
+    val werewolf = game == Game.WEREWOLF || game == WerewolfGame.id
     when {
+        werewolf -> {
+            SettingRow(stringResource(R.string.play_level)) {
+                Segmented(
+                    options = WerewolfBot.Level.entries.map {
+                        it to stringResource(
+                            when (it) {
+                                WerewolfBot.Level.EASY -> R.string.bot_easy
+                                WerewolfBot.Level.HARD -> R.string.bot_hard
+                                else -> R.string.bot_normal
+                            },
+                        )
+                    },
+                    current = WerewolfSettings.botLevel,
+                    label = stringResource(R.string.play_level),
+                    onChange = WerewolfSettings::chooseLevel,
+                    fill = true,
+                )
+            }
+            Hint(stringResource(R.string.werewolf_hint))
+        }
         gaple -> {
             // Partners only make sense with four at the table; a room may fill to four.
             if (game != Game.GAPLE || !onPhone || GapleSettings.players == 4) SettingRow(stringResource(R.string.gaple_partners)) {
@@ -1370,6 +1427,7 @@ private fun GameCardFace(game: Game, onReady: () -> Unit, modifier: Modifier = M
                 Game.LUDO -> LudoPreview(preview, onReady = onReady)
                 Game.PERANG_KAPAL -> PerangKapalPreview(preview, onReady = onReady)
                 Game.GAPLE -> GaplePreview(preview, onReady = onReady)
+                Game.WEREWOLF -> WerewolfPreview(preview, onReady = onReady)
             }
             Text(stringResource(game.tagline), style = Theme.font(13, FontWeight.SemiBold, cream), modifier = Modifier.padding(end = 6.dp))
         }

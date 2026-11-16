@@ -14,6 +14,8 @@ import com.ardeman.krida.R
 import com.ardeman.krida.core.games.GapleGame
 import com.ardeman.krida.core.games.LudoGame
 import com.ardeman.krida.core.games.UlarTanggaGame
+import com.ardeman.krida.core.games.WerewolfGame
+import com.ardeman.krida.werewolf.WerewolfSettings
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.nearby.CodeBoxes
 import com.ardeman.krida.nearby.NearbyFrame
@@ -33,7 +35,7 @@ fun CreateOnlineRoomScreen(
     options: @Composable () -> Unit,
 ) {
     var public by rememberSaveable(game) { mutableStateOf(false) }
-    var seats by rememberSaveable(game) { mutableIntStateOf(if (fourSeatGame(game)) 4 else 2) }
+    var seats by rememberSaveable(game) { mutableIntStateOf(defaultSeats(game)) }
     NearbyFrame(gameTitle(game), subtitle(true), true, stringResource(R.string.congklak_back), onBack) {
         Column(Modifier.weight(1f).fillMaxHeight().card().padding(18.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             RoomHeading(R.string.room_setup)
@@ -64,7 +66,7 @@ fun JoinOnlineRoomScreen(
     onBack: () -> Unit,
     error: Int?,
 ) {
-    var seats by rememberSaveable(game) { mutableIntStateOf(if (fourSeatGame(game)) 4 else 2) }
+    var seats by rememberSaveable(game) { mutableIntStateOf(defaultSeats(game)) }
     val valid = RoomCode.isValidOnline(code)
     NearbyFrame(gameTitle(game), subtitle(true), true, stringResource(R.string.congklak_back), onBack) {
         Column(Modifier.weight(1f).fillMaxHeight().card().padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -89,14 +91,29 @@ fun JoinOnlineRoomScreen(
 
 @Composable
 private fun RoomPlayerCount(game: String, seats: Int, onChange: (Int) -> Unit) {
-    if (fourSeatGame(game)) {
-        RoomDetail(R.string.play_players)
-        Segmented((2..4).map { it to "$it" }, seats, stringResource(R.string.play_players), onChange, fill = true)
-    } else RoomDetail(R.string.match_two_players)
+    when {
+        werewolfGame(game) -> {
+            RoomDetail(R.string.play_players)
+            Segmented((WerewolfSettings.MIN_SEATS..WerewolfSettings.MAX_SEATS).map { it to "$it" }, seats, stringResource(R.string.play_players), onChange, fill = true)
+        }
+        fourSeatGame(game) -> {
+            RoomDetail(R.string.play_players)
+            Segmented((2..4).map { it to "$it" }, seats, stringResource(R.string.play_players), onChange, fill = true)
+        }
+        else -> RoomDetail(R.string.match_two_players)
+    }
 }
 
-/** Games a room can seat 2–4 players in; the rest are two-player. */
+internal fun defaultSeats(game: String) = when {
+    werewolfGame(game) -> WerewolfSettings.MAX_SEATS
+    fourSeatGame(game) -> 4
+    else -> 2
+}
+
+/** Games a room can seat 2–4 players in; the rest are two-player unless [werewolfGame]. */
 internal fun fourSeatGame(game: String) = game == UlarTanggaGame.id || game == LudoGame.id || game == GapleGame.id
+
+internal fun werewolfGame(game: String) = game == WerewolfGame.id
 
 @Composable
 private fun RoomHeading(id: Int) = Text(stringResource(id), style = Theme.font(20, FontWeight.Black, Theme.ink))

@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var ludoTable: LudoTable?
     @State private var perangKapalTable: PerangKapalTable?
     @State private var gapleTable: GapleTable?
+    @State private var werewolfTable: WerewolfTable?
     /// The game on the left card; the play card follows it.
     @State private var game: MenuGame = .congklak
     /// Ular tangga's seat tiles for a game on this phone, as `LocalSeats.encode` text.
@@ -59,7 +60,7 @@ struct ContentView: View {
 
     /// Board or room (lobby / connecting): keep the screen awake between turns and while waiting.
     private var keepAwake: Bool {
-        passAndPlay != nil || ularTable != nil || ludoTable != nil || perangKapalTable != nil || gapleTable != nil || room != nil
+        passAndPlay != nil || ularTable != nil || ludoTable != nil || perangKapalTable != nil || gapleTable != nil || werewolfTable != nil || room != nil
     }
 
     var body: some View {
@@ -78,6 +79,9 @@ struct ContentView: View {
                     .id(ObjectIdentifier(table))
             } else if let table = gapleTable {
                 GapleView(table: table) { gapleTable = nil }
+                    .id(ObjectIdentifier(table))
+            } else if let table = werewolfTable {
+                WerewolfView(table: table) { werewolfTable = nil }
                     .id(ObjectIdentifier(table))
             } else if let room {
                 RoomView(
@@ -137,6 +141,8 @@ struct ContentView: View {
                         } else if quickMatchGame == GapleGame.shared.id {
                             let computer = String(localized: "Computer", bundle: .app)
                             gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: count - 1) { _ in computer }
+                        } else if quickMatchGame == WerewolfGame.shared.id {
+                            playingQuickMatch = false
                         } else {
                             startVsComputer(.normal)
                         }
@@ -195,9 +201,10 @@ struct ContentView: View {
             let args = ProcessInfo.processInfo.arguments
             if let index = args.firstIndex(of: "-openQuickMatch"), args.indices.contains(index + 1) {
                 let selected = args[index + 1]
-                if [CongklakGame.shared.id, UlarTanggaGame.shared.id, LudoGame.shared.id, PerangKapalGame.shared.id, GapleGame.shared.id].contains(selected) {
+                if [CongklakGame.shared.id, UlarTanggaGame.shared.id, LudoGame.shared.id, PerangKapalGame.shared.id, GapleGame.shared.id, WerewolfGame.shared.id].contains(selected) {
                     quickMatchGame = selected
-                    quickMatchTarget = selected == CongklakGame.shared.id || selected == PerangKapalGame.shared.id ? 2 : 4
+                    quickMatchTarget = selected == WerewolfGame.shared.id ? WerewolfSettings.target
+                        : selected == CongklakGame.shared.id || selected == PerangKapalGame.shared.id ? 2 : 4
                     playingQuickMatch = true
                 }
             }
@@ -260,7 +267,7 @@ struct ContentView: View {
 
     /// No game, lobby or search is up; links and notifications only apply here.
     private var onMenus: Bool {
-        passAndPlay == nil && ularTable == nil && ludoTable == nil && perangKapalTable == nil && gapleTable == nil && room == nil
+        passAndPlay == nil && ularTable == nil && ludoTable == nil && perangKapalTable == nil && gapleTable == nil && werewolfTable == nil && room == nil
             && !creatingOnlineRoom && !playingQuickMatch
     }
 
@@ -348,6 +355,12 @@ struct ContentView: View {
                     accountMenuButton
                 }
                 GameCard(game: $game) { menuReady = true }
+                    .onChange(of: game) { _, g in
+                        if g == .werewolf {
+                            if place == .phone { place = .nearby }
+                            nearbyLink = .wifi
+                        }
+                    }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
             .containerRelativeFrame(.horizontal) { width, _ in min(236 * s, width * 0.3) }
@@ -428,6 +441,7 @@ struct ContentView: View {
         case LudoGame.shared.id: String(localized: "Ludo", bundle: .app)
         case PerangKapalGame.shared.id: String(localized: "Perang kapal", bundle: .app)
         case GapleGame.shared.id: String(localized: "Gaple", bundle: .app)
+        case WerewolfGame.shared.id: String(localized: "Werewolf", bundle: .app)
         default: String(localized: "Congklak", bundle: .app)
         }
         return HStack(spacing: 8 * s) {
@@ -463,6 +477,7 @@ struct ContentView: View {
         // Two seats; on this phone against the computer, or two people passing the phone.
         let kapal = game == .perangKapal
         let gaple = game == .gaple
+        let werewolf = game == .werewolf
         let multi = ular || ludo
         // A room with other phones, over Bluetooth, Wi‑Fi, or the internet.
         let nearby = place != .phone
@@ -479,10 +494,12 @@ struct ContentView: View {
         let computerColors = Set(seats.indices.compactMap { i -> Int? in
             i < seatColors.count && seatColors[i] >= 0 && seats[i] == .computer ? seatColors[i] : nil
         })
-        let places: [(Place, LocalizedStringKey, String?)] = [
-            (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
-            (.online, "Online", "globe"),
-        ]
+        let places: [(Place, LocalizedStringKey, String?)] = werewolf
+            ? [(.nearby, "Nearby", "antenna.radiowaves.left.and.right"), (.online, "Online", "globe")]
+            : [
+                (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
+                (.online, "Online", "globe"),
+            ]
         let links: [(NearbyLink, LocalizedStringKey, String?)] = [
             (.bluetooth, "Bluetooth", nil), (.wifi, "Wi‑Fi", nil),
         ]
@@ -490,13 +507,19 @@ struct ContentView: View {
             SettingRow(label: "Play on") {
                 Segmented(options: places, selection: $place, label: "Play on")
             }
-            if nearby && !online {
+            if nearby && !online && !werewolf {
                 SettingRow(label: "Link") {
                     Segmented(options: links, selection: $nearbyLink, label: "Link")
                 }
             }
+            if werewolf {
+                SettingRow(label: "Players") {
+                    WerewolfSeatTargetPicker()
+                }
+                RuleHint(text: "No chat — use emotes, then vote.")
+            }
             // In a nearby room everyone who joins plays, up to 4.
-            if gaple && !nearby {
+            if gaple && !nearby && !werewolf {
                 SettingRow(label: "Players") {
                     // You are always the first seat; the others are a computer or empty.
                     SeatTiles(
@@ -507,7 +530,7 @@ struct ContentView: View {
                         gapleSeatsText = LocalSeats.shared.encode(seats: GapleSettings.tap(seats, index: i))
                     }
                 }
-            } else if !nearby {
+            } else if !nearby && !werewolf {
                 SettingRow(label: "Players") {
                     SeatTiles(
                         seats: seats,
@@ -533,13 +556,14 @@ struct ContentView: View {
             }
             // The description above equally sized Join/Create buttons, as on Android. Online
             // rules move to the Create room screen.
-            SettingRow(label: !multi && !kapal && !gaple && !nearby && computers > 0 ? "Level" : nil) {
+            SettingRow(label: !multi && !kapal && !gaple && !werewolf && !nearby && computers > 0 ? "Level" : nil) {
                 VStack(alignment: .leading, spacing: 8 * s) {
                     if online {
-                        detail(gaple ? "Up to 4 phones over the internet, each hand on its own phone"
+                        detail(werewolf ? "Up to 8 phones over the internet, each role hidden on its phone"
+                            : gaple ? "Up to 4 phones over the internet, each hand on its own phone"
                             : multi ? "Up to 4 phones over the internet, friends anywhere"
                             : kapal ? "2 phones over the internet, friends anywhere" : "Over the internet, friends anywhere")
-                    } else if lan {
+                    } else if lan || (nearby && werewolf) {
                         detail("Wi‑Fi or hotspot, no internet")
                     } else if nearby {
                         detail(gaple ? "Up to 4 phones over Bluetooth, each hand on its own phone"
@@ -616,6 +640,7 @@ struct ContentView: View {
         case .ludo: LudoGame.shared.id
         case .perangKapal: PerangKapalGame.shared.id
         case .gaple: GapleGame.shared.id
+        case .werewolf: WerewolfGame.shared.id
         case .ularTangga: UlarTanggaGame.shared.id
         case .congklak: CongklakGame.shared.id
         }
@@ -625,6 +650,7 @@ struct ContentView: View {
         if id == LudoGame.shared.id { return .ludo }
         if id == PerangKapalGame.shared.id { return .perangKapal }
         if id == GapleGame.shared.id { return .gaple }
+        if id == WerewolfGame.shared.id { return .werewolf }
         if id == UlarTanggaGame.shared.id { return .ularTangga }
         return .congklak
     }
@@ -633,6 +659,7 @@ struct ContentView: View {
         if id == LudoGame.shared.id { return .ludo }
         if id == PerangKapalGame.shared.id { return .perangKapal }
         if id == GapleGame.shared.id { return .gaple }
+        if id == WerewolfGame.shared.id { return .werewolf }
         if id == UlarTanggaGame.shared.id { return .ularTangga }
         return .congklak
     }
@@ -642,6 +669,7 @@ struct ContentView: View {
         case .ludo: .ludo
         case .perangKapal: .perangKapal
         case .gaple: .gaple
+        case .werewolf: .werewolf
         case .ularTangga: .ularTangga
         case .congklak: .congklak
         }
@@ -654,7 +682,8 @@ struct ContentView: View {
             return
         }
         if place == .nearby {
-            room = NearbyRoom.host(game: roomGame(gameId(game)), lan: nearbyLink == .wifi)
+            let useLan = game == .werewolf || nearbyLink == .wifi
+            room = NearbyRoom.host(game: roomGame(gameId(game)), lan: useLan)
             return
         }
         if game == .gaple { return startGaple() }
@@ -943,7 +972,7 @@ private struct SeatTiles: View {
 
 /// A small label above its control; no label keeps the rows' spacing. Same as Android.
 /// Which game's rule controls the play card and the online create screen show.
-enum RoomRules { case congklak, ularTangga, ludo, perangKapal, gaple }
+enum RoomRules { case congklak, ularTangga, ludo, perangKapal, gaple, werewolf }
 
 /// The game's rule options (ular tangga or ludo chips; congklak tembak and starter), saved as they
 /// change: on the play card for this phone and nearby, on Create room online.
@@ -983,6 +1012,8 @@ struct GameRoomOptions: View {
         case .perangKapal:
             // No rule options in v1; one line says how it is played.
             RuleHint(text: "Classic · one shot each turn")
+        case .werewolf:
+            RuleHint(text: "No chat — use emotes, then vote.")
         case .congklak:
             Group {
                 SettingRow(label: "Shooting") {
@@ -1059,7 +1090,7 @@ struct Segmented<T: Hashable>: View {
 
 /// The games the left card switches between, until the game list exists. Same as Android.
 enum MenuGame: CaseIterable {
-    case congklak, ularTangga, ludo, perangKapal, gaple
+    case congklak, ularTangga, ludo, perangKapal, gaple, werewolf
 
     var title: LocalizedStringKey {
         switch self {
@@ -1068,9 +1099,16 @@ enum MenuGame: CaseIterable {
         case .ludo: "Ludo"
         case .perangKapal: "Perang kapal"
         case .gaple: "Gaple"
+        case .werewolf: "Werewolf"
         }
     }
-    var players: LocalizedStringKey { self == .congklak || self == .perangKapal ? "2 players" : "2–4 players" }
+    var players: LocalizedStringKey {
+        switch self {
+        case .congklak, .perangKapal: "2 players"
+        case .werewolf: "5–8 players"
+        default: "2–4 players"
+        }
+    }
     var tagline: LocalizedStringKey {
         switch self {
         case .congklak: "Gather the most seeds in your store."
@@ -1078,6 +1116,7 @@ enum MenuGame: CaseIterable {
         case .ludo: "Race your four tokens home."
         case .perangKapal: "Sink the fleet."
         case .gaple: "Match the ends, empty your hand."
+        case .werewolf: "Find the wolves before they outnumber the village."
         }
     }
     var face: Color {
@@ -1087,6 +1126,7 @@ enum MenuGame: CaseIterable {
         case .ludo: Color(hex: 0x3D6EB5)
         case .perangKapal: Color(hex: 0x1B4F72)
         case .gaple: Color(hex: 0x7B2D3B)
+        case .werewolf: Color(hex: 0x1A2332)
         }
     }
     var edge: Color {
@@ -1096,6 +1136,7 @@ enum MenuGame: CaseIterable {
         case .ludo: Color(hex: 0x2A5085)
         case .perangKapal: Color(hex: 0x123A54)
         case .gaple: Color(hex: 0x5A1F2B)
+        case .werewolf: Color(hex: 0x121A26)
         }
     }
 }
@@ -1224,6 +1265,7 @@ private struct GameCardFace: View {
                 case .ludo: LudoPreview(onReady: onReady)
                 case .perangKapal: PerangKapalPreview(onReady: onReady)
                 case .gaple: GaplePreview(onReady: onReady)
+                case .werewolf: WerewolfPreview(onReady: onReady)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 80 * s, maxHeight: .infinity)
@@ -1400,6 +1442,26 @@ private struct FlowRow: Layout {
     }
 }
 
+/// How many seats the online create / play card aims for (werewolf 5–8).
+private struct WerewolfSeatTargetPicker: View {
+    @State private var target = WerewolfSettings.target
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        Segmented(
+            options: (WerewolfSettings.minPlayers...WerewolfSettings.maxPlayers).map { ($0, LocalizedStringKey("\($0)"), nil) },
+            selection: Binding(
+                get: { target },
+                set: {
+                    target = $0
+                    WerewolfSettings.setTarget($0)
+                }
+            ),
+            label: "Players"
+        )
+    }
+}
+
 /// A nearby room: the lobby (or a guest's connecting card) until the game starts, then the board.
 private struct RoomView: View {
     @ObservedObject var room: NearbyRoom
@@ -1424,6 +1486,9 @@ private struct RoomView: View {
                 .id(ObjectIdentifier(table))
         } else if let table = room.gaple {
             GapleView(table: table, onExit: onExit)
+                .id(ObjectIdentifier(table))
+        } else if let table = room.werewolf {
+            WerewolfView(table: table, onExit: onExit)
                 .id(ObjectIdentifier(table))
         } else if (room.isHost && !room.failed) || room.stage == .lobby {
             RoomLobby(room: room, onLeave: onLeave)

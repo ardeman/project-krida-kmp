@@ -166,7 +166,8 @@ Connect with a WebSocket to `wss://krida-relay.ardeman.com/v1/rooms/<CODE>`:
   host phone and kept for the room's life. The first host to connect claims the code with its
   key; only the same key can connect as host again (rejoin). A new host socket with the right
   key replaces an old one.
-- Guest: `?role=guest`. Allowed once a host has claimed the room, up to 4 guest sockets.
+- Guest: `?role=guest`. Allowed once a host has claimed the room, up to 7 guest sockets
+  (Werewolf rooms may hold 8 players; other games stay at their own seat caps).
 
 Every WebSocket message is binary, one whole protocol message per frame:
 

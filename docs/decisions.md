@@ -294,6 +294,23 @@ in the same commit as the code.
   of the line lies lengthwise in the L-shaped corner instead of across. If no double is dealt
   in round 1 (possible with 2–3 seats), the heaviest tile opens.
 
+## Werewolf
+
+- Sixth game (2026-11-16); game id `werewolf`. Mockup:
+  [mockups/werewolf.md](mockups/werewolf.md).
+- **Seats:** 5–8 (person / computer). **No This phone, no BLE.** Nearby is **Wi‑Fi / LAN
+  only** for this game; Online unchanged. `Krida.MAX_PLAYERS` raised to 8 so this game can
+  fill; other games stay at their own `maxPlayers` (≤ 4).
+- **Roles (dealt):** Serigala, Penduduk, Peramal (exact role on peek), Dokter, Pemburu,
+  Penyihir (heal and poison once each). Counts by lobby size in the mockup.
+- **Kepala desa (Sheriff):** public elected badge (not a dealt card); lynch vote ×2; names a
+  successor on death. Not the same as Pemburu or Peramal.
+- **No free-text chat:** day = timer + emotes + vote.
+- **Bots:** easy / normal / hard for night actions and votes; mid-game hand-off to bot;
+  quick match may fill empty seats with computers (final count 5–8).
+- **Timers:** night 45 s, discuss 60 s, election / vote / hunter / successor 20 s
+  (`Krida.WEREWOLF_*` constants).
+
 ## Game lineup
 
 - Dam-daman and macanan are dropped from the web page and the plan (owner, 2026-11-12).

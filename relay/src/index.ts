@@ -3,7 +3,8 @@ export { Inbox } from "./inbox";
 import { cleanUpAccounts, handleAccounts } from "./accounts";
 /**
  * Krida online relay: one Durable Object per room forwards bytes between the host phone
- * and up to four guest sockets. It knows no game rules; the host stays authoritative.
+ * and up to seven guest sockets (eight players for Werewolf). It knows no game rules; the
+ * host stays authoritative.
  * Framing is documented under "Online relay" in docs/protocol.md.
  * 
  * Also includes a matchmaker Durable Object per game and player count, which queues players
@@ -48,7 +49,8 @@ const KIND_KICK = 0x04;
 const BROADCAST = 0;
 const HOST_PEER = 0;
 
-const MAX_GUESTS = 4;
+/** Host + guests; Werewolf allows 8 players so up to 7 guest sockets. */
+const MAX_GUESTS = 7;
 const MAX_MESSAGE = 64 * 1024;
 /** How long a room waits for its host to come back (the protocol's reconnect grace). */
 const HOST_GRACE_MS = 60_000;
@@ -88,13 +90,14 @@ export default {
       if (url.searchParams.get("flow") === "group") {
         if (!(
           (game === "congklak" || game === "perang_kapal") && playerCount === 2 ||
-          (game === "ular_tangga" || game === "ludo" || game === "gaple") && playerCount >= 2 && playerCount <= 4
+          (game === "ular_tangga" || game === "ludo" || game === "gaple") && playerCount >= 2 && playerCount <= 4 ||
+          game === "werewolf" && playerCount >= 5 && playerCount <= 8
         )) {
           return new Response("invalid game or player count\n", { status: 400 });
         }
         return env.GROUP_MATCHMAKERS.get(env.GROUP_MATCHMAKERS.idFromName(`${game}/${playerCount}`)).fetch(request);
       }
-      if (!/^[a-z][a-z0-9]*$/.test(game) || playerCount < 1 || playerCount > 4) {
+      if (!/^[a-z][a-z0-9_]*$/.test(game) || playerCount < 1 || playerCount > 8) {
         return new Response("invalid game or player count\n", { status: 400 });
       }
       return env.MATCHMAKERS.get(env.MATCHMAKERS.idFromName(`${game}/${playerCount}`)).fetch(request);
@@ -230,7 +233,8 @@ export class Room implements DurableObject {
       const seats = Number(url.searchParams.get("seats"));
       if (game !== null && !(
         (game === "congklak" || game === "perang_kapal") && seats === 2 ||
-        (game === "ular_tangga" || game === "ludo" || game === "gaple") && seats >= 2 && seats <= 4 && Number.isInteger(seats)
+        (game === "ular_tangga" || game === "ludo" || game === "gaple") && seats >= 2 && seats <= 4 && Number.isInteger(seats) ||
+        game === "werewolf" && seats >= 5 && seats <= 8 && Number.isInteger(seats)
       )) {
         return rejectSocket(CLOSE.badRequest, "bad room setup");
       }

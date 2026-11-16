@@ -14,4 +14,6 @@ object StandardRules {
     val perangKapal: PerangKapalGame get() = PerangKapalGame
     /** Gaple without partners: matchmaking never pairs strangers into teams in v1. */
     val gaple: GapleRules get() = GapleRules(GapleOptions())
+    /** Werewolf has no host options in v1. */
+    val werewolf: WerewolfGame get() = WerewolfGame
 }

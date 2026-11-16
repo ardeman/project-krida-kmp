@@ -24,7 +24,7 @@ export const PUSH_SCHEMA = [
 ];
 
 const GAME_NAMES: Record<string, string> = {
-  congklak: "Congklak", ular_tangga: "Ular Tangga", ludo: "Ludo", perang_kapal: "Perang Kapal", gaple: "Gaple",
+  congklak: "Congklak", ular_tangga: "Ular Tangga", ludo: "Ludo", perang_kapal: "Perang Kapal", gaple: "Gaple", werewolf: "Werewolf",
 };
 
 let jwt: { at: number; kid: string; value: string } | undefined;

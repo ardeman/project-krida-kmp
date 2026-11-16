@@ -5,6 +5,11 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 ## Next
 
+- **Werewolf** (sixth game): shared, Android, iOS and relay capacity (MAX_PLAYERS 8 /
+  7 guests) done 2026-11-16 ([mockups/werewolf.md](mockups/werewolf.md)). LAN (Wi‑Fi) +
+  Online only, 5–8 seats, bots, Kepala desa. Builds; not played on a device yet. Next:
+  phone checks (host + computers, then multi-phone). Pushing relay to `main` drops open
+  games — deploy deliberately.
 - **Perang kapal** (fourth game): shared, Android and iOS done 2026-11-12
   ([mockups/perang-kapal.md](mockups/perang-kapal.md)); both build, nothing played on a
   device yet. Reworked the same day on the owner's notes (voxel ships, tap/drag placement,

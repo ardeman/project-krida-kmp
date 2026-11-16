@@ -53,6 +53,7 @@ private struct InviteCard: View {
         case LudoGame.shared.id: String(localized: "Ludo", bundle: .app)
         case PerangKapalGame.shared.id: String(localized: "Perang kapal", bundle: .app)
         case GapleGame.shared.id: String(localized: "Gaple", bundle: .app)
+        case WerewolfGame.shared.id: String(localized: "Werewolf", bundle: .app)
         default: String(localized: "Congklak", bundle: .app)
         }
     }

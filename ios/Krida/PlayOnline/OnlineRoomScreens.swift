@@ -22,7 +22,7 @@ struct CreateOnlineRoomView<Options: View>: View {
         self.onBack = onBack
         self.onCreate = onCreate
         self.options = options()
-        _seats = State(initialValue: fourSeatGame(game) ? 4 : 2)
+        _seats = State(initialValue: werewolfGame(game) ? WerewolfSettings.target : fourSeatGame(game) ? 4 : 2)
     }
 
     var body: some View {
@@ -82,7 +82,7 @@ struct JoinOnlineRoomView: View {
         self.onJoin = onJoin
         self.onSearch = onSearch
         self.onBack = onBack
-        _seats = State(initialValue: fourSeatGame(game) ? 4 : 2)
+        _seats = State(initialValue: werewolfGame(game) ? WerewolfSettings.target : fourSeatGame(game) ? 4 : 2)
     }
 
     private var valid: Bool { RoomCode.shared.isValidOnline(code: code) }
@@ -138,7 +138,14 @@ private struct RoomPlayerCount: View {
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if fourSeatGame(game) {
+        if werewolfGame(game) {
+            RoomDetail(text: "Players")
+            Segmented(
+                options: (WerewolfSettings.minPlayers...WerewolfSettings.maxPlayers).map { ($0, LocalizedStringKey("\($0)"), nil) },
+                selection: $seats,
+                label: "Players"
+            )
+        } else if fourSeatGame(game) {
             RoomDetail(text: "Players")
             Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
                       selection: $seats, label: "Players")
@@ -146,6 +153,10 @@ private struct RoomPlayerCount: View {
             RoomDetail(text: "2 players · you and an opponent")
         }
     }
+}
+
+func werewolfGame(_ game: String) -> Bool {
+    game == WerewolfGame.shared.id
 }
 
 private struct RoomHeading: View {

@@ -54,6 +54,12 @@ import com.ardeman.krida.ulartangga.UlarTanggaGuestTable
 import com.ardeman.krida.ulartangga.UlarTanggaHostTable
 import com.ardeman.krida.ulartangga.UlarTanggaSettings
 import com.ardeman.krida.ulartangga.UlarTanggaTable
+import com.ardeman.krida.core.games.WerewolfBot
+import com.ardeman.krida.core.games.WerewolfGame
+import com.ardeman.krida.werewolf.WerewolfGuestTable
+import com.ardeman.krida.werewolf.WerewolfHostTable
+import com.ardeman.krida.werewolf.WerewolfSettings
+import com.ardeman.krida.werewolf.WerewolfTable
 
 /**
  * A room over BLE or LAN ("Nearby") or through the online relay ("Online"), from hosting or
@@ -115,9 +121,11 @@ class NearbyRoom private constructor(
         private set
     var gaple by mutableStateOf<GapleTable?>(null)
         private set
+    var werewolf by mutableStateOf<WerewolfTable?>(null)
+        private set
 
     /** A game table has taken over the session. */
-    private val playing: Boolean get() = congklak != null || ular != null || ludo != null || perangKapal != null || gaple != null
+    private val playing: Boolean get() = congklak != null || ular != null || ludo != null || perangKapal != null || gaple != null || werewolf != null
 
     /** Ids of the friend invites whose guests hold a seat now (host only). */
     var joinedInvites by mutableStateOf<List<String>>(emptyList())
@@ -206,6 +214,7 @@ class NearbyRoom private constructor(
             ludo != null -> ludo?.leave()
             perangKapal != null -> perangKapal?.leave()
             gaple != null -> gaple?.leave()
+            werewolf != null -> werewolf?.leave()
             guest != null -> guest?.leave()
             join != null -> join?.leave()
             else -> transport.close()
@@ -292,7 +301,7 @@ class NearbyRoom private constructor(
         if (!failed) stage = Stage.LOST
     }
 
-    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO, PERANG_KAPAL, GAPLE }
+    enum class Game { CONGKLAK, ULAR_TANGGA, LUDO, PERANG_KAPAL, GAPLE, WEREWOLF }
 
     companion object {
         /** A guest that hasn't reached the host by then gives up; online may be unreachable. */
@@ -305,10 +314,12 @@ class NearbyRoom private constructor(
                 Game.LUDO -> LudoGame.id
                 Game.PERANG_KAPAL -> PerangKapalGame.id
                 Game.GAPLE -> GapleGame.id
+                Game.WEREWOLF -> WerewolfGame.id
                 Game.CONGKLAK -> CongklakGame.id
             }
             val total = when (game) {
                 Game.CONGKLAK, Game.PERANG_KAPAL -> 2
+                Game.WEREWOLF -> seats?.coerceIn(WerewolfGame.minPlayers, WerewolfGame.maxPlayers) ?: WerewolfSettings.targetSeats
                 else -> seats?.coerceIn(2, 4) ?: 4
             }
             val useLan = lan && !online
@@ -374,6 +385,18 @@ class NearbyRoom private constructor(
                         if (session.canStart()) {
                             session.start()
                             room.gaple = GapleHostTable(session, mySeat = 0, transport = transport)
+                        }
+                    }
+                }
+                Game.WEREWOLF -> {
+                    val session = room.hostSession(WerewolfGame, name, transport, avatar)
+                    room.canAddBots = true
+                    room.addBot = { botName -> session.addBot(botName, Platform.ANDROID, WerewolfSettings.bot()) }
+                    room.removeBot = { seat -> session.removeBot(seat) }
+                    room.begin = {
+                        if (session.canStart()) {
+                            session.start()
+                            room.werewolf = WerewolfHostTable(session, mySeat = 0, transport = transport)
                         }
                     }
                 }
@@ -444,6 +467,10 @@ class NearbyRoom private constructor(
                     }
                     GapleGame.id -> room.guestSession(GapleGame, join).also { s ->
                         s.onState = { _ -> room.gaple = GapleGuestTable(s) }
+                        s.replay()
+                    }
+                    WerewolfGame.id -> room.guestSession(WerewolfGame, join).also { s ->
+                        s.onState = { _ -> room.werewolf = WerewolfGuestTable(s) }
                         s.replay()
                     }
                     else -> room.stage = Stage.UNKNOWN_GAME

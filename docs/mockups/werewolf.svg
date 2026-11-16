@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1812" height="1460" viewBox="0 0 1812 1460">
+<rect width="1812" height="1460" fill="#191512"/>
+<defs>
+  <radialGradient id="lbg" cx="35%" cy="25%" r="90%"><stop stop-color="#F7D7B5"/><stop offset="1" stop-color="#E39A5C"/></radialGradient>
+  <radialGradient id="dbg" cx="35%" cy="25%" r="90%"><stop stop-color="#3A2A1E"/><stop offset="1" stop-color="#120E0B"/></radialGradient>
+</defs>
+<text x="16" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Werewolf / Light</text>
+<g transform="translate(16,52)">
+  <rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+  <rect x="24" y="70" width="300" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+  <rect x="44" y="90" width="260" height="150" rx="16" fill="#1A2332"/>
+  <circle cx="210" cy="130" r="18" fill="#F6EADC" opacity="0.85"/>
+  <ellipse cx="150" cy="175" rx="48" ry="28" fill="#0D121A"/>
+  <circle cx="128" cy="168" r="8" fill="#C45C26"/>
+  <circle cx="172" cy="168" r="8" fill="#C45C26"/>
+  <text x="174" y="268" text-anchor="middle" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800">Werewolf</text>
+  <text x="174" y="292" text-anchor="middle" fill="#CDBFAE" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Find the wolves before they</text>
+  <text x="174" y="308" text-anchor="middle" fill="#CDBFAE" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">outnumber the village.</text>
+  <rect x="348" y="70" width="502" height="300" rx="20" fill="#FFFFFF" stroke="#E2CFB7" stroke-width="1.5"/>
+  <text x="372" y="108" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800">Play on</text>
+  <rect x="372" y="124" width="140" height="44" rx="12" fill="#FFFFFF" stroke="#C45C26" stroke-width="2"/>
+  <text x="442" y="151" text-anchor="middle" fill="#C45C26" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">Nearby</text>
+  <rect x="524" y="124" width="140" height="44" rx="12" fill="#C45C26"/>
+  <text x="594" y="151" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">Online</text>
+  <text x="372" y="204" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Seats</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">
+    <rect x="372" y="216" width="52" height="40" rx="10" fill="#FFFFFF" stroke="#CDBFAE"/><text x="398" y="242" text-anchor="middle" fill="#2B1D14">5</text>
+    <rect x="432" y="216" width="52" height="40" rx="10" fill="#C45C26"/><text x="458" y="242" text-anchor="middle" fill="#FFFFFF">6</text>
+    <rect x="492" y="216" width="52" height="40" rx="10" fill="#FFFFFF" stroke="#CDBFAE"/><text x="518" y="242" text-anchor="middle" fill="#2B1D14">7</text>
+    <rect x="552" y="216" width="52" height="40" rx="10" fill="#FFFFFF" stroke="#CDBFAE"/><text x="578" y="242" text-anchor="middle" fill="#2B1D14">8</text>
+  </g>
+  <text x="372" y="290" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">No chat  use emotes, then vote.</text>
+  <text x="372" y="312" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Nearby is WiFi only for this game.</text>
+  <rect x="372" y="328" width="200" height="44" rx="14" fill="#C45C26"/>
+  <text x="472" y="356" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Create room</text>
+</g>
+<text x="922" y="38" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Home · Werewolf / Dark</text>
+<g transform="translate(922,52)">
+  <rect width="874" height="402" rx="12" fill="url(#dbg)"/>
+  <rect x="24" y="70" width="300" height="300" rx="20" fill="#24180F" stroke="#4A3828" stroke-width="1.5"/>
+  <rect x="44" y="90" width="260" height="150" rx="16" fill="#1A2332"/>
+  <circle cx="210" cy="130" r="18" fill="#F6EADC" opacity="0.7"/>
+  <ellipse cx="150" cy="175" rx="48" ry="28" fill="#0D121A"/>
+  <circle cx="128" cy="168" r="8" fill="#E39A5C"/>
+  <circle cx="172" cy="168" r="8" fill="#E39A5C"/>
+  <text x="174" y="268" text-anchor="middle" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="22" font-weight="800">Werewolf</text>
+  <text x="174" y="292" text-anchor="middle" fill="#A89078" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Find the wolves before they</text>
+  <text x="174" y="308" text-anchor="middle" fill="#A89078" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">outnumber the village.</text>
+  <rect x="348" y="70" width="502" height="300" rx="20" fill="#24180F" stroke="#4A3828" stroke-width="1.5"/>
+  <text x="372" y="108" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800">Play on</text>
+  <rect x="372" y="124" width="140" height="44" rx="12" fill="#24180F" stroke="#E39A5C" stroke-width="2"/>
+  <text x="442" y="151" text-anchor="middle" fill="#E39A5C" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">Nearby</text>
+  <rect x="524" y="124" width="140" height="44" rx="12" fill="#C45C26"/>
+  <text x="594" y="151" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">Online</text>
+  <text x="372" y="204" fill="#A89078" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="800">Seats</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="15" font-weight="700">
+    <rect x="372" y="216" width="52" height="40" rx="10" fill="#24180F" stroke="#4A3828"/><text x="398" y="242" text-anchor="middle" fill="#F6EADC">5</text>
+    <rect x="432" y="216" width="52" height="40" rx="10" fill="#C45C26"/><text x="458" y="242" text-anchor="middle" fill="#FFFFFF">6</text>
+    <rect x="492" y="216" width="52" height="40" rx="10" fill="#24180F" stroke="#4A3828"/><text x="518" y="242" text-anchor="middle" fill="#F6EADC">7</text>
+    <rect x="552" y="216" width="52" height="40" rx="10" fill="#24180F" stroke="#4A3828"/><text x="578" y="242" text-anchor="middle" fill="#F6EADC">8</text>
+  </g>
+  <text x="372" y="290" fill="#A89078" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">No chat  use emotes, then vote.</text>
+  <rect x="372" y="328" width="200" height="44" rx="14" fill="#C45C26"/>
+  <text x="472" y="356" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Create room</text>
+</g>
+<text x="16" y="508" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Night · role + actions / Light</text>
+<g transform="translate(16,522)">
+  <rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+  <rect x="16" y="16" width="200" height="370" rx="16" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="36" y="48" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">Werewolf</text>
+  <text x="36" y="70" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Night · Day 1</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">
+    <rect x="28" y="90" width="84" height="56" rx="10" fill="#F7E8D4" stroke="#C45C26" stroke-width="2"/><text x="70" y="114" text-anchor="middle" fill="#2B1D14">You</text><text x="70" y="132" text-anchor="middle" fill="#8A7460"></text>
+    <rect x="120" y="90" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="162" y="124" text-anchor="middle" fill="#2B1D14">Ayu</text>
+    <rect x="28" y="156" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="70" y="190" text-anchor="middle" fill="#2B1D14">Budi</text>
+    <rect x="120" y="156" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="162" y="190" text-anchor="middle" fill="#2B1D14">Citra</text>
+    <rect x="28" y="222" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="70" y="256" text-anchor="middle" fill="#2B1D14">Dian</text>
+    <rect x="120" y="222" width="84" height="56" rx="10" fill="#E8E0D4"/><text x="162" y="256" text-anchor="middle" fill="#8A7460">Eko · PC</text>
+  </g>
+  <rect x="232" y="16" width="480" height="370" rx="16" fill="#1A2332"/>
+  <text x="472" y="70" text-anchor="middle" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="800">Your role: Seer</text>
+  <text x="472" y="100" text-anchor="middle" fill="#CDBFAE" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="600">Peek at someone</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700" fill="#F6EADC">
+    <rect x="280" y="130" width="120" height="44" rx="12" fill="#2A3548"/><text x="340" y="158" text-anchor="middle">Ayu</text>
+    <rect x="416" y="130" width="120" height="44" rx="12" fill="#C45C26"/><text x="476" y="158" text-anchor="middle">Budi</text>
+    <rect x="552" y="130" width="120" height="44" rx="12" fill="#2A3548"/><text x="612" y="158" text-anchor="middle">Citra</text>
+    <rect x="348" y="190" width="120" height="44" rx="12" fill="#2A3548"/><text x="408" y="218" text-anchor="middle">Dian</text>
+    <rect x="484" y="190" width="120" height="44" rx="12" fill="#2A3548"/><text x="544" y="218" text-anchor="middle">Eko</text>
+  </g>
+  <text x="472" y="290" text-anchor="middle" fill="#A89078" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">Waiting for others& 0:32</text>
+  <rect x="728" y="16" width="130" height="370" rx="16" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="793" y="60" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800">45</text>
+  <text x="793" y="88" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Night</text>
+</g>
+<text x="922" y="508" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Day · vote / Light</text>
+<g transform="translate(922,522)">
+  <rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+  <rect x="16" y="16" width="200" height="370" rx="16" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="36" y="48" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">Werewolf</text>
+  <text x="36" y="70" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Vote · Day 1</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="700">
+    <rect x="28" y="90" width="84" height="56" rx="10" fill="#F7E8D4" stroke="#C45C26" stroke-width="2"/><text x="70" y="114" text-anchor="middle" fill="#2B1D14">You </text><text x="70" y="132" text-anchor="middle" fill="#8A7460">Sheriff</text>
+    <rect x="120" y="90" width="84" height="56" rx="10" fill="#E8E0D4"/><text x="162" y="124" text-anchor="middle" fill="#8A7460">Ayu </text>
+    <rect x="28" y="156" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="70" y="190" text-anchor="middle" fill="#2B1D14">Budi</text>
+    <rect x="120" y="156" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="162" y="190" text-anchor="middle" fill="#2B1D14">Citra</text>
+    <rect x="28" y="222" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="70" y="256" text-anchor="middle" fill="#2B1D14">Dian</text>
+    <rect x="120" y="222" width="84" height="56" rx="10" fill="#F7E8D4"/><text x="162" y="256" text-anchor="middle" fill="#2B1D14">Eko</text>
+  </g>
+  <rect x="232" y="16" width="480" height="370" rx="16" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="472" y="70" text-anchor="middle" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="20" font-weight="800">Vote to lynch</text>
+  <text x="472" y="98" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">Ayu was eliminated last night.</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="700">
+    <rect x="280" y="130" width="140" height="48" rx="12" fill="#F7E8D4" stroke="#CDBFAE"/><text x="350" y="160" text-anchor="middle" fill="#2B1D14">Budi</text>
+    <rect x="440" y="130" width="140" height="48" rx="12" fill="#C45C26"/><text x="510" y="160" text-anchor="middle" fill="#FFFFFF">Citra</text>
+    <rect x="280" y="194" width="140" height="48" rx="12" fill="#F7E8D4" stroke="#CDBFAE"/><text x="350" y="224" text-anchor="middle" fill="#2B1D14">Dian</text>
+    <rect x="440" y="194" width="140" height="48" rx="12" fill="#F7E8D4" stroke="#CDBFAE"/><text x="510" y="224" text-anchor="middle" fill="#2B1D14">Eko</text>
+    <rect x="360" y="258" width="140" height="48" rx="12" fill="#FFFFFF" stroke="#CDBFAE"/><text x="430" y="288" text-anchor="middle" fill="#8A7460">Abstain</text>
+  </g>
+  <text x="472" y="350" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Your vote counts as two (Sheriff).</text>
+  <rect x="728" y="16" width="130" height="370" rx="16" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="793" y="60" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800">20</text>
+  <text x="793" y="88" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">Vote</text>
+</g>
+<text x="16" y="978" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Result / Light</text>
+<g transform="translate(16,992)">
+  <rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+  <rect x="187" y="60" width="500" height="280" rx="20" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="437" y="130" text-anchor="middle" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="28" font-weight="800">Town wins</text>
+  <text x="437" y="168" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="14" font-weight="600">All werewolves were eliminated.</text>
+  <text x="437" y="210" text-anchor="middle" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">Budi was a Werewolf · Citra was a Villager</text>
+  <rect x="337" y="250" width="200" height="44" rx="14" fill="#C45C26"/>
+  <text x="437" y="278" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Menu</text>
+</g>
+<text x="922" y="978" fill="#F6EADC" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Lobby · 6 seats / Light</text>
+<g transform="translate(922,992)">
+  <rect width="874" height="402" rx="12" fill="url(#lbg)"/>
+  <rect x="24" y="40" width="380" height="320" rx="20" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="48" y="84" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="18" font-weight="800">Room ABCDEF</text>
+  <text x="48" y="112" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="600">WiFi · Add people or computers</text>
+  <rect x="48" y="140" width="140" height="140" rx="12" fill="#F7E8D4"/>
+  <text x="118" y="220" text-anchor="middle" fill="#8A7460" font-family="ui-rounded, system-ui, sans-serif" font-size="12" font-weight="600">QR</text>
+  <rect x="428" y="40" width="422" height="320" rx="20" fill="#FFFFFF" stroke="#E2CFB7"/>
+  <text x="452" y="84" fill="#2B1D14" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="800">Players 4 / 6</text>
+  <g font-family="ui-rounded, system-ui, sans-serif" font-size="13" font-weight="700">
+    <rect x="452" y="110" width="180" height="44" rx="12" fill="#F7E8D4"/><text x="542" y="138" text-anchor="middle" fill="#2B1D14">You · host</text>
+    <rect x="646" y="110" width="180" height="44" rx="12" fill="#F7E8D4"/><text x="736" y="138" text-anchor="middle" fill="#2B1D14">Ayu</text>
+    <rect x="452" y="166" width="180" height="44" rx="12" fill="#F7E8D4"/><text x="542" y="194" text-anchor="middle" fill="#2B1D14">Budi</text>
+    <rect x="646" y="166" width="180" height="44" rx="12" fill="#E8E0D4"/><text x="736" y="194" text-anchor="middle" fill="#8A7460">Computer</text>
+    <rect x="452" y="222" width="180" height="44" rx="12" fill="#FFFFFF" stroke="#CDBFAE" stroke-dasharray="6 4"/><text x="542" y="250" text-anchor="middle" fill="#8A7460">+ Computer</text>
+    <rect x="646" y="222" width="180" height="44" rx="12" fill="#FFFFFF" stroke="#CDBFAE" stroke-dasharray="6 4"/><text x="736" y="250" text-anchor="middle" fill="#8A7460">Empty</text>
+  </g>
+  <rect x="520" y="290" width="200" height="44" rx="14" fill="#CDBFAE"/>
+  <text x="620" y="318" text-anchor="middle" fill="#FFFFFF" font-family="ui-rounded, system-ui, sans-serif" font-size="16" font-weight="700">Start</text>
+</g>
+</svg>

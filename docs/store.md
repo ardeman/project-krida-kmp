@@ -43,6 +43,8 @@ App Store metadata must not name other platforms (Guideline 2.3.10 — Bedug rej
 >
 > Gaple: sambungkan kartu domino di ujung yang cocok, habiskan tanganmu; pertama ke 100 poin menang.
 >
+> Werewolf: 5–8 pemain (Wi‑Fi / online), temukan serigala sebelum mereka menguasai desa.
+>
 > CARA MAIN
 > • Lawan komputer: pilih tingkat kesulitan (congklak) atau isi kursi dengan komputer.
 > • Gantian di satu HP atau tablet.
@@ -83,7 +85,7 @@ https://krida.ardeman.com/en/privacy/.
 
 **Full description** (Play ≤ 4000, App Store description):
 
-> Krida brings traditional games from across Indonesia to life in warm 3D voxel style. Now shipping: congklak (Indonesian mancala), ular tangga (snakes and ladders), ludo, perang kapal (battleship) and gaple (dominoes).
+> Krida brings traditional games from across Indonesia to life in warm 3D voxel style. Now shipping: congklak (Indonesian mancala), ular tangga (snakes and ladders), ludo, perang kapal (battleship), gaple (dominoes) and werewolf.
 >
 > Congklak: pick up the seeds from one of your holes, sow them one by one, and gather as many as you can in your store. Passed your store and landed in an empty hole on your side? Shoot! The seeds in the hole opposite are yours.
 >
@@ -94,6 +96,8 @@ https://krida.ardeman.com/en/privacy/.
 > Perang kapal: place your fleet, take turns firing, sink the other side.
 >
 > Gaple: match domino ends, empty your hand; first to 100 points wins.
+>
+> Werewolf: 5–8 players (Wi‑Fi / online), find the wolves before they outnumber the village.
 >
 > HOW TO PLAY
 > • Play the computer: choose a difficulty (congklak) or fill seats with computers.

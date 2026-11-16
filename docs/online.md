@@ -14,11 +14,11 @@ no game rules. Same `Transport` interface, same protocol messages (`docs/protoco
 
 ## Design
 
-- **Relay framing.** A host socket and up to 3 guest sockets per room. The relay tags guest
-  messages with a peer id for the host, routes host messages to one guest or all, and tells
-  the host when a guest connects or drops. Documented as "Online relay" in `docs/protocol.md`.
-  Limits: 4 sockets per room, message size cap, rate limit per socket, room deleted after
-  10 min idle.
+- **Relay framing.** A host socket and up to 7 guest sockets per room (8 players for
+  Werewolf; other games keep their own seat caps). The relay tags guest messages with a peer
+  id for the host, routes host messages to one guest or all, and tells the host when a guest
+  connects or drops. Documented as "Online relay" in `docs/protocol.md`. Limits: message size
+  cap, rate limit per socket, room deleted after 10 min idle.
 - **Room codes.** Online codes are 6 chars (same alphabet as `RoomCode`) so they can't be
   guessed; BLE keeps 4. Share link `https://krida.ardeman.com/r/CODE` (App Links / Universal
   Links via `web/`, falling back to the store page), QR encodes the same link.

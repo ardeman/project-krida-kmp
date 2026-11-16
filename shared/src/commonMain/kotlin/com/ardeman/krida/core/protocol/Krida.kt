@@ -3,7 +3,8 @@ package com.ardeman.krida.core.protocol
 /** Protocol constants shared by Android, iOS and docs/protocol.md. Change them together. */
 object Krida {
     const val PROTOCOL_VERSION: Int = 1
-    const val MAX_PLAYERS: Int = 4
+    /** Global seat ceiling (Werewolf uses up to 8). Each game still caps via its own maxPlayers. */
+    const val MAX_PLAYERS: Int = 8
 
     // BLE GATT layout. "6b726964" is "krid" in hex.
     const val BLE_SERVICE_UUID: String = "6b72a1d0-4b1e-4c8a-9b8e-6b7269646101"
@@ -77,6 +78,14 @@ object Krida {
      * the rest ([com.ardeman.krida.core.games.PerangKapalGame.timeoutFleet]) and taps Ready.
      */
     const val PLACE_FLEET_MS: Long = 60_000L
+    /** Werewolf night actions before the host resolves. */
+    const val WEREWOLF_NIGHT_MS: Long = 45_000L
+    /** Werewolf day discussion (emotes only) before the lynch vote opens. */
+    const val WEREWOLF_DISCUSS_MS: Long = 60_000L
+    /**
+     * Werewolf sheriff election, lynch vote, hunter shot, and sheriff successor pick.
+     */
+    const val WEREWOLF_VOTE_MS: Long = 20_000L
     /**
      * Once a player on this phone lets a turn timer run out, the phone plays their later turns
      * (rolls, picks, moves) after this short pause instead of a full countdown, until that

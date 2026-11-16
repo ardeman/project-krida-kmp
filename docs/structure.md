@@ -43,6 +43,9 @@ A change to one side usually needs the same change in the file on the same row.
 | Gaple screen (hand, round card) | `gaple/GapleScreen.kt` | `Gaple/GapleView.swift` |
 | Gaple 3D (meshes in shared `GapleScene.kt`) | `gaple/GapleRenderer.kt` | `Gaple/GapleRenderer.swift`, `GaplePreview.swift` |
 | Gaple table + settings | `gaple/GapleTable.kt`, `GapleSettings.kt` | `Gaple/GapleTable.swift` |
+| Werewolf screen | `werewolf/WerewolfScreen.kt` | `Werewolf/WerewolfView.swift` |
+| Werewolf table + settings | `werewolf/WerewolfTable.kt`, `WerewolfSettings.kt` | `Werewolf/WerewolfTable.swift` |
+| Werewolf menu preview | (in screen / MainActivity) | `Werewolf/WerewolfPreview.swift` |
 | Room state (nearby and online) | `nearby/NearbyRoom.kt` | `Nearby/NearbyRoom.swift` |
 | Lobby, join, QR, connecting screens | `nearby/NearbyScreens.kt` | `Nearby/NearbyScreens.swift` |
 | Saved room for rejoin | `nearby/LastRoom.kt` | `Nearby/LastRoom.swift` |

@@ -131,7 +131,8 @@ All of them plug into the same `Transport` interface; game code never changes.
 ## Status
 
 Online public-room discovery and the combined Create/Join flow are live on Android, iOS
-and the relay; cross-phone checks remain open.
+and the relay; cross-phone checks remain open. **Werewolf** (5–8, Wi‑Fi/online, no BLE)
+is coded on shared / Android / iOS with relay capacity for 8; device checks open.
 
 Skeleton + protocol v1 + congklak rules (`shared/.../games/CongklakGame.kt`, rule variant
 documented in the file). Pass-and-play congklak on a voxel board on **Android** (Filament,
