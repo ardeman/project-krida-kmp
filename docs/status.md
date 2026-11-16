@@ -111,6 +111,11 @@ Real users will try online play first; don't push for these, ask whether feedbac
   editor + decks in `../project-pamerstudio-node/store-screenshots/` (phone, 7″/10″,
   iPhone/iPad, FG, App Store header/search creatives); older refs under `docs/brand/store/`.
 - Link the AdMob apps to the store listings after publishing (needs a **public** Play page).
+  iOS (AdMob app `~9588102946`): store link found App Store 1.0.4, but verify failed
+  2026-11-16 — AdMob crawls `sellerUrl` `https://krida.ardeman.com/app-ads.txt`, which
+  404'd. File added at `web/public/app-ads.txt` (same line as `ardeman.com/app-ads.txt`:
+  `google.com, pub-4887874546732768, DIRECT, f08c47fec0942fa0`). After deploy to main:
+  open that URL (plain text, not the 404 page), then AdMob **Check for updates**.
 - **Android release ads (2026-11-14):** packaging OK (`scripts/verify-android-release-ads.sh`;
   real ids, `AD_ID`, R8). AdMob UMP **Krida EU consent** published (both Krida apps,
   privacy URL `https://krida.ardeman.com/privasi/`). Closed testing – Alpha **1.0.2 /
