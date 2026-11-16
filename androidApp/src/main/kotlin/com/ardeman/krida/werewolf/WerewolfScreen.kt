@@ -266,7 +266,6 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                     table, state, me, picking,
                     onPick = { picking = it },
                     onAction = { table.play(it) },
-                    onShowRole = { showRole = true },
                 )
             }
             Spacer(Modifier.weight(1f))
@@ -456,7 +455,6 @@ private fun PhasePanel(
     picking: Int?,
     onPick: (Int) -> Unit,
     onAction: (WerewolfMove) -> Unit,
-    onShowRole: () -> Unit = {},
 ) {
     val night = state.phase == WerewolfPhase.NIGHT
     // Day stays a light panel with dark ink so it stays readable in dark appearance too.
@@ -467,7 +465,6 @@ private fun PhasePanel(
     // Day chips stay white with a stronger rim so they don’t melt into the cream panel.
     val chip = if (night) Color.White.copy(alpha = 0.22f) else Color.White
     val line = if (night) Color.White.copy(alpha = 0.4f) else Color(0xFF8B6F52)
-    val roleTint = if (night) Color(0xFFFFF0D0) else Color(0xFF7A4A1E)
     val shape = RoundedCornerShape(20.dp)
     val youLabel = stringResource(R.string.bot_you)
     fun seatLabel(seat: Int) = if (seat == me) youLabel else table.name(seat)
@@ -485,25 +482,6 @@ private fun PhasePanel(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
-        val role = state.roles.getOrNull(me).orEmpty()
-        if (role.isNotEmpty() && !WerewolfGame.isFinished(state)) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(role = Role.Button, onClick = onShowRole)
-                    .padding(vertical = 2.dp),
-            ) {
-                Text(
-                    stringResource(R.string.werewolf_your_role, roleLabel(role)),
-                    style = Theme.font(14, FontWeight.Bold, roleTint),
-                )
-                Text(
-                    roleBlurb(role),
-                    style = Theme.font(12, FontWeight.Bold, muted),
-                )
-            }
-        }
         state.seerPeekRole?.let { peek ->
             val target = state.seerPeekTarget
             if (target != null) {

@@ -786,7 +786,8 @@ class MainActivity : ComponentActivity() {
                     onTap = GapleSettings::tapSeat,
                 )
             }
-            if (!nearby && !kapal && !gaple) SettingRow(stringResource(R.string.play_players)) {
+            // Werewolf on this phone only picks a seat count (5–8); the rest are computers.
+            if (!nearby && !kapal && !gaple && !werewolf) SettingRow(stringResource(R.string.play_players)) {
                 SeatTiles(
                     seats = seats,
                     colors = if (multi) {

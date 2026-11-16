@@ -503,29 +503,12 @@ private struct WerewolfBoardView: View {
     }
 
     private var centerPanel: some View {
-        let roleTint = night ? Color(hex: 0xFFF0D0) : Color(hex: 0x7A4A1E)
-        return VStack(spacing: 12 * s) {
+        VStack(spacing: 12 * s) {
             Text(phaseHeadline).font(Theme.font(22 * s, .black)).multilineTextAlignment(.center)
             if let body = phaseBody {
                 Text(body).font(Theme.font(14 * s, .semibold)).foregroundStyle(boardMuted).multilineTextAlignment(.center)
             }
-            if !model.myRole.isEmpty, !model.finished {
-                Button {
-                    model.showRole = true
-                } label: {
-                    VStack(spacing: 4 * s) {
-                        Text(String(localized: "Your role: \(roleName(model.myRole))", bundle: .app))
-                            .font(Theme.font(14 * s, .bold))
-                            .foregroundStyle(roleTint)
-                        Text(roleBlurb(model.myRole))
-                            .font(Theme.font(12 * s, .bold))
-                            .foregroundStyle(boardMuted)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint(String(localized: "Tap to see your role again", bundle: .app))
-            }
+            // Role name stays on your seat tile; tap that seat to open the role card again.
             dawnBanner
             actionArea
         }

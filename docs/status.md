@@ -13,9 +13,12 @@ file in the same commit when an item is done or a new one comes up. Last updated
   Next: real phone checks (This phone / Play with computers, then multi-phone). **Claim
   chips** for discussion wired 2026-11-16 (shared `claim` message + Android/iOS UI).
   Phase VO + SFX (Night / Dawn / Day / Vote / Election / win / you died) wired 2026-11-16.
-  Host leave confirm (lobby + mid-game, all linked games, Android + iOS) wired 2026-11-16;
-  builds, not checked on a phone yet. Pushing relay to `main` drops open games — deploy
-  deliberately.
+  Host leave confirm (lobby + mid-game, all linked games, Android + iOS) wired 2026-11-16.
+  Device checks 2026-11-16: Pixel XL lobby + mid-game Leave room? dialog OK; iOS Simulator
+  vs computers OK (Computer N + BotFace, claim chips/feed with seat numbers, Play again,
+  Night→Dawn→Election→Discussion). Physical iPhone install + launch OK; host-leave there
+  not driven end-to-end (Device Hub kept sticking on the simulator). Pushing relay to
+  `main` drops open games — deploy deliberately.
 - **What’s New after update:** once-per-marketing-version home card done 2026-11-16
   (Android + iOS; dismiss stores seen marketing version).
 - **Seat link dots (all linked games):** 4-dot quality cue under each seat tile (decisions,
