@@ -17,6 +17,8 @@ const alternates = { id: "", en: "en/" };
 // Colors are the app's card accents.
 const colors = ["#8a5a2e", "#4f8a3b", "#3d6eb5", "#1b4f72", "#7b2d3b"];
 
+const appStoreUrl = "https://apps.apple.com/app/id6832093929";
+
 const copy = {
   id: {
     title: "Krida — Board games Nusantara, main bareng di mana saja",
@@ -25,11 +27,13 @@ const copy = {
     gamesNav: "Permainan",
     h1: "Main bareng, di mana saja.",
     lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
-    soon: "Yuk gabung jadi closed tester — cara gabung di bawah.",
+    downloadAppStore: "Unduh di App Store",
+    downloadAndroid: "Android · closed tester",
+    soon: "Sudah di App Store. Android masih closed testing — cara gabung di bawah.",
     testNav: "Closed tester",
-    testTitle: "Yuk gabung jadi closed tester",
+    testTitle: "Yuk gabung jadi closed tester (Android)",
     testLead:
-      "Krida masih di Google Play closed testing. Ikut sebagai tester murni lewat TesBareng — tidak perlu punya app sendiri.",
+      "Di iPhone, unduh dari App Store. Di Android, Krida masih di Google Play closed testing — ikut sebagai tester murni lewat TesBareng, tidak perlu punya app sendiri.",
     testVideoCaption: "Undangan closed testing",
     testVideoWatch: "Tonton di YouTube",
     testHow: "Cara gabung",
@@ -99,6 +103,7 @@ const copy = {
     privacyPath: "privasi/",
     changelog: "Catatan perubahan",
     changelogPath: "catatan/",
+    portfolio: "ardeman.com",
   },
   en: {
     title: "Krida — Board games from Indonesia, play together anywhere",
@@ -107,11 +112,13 @@ const copy = {
     gamesNav: "Games",
     h1: "Play together, anywhere.",
     lead: "Congklak, snakes & ladders, ludo, battleship and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
-    soon: "Come join as a closed tester — how to join below.",
+    downloadAppStore: "Download on the App Store",
+    downloadAndroid: "Android · closed tester",
+    soon: "On the App Store now. Android is still closed testing — how to join below.",
     testNav: "Closed tester",
-    testTitle: "Come join as a closed tester",
+    testTitle: "Come join as a closed tester (Android)",
     testLead:
-      "Krida is on Google Play closed testing first. Join as a pure tester on TesBareng — you don’t need your own app.",
+      "On iPhone, get it from the App Store. On Android, Krida is still on Google Play closed testing — join as a pure tester on TesBareng; you don’t need your own app.",
     testVideoCaption: "Closed testing invite",
     testVideoWatch: "Watch on YouTube",
     testHow: "How to join",
@@ -181,8 +188,11 @@ const copy = {
     privacyPath: "en/privacy/",
     changelog: "Changelog",
     changelogPath: "en/changelog/",
+    portfolio: "ardeman.com",
   },
 }[lang];
+
+const portfolioUrl = "https://ardeman.com";
 
 const games = copy.games.map((g, i) => ({ ...g, color: colors[i] }));
 const year = new Date().getFullYear();
@@ -210,6 +220,15 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
       <div class="hero-text">
         <h1>{copy.h1}</h1>
         <p class="lead">{copy.lead}</p>
+        <p class="hero-cta">
+          <a
+            class="pill pill-strong"
+            href={appStoreUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >{copy.downloadAppStore}</a>
+          <a class="pill" href="#closed-test">{copy.downloadAndroid}</a>
+        </p>
         <p class="soon"><a href="#closed-test">{copy.soon}</a></p>
       </div>
       <div class="hero-art"><Board /></div>
@@ -376,9 +395,9 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
         <span class="lema-src">{copy.lemaSrc} <i lang="sa">krīḍā</i>: {copy.lemaSrcGloss}.</span>
       </p>
       <span class="footer-copy"
-        >© {year} Krida · krida.ardeman.com · <a href={`${root}/${copy.changelogPath}`}>{copy.changelog}</a> · <a
-          href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a
-        ></span
+        >© {year} Krida · <a href={portfolioUrl} rel="noopener noreferrer">{copy.portfolio}</a> · <a
+          href={`${root}/${copy.changelogPath}`}>{copy.changelog}</a
+        > · <a href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a></span
       >
     </footer>
   </main>

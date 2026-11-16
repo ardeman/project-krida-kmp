@@ -48,7 +48,7 @@ object Krida {
 
     /** Store listings opened by "Check for update" (menu). */
     const val PLAY_STORE_URL: String = "https://play.google.com/store/apps/details?id=com.ardeman.krida"
-    /** App Store numeric id (App Store Connect). Empty iTunes lookup until the app is public. */
+    /** App Store numeric id (App Store Connect). Public as of 2026-11-16. */
     const val APP_STORE_ID: String = "6832093929"
     const val APP_STORE_URL: String = "https://apps.apple.com/app/id$APP_STORE_ID"
 

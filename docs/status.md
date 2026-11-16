@@ -95,7 +95,9 @@ Real users will try online play first; don't push for these, ask whether feedbac
 ## Release setup
 
 - **Path (owner, 2026-11-13):** App Store → production submit (not TestFlight as the goal).
-  Play → closed testing first, then production later.
+  Play → closed testing first, then production later. **App Store 1.0.4 is public**
+  (2026-11-16, `https://apps.apple.com/app/id6832093929`). Landing page hero links there;
+  Android still closed testing via TesBareng.
 - Play: create the app, upload the AAB to closed testing, the `hapus_iklan` product. Enter
   Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
 - Play app signing SHA-256 added to `web/public/.well-known/assetlinks.json` (2026-11-14;
@@ -145,8 +147,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   IAP). Fixed and resubmitted 2026-11-15: ATT after UMP (`47c12f9`), IPA **build 6**,
   App Privacy Device ID tracking published, Review Notes + `usesIdfa`, encryption
   exempt. Cancelled the version-only queue, then one submission with **1.0.4** +
-  **`hapus_iklan`** → **Waiting for Review** (submission `304d7db3…`). Details in
-  `docs/store.md`.
+  **`hapus_iklan`**. **Live on the App Store** 2026-11-16 (track id `6832093929`).
+  Details in `docs/store.md`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
