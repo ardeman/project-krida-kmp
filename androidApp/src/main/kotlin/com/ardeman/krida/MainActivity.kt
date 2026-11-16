@@ -35,6 +35,8 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import com.ardeman.krida.update.AppUpdate
+import com.ardeman.krida.update.WhatsNew
+import com.ardeman.krida.update.WhatsNewCard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -194,6 +196,8 @@ class MainActivity : ComponentActivity() {
     private var joinLan by mutableStateOf(false)
     private var creatingOnlineRoom by mutableStateOf(false)
     private var showingAccount by mutableStateOf(false)
+    /** Home “What’s New” after a marketing-version bump; cleared on dismiss. */
+    private var showingWhatsNew by mutableStateOf(false)
     private var quickMatchTarget by mutableStateOf(4)
     private var playingQuickMatch by mutableStateOf(false)
     private var quickMatchGame by mutableStateOf(CongklakGame.id)
@@ -272,6 +276,7 @@ class MainActivity : ComponentActivity() {
             if (Account.handleLink(intent?.data) || Account.handleFriendLink(intent?.data)) showingAccount = true
             else intent?.data?.toString()?.let(::openRoomLink)
         }
+        showingWhatsNew = WhatsNew.shouldShow(this)
         setContent {
             // The ad SDK and the banner's WebView take about a second to start on older phones:
             // start them once the loading screen is on screen, not before the first frame.
@@ -381,6 +386,9 @@ class MainActivity : ComponentActivity() {
                     )
                     showingAccount -> AccountScreen(onBack = { showingAccount = false })
                     else -> menuState.SaveableStateProvider("menu") { Menu() }
+                }
+                if (onMenus && !joining && !showingAccount && showingWhatsNew) {
+                    WhatsNewCard(onDismiss = { showingWhatsNew = false })
                 }
                 if (onMenus) Invites.current?.let { invite ->
                     InviteCard(invite, onNotNow = { Invites.dismiss(invite.id) }, onJoin = { joinInvite(invite) })

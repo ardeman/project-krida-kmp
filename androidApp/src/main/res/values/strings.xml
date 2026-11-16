@@ -90,6 +90,12 @@
     <string name="update_up_to_date">You\'re up to date</string>
     <string name="update_available">Update available</string>
     <string name="update_failed">Couldn\'t check</string>
+    <string name="whats_new_title">What\'s New</string>
+    <string name="whats_new_got_it">Got it</string>
+    <string-array name="whats_new_bullets">
+        <item>Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.</item>
+        <item>During Werewolf day talk, tap a short claim chip so the table sees what you mean.</item>
+    </string-array>
     <string name="menu_more">More options below</string>
     <string name="hint">Hint (watch an ad)</string>
     <string name="hint_free">Hint</string>
@@ -485,7 +491,7 @@
     <string name="werewolf_title">Werewolf</string>
     <string name="werewolf_card_players">5–8 players</string>
     <string name="werewolf_card_tagline">Find the wolves before they outnumber the village.</string>
-    <string name="werewolf_hint">No chat — use emotes, then vote.</string>
+    <string name="werewolf_hint">No free-text chat — use claim chips and emotes, then vote.</string>
     <string name="werewolf_detail_nearby">5–8 phones over Wi‑Fi; secret roles on each phone</string>
     <string name="werewolf_detail_online">5–8 players online; secret roles on each phone</string>
     <string name="werewolf_detail_computer">You against computers. Roles stay hidden on this phone.</string>
@@ -501,7 +507,18 @@
     <string name="werewolf_role_blurb_witch">Once each per game: heal tonight’s victim, and/or poison someone.</string>
     <string name="werewolf_role_blurb_villager">No night action. Survive and vote with the village.</string>
     <string name="werewolf_seer_result">You peeked %1$s: %2$s</string>
-    <string name="werewolf_discuss_hint">Use emotes to signal, then vote when time ends.</string>
+    <string name="werewolf_discuss_hint">Use a claim chip (and emotes), then vote when time ends.</string>
+    <string name="werewolf_claims_title">Claims</string>
+    <string name="werewolf_claim_pick_target">Who?</string>
+    <string name="werewolf_claim_suspect">I suspect %1$s</string>
+    <string name="werewolf_claim_trust">I trust %1$s</string>
+    <string name="werewolf_claim_saw_wolf">%1$s looked like a wolf</string>
+    <string name="werewolf_claim_i_seer">I am the Seer</string>
+    <string name="werewolf_claim_i_doctor">I am the Doctor</string>
+    <string name="werewolf_claim_i_villager">I am a Villager</string>
+    <string name="werewolf_claim_i_hunter">I am the Hunter</string>
+    <string name="werewolf_claim_pass">Nothing to add</string>
+    <string name="werewolf_claim_bubble">%1$s: %2$s</string>
     <string name="werewolf_waiting_others">Waiting for others…</string>
     <string name="werewolf_your_action">Your action</string>
     <string name="werewolf_tap_hint">Tap a name below to choose.</string>
@@ -537,7 +554,7 @@
     <string name="werewolf_rule_wolves">Werewolves choose one victim each night (majority; random tie). Wolves see each other.</string>
     <string name="werewolf_rule_town">The Seer peeks one living seat; the Doctor protects one; the Witch may heal or poison once each per game; the Hunter shoots when eliminated.</string>
     <string name="werewolf_rule_sheriff">Sheriff (Kepala desa) is elected when vacant. Lynch votes count double. When the Sheriff dies, they name a successor.</string>
-    <string name="werewolf_rule_win">Night actions, dawn deaths, discussion (emotes only), then a lynch vote. Timers auto-resolve unused actions.</string>
+    <string name="werewolf_rule_win">Night actions, dawn deaths, discussion (claim chips and emotes), then a lynch vote. Timers auto-resolve unused actions.</string>
     <string name="werewolf_role_werewolf">Werewolf</string>
     <string name="werewolf_role_villager">Villager</string>
     <string name="werewolf_role_seer">Seer</string>

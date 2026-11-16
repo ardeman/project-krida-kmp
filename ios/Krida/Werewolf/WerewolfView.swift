@@ -368,14 +368,17 @@ private struct WerewolfBoardView: View {
             let names = state.lastDeaths.map { table.name($0.intValue) }.joined(separator: ", ")
             Text(String(localized: "Dawn · \(names) eliminated", bundle: .app))
                 .font(Theme.font(13 * s, .bold))
-                .foregroundStyle(Theme.error)
+                .foregroundStyle(Color.white)
                 .padding(.horizontal, 12 * s)
                 .padding(.vertical, 6 * s)
-                .background(boardChip, in: Capsule())
+                .background(Color(hex: 0xC0392B), in: Capsule())
         } else if state.phase != WerewolfPhase.shared.NIGHT, state.lastDeaths.isEmpty, state.day > 0 {
             Text(String(localized: "Peaceful night", bundle: .app))
                 .font(Theme.font(13 * s, .bold))
-                .foregroundStyle(boardMuted)
+                .foregroundStyle(boardInk)
+                .padding(.horizontal, 12 * s)
+                .padding(.vertical, 6 * s)
+                .background(boardChip, in: Capsule())
         }
     }
 
@@ -384,10 +387,13 @@ private struct WerewolfBoardView: View {
         if !model.alive {
             Text(String(localized: "You died", bundle: .app)).font(Theme.font(16 * s, .black))
         } else if state.phase == WerewolfPhase.shared.DISCUSS {
-            Text(String(localized: "Use emotes to signal, then vote when time ends.", bundle: .app))
+            Text(String(localized: "Use a claim chip (and emotes), then vote when time ends.", bundle: .app))
                 .font(Theme.font(14 * s, .semibold))
                 .foregroundStyle(boardMuted)
                 .multilineTextAlignment(.center)
+            if table.canClaim, model.alive {
+                ClaimChipsView(table: table, me: model.me, ink: boardInk, muted: boardMuted, chip: boardChip, line: boardLine, s: s)
+            }
         } else if !model.acting {
             Text(String(localized: "Waiting for others…", bundle: .app))
                 .font(Theme.font(14 * s, .semibold))
@@ -405,18 +411,32 @@ private struct WerewolfBoardView: View {
             }
             HStack(spacing: 10 * s) {
                 if canAbstain {
-                    Button(String(localized: "Abstain", bundle: .app)) { model.abstain() }
-                        .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                    boardSecondary(String(localized: "Abstain", bundle: .app)) { model.abstain() }
                 }
                 if state.phase == WerewolfPhase.shared.NIGHT {
-                    Button(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
-                        .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                    boardSecondary(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
                 }
             }
         }
         if let peek = seerPeekText {
-            Text(peek).font(Theme.font(12 * s, .bold)).foregroundStyle(Theme.accent).multilineTextAlignment(.center)
+            Text(peek)
+                .font(Theme.font(13 * s, .bold))
+                .foregroundStyle(boardInk)
+                .padding(.horizontal, 10 * s)
+                .padding(.vertical, 6 * s)
+                .background(boardChip, in: Capsule())
+                .multilineTextAlignment(.center)
         }
+    }
+
+    private func boardSecondary(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(title, action: action)
+            .font(Theme.font(16 * s))
+            .foregroundStyle(boardInk)
+            .padding(.horizontal, 18 * s)
+            .frame(height: 44 * s)
+            .background(boardSurface, in: RoundedRectangle(cornerRadius: 14 * s))
+            .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(boardLine, lineWidth: 1.5))
     }
 
     private var witchActions: some View {
@@ -425,16 +445,14 @@ private struct WerewolfBoardView: View {
             if needHeal {
                 Text(String(localized: "Heal the victim", bundle: .app)).font(Theme.font(13 * s, .bold))
                 HStack(spacing: 10 * s) {
-                    Button(String(localized: "Heal the victim", bundle: .app)) {
+                    boardSecondary(String(localized: "Heal the victim", bundle: .app)) {
                         model.setWitchHeal(true)
                         if !state.witchPoisonLeft { model.confirmWitch() }
                     }
-                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
-                    Button(String(localized: "Skip heal", bundle: .app)) {
+                    boardSecondary(String(localized: "Skip heal", bundle: .app)) {
                         model.setWitchHeal(false)
                         if !state.witchPoisonLeft { model.confirmWitch() }
                     }
-                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
                 }
             } else if state.witchPoisonLeft {
                 Text(String(localized: "Poison someone", bundle: .app)).font(Theme.font(13 * s, .bold))
@@ -445,14 +463,12 @@ private struct WerewolfBoardView: View {
                     model.pickTarget(seat)
                     model.confirmWitch()
                 }
-                Button(String(localized: "Skip poison", bundle: .app)) {
+                boardSecondary(String(localized: "Skip poison", bundle: .app)) {
                     model.witchPoisonTarget = -1
                     model.confirmWitch()
                 }
-                .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
             } else {
-                Button(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
-                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                boardSecondary(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
             }
         }
     }
@@ -462,32 +478,21 @@ private struct WerewolfBoardView: View {
             guard state.alive.indices.contains(seat), state.alive[seat].boolValue else { return false }
             return allowSelf || seat != model.me
         }
-        let rows = stride(from: 0, to: living.count, by: 3).map { Array(living[$0..<min($0 + 3, living.count)]) }
-        return VStack(spacing: 6 * s) {
-            ForEach(rows, id: \.self) { row in
-                HStack(spacing: 6 * s) {
-                    ForEach(row, id: \.self) { seat in
-                        Button {
-                            onChoose(seat)
-                        } label: {
-                            Text(seatName(seat))
-                                .font(Theme.font(12 * s, .bold))
-                                .foregroundStyle(boardInk)
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 8 * s)
-                                .background(boardChip, in: RoundedRectangle(cornerRadius: 10 * s))
-                                .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(boardLine, lineWidth: 1))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    if row.count < 3 {
-                        ForEach(0..<(3 - row.count), id: \.self) { _ in
-                            Color.clear.frame(maxWidth: .infinity)
-                        }
-                    }
-                }
+        return PackedChipRows(items: living, spacing: 6 * s) { seat in
+            Button {
+                onChoose(seat)
+            } label: {
+                Text(seatName(seat))
+                    .font(Theme.font(12 * s, .bold))
+                    .foregroundStyle(boardInk)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 10 * s)
+                    .padding(.vertical, 8 * s)
+                    .background(boardChip, in: RoundedRectangle(cornerRadius: 10 * s))
+                    .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(boardLine, lineWidth: 1))
             }
+            .buttonStyle(.plain)
         }
     }
 
@@ -500,6 +505,16 @@ private struct WerewolfBoardView: View {
             if table.canEmote {
                 EmoteHud(canEmote: true, emotes: table.emotes, playerName: seatName, onSend: table.sendEmote, s: s)
                     .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            if let latest = table.claims.last {
+                let speaker = seatName(latest.seat)
+                let target = latest.target.map(seatName)
+                Text("\(speaker): \(claimLine(latest.claimId, target: target))")
+                    .font(Theme.font(11 * s, .bold))
+                    .foregroundStyle(boardInk)
+                    .padding(.horizontal, 8 * s)
+                    .padding(.vertical, 6 * s)
+                    .background(boardSurface, in: RoundedRectangle(cornerRadius: 10 * s))
             }
             Spacer(minLength: 0)
             TurnTimer(
@@ -547,6 +562,8 @@ private struct WerewolfBoardView: View {
             }
             .padding(24 * s)
             .frame(maxWidth: 360 * s)
+            // Theme.surface + Theme.ink (not boardInk): finished/day ink is dark and vanishes on a dark card.
+            .foregroundStyle(Theme.ink)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         }
     }
@@ -569,6 +586,7 @@ private struct WerewolfBoardView: View {
                     .buttonStyle(PrimaryButtonStyle())
             }
             .padding(24 * s)
+            .foregroundStyle(Theme.ink)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         }
     }
@@ -661,7 +679,7 @@ struct WerewolfRulesSheet: View {
                     Text(String(localized: "Werewolves choose one victim each night (majority; random tie). Wolves see each other.", bundle: .app))
                     Text(String(localized: "The Seer peeks one living seat; the Doctor protects one; the Witch may heal or poison once each per game; the Hunter shoots when eliminated.", bundle: .app))
                     Text(String(localized: "Sheriff (Kepala desa) is elected when vacant. Lynch votes count double. When the Sheriff dies, they name a successor.", bundle: .app))
-                    Text(String(localized: "Night actions, dawn deaths, discussion (emotes only), then a lynch vote. Timers auto-resolve unused actions.", bundle: .app))
+                    Text(String(localized: "Night actions, dawn deaths, discussion (claim chips and emotes), then a lynch vote. Timers auto-resolve unused actions.", bundle: .app))
                 }
                 .font(Theme.font(14 * s, .semibold))
                 .foregroundStyle(Theme.muted)
@@ -674,5 +692,143 @@ struct WerewolfRulesSheet: View {
                 }
             }
         }
+    }
+}
+
+private func claimLine(_ id: String, target: String?) -> String {
+    switch id {
+    case "suspect":
+        String(localized: "I suspect \(target ?? "…")", bundle: .app)
+    case "trust":
+        String(localized: "I trust \(target ?? "…")", bundle: .app)
+    case "saw_wolf":
+        String(localized: "\(target ?? "…") looked like a wolf", bundle: .app)
+    case "i_seer":
+        String(localized: "I am the Seer", bundle: .app)
+    case "i_doctor":
+        String(localized: "I am the Doctor", bundle: .app)
+    case "i_villager":
+        String(localized: "I am a Villager", bundle: .app)
+    case "i_hunter":
+        String(localized: "I am the Hunter", bundle: .app)
+    default:
+        String(localized: "Nothing to add", bundle: .app)
+    }
+}
+
+private struct ClaimChipsView: View {
+    @ObservedObject var table: WerewolfTable
+    let me: Int
+    let ink: Color
+    let muted: Color
+    let chip: Color
+    let line: Color
+    let s: CGFloat
+    @State private var pending: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6 * s) {
+            Text(String(localized: "Claims", bundle: .app))
+                .font(Theme.font(12 * s, .bold))
+                .foregroundStyle(muted)
+            if let pending, WerewolfClaims.shared.needsTarget(id: pending) {
+                Text(String(localized: "Who?", bundle: .app))
+                    .font(Theme.font(12 * s, .bold))
+                targetRow(for: pending)
+                Button(String(localized: "Done", bundle: .app)) { self.pending = nil }
+                    .font(Theme.font(16 * s))
+                    .foregroundStyle(ink)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44 * s)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 14 * s))
+                    .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(line, lineWidth: 1.5))
+            } else {
+                chipFlow
+            }
+        }
+    }
+
+    private var chipFlow: some View {
+        let items = Array(WerewolfClaims.shared.ALL)
+        let rows = stride(from: 0, to: items.count, by: 2).map { Array(items[$0..<min($0 + 2, items.count)]) }
+        return VStack(alignment: .leading, spacing: 6 * s) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 6 * s) {
+                    ForEach(row, id: \.id) { item in
+                        Button {
+                            if item.needsTarget {
+                                pending = item.id
+                            } else {
+                                table.sendClaim(item.id)
+                            }
+                        } label: {
+                            Text(claimLine(item.id, target: "…"))
+                                .font(Theme.font(11 * s, .bold))
+                                .foregroundStyle(ink)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .padding(.horizontal, 10 * s)
+                                .padding(.vertical, 8 * s)
+                                .frame(maxWidth: .infinity)
+                                .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
+                                .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private func targetRow(for claimId: String) -> some View {
+        let living = (0..<Int(table.latest.players)).filter { seat in
+            guard table.latest.alive.indices.contains(seat), table.latest.alive[seat].boolValue else { return false }
+            return seat != me
+        }
+        return PackedChipRows(items: living, spacing: 6 * s) { seat in
+            Button {
+                table.sendClaim(claimId, target: seat)
+                pending = nil
+            } label: {
+                Text(table.name(seat))
+                    .font(Theme.font(12 * s, .bold))
+                    .foregroundStyle(ink)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 10 * s)
+                    .padding(.vertical, 8 * s)
+                    .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
+                    .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+/// Equal-width chip columns that fill the card; empty slots hold the last row’s alignment.
+private struct PackedChipRows<Item: Hashable, Content: View>: View {
+    let items: [Item]
+    let spacing: CGFloat
+    var perRow: Int = 3
+    @ViewBuilder let content: (Item) -> Content
+
+    var body: some View {
+        let rows = stride(from: 0, to: items.count, by: perRow).map {
+            Array(items[$0..<min($0 + perRow, items.count)])
+        }
+        VStack(spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: spacing) {
+                    ForEach(0..<perRow, id: \.self) { col in
+                        if col < row.count {
+                            content(row[col]).frame(maxWidth: .infinity)
+                        } else {
+                            Color.clear.frame(maxWidth: .infinity)
+                        }
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }

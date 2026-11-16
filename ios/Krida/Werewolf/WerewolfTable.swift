@@ -14,6 +14,7 @@ class WerewolfTable: ObservableObject {
     @Published fileprivate(set) var notice: String?
     @Published fileprivate(set) var waiting: Waiting?
     @Published fileprivate(set) var emotes: [EmoteEvent] = []
+    @Published fileprivate(set) var claims: [ClaimEvent] = []
     private(set) var latest: WerewolfState
     var onUpdate: ((WerewolfUpdate) -> Void)?
 
@@ -23,6 +24,7 @@ class WerewolfTable: ObservableObject {
     var mySeat: Int { 0 }
     var isHost: Bool { false }
     var canEmote: Bool { false }
+    var canClaim: Bool { false }
     /// Full authoritative state for phase timers on the host; nil for guests.
     var authority: WerewolfState? { nil }
 
@@ -44,6 +46,11 @@ class WerewolfTable: ObservableObject {
         emotes = emotes.plusEmote(seat: seat, id: id)
     }
 
+    fileprivate func showClaim(seat: Int, id: String, target: KotlinInt?) {
+        guard active else { return }
+        claims = claims.plusClaim(seat: seat, id: id, target: target?.intValue)
+    }
+
     fileprivate func playersChanged(_ list: [PlayerInfo]) {
         players = list
         notice = list.contains { !$0.connected }
@@ -59,8 +66,31 @@ class WerewolfTable: ObservableObject {
 
     func act(seat: Int, move: WerewolfMove) -> Bool { false }
     func stepBot() {}
-    func leave() { active = false; onUpdate = nil; emotes = [] }
+    func leave() { active = false; onUpdate = nil; emotes = []; claims = [] }
     func sendEmote(_ id: String) {}
+    func sendClaim(_ id: String, target: Int? = nil) {}
+}
+
+struct ClaimEvent: Identifiable, Equatable {
+    let seat: Int
+    let claimId: String
+    let target: Int?
+    let n: Int
+    var id: Int { n }
+    private static var next = 1
+    init(seat: Int, claimId: String, target: Int?) {
+        self.seat = seat
+        self.claimId = claimId
+        self.target = target
+        n = ClaimEvent.next
+        ClaimEvent.next += 1
+    }
+}
+
+extension Array where Element == ClaimEvent {
+    func plusClaim(seat: Int, id: String, target: Int?) -> [ClaimEvent] {
+        Array((self + [ClaimEvent(seat: seat, claimId: id, target: target)]).suffix(4))
+    }
 }
 
 final class WerewolfHostTable: WerewolfTable {
@@ -82,6 +112,9 @@ final class WerewolfHostTable: WerewolfTable {
             self.deliver(Self.view(state, mySeat), seq: session.seq)
         }
         session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
+        session.onClaim = { [weak self] seat, id, target in
+            self?.showClaim(seat: seat.intValue, id: id, target: target)
+        }
         ticker = SecondTicker { [weak self, weak session] in
             guard let self, let session else { return }
             for s in session.expiredSeats() {
@@ -95,6 +128,7 @@ final class WerewolfHostTable: WerewolfTable {
     override var mySeat: Int { seat }
     override var isHost: Bool { true }
     override var canEmote: Bool { true }
+    override var canClaim: Bool { true }
     override var authority: WerewolfState? { session.state }
 
     private static func view(_ state: WerewolfState, _ seat: Int) -> WerewolfState {
@@ -110,6 +144,12 @@ final class WerewolfHostTable: WerewolfTable {
     override func sendEmote(_ id: String) {
         guard active else { return }
         _ = session.sendEmote(seat: Int32(seat), id: id)
+    }
+
+    override func sendClaim(_ id: String, target: Int? = nil) {
+        guard active else { return }
+        let t = target.map { KotlinInt(int: Int32($0)) }
+        _ = session.sendClaim(seat: Int32(seat), id: id, target: t)
     }
 
     override func leave() {
@@ -158,6 +198,9 @@ final class WerewolfGuestTable: WerewolfTable {
         session.onInvalid = { [weak self] _ in self?.notice = String(localized: "Move refused", bundle: .app) }
         session.onDisconnected = { [weak self] in self?.away.hostLost() }
         session.onEmote = { [weak self] seat, id in self?.showEmote(seat: seat.intValue, id: id) }
+        session.onClaim = { [weak self] seat, id, target in
+            self?.showClaim(seat: seat.intValue, id: id, target: target)
+        }
         ticker = SecondTicker { [weak self] in
             guard let self else { return }
             let w = self.away.current(self.players)
@@ -171,6 +214,7 @@ final class WerewolfGuestTable: WerewolfTable {
 
     override var mySeat: Int { session.seat.map { Int($0.int32Value) } ?? 0 }
     override var canEmote: Bool { true }
+    override var canClaim: Bool { true }
 
     override func act(seat: Int, move: WerewolfMove) -> Bool {
         guard active, seat == mySeat else { return false }
@@ -179,6 +223,12 @@ final class WerewolfGuestTable: WerewolfTable {
 
     override func sendEmote(_ id: String) {
         if active { session.sendEmote(id: id) }
+    }
+
+    override func sendClaim(_ id: String, target: Int? = nil) {
+        guard active else { return }
+        let t = target.map { KotlinInt(int: Int32($0)) }
+        session.sendClaim(id: id, target: t)
     }
 
     override func leave() {

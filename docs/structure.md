@@ -61,6 +61,7 @@ A change to one side usually needs the same change in the file on the same row.
 | Online (WebSocket to the relay) | `online/OnlineTransport.kt` | `Transport/OnlineTransport.swift` |
 | Ads, remove-ads purchase | `ads/Ads.kt`, `ads/Billing.kt` | `Ads/Ads.swift`, `Store.swift`, `AdIds.swift` |
 | Check for update (menu) | `update/AppUpdate.kt` | `Support/AppUpdate.swift` |
+| What’s New after update | `update/WhatsNew.kt`, `WhatsNewCard.kt` | `Support/WhatsNew.swift` |
 | Strings | `res/values/strings.xml` (EN), `res/values-in/strings.xml` (ID) | `Localizable.xcstrings`, `InfoPlist.xcstrings` |
 | Audio | `res/raw/` | `Audio/` |
 

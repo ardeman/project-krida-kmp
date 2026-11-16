@@ -40,6 +40,8 @@ abstract class WerewolfTable {
         protected set
     var emotes by mutableStateOf<List<EmoteEvent>>(emptyList())
         protected set
+    var claims by mutableStateOf<List<ClaimEvent>>(emptyList())
+        protected set
 
     lateinit var latest: WerewolfState
         private set
@@ -49,6 +51,7 @@ abstract class WerewolfTable {
     private var seq = 0
 
     open val canEmote: Boolean get() = false
+    open val canClaim: Boolean get() = false
     open val canRestart: Boolean get() = false
 
     protected var active = true
@@ -71,6 +74,10 @@ abstract class WerewolfTable {
         if (active) emotes = emotes.plusEmote(seat, id)
     }
 
+    protected fun showClaim(seat: Int, id: String, target: Int?) {
+        if (active) claims = claims.plusClaim(seat, id, target)
+    }
+
     val botSeats: Set<Int> get() = players.filter { it.bot }.map { it.seat }.toSet()
 
     fun name(seat: Int) = players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
@@ -84,10 +91,20 @@ abstract class WerewolfTable {
         active = false
         onUpdate = null
         emotes = emptyList()
+        claims = emptyList()
     }
 
     open fun sendEmote(id: String) = Unit
+    open fun sendClaim(id: String, target: Int? = null) = Unit
 }
+
+/** One discussion claim from [seat]; [n] numbers events so repeats still refresh the HUD. */
+data class ClaimEvent(val seat: Int, val id: String, val target: Int?, val n: Int = next++) {
+    private companion object { var next = 1 }
+}
+
+fun List<ClaimEvent>.plusClaim(seat: Int, id: String, target: Int?): List<ClaimEvent> =
+    (this + ClaimEvent(seat, id, target)).takeLast(4)
 
 class WerewolfHostTable(
     private val session: HostSession<WerewolfState, WerewolfMove>,
@@ -115,10 +132,12 @@ class WerewolfHostTable(
             deliver(view(state), session.seq)
         }
         session.onEmote = { seat, id -> showEmote(seat, id) }
+        session.onClaim = { seat, id, target -> showClaim(seat, id, target) }
         if (transport !is LocalTransport) ticker.start()
     }
 
     override val canEmote: Boolean get() = transport !is LocalTransport
+    override val canClaim: Boolean get() = true
 
     private fun view(state: WerewolfState) = WerewolfGame.viewFor(state, mySeat)
 
@@ -138,6 +157,10 @@ class WerewolfHostTable(
 
     override fun sendEmote(id: String) {
         if (active && canEmote) session.sendEmote(mySeat, id)
+    }
+
+    override fun sendClaim(id: String, target: Int?) {
+        if (active && canClaim) session.sendClaim(mySeat, id, target)
     }
 
     override fun leave() {
@@ -199,10 +222,12 @@ class WerewolfGuestTable(
         session.onInvalid = { notice = R.string.nearby_move_refused }
         session.onDisconnected = { away.hostLost() }
         session.onEmote = { seat, id -> showEmote(seat, id) }
+        session.onClaim = { seat, id, target -> showClaim(seat, id, target) }
         ticker.start()
     }
 
     override val canEmote: Boolean get() = true
+    override val canClaim: Boolean get() = true
 
     override fun play(move: WerewolfMove) = active && session.sendMove(move) != null
 
@@ -215,6 +240,10 @@ class WerewolfGuestTable(
 
     override fun sendEmote(id: String) {
         if (active) session.sendEmote(id)
+    }
+
+    override fun sendClaim(id: String, target: Int?) {
+        if (active) session.sendClaim(id, target)
     }
 
     override fun leave() {

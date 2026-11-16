@@ -7285,6 +7285,70 @@
         }
       }
     },
+    "What's New": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What's New"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yang Baru"
+          }
+        }
+      }
+    },
+    "Got it": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mengerti"
+          }
+        }
+      }
+    },
+    "Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werewolf: 5–8 pemain lewat Wi‑Fi atau online (tanpa Bluetooth), peran Indonesia, Kepala desa, bot."
+          }
+        }
+      }
+    },
+    "During Werewolf day talk, tap a short claim chip so the table sees what you mean.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "During Werewolf day talk, tap a short claim chip so the table sees what you mean."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saat diskusi siang Werewolf, ketuk chip klaim singkat agar meja tahu maksudmu."
+          }
+        }
+      }
+    },
     "Checking…": {
       "localizations": {
         "en": {
@@ -7633,6 +7697,262 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pilih target"
+          }
+        }
+      }
+    },
+    "I suspect …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I suspect …"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku curiga …"
+          }
+        }
+      }
+    },
+    "I trust …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I trust …"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku percaya …"
+          }
+        }
+      }
+    },
+    "… looked like a wolf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "… looked like a wolf"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "… seperti serigala"
+          }
+        }
+      }
+    },
+    "Use a claim chip (and emotes), then vote when time ends.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use a claim chip (and emotes), then vote when time ends."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pakai klaim (dan reaksi), lalu voting saat waktu habis."
+          }
+        }
+      }
+    },
+    "Claims": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claims"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klaim"
+          }
+        }
+      }
+    },
+    "Who?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Siapa?"
+          }
+        }
+      }
+    },
+    "I am the Seer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I am the Seer"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku Peramal"
+          }
+        }
+      }
+    },
+    "I am the Doctor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I am the Doctor"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku Dokter"
+          }
+        }
+      }
+    },
+    "I am a Villager": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I am a Villager"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku Penduduk"
+          }
+        }
+      }
+    },
+    "I am the Hunter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I am the Hunter"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku Pemburu"
+          }
+        }
+      }
+    },
+    "Nothing to add": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to add"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidak ada tambahan"
+          }
+        }
+      }
+    },
+    "Night actions, dawn deaths, discussion (claim chips and emotes), then a lynch vote. Timers auto-resolve unused actions.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night actions, dawn deaths, discussion (claim chips and emotes), then a lynch vote. Timers auto-resolve unused actions."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aksi malam, kematian fajar, diskusi (klaim dan reaksi), lalu voting hukuman. Timer menyelesaikan aksi yang tidak dipakai."
+          }
+        }
+      }
+    },
+    "I suspect %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I suspect %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku curiga %@"
+          }
+        }
+      }
+    },
+    "I trust %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I trust %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aku percaya %@"
+          }
+        }
+      }
+    },
+    "%@ looked like a wolf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ looked like a wolf"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ seperti serigala"
+          }
+        }
+      }
+    },
+    "No free-text chat — use claim chips and emotes, then vote.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No free-text chat — use claim chips and emotes, then vote."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanpa obrolan bebas — pakai klaim dan reaksi, lalu voting."
           }
         }
       }

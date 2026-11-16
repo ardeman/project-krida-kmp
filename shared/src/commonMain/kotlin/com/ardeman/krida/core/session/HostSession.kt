@@ -9,6 +9,7 @@ import com.ardeman.krida.core.protocol.Message
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.core.protocol.RejectReason
+import com.ardeman.krida.core.protocol.WerewolfClaims
 import com.ardeman.krida.core.transport.Transport
 import com.ardeman.krida.core.transport.TransportListener
 import kotlin.random.Random
@@ -83,9 +84,13 @@ class HostSession<S, M>(
     var onStateChanged: ((S) -> Unit)? = null
     /** A preset reaction from [seat] (local or remote); show it on the board. */
     var onEmote: ((seat: Int, id: String) -> Unit)? = null
+    /** A Werewolf discussion claim from [seat]; [target] is set when the claim needs one. */
+    var onClaim: ((seat: Int, id: String, target: Int?) -> Unit)? = null
 
     /** Last successful emote time per seat, for [Emotes.COOLDOWN_MS]. */
     private val lastEmoteAt = mutableMapOf<Int, Long>()
+    /** Last successful claim time per seat, for [WerewolfClaims.COOLDOWN_MS]. */
+    private val lastClaimAt = mutableMapOf<Int, Long>()
 
     init {
         transport.setListener(this)
@@ -244,6 +249,16 @@ class HostSession<S, M>(
         return fanoutEmote(seat, id)
     }
 
+    /**
+     * Sends a Werewolf claim from a local seat. [target] is required when the claim needs
+     * one; returns false for unknown ids, missing/invalid targets, bots, or cooldown.
+     */
+    fun sendClaim(seat: Int, id: String, target: Int? = null): Boolean {
+        val s = seats.getOrNull(seat) ?: return false
+        if (s.peer != null || s.bot != null) return false
+        return fanoutClaim(seat, id, target)
+    }
+
     // ---- TransportListener -------------------------------------------------
 
     override fun onPeerConnected(peer: String) {
@@ -269,6 +284,7 @@ class HostSession<S, M>(
             is Message.Intent -> handleIntent(peer, msg)
             is Message.PickColor -> handlePickColor(peer, msg)
             is Message.Emote -> handleEmote(peer, msg)
+            is Message.Claim -> handleClaim(peer, msg)
             is Message.Ping -> send(peer, Message.Pong(msg.t))
             is Message.Bye -> onPeerDisconnected(peer)
             else -> Unit // host ignores host->guest messages
@@ -356,6 +372,12 @@ class HostSession<S, M>(
         fanoutEmote(seat, msg.id)
     }
 
+    private fun handleClaim(peer: String, msg: Message.Claim) {
+        val seat = seats.indexOfFirst { it.peer == peer && it.connected }
+        if (seat < 0) return
+        fanoutClaim(seat, msg.id, msg.target)
+    }
+
     private fun fanoutEmote(seat: Int, id: String): Boolean {
         if (!started || !Emotes.valid(id)) return false
         val now = clock()
@@ -365,6 +387,27 @@ class HostSession<S, M>(
         val bytes = Codec.encode(Message.Emote(id, seat))
         remotePeers().forEach { transport.send(it, bytes) }
         onEmote?.invoke(seat, id)
+        return true
+    }
+
+    private fun fanoutClaim(seat: Int, id: String, target: Int?): Boolean {
+        if (!started || !WerewolfClaims.valid(id)) return false
+        val need = WerewolfClaims.needsTarget(id)
+        val resolved = when {
+            need -> {
+                val t = target ?: return false
+                if (t !in seats.indices || t == seat) return false
+                t
+            }
+            else -> null
+        }
+        val now = clock()
+        val last = lastClaimAt[seat]
+        if (last != null && now - last < WerewolfClaims.COOLDOWN_MS) return false
+        lastClaimAt[seat] = now
+        val bytes = Codec.encode(Message.Claim(id, seat, resolved))
+        remotePeers().forEach { transport.send(it, bytes) }
+        onClaim?.invoke(seat, id, resolved)
         return true
     }
 

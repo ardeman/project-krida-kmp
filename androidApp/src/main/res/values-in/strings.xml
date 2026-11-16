@@ -85,6 +85,12 @@
     <string name="update_up_to_date">Sudah versi terbaru</string>
     <string name="update_available">Pembaruan tersedia</string>
     <string name="update_failed">Tidak bisa memeriksa</string>
+    <string name="whats_new_title">Yang Baru</string>
+    <string name="whats_new_got_it">Mengerti</string>
+    <string-array name="whats_new_bullets">
+        <item>Werewolf: 5–8 pemain lewat Wi‑Fi atau online (tanpa Bluetooth), peran Indonesia, Kepala desa, bot.</item>
+        <item>Saat diskusi siang Werewolf, ketuk chip klaim singkat agar meja tahu maksudmu.</item>
+    </string-array>
     <string name="menu_more">Pilihan lain di bawah</string>
     <string name="hint">Petunjuk (tonton iklan)</string>
     <string name="hint_free">Petunjuk</string>
@@ -472,7 +478,7 @@
     <string name="werewolf_title">Werewolf</string>
     <string name="werewolf_card_players">5–8 pemain</string>
     <string name="werewolf_card_tagline">Temukan serigala sebelum mereka menguasai desa.</string>
-    <string name="werewolf_hint">Tanpa obrolan — pakai reaksi, lalu voting.</string>
+    <string name="werewolf_hint">Tanpa obrolan bebas — pakai klaim dan reaksi, lalu voting.</string>
     <string name="werewolf_detail_nearby">5–8 HP lewat Wi‑Fi; peran rahasia di tiap HP</string>
     <string name="werewolf_detail_online">5–8 pemain online; peran rahasia di tiap HP</string>
     <string name="werewolf_detail_computer">Kamu lawan komputer. Peran tetap rahasia di HP ini.</string>
@@ -488,7 +494,18 @@
     <string name="werewolf_role_blurb_witch">Sekali tiap permainan: sembuhkan korban malam ini, dan/atau racuni seseorang.</string>
     <string name="werewolf_role_blurb_villager">Tanpa aksi malam. Bertahan dan voting bersama desa.</string>
     <string name="werewolf_seer_result">Kamu mengintip %1$s: %2$s</string>
-    <string name="werewolf_discuss_hint">Pakai reaksi, lalu voting saat waktu habis.</string>
+    <string name="werewolf_discuss_hint">Pakai klaim (dan reaksi), lalu voting saat waktu habis.</string>
+    <string name="werewolf_claims_title">Klaim</string>
+    <string name="werewolf_claim_pick_target">Siapa?</string>
+    <string name="werewolf_claim_suspect">Aku curiga %1$s</string>
+    <string name="werewolf_claim_trust">Aku percaya %1$s</string>
+    <string name="werewolf_claim_saw_wolf">%1$s seperti serigala</string>
+    <string name="werewolf_claim_i_seer">Aku Peramal</string>
+    <string name="werewolf_claim_i_doctor">Aku Dokter</string>
+    <string name="werewolf_claim_i_villager">Aku Penduduk</string>
+    <string name="werewolf_claim_i_hunter">Aku Pemburu</string>
+    <string name="werewolf_claim_pass">Tidak ada tambahan</string>
+    <string name="werewolf_claim_bubble">%1$s: %2$s</string>
     <string name="werewolf_waiting_others">Menunggu yang lain…</string>
     <string name="werewolf_your_action">Giliranmu</string>
     <string name="werewolf_tap_hint">Ketuk nama di bawah untuk memilih.</string>
@@ -524,7 +541,7 @@
     <string name="werewolf_rule_wolves">Serigala memilih satu korban tiap malam (mayoritas; seri acak). Mereka saling melihat.</string>
     <string name="werewolf_rule_town">Peramal mengintip satu kursi; Dokter melindungi satu; Penyihir bisa menyembuhkan atau meracuni masing-masing sekali; Pemburu menembak saat gugur.</string>
     <string name="werewolf_rule_sheriff">Kepala desa dipilih saat kosong. Suara hukuman bernilai ganda. Saat Kepala desa gugur, ia menunjuk pengganti.</string>
-    <string name="werewolf_rule_win">Aksi malam, kematian fajar, diskusi (hanya reaksi), lalu voting hukuman. Timer menyelesaikan aksi yang tidak dipakai.</string>
+    <string name="werewolf_rule_win">Aksi malam, kematian fajar, diskusi (klaim dan reaksi), lalu voting hukuman. Timer menyelesaikan aksi yang tidak dipakai.</string>
     <string name="werewolf_role_werewolf">Serigala</string>
     <string name="werewolf_role_villager">Penduduk</string>
     <string name="werewolf_role_seer">Peramal</string>

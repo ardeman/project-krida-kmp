@@ -6,6 +6,7 @@ import com.ardeman.krida.core.protocol.Krida
 import com.ardeman.krida.core.protocol.Message
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
+import com.ardeman.krida.core.protocol.WerewolfClaims
 import com.ardeman.krida.core.transport.Transport
 import com.ardeman.krida.core.transport.TransportListener
 import kotlinx.serialization.json.JsonElement
@@ -67,6 +68,8 @@ class GuestSession<S, M>(
     var onDisconnected: (() -> Unit)? = null
     /** A preset reaction the host fanned out; [seat] is who sent it. */
     var onEmote: ((seat: Int, id: String) -> Unit)? = null
+    /** A Werewolf claim the host fanned out; [target] is set when the claim needs one. */
+    var onClaim: ((seat: Int, id: String, target: Int?) -> Unit)? = null
 
     private var join: GuestJoin? = null
 
@@ -121,6 +124,13 @@ class GuestSession<S, M>(
     fun sendEmote(id: String) {
         if (seat == null || !Emotes.valid(id)) return
         transport.send(null, Codec.encode(Message.Emote(id)))
+    }
+
+    /** Asks the host to fan out a Werewolf claim. The answer is [onClaim] for everyone. */
+    fun sendClaim(id: String, target: Int? = null) {
+        if (seat == null || !WerewolfClaims.valid(id)) return
+        if (WerewolfClaims.needsTarget(id) && target == null) return
+        transport.send(null, Codec.encode(Message.Claim(id, target = target)))
     }
 
     override fun onPeerConnected(peer: String) {
@@ -182,6 +192,10 @@ class GuestSession<S, M>(
             is Message.Emote -> {
                 val s = msg.seat ?: return
                 if (Emotes.valid(msg.id)) onEmote?.invoke(s, msg.id)
+            }
+            is Message.Claim -> {
+                val s = msg.seat ?: return
+                if (WerewolfClaims.valid(msg.id)) onClaim?.invoke(s, msg.id, msg.target)
             }
             is Message.Ping -> transport.send(null, Codec.encode(Message.Pong(msg.t)))
             else -> Unit

@@ -11,8 +11,10 @@ file in the same commit when an item is done or a new one comes up. Last updated
   2026-11-16; 5–8 seats, bots, Kepala desa. Builds. iOS Simulator smoke
   (`WerewolfSmokeTests`, host + 4 computers via `-openWerewolf`) passed 2026-11-16.
   Next: real phone checks (This phone / Play with computers, then multi-phone). **Claim
-  chips** for discussion (decisions, 2026-11-16) not built yet. Pushing relay to `main`
-  drops open games — deploy deliberately.
+  chips** for discussion wired 2026-11-16 (shared `claim` message + Android/iOS UI).
+  Pushing relay to `main` drops open games — deploy deliberately.
+- **What’s New after update:** once-per-marketing-version home card done 2026-11-16
+  (Android + iOS; dismiss stores seen marketing version).
 - **Seat link dots (all linked games):** 4-dot quality cue under each seat tile (decisions,
   2026-11-16). Not built yet.
 - **Perang kapal** (fourth game): shared, Android and iOS done 2026-11-12

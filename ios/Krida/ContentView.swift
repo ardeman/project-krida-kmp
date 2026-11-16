@@ -34,6 +34,8 @@ struct ContentView: View {
     @State private var nearbyLink: NearbyLink = .bluetooth
     @State private var creatingOnlineRoom = false
     @State private var showingAccount = false
+    /// Home “What’s New” after a marketing-version bump; cleared on dismiss.
+    @State private var showingWhatsNew = WhatsNew.shouldShow
     @State private var playingQuickMatch = false
     @State private var quickMatchGame: String = CongklakGame.shared.id
     /// Total seats the join screen searches for.
@@ -256,6 +258,12 @@ struct ContentView: View {
                 },
                 onClose: { scanning = false }
             )
+        }
+        // What’s New once per marketing version, only on the idle home menu.
+        .overlay {
+            if onMenus && !joining && !showingAccount && showingWhatsNew {
+                WhatsNewCard(onDismiss: { showingWhatsNew = false })
+            }
         }
         // Friend invites, over any menu screen.
         .overlay { InviteLayer(onMenus: !keepAwake && !playingQuickMatch, onJoin: { joinInvite($0.id, code: $0.code) }) }
@@ -1039,7 +1047,7 @@ struct GameRoomOptions: View {
                 SettingRow(label: "Level") {
                     WerewolfLevelPicker()
                 }
-                RuleHint(text: "No chat — use emotes, then vote.")
+                RuleHint(text: "No free-text chat — use claim chips and emotes, then vote.")
             }
         case .congklak:
             Group {

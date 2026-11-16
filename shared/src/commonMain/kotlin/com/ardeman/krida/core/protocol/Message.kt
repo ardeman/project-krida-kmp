@@ -145,6 +145,18 @@ sealed class Message {
     @SerialName("emote")
     data class Emote(val id: String, val seat: Int? = null) : Message()
 
+    /**
+     * Werewolf discussion claim. Guest → host sends [id] and optional [target]; the host
+     * fills [seat] and fans out. Ids are from [WerewolfClaims]. Older peers drop the type.
+     */
+    @Serializable
+    @SerialName("claim")
+    data class Claim(
+        val id: String,
+        val seat: Int? = null,
+        val target: Int? = null,
+    ) : Message()
+
     /** either side: leaving on purpose. */
     @Serializable
     @SerialName("bye")

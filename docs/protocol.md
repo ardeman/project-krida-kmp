@@ -42,6 +42,7 @@ opaque JSON value owned by each game's `GameRules`.
 | `matched` | relay (matchmaker) → player | `role` (`host` or `guest`), `code?` (6-char room code, only on host; optional, new in quick match) |
 | `ping` / `pong` | both | `t` |
 | `emote` | guest → host, then host → all | `id` (preset from `Emotes`), `seat?` (filled by the host when fanning out) |
+| `claim` | guest → host, then host → all | `id` (preset from `WerewolfClaims`), `seat?`, `target?` (required for target claims) |
 | `bye` | both | — |
 
 `seq` in `intent` is the guest's own counter; `seq` in `state` is the host's state version.
@@ -135,6 +136,12 @@ sends `{type:"emote",id}` only; the host checks the id, enforces a 2 s cooldown 
 fills `seat`, and fans the same message out to every guest (including the sender). A local
 host player uses the same fan-out. Unknown ids are dropped. Older peers drop the unknown
 type; no protocol bump.
+
+`claim` is a Werewolf discussion chip (no free text). Catalog in `WerewolfClaims`
+(`suspect`, `trust`, `saw_wolf`, `i_seer`, `i_doctor`, `i_villager`, `i_hunter`, `pass`).
+A guest sends `{type:"claim",id,target?}`; claims that need a target require `target` (a
+living seat other than the sender). The host checks id/target, enforces a 3 s cooldown per
+seat, fills `seat`, and fans out. Older peers drop the unknown type; no protocol bump.
 
 ## BLE framing
 

@@ -332,9 +332,11 @@ in the same commit as the code.
 - Store listing text and privacy answers live in [store.md](store.md).
 - **Privacy link in the app (owner, 2026-11-13):** the menu always has a "Privacy policy"
   control that opens the site page in the app language (`/privasi/` or `/en/privacy/`).
-  No in-app terms, about, or changelog pages yet. Public release notes live on the web
-  (`/catatan/`, `/en/changelog/`), with the source list in [changelog.md](changelog.md);
-  store “What’s New” paste blocks stay in [store.md](store.md).
+- **What’s New after update (owner, 2026-11-16):** when the marketing version rises, the home
+  menu shows a once-per-version card (current bullets only, EN/ID). Dismiss stores the seen
+  version. No full in-app changelog history. Public archive stays on the web (`/catatan/`,
+  `/en/changelog/`), source list in [changelog.md](changelog.md); store “What’s New” paste
+  blocks stay in [store.md](store.md). No in-app terms or about pages yet.
 - **First store publish path (owner, 2026-11-13):** App Store — upload a build and submit
   that version for **production** App Review (no TestFlight tester track as the goal).
   Play — **closed testing** first (required before production), then production later.

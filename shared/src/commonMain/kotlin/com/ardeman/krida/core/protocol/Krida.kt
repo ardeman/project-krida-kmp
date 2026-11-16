@@ -80,7 +80,7 @@ object Krida {
     const val PLACE_FLEET_MS: Long = 60_000L
     /** Werewolf night actions before the host resolves. */
     const val WEREWOLF_NIGHT_MS: Long = 45_000L
-    /** Werewolf day discussion (emotes only) before the lynch vote opens. */
+    /** Werewolf day discussion (claim chips + emotes) before the lynch vote opens. */
     const val WEREWOLF_DISCUSS_MS: Long = 60_000L
     /**
      * Werewolf sheriff election, lynch vote, hunter shot, and sheriff successor pick.
