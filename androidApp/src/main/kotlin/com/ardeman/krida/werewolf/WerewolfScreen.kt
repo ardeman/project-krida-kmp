@@ -1,7 +1,10 @@
 package com.ardeman.krida.werewolf
 
+import com.ardeman.krida.account.AvatarBadge
+import com.ardeman.krida.account.BotFace
 import com.ardeman.krida.account.SeatAvatar
 import com.ardeman.krida.account.avatarOf
+import com.ardeman.krida.account.isBot
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
@@ -102,10 +105,19 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
     }
     var state by remember { mutableStateOf(table.latest) }
     var showRules by remember { mutableStateOf(false) }
+    var showRole by remember { mutableStateOf(false) }
+    var roleShown by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf<Int?>(null) }
     val me = table.mySeat
     val autoSeats = remember { mutableStateListOf<Int>() }
     var autoResume by remember { mutableIntStateOf(0) }
+    val myRole = state.roles.getOrNull(me).orEmpty()
+    LaunchedEffect(myRole, state.day) {
+        if (!roleShown && myRole.isNotEmpty() && state.day <= 1) {
+            roleShown = true
+            showRole = true
+        }
+    }
 
     DisposableEffect(table) {
         table.onUpdate = { update ->
@@ -217,7 +229,11 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                     state.alive.indices.chunked(2).forEach { pair ->
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             pair.forEach { seat ->
-                                SeatTile(table, state, seat, modifier = Modifier.weight(1f))
+                                SeatTile(
+                                    table, state, seat,
+                                    modifier = Modifier.weight(1f),
+                                    onShowMyRole = { showRole = true },
+                                )
                             }
                             if (pair.size == 1) Spacer(Modifier.weight(1f))
                         }
@@ -229,7 +245,12 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                 Modifier.widthIn(min = 220.dp, max = 340.dp).fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                PhasePanel(table, state, me, picking, onPick = { picking = it }, onAction = { table.play(it) })
+                PhasePanel(
+                    table, state, me, picking,
+                    onPick = { picking = it },
+                    onAction = { table.play(it) },
+                    onShowRole = { showRole = true },
+                )
             }
             Spacer(Modifier.weight(1f))
             Column(Modifier.width(148.dp).fillMaxHeight(), horizontalAlignment = Alignment.End) {
@@ -245,8 +266,7 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                     playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
                     onSend = table::sendEmote,
                 )
-                ClaimFeed(table, me)
-                Spacer(Modifier.weight(1f))
+                ClaimFeed(table, me, Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp))
                 if (timerOn && phaseTotal > 0) {
                     val night = state.phase == WerewolfPhase.NIGHT
                     val timerInk = if (night) Color(0xFFF6EADC) else Color(0xFF2B1D14)
@@ -281,6 +301,9 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
             )
         }
 
+        if (showRole && myRole.isNotEmpty() && !WerewolfGame.isFinished(state)) {
+            RoleCard(myRole) { showRole = false }
+        }
         if (WerewolfGame.isFinished(state)) {
             ResultOverlay(table, state, onExit = ::exit, onRestart = {
                 activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart()
@@ -307,13 +330,20 @@ private fun seatTint(seat: Int): Color {
 }
 
 @Composable
-private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modifier: Modifier = Modifier) {
+private fun SeatTile(
+    table: WerewolfTable,
+    state: WerewolfState,
+    seat: Int,
+    modifier: Modifier = Modifier,
+    onShowMyRole: (() -> Unit)? = null,
+) {
     val alive = state.alive.getOrElse(seat) { false }
     val me = seat == table.mySeat
     val sheriff = state.sheriff == seat
     val acting = seat in WerewolfGame.actingSeats(state)
     val voting = state.phase == WerewolfPhase.VOTE || state.phase == WerewolfPhase.SHERIFF_ELECT
     val voted = voting && alive && state.votes.getOrNull(seat) != null
+    val myRole = if (me) state.roles.getOrNull(seat).orEmpty() else ""
     val ink = if (alive) Theme.ink else Theme.muted
     val face = when {
         !alive -> Color(0xFF2A3344)
@@ -335,26 +365,22 @@ private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modi
                 },
                 RoundedCornerShape(12.dp),
             )
+            .then(
+                if (me && myRole.isNotEmpty() && onShowMyRole != null) {
+                    Modifier.clickable(role = Role.Button, onClick = onShowMyRole)
+                } else Modifier,
+            )
             .padding(6.dp)
             .then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val bot = seat in table.botSeats
         val avatar = table.players.avatarOf(seat)
         Box(contentAlignment = Alignment.Center) {
-            if (avatar != null) {
-                SeatAvatar(avatar, if (alive) tint else Theme.border, 26.dp)
-                Text(
-                    number,
-                    style = Theme.font(9, FontWeight.Black, Color.White),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(tint)
-                        .padding(horizontal = 3.dp),
-                )
-            } else {
-                // Big seat number — readable at a glance among many computers.
-                Box(
+            when {
+                bot -> BotFace(avatar, 26.dp)
+                avatar != null -> SeatAvatar(avatar, if (alive) tint else Theme.border, 26.dp)
+                else -> Box(
                     Modifier
                         .size(26.dp)
                         .clip(CircleShape)
@@ -364,12 +390,26 @@ private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modi
                     Text(number, style = Theme.font(13, FontWeight.Black, Color(0xFFFFF6E8).copy(alpha = if (alive) 1f else 0.5f)))
                 }
             }
+            if (bot || avatar != null) {
+                Text(
+                    number,
+                    style = Theme.font(9, FontWeight.Black, Color.White),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(tint)
+                        .padding(horizontal = 3.dp),
+                )
+            }
         }
         Text(
             if (me) stringResource(R.string.bot_you) else table.name(seat),
             style = Theme.font(11, FontWeight.Bold, ink),
             maxLines = 1,
         )
+        if (myRole.isNotEmpty() && !WerewolfGame.isFinished(state)) {
+            Text(roleLabel(myRole), style = Theme.font(9, FontWeight.Bold, Theme.accent), maxLines = 1)
+        }
         if (sheriff && alive) {
             Text(stringResource(R.string.werewolf_sheriff), style = Theme.font(9, FontWeight.Bold, Theme.accent))
         }
@@ -390,6 +430,7 @@ private fun PhasePanel(
     picking: Int?,
     onPick: (Int) -> Unit,
     onAction: (WerewolfMove) -> Unit,
+    onShowRole: () -> Unit = {},
 ) {
     val night = state.phase == WerewolfPhase.NIGHT
     // Day stays a light panel with dark ink so it stays readable in dark appearance too.
@@ -419,15 +460,23 @@ private fun PhasePanel(
             textAlign = TextAlign.Center,
         )
         val role = state.roles.getOrNull(me).orEmpty()
-        if (role.isNotEmpty()) {
-            Text(
-                stringResource(R.string.werewolf_your_role, roleLabel(role)),
-                style = Theme.font(14, FontWeight.Bold, roleTint),
-            )
-            Text(
-                roleBlurb(role),
-                style = Theme.font(12, FontWeight.Bold, muted),
-            )
+        if (role.isNotEmpty() && !WerewolfGame.isFinished(state)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(role = Role.Button, onClick = onShowRole)
+                    .padding(vertical = 2.dp),
+            ) {
+                Text(
+                    stringResource(R.string.werewolf_your_role, roleLabel(role)),
+                    style = Theme.font(14, FontWeight.Bold, roleTint),
+                )
+                Text(
+                    roleBlurb(role),
+                    style = Theme.font(12, FontWeight.Bold, muted),
+                )
+            }
         }
         state.seerPeekRole?.let { peek ->
             val target = state.seerPeekTarget
@@ -626,7 +675,7 @@ private fun TargetGrid(
 ) {
     val youLabel = stringResource(R.string.bot_you)
     val living = state.living().filter { allowSelf || it != me }
-    // Content-sized chips; wrap when the row is full (4–5 “Computer N” often fit).
+    // Face + short label; full “Computer N” truncates in these chips.
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -634,7 +683,7 @@ private fun TargetGrid(
     ) {
         living.forEach { seat ->
             val selected = picking == seat
-            Box(
+            Row(
                 Modifier
                     .heightIn(min = 36.dp)
                     .clip(RoundedCornerShape(10.dp))
@@ -645,16 +694,47 @@ private fun TargetGrid(
                         onPick(seat)
                         onChoose(seat)
                     }
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                contentAlignment = Alignment.Center,
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                SeatChipFace(table, seat)
                 Text(
-                    if (seat == me) youLabel else table.name(seat),
+                    seatChipLabel(table, seat, me, youLabel),
                     style = Theme.font(12, FontWeight.Bold, if (selected) Color.White else ink),
                     maxLines = 1,
                 )
             }
         }
+    }
+}
+
+/** Bots: seat number only (face carries identity). Humans: number · name. */
+private fun seatChipLabel(table: WerewolfTable, seat: Int, me: Int, youLabel: String): String = when {
+    seat == me -> youLabel
+    table.players.isBot(seat) -> "${seat + 1}"
+    else -> "${seat + 1} · ${table.name(seat)}"
+}
+
+/** Claim feed labels always include the seat number (bots: “7 · Computer”). */
+private fun shortSeatName(
+    table: WerewolfTable,
+    seat: Int,
+    me: Int,
+    youLabel: String,
+    computerLabel: String,
+): String = when {
+    seat == me -> youLabel
+    table.players.isBot(seat) -> "${seat + 1} · $computerLabel"
+    else -> "${seat + 1} · ${table.name(seat)}"
+}
+
+@Composable
+private fun SeatChipFace(table: WerewolfTable, seat: Int) {
+    val avatar = table.players.avatarOf(seat)
+    when {
+        table.players.isBot(seat) -> BotFace(avatar, 18.dp)
+        avatar != null -> AvatarBadge(avatar, size = 18.dp)
     }
 }
 
@@ -669,6 +749,35 @@ private fun StatusLine(table: WerewolfTable, state: WerewolfState, modifier: Mod
     }
     if (text.isNotEmpty()) {
         Text(text, style = Theme.font(13, FontWeight.Bold, Theme.ink), textAlign = TextAlign.End, modifier = modifier)
+    }
+}
+
+@Composable
+private fun RoleCard(role: String, onDismiss: () -> Unit) {
+    Box(
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f)).clickable(
+            role = Role.Button,
+            onClick = onDismiss,
+        ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier
+                .widthIn(max = 360.dp)
+                .fillMaxWidth(0.75f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Theme.surface)
+                .border(1.5.dp, Theme.line, RoundedCornerShape(20.dp))
+                .clickable(enabled = false, onClick = {})
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(stringResource(R.string.werewolf_role_title), style = Theme.font(20, FontWeight.Black, Theme.ink))
+            Text(roleLabel(role), style = Theme.font(18, FontWeight.Bold, Theme.ink))
+            Text(roleBlurb(role), style = Theme.font(13, FontWeight.Bold, Theme.muted), textAlign = TextAlign.Center)
+            PrimaryButton(stringResource(R.string.congklak_rules_close), onDismiss, Modifier.fillMaxWidth())
+        }
     }
 }
 
@@ -819,7 +928,6 @@ private fun ClaimChips(
 ) {
     var pending by remember { mutableStateOf<String?>(null) }
     val youLabel = stringResource(R.string.bot_you)
-    fun seatLabel(seat: Int) = if (seat == me) youLabel else table.name(seat)
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier.fillMaxWidth(),
@@ -835,7 +943,7 @@ private fun ClaimChips(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 table.latest.living().filter { it != me }.forEach { seat ->
-                    Box(
+                    Row(
                         Modifier
                             .heightIn(min = 36.dp)
                             .clip(RoundedCornerShape(10.dp))
@@ -846,9 +954,16 @@ private fun ClaimChips(
                                 table.sendClaim(pick, seat)
                                 pending = null
                             }
-                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        Text(seatLabel(seat), style = Theme.font(12, FontWeight.Bold, ink), maxLines = 1)
+                        SeatChipFace(table, seat)
+                        Text(
+                            seatChipLabel(table, seat, me, youLabel),
+                            style = Theme.font(12, FontWeight.Bold, ink),
+                            maxLines = 1,
+                        )
                     }
                 }
             }
@@ -884,24 +999,43 @@ private fun ClaimChips(
 }
 
 @Composable
-private fun ClaimFeed(table: WerewolfTable, me: Int) {
-    if (table.claims.isEmpty()) return
+private fun ClaimFeed(table: WerewolfTable, me: Int, modifier: Modifier = Modifier) {
+    if (table.claims.isEmpty()) {
+        Spacer(modifier)
+        return
+    }
     val youLabel = stringResource(R.string.bot_you)
+    val computerLabel = stringResource(R.string.bot_name)
+    val scroll = rememberScrollState()
+    val newest = table.claims.lastOrNull()?.n
+    LaunchedEffect(newest) {
+        if (newest != null) scroll.animateScrollTo(scroll.maxValue)
+    }
     Column(
-        Modifier.padding(top = 8.dp),
+        modifier.verticalScroll(scroll),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.End,
     ) {
-        table.claims.takeLast(4).forEach { event ->
-            val speaker = if (event.seat == me) youLabel else table.name(event.seat)
-            val target = event.target?.let { if (it == me) youLabel else table.name(it) }
-            Text(
-                stringResource(R.string.werewolf_claim_bubble, speaker, claimLine(event.id, target)),
-                style = Theme.font(11, FontWeight.Bold, Theme.ink),
-                modifier = Modifier
+        table.claims.forEach { event ->
+            val speaker = shortSeatName(table, event.seat, me, youLabel, computerLabel)
+            val target = event.target?.let { shortSeatName(table, it, me, youLabel, computerLabel) }
+            val avatar = table.players.avatarOf(event.seat)
+            Row(
+                Modifier
                     .background(Theme.surface.copy(alpha = 0.92f), RoundedCornerShape(10.dp))
                     .padding(horizontal = 8.dp, vertical = 6.dp),
-            )
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                when {
+                    table.players.isBot(event.seat) -> BotFace(avatar, 16.dp)
+                    avatar != null -> AvatarBadge(avatar, size = 16.dp)
+                }
+                Text(
+                    stringResource(R.string.werewolf_claim_bubble, speaker, claimLine(event.id, target)),
+                    style = Theme.font(11, FontWeight.Bold, Theme.ink),
+                )
+            }
         }
     }
 }

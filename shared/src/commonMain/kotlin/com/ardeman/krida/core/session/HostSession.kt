@@ -1,5 +1,6 @@
 package com.ardeman.krida.core.session
 
+import com.ardeman.krida.core.account.Avatar
 import com.ardeman.krida.core.protocol.Codec
 import com.ardeman.krida.core.protocol.Emotes
 import com.ardeman.krida.core.protocol.InvalidReason
@@ -120,7 +121,13 @@ class HostSession<S, M>(
     /** Adds a computer player run by this device. Returns the seat, or null if full/started. */
     fun addBot(name: String, platform: Platform, bot: Bot<S, M>): Int? {
         if (started || seats.size >= capacity()) return null
-        seat(Seat(name, platform, peer = null, token = newToken(), bot = bot))
+        val next = seats.size
+        seat(
+            Seat(
+                name, platform, peer = null, token = newToken(), bot = bot,
+                avatar = Avatar.botMix(next).encode(),
+            ),
+        )
         lobbyChanged()
         return seats.lastIndex
     }

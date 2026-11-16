@@ -1,6 +1,7 @@
 package com.ardeman.krida.perangkapal
 
 import com.ardeman.krida.account.AvatarBadge
+import com.ardeman.krida.account.BotFace
 import com.ardeman.krida.account.avatarOf
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
@@ -694,7 +695,6 @@ private fun PlayerTile(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(14.dp)
-    val face = avatar.takeUnless { bot }
     Column(
         modifier.aspectRatio(1f)
             .then(if (on) Modifier.shadow(8.dp, shape, ambientColor = Theme.gold, spotColor = Theme.gold) else Modifier)
@@ -706,21 +706,11 @@ private fun PlayerTile(
         verticalArrangement = Arrangement.Center,
     ) {
         Box {
-            if (face != null || bot) {
-                if (face != null) {
-                    AvatarBadge(face, size = 34.dp, modifier = Modifier.border(1.5.dp, Color.White, CircleShape))
-                } else {
-                    Box(
-                        Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(Theme.track, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.ic_computer),
-                            contentDescription = null,
-                            tint = Theme.ink,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
+            if (avatar != null || bot) {
+                if (bot) {
+                    BotFace(avatar, 34.dp, Modifier.border(1.5.dp, Color.White, CircleShape))
+                } else if (avatar != null) {
+                    AvatarBadge(avatar, size = 34.dp, modifier = Modifier.border(1.5.dp, Color.White, CircleShape))
                 }
                 Box(
                     Modifier.align(Alignment.BottomEnd).size(20.dp)

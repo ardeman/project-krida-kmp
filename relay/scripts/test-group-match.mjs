@@ -310,3 +310,28 @@ test('a full tie waits for the timer; nobody voting says why the search restarte
   assert.equal(a.last.restart, 'no_votes');
   assert.equal(b.last.restart, 'no_votes');
 });
+
+test('werewolf rejects humans-only below five; computers still fill to eight', async t => {
+  const f = setup(t, 8, 'werewolf'), a = await f.add(), b = await f.add();
+  assert.equal(a.deserializeAttachment().maxPlayers, 8);
+  await f.advance(20_000);
+  await f.action(a, 'accept_humans');
+  assert.equal(a.deserializeAttachment().humanConsent, false);
+  assert.equal(a.last.type, 'queue');
+  await f.action(a, 'accept_bots');
+  await f.action(b, 'accept_bots');
+  assert.equal(a.last.type, 'prepare_host');
+  assert.equal(a.last.humans, 2);
+  assert.equal(a.last.bots, 6);
+  assert.equal(a.last.seats, 8);
+});
+
+test('werewolf humans-only works at five', async t => {
+  const f = setup(t, 8, 'werewolf'), players = [];
+  for (let i = 0; i < 5; i++) players.push(await f.add());
+  await f.advance(20_000);
+  for (const player of players) await f.action(player, 'accept_humans');
+  assert.equal(players[0].last.type, 'prepare_host');
+  assert.equal(players[0].last.bots, 0);
+  assert.equal(players[0].last.seats, 5);
+});

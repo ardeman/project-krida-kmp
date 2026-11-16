@@ -159,6 +159,11 @@ func werewolfGame(_ game: String) -> Bool {
     game == WerewolfGame.shared.id
 }
 
+/// Fewest humans allowed to start without filling empty seats with computers.
+func minHumansOnly(_ game: String) -> Int {
+    werewolfGame(game) ? WerewolfSettings.minPlayers : 2
+}
+
 private struct RoomHeading: View {
     let text: LocalizedStringKey
     @Environment(\.uiScale) private var s

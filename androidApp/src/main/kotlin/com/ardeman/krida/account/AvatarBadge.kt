@@ -74,22 +74,48 @@ fun AvatarBadge(
     }
 }
 
-/** The avatar of the player in [seat], or null for bots and players without one. */
-fun List<PlayerInfo>.avatarOf(seat: Int): String? = firstOrNull { it.seat == seat }?.takeIf { !it.bot }?.avatar
+/** Wire avatar for [seat], including computers (they get [Avatar.botMix] when seated). */
+fun List<PlayerInfo>.avatarOf(seat: Int): String? = firstOrNull { it.seat == seat }?.avatar
+
+fun List<PlayerInfo>.isBot(seat: Int): Boolean = firstOrNull { it.seat == seat }?.bot == true
 
 /**
  * In-game seat marker: the player's avatar inside a ring of the seat [color], or the plain
- * colour dot when the seat has no avatar (signed out, bot, pass-and-play).
+ * colour dot when the seat has no avatar (signed out, pass-and-play). Computers use [BotFace].
  */
 @Composable
-fun SeatAvatar(avatar: String?, color: Color, size: Dp, modifier: Modifier = Modifier) {
-    if (avatar == null) {
+fun SeatAvatar(avatar: String?, color: Color, size: Dp, modifier: Modifier = Modifier, bot: Boolean = false) {
+    if (bot) {
+        val ring = if (size < 24.dp) 2.dp else 3.dp
+        Box(modifier.size(size).background(color, CircleShape).padding(ring), contentAlignment = Alignment.Center) {
+            BotFace(avatar, size - ring * 2)
+        }
+    } else if (avatar == null) {
         Box(modifier.size(size).clip(CircleShape).background(color))
     } else {
         val ring = if (size < 24.dp) 2.dp else 3.dp
         Box(modifier.size(size).background(color, CircleShape).padding(ring), contentAlignment = Alignment.Center) {
             AvatarBadge(avatar, size = size - ring * 2)
         }
+    }
+}
+
+/** Computer face: auto [Avatar.botMix] colours with the desktop icon (not a human shape). */
+@Composable
+fun BotFace(avatar: String?, size: Dp, modifier: Modifier = Modifier) {
+    val mix = Avatar.parseMix(avatar) ?: Avatar.botMix(0)
+    val bg = Color(mix.backgroundArgb)
+    val fg = Color(mix.symbolArgb)
+    Box(
+        modifier.size(size).clip(CircleShape).background(bg),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_computer),
+            contentDescription = null,
+            tint = fg,
+            modifier = Modifier.size(size * 0.55f),
+        )
     }
 }
 

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,15 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ardeman.krida.R
 import com.ardeman.krida.account.AvatarBadge
+import com.ardeman.krida.account.BotFace
 
 /**
  * The player indicator of congklak (2 seats): the opponent in a pill above the board, this
@@ -98,20 +96,19 @@ private fun Pill(
     )
 }
 
-/** The account avatar in multi-device games; otherwise the name's initial, or the bot icon. */
+/** The account avatar in multi-device games; otherwise the name's initial, or [BotFace]. */
 @Composable
 private fun PillAvatar(seat: PillSeat, on: Boolean, size: Dp) {
-    if (!seat.bot) seat.avatar?.let { return AvatarBadge(it, size = size, modifier = Modifier.clearAndSetSemantics {}) }
+    if (seat.bot) {
+        return BotFace(seat.avatar, size, Modifier.clearAndSetSemantics {})
+    }
+    seat.avatar?.let { return AvatarBadge(it, size = size, modifier = Modifier.clearAndSetSemantics {}) }
     val tint = if (on) Theme.accent else Theme.muted
     Box(
         Modifier.size(size).background(if (on) Theme.raised else Theme.track, CircleShape).clearAndSetSemantics {},
         contentAlignment = Alignment.Center,
     ) {
-        if (seat.bot) {
-            Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = tint, modifier = Modifier.size(size * 0.5f))
-        } else {
-            Text(seat.name.take(1).uppercase(), style = Theme.font((size.value * 0.45f).toInt(), FontWeight.Black, tint))
-        }
+        Text(seat.name.take(1).uppercase(), style = Theme.font((size.value * 0.45f).toInt(), FontWeight.Black, tint))
     }
 }
 

@@ -783,22 +783,17 @@ private struct PerangKapalBoardView: View {
             ? (st.fleets.indices.contains(seat) ? st.fleets[seat].count : 0)
             : shipNames.count - model.lost(seat).count
         let bot = table.botSeats.contains(seat)
-        let avatar = bot ? nil : table.players.avatar(of: seat)
+        let avatar = table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 14 * s)
         return VStack(spacing: 2 * s) {
             ZStack(alignment: .bottomTrailing) {
                 if avatar != nil || bot {
-                    if let avatar {
+                    if bot {
+                        BotFace(avatar: avatar, size: 34)
+                            .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                    } else if let avatar {
                         AvatarBadge(avatar: avatar, size: 34)
                             .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
-                    } else {
-                        Image(systemName: "desktopcomputer")
-                            .font(.system(size: 16 * s, weight: .semibold))
-                            .foregroundStyle(Theme.ink)
-                            .frame(width: 30 * s, height: 30 * s)
-                            .background(Theme.track, in: Circle())
-                            .padding(2 * s)
-                            .background(.white, in: Circle())
                     }
                     Text(verbatim: "\(ships)")
                         .font(Theme.font(10 * s, .black))

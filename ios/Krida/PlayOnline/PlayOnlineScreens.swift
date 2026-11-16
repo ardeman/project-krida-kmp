@@ -128,6 +128,11 @@ private struct MatchSearch: View {
                 .multilineTextAlignment(.center)
             
             // Solo seat selector
+            if offer && !preparing && !failed && humans == 1 && werewolfGame(game) {
+                Segmented(
+                    options: (WerewolfSettings.minPlayers...WerewolfSettings.maxPlayers).map { ($0, LocalizedStringKey("\($0)"), nil) },
+                    selection: $soloSeats, label: "Players")
+            }
             if offer && !preparing && !failed && humans == 1 && fourSeatGame(game) {
                 Segmented(options: (2...4).map { ($0, LocalizedStringKey("\($0)"), nil) },
                           selection: $soloSeats, label: "Players")
@@ -136,15 +141,18 @@ private struct MatchSearch: View {
             // Offer buttons
             if offer && !preparing && !failed {
                 if humans >= 2 {
-                    // A live poll: every player sees how the group is voting before and after choosing.
+                    // Humans-only only when the found count meets the game minimum (Werewolf is 5+).
+                    let humansOnlyOk = humans >= minHumansOnly(game)
                     HStack(alignment: .top, spacing: 10 * s) {
-                        VStack(spacing: 6 * s) {
-                            Button(action: { client?.acceptHumans(revision: revision) }) {
-                                Text(String(format: matchString("Play with %1$d players"), humans)).frame(maxWidth: .infinity)
+                        if humansOnlyOk {
+                            VStack(spacing: 6 * s) {
+                                Button(action: { client?.acceptHumans(revision: revision) }) {
+                                    Text(String(format: matchString("Play with %1$d players"), humans)).frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(PrimaryButtonStyle())
+                                .disabled(acceptedHumans)
+                                VoteTally(votes: agreedHumans, players: humans, mine: acceptedHumans, s: s)
                             }
-                            .buttonStyle(PrimaryButtonStyle())
-                            .disabled(acceptedHumans)
-                            VoteTally(votes: agreedHumans, players: humans, mine: acceptedHumans, s: s)
                         }
                         VStack(spacing: 6 * s) {
                             Button(action: { client?.acceptBots(revision: revision) }) {

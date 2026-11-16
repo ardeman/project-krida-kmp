@@ -493,7 +493,7 @@ private class Seats(private val table: CongklakTable, val near: Int) {
     fun name(seat: Int) = table.players.firstOrNull { it.seat == seat }?.name ?: "${seat + 1}"
 
     /** The seat's account avatar in multi-device games; null keeps the initial or bot icon. */
-    fun avatar(seat: Int) = if (seat == botSeat) null else table.players.avatarOf(seat)
+    fun avatar(seat: Int) = table.players.avatarOf(seat)
 
     /** "Kamu" for this device's own seat; the player's name otherwise. */
     @Composable

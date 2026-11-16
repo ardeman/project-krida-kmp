@@ -38,24 +38,32 @@ struct AvatarBadge: View {
 }
 
 extension Array where Element == PlayerInfo {
-    /// The avatar of the player in `seat`, or nil for bots and players without one.
+    /// Wire avatar for `seat`, including computers ([Avatar.botMix] when seated).
     func avatar(of seat: Int) -> String? {
-        guard let p = first(where: { Int($0.seat) == seat }), !p.bot else { return nil }
-        return p.avatar
+        first(where: { Int($0.seat) == seat })?.avatar
+    }
+
+    func isBot(_ seat: Int) -> Bool {
+        first(where: { Int($0.seat) == seat })?.bot == true
     }
 }
 
 /// In-game seat marker: the player's avatar inside a ring of the seat `color`, or the plain
-/// colour dot when the seat has no avatar (signed out, bot, pass-and-play). `size` is
-/// unscaled. Same as Android `SeatAvatar`.
+/// colour dot when the seat has no avatar (signed out, pass-and-play). Computers use [BotFace].
 struct SeatAvatar: View {
     let avatar: String?
     let color: Color
     let size: CGFloat
+    var bot: Bool = false
     @Environment(\.uiScale) private var s
 
     var body: some View {
-        if let avatar {
+        if bot {
+            let ring: CGFloat = size < 24 ? 2 : 3
+            BotFace(avatar: avatar, size: size - ring * 2)
+                .padding(ring * s)
+                .background(color, in: Circle())
+        } else if let avatar {
             let ring: CGFloat = size < 24 ? 2 : 3
             AvatarBadge(avatar: avatar, size: size - ring * 2)
                 .padding(ring * s)
@@ -63,6 +71,23 @@ struct SeatAvatar: View {
         } else {
             Circle().fill(color).frame(width: size * s, height: size * s)
         }
+    }
+}
+
+/// Computer face: auto botMix colours with the desktop icon (not a human shape).
+struct BotFace: View {
+    let avatar: String?
+    let size: CGFloat
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        let mix = Avatar.shared.parseMix(value: avatar) ?? Avatar.shared.botMix(seat: 0)
+        let side = size * s
+        Image(systemName: "desktopcomputer")
+            .font(.system(size: side * 0.42, weight: .bold))
+            .foregroundStyle(avatarColor(mix.symbolArgb))
+            .frame(width: side, height: side)
+            .background(avatarColor(mix.backgroundArgb), in: Circle())
     }
 }
 

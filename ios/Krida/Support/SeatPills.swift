@@ -72,18 +72,19 @@ private struct PillAvatar: View {
 
     var body: some View {
         Group {
-            if !seat.bot, let avatar = seat.avatar {
-                // `size` is already scaled; AvatarBadge scales its own.
+            if seat.bot {
+                // size is already scaled; BotFace scales its own.
+                BotFace(avatar: seat.avatar, size: size / s)
+            } else if let avatar = seat.avatar {
                 AvatarBadge(avatar: avatar, size: size / s)
-            } else if seat.bot {
-                Image(systemName: "desktopcomputer").font(.system(size: size * 0.5, weight: .semibold))
             } else {
-                Text(String(seat.name.prefix(1)).uppercased()).font(Theme.font(size * 0.45, .black))
+                Text(String(seat.name.prefix(1)).uppercased())
+                    .font(Theme.font(size * 0.45, .black))
+                    .foregroundStyle(on ? Theme.accent : Theme.muted)
+                    .frame(width: size, height: size)
+                    .background(on ? Theme.raised : Theme.track, in: Circle())
             }
         }
-        .foregroundStyle(on ? Theme.accent : Theme.muted)
-        .frame(width: size, height: size)
-        .background(on ? Theme.raised : Theme.track, in: Circle())
         .accessibilityHidden(true)
     }
 }

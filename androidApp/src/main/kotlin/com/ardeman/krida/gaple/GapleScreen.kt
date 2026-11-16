@@ -1,6 +1,7 @@
 package com.ardeman.krida.gaple
 
 import com.ardeman.krida.account.AvatarBadge
+import com.ardeman.krida.account.BotFace
 import com.ardeman.krida.account.avatarOf
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
@@ -616,7 +617,7 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
     // Dark digits on a light pawn colour (yellow), white on the rest.
     val digits = if (color.red * 0.3f + color.green * 0.59f + color.blue * 0.11f > 0.6f) Theme.inkOnLight else Color.White
     val bot = seat in table.botSeats
-    val avatar = table.players.avatarOf(seat).takeUnless { bot }
+    val avatar = table.players.avatarOf(seat)
     Column(
         modifier.clip(shape)
             .background(if (on) Theme.chip else Theme.surface)
@@ -626,20 +627,10 @@ private fun PlayerTile(table: GapleTable, state: GapleState, seat: Int, on: Bool
     ) {
         Box {
             if (avatar != null || bot) {
-                if (avatar != null) {
+                if (bot) {
+                    BotFace(avatar, 34.dp, Modifier.border(1.5.dp, Color.White, CircleShape))
+                } else if (avatar != null) {
                     AvatarBadge(avatar, size = 34.dp, modifier = Modifier.border(1.5.dp, Color.White, CircleShape))
-                } else {
-                    Box(
-                        Modifier.size(34.dp).background(Color.White, CircleShape).padding(2.dp).background(Theme.track, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.ic_computer),
-                            contentDescription = null,
-                            tint = Theme.ink,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
                 }
                 Box(
                     Modifier.align(Alignment.BottomEnd).size(20.dp)

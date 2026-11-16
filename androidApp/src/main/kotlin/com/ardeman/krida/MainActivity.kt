@@ -349,14 +349,28 @@ class MainActivity : ComponentActivity() {
                             val computer = getString(R.string.bot_name)
                             when (quickMatchGame) {
                                 UlarTanggaGame.id -> ularTable = UlarTanggaHostTable.local(List(count) { seat ->
-                                    LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
+                                    val name = when {
+                                        seat == 0 -> you
+                                        count <= 2 -> computer
+                                        else -> getString(R.string.ular_computer_n, seat + 1)
+                                    }
+                                    LocalPlayer(name, computer = seat != 0, color = seat)
                                 })
                                 LudoGame.id -> ludoTable = LudoHostTable.local(List(count) { seat ->
-                                    LocalPlayer(if (seat == 0) you else computer, computer = seat != 0, color = seat)
+                                    val name = when {
+                                        seat == 0 -> you
+                                        count <= 2 -> computer
+                                        else -> getString(R.string.ular_computer_n, seat + 1)
+                                    }
+                                    LocalPlayer(name, computer = seat != 0, color = seat)
                                 })
                                 PerangKapalGame.id -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
-                                GapleGame.id -> gapleTable = GapleHostTable.vsComputer(you, count - 1) { computer }
-                                WerewolfGame.id -> werewolfTable = WerewolfHostTable.vsComputer(you, count) { computer }
+                                GapleGame.id -> gapleTable = GapleHostTable.vsComputer(you, count - 1) { n ->
+                                    if (count <= 2) computer else getString(R.string.ular_computer_n, n + 1)
+                                }
+                                WerewolfGame.id -> werewolfTable = WerewolfHostTable.vsComputer(you, count) { n ->
+                                    if (count <= 2) computer else getString(R.string.ular_computer_n, n + 1)
+                                }
                                 else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             }
                             playingQuickMatch = false

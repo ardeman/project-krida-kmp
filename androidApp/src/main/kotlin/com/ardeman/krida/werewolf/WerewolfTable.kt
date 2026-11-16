@@ -107,8 +107,11 @@ data class ClaimEvent(val seat: Int, val id: String, val target: Int?, val n: In
     private companion object { var next = 1 }
 }
 
+/** Keeps the session claim log (scrollable in the HUD); capped so a long table stays light. */
+private const val CLAIM_LOG_MAX = 48
+
 fun List<ClaimEvent>.plusClaim(seat: Int, id: String, target: Int?): List<ClaimEvent> =
-    (this + ClaimEvent(seat, id, target)).takeLast(4)
+    (this + ClaimEvent(seat, id, target)).takeLast(CLAIM_LOG_MAX)
 
 class WerewolfHostTable(
     private val session: HostSession<WerewolfState, WerewolfMove>,
@@ -168,7 +171,11 @@ class WerewolfHostTable(
     }
 
     override fun restart() {
-        if (active && WerewolfGame.isFinished(latest)) session.restart()
+        if (active && WerewolfGame.isFinished(latest)) {
+            claims = emptyList()
+            emotes = emptyList()
+            session.restart()
+        }
     }
 
     override fun sendEmote(id: String) {

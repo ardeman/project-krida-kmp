@@ -90,8 +90,11 @@ struct ClaimEvent: Identifiable, Equatable {
 }
 
 extension Array where Element == ClaimEvent {
+    /// Session claim log (scrollable in the HUD); capped so a long table stays light.
+    private static let claimLogMax = 48
+
     func plusClaim(seat: Int, id: String, target: Int?) -> [ClaimEvent] {
-        Array((self + [ClaimEvent(seat: seat, claimId: id, target: target)]).suffix(4))
+        Array((self + [ClaimEvent(seat: seat, claimId: id, target: target)]).suffix(Self.claimLogMax))
     }
 }
 

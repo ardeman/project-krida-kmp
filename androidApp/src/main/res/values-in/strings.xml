@@ -489,6 +489,7 @@
     <string name="werewolf_vote_progress">Sudah pilih %1$d / %2$d</string>
     <string name="werewolf_day_n">Hari %1$d</string>
     <string name="werewolf_your_role">Peranmu: %1$s</string>
+    <string name="werewolf_role_title">Peranmu</string>
     <string name="werewolf_role_blurb_werewolf">Tiap malam, pilih satu pemain hidup untuk digugurkan. Serigala saling melihat.</string>
     <string name="werewolf_role_blurb_seer">Tiap malam, intip peran tepat satu pemain hidup.</string>
     <string name="werewolf_role_blurb_doctor">Tiap malam, lindungi satu pemain hidup (boleh dirimu sendiri).</string>

@@ -170,7 +170,12 @@ class NearbyRoom private constructor(
         val missing = quickMatchBots - players.count { it.bot }
         // Clear before adding: addBot synchronously calls onPlayersChanged again.
         quickMatchHumans = 0
-        repeat(missing.coerceAtLeast(0)) { addBot?.invoke(quickMatchBotName) }
+        repeat(missing.coerceAtLeast(0)) {
+            // Number by upcoming seat (1-based) so "Computer 5" matches the seat chip.
+            val seatNum = players.size + 1
+            val name = if (quickMatchBots <= 1) quickMatchBotName else "$quickMatchBotName $seatNum"
+            addBot?.invoke(name)
+        }
     }
 
     private val main = Handler(Looper.getMainLooper())

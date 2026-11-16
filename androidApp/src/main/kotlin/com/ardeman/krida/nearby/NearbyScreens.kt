@@ -1,6 +1,7 @@
 package com.ardeman.krida.nearby
 
 import com.ardeman.krida.account.AvatarBadge
+import com.ardeman.krida.account.BotFace
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
@@ -468,19 +469,15 @@ private fun FilledSeat(room: NearbyRoom, p: PlayerInfo, ular: Boolean, names: Li
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        if (!p.bot && p.avatar != null) {
-            AvatarBadge(p.avatar, size = 40.dp)
-        } else {
-            Box(Modifier.size(40.dp).clip(CircleShape).background(circle), contentAlignment = Alignment.Center) {
-                if (p.bot) {
-                    Icon(painterResource(R.drawable.ic_computer), contentDescription = null, tint = inkOn(circle), modifier = Modifier.size(22.dp))
-                } else {
-                    Text("${p.seat + 1}", style = Theme.font(18, FontWeight.Black, inkOn(circle)))
-                }
+        when {
+            p.bot -> BotFace(p.avatar, 40.dp)
+            p.avatar != null -> AvatarBadge(p.avatar, size = 40.dp)
+            else -> Box(Modifier.size(40.dp).clip(CircleShape).background(circle), contentAlignment = Alignment.Center) {
+                Text("${p.seat + 1}", style = Theme.font(18, FontWeight.Black, inkOn(circle)))
             }
         }
         Column(Modifier.weight(1f)) {
-            val name = if (p.bot) stringResource(R.string.bot_name) else p.name
+            val name = p.name
             Text(
                 if (me) stringResource(R.string.nearby_you, name) else name,
                 style = Theme.font(15, FontWeight.ExtraBold, Theme.ink),

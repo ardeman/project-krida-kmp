@@ -108,6 +108,18 @@ object Avatar {
     }
 
     /**
+     * Drawn face for a computer seat: die shape (platforms may still overlay a computer
+     * icon) with background and symbol colours derived from [seat] so bots look distinct.
+     */
+    fun botMix(seat: Int): Mix {
+        val s = seat.coerceAtLeast(0)
+        val background = (s * 5 + 3) % COLOUR_COUNT
+        var symbol = (s * 7 + 1) % COLOUR_COUNT
+        if (symbol == background) symbol = (symbol + 1) % COLOUR_COUNT
+        return Mix(Shape.DIE.ordinal, background, symbol)
+    }
+
+    /**
      * Resolves a wire [avatar] (mix, Google URL, `g`, or empty) for display. [picture] is the
      * Google picture URL when the player chose `g` but the API still carries the stored form.
      * [accountId] picks the default mix when nothing was chosen; null yields [Resolved.Neutral].

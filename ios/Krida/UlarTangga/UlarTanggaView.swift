@@ -690,22 +690,17 @@ private struct UlarTanggaBoardView: View {
         let start = place == nil && square == 0 && roll == nil
         let text: String = if let roll { "\(roll)" } else if let place { "#\(place + 1)" } else if start { String(localized: "Start", bundle: .app) } else { "\(square)" }
         let bot = table.botSeats.contains(seat)
-        let avatar = bot ? nil : table.players.avatar(of: seat)
+        let avatar = table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 14 * s)
         return VStack(spacing: 3 * s) {
             ZStack(alignment: .bottomTrailing) {
                 if avatar != nil || bot {
-                    if let avatar {
+                    if bot {
+                        BotFace(avatar: avatar, size: 34)
+                            .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
+                    } else if let avatar {
                         AvatarBadge(avatar: avatar, size: 34)
                             .overlay(Circle().stroke(.white, lineWidth: 1.5 * s))
-                    } else {
-                        Image(systemName: "desktopcomputer")
-                            .font(.system(size: 16 * s, weight: .semibold))
-                            .foregroundStyle(Theme.ink)
-                            .frame(width: 30 * s, height: 30 * s)
-                            .background(Theme.track, in: Circle())
-                            .padding(2 * s)
-                            .background(.white, in: Circle())
                     }
                     Text(text)
                         .font(Theme.font((start ? 7 : 10) * s, .black))

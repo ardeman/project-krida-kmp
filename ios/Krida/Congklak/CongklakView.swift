@@ -500,7 +500,7 @@ private struct CongklakBoardView: View {
 
     /// How the seat shows in its pill.
     private func pill(_ seat: Int) -> PillSeat {
-        PillSeat(name: displayName(seat), avatar: seat == botSeat ? nil : table.players.avatar(of: seat), bot: seat == botSeat)
+        PillSeat(name: displayName(seat), avatar: table.players.avatar(of: seat), bot: seat == botSeat)
     }
 
     /// The far seat, above the board: who you play against and what they're doing.

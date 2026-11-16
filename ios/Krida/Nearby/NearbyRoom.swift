@@ -108,7 +108,12 @@ final class NearbyRoom: ObservableObject {
         let missing = quickMatchBots - players.filter({ $0.bot }).count
         // Adding a bot synchronously calls onPlayersChanged again.
         quickMatchHumans = 0
-        for _ in 0..<max(0, missing) { addBotAction?(quickMatchBotName) }
+        for _ in 0..<max(0, missing) {
+            // Number by upcoming seat (1-based) so "Computer 5" matches the seat chip.
+            let seatNum = players.count + 1
+            let name = quickMatchBots <= 1 ? quickMatchBotName : "\(quickMatchBotName) \(seatNum)"
+            addBotAction?(name)
+        }
     }
 
     func start() {

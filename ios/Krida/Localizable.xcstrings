@@ -6037,6 +6037,38 @@
         }
       }
     },
+    "Your role: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your role: %@"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peranmu: %@"
+          }
+        }
+      }
+    },
+    "Tap to see your role again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to see your role again"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketuk untuk lihat peran lagi"
+          }
+        }
+      }
+    },
     "Pick a victim": {
       "localizations": {
         "en": {

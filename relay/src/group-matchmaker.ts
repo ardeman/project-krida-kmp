@@ -21,6 +21,16 @@ type Ticket = {
 /** How long a group of humans has to vote once the offer opens. */
 const VOTE_MS = 15_000;
 
+/** Seat bounds per game id (must match shared GameRules / room creation). */
+function minPlayers(game?: string): number {
+  return game === "werewolf" ? 5 : 2;
+}
+function maxPlayers(game?: string): number {
+  if (game === "congklak" || game === "perang_kapal") return 2;
+  if (game === "werewolf") return 8;
+  return 4;
+}
+
 export class GroupMatchmaker implements DurableObject {
   constructor(private ctx: DurableObjectState, private env?: Env) {}
 
@@ -52,7 +62,7 @@ export class GroupMatchmaker implements DurableObject {
       discover, group: first?.group ?? this.code(), target, game,
       deadline: first?.deadline ?? Date.now() + 20_000,
       phase: first?.phase ?? "searching", consent: false, revision: first?.revision ?? 0,
-      maxPlayers: game === "congklak" || game === "perang_kapal" ? 2 : 4,
+      maxPlayers: maxPlayers(game),
     } satisfies Ticket);
     // Membership changes invalidate prior consent: everyone sees the new composition.
     this.resetConsent(this.ticket(server).group);
@@ -89,11 +99,13 @@ export class GroupMatchmaker implements DurableObject {
       if (action === "accept_bots" && revision === current.revision) {
         ws.serializeAttachment({ ...current, consent: true, humanConsent: false });
         await this.update(current.group);
-      } else if (action === "accept_humans" && revision === current.revision && this.group(current.group).length >= 2) {
+      } else if (action === "accept_humans" && revision === current.revision
+          && this.group(current.group).length >= minPlayers(current.game)) {
         ws.serializeAttachment({ ...current, consent: false, humanConsent: true });
         await this.update(current.group);
       } else if (action === "play_solo" && revision === current.revision && this.group(current.group).length === 1 &&
-          Number.isInteger(seats) && seats >= 2 && seats <= (current.maxPlayers ?? current.target)) {
+          Number.isInteger(seats) && seats >= minPlayers(current.game)
+          && seats <= (current.maxPlayers ?? maxPlayers(current.game))) {
         this.send(ws, { type: "matched", role: "solo", target: current.target, seats });
         ws.serializeAttachment({ ...current, phase: "done" });
         ws.close(1000, "matched");
@@ -172,7 +184,7 @@ export class GroupMatchmaker implements DurableObject {
       const bots = group.filter(ws => this.ticket(ws).consent).length;
       if (bots !== group.length - bots && bots !== 0 && bots !== group.length) { await this.closeVote(id); return; }
     }
-    const humansOnly = group.length >= 2 && group.every(ws => this.ticket(ws).humanConsent);
+    const humansOnly = group.length >= minPlayers(t.game) && group.every(ws => this.ticket(ws).humanConsent);
     if (group.length === t.target || (t.phase === "offer" && (humansOnly || group.every(ws => this.ticket(ws).consent)))) {
       if (group.length === 1) {
         this.send(group[0], { type: "matched", role: "solo", target: t.target });
@@ -217,15 +229,18 @@ export class GroupMatchmaker implements DurableObject {
   /** Time is up: the choice with more votes starts for everyone; a tie or no votes searches on. */
   private async closeVote(id: string): Promise<void> {
     const group = this.group(id);
+    const game = this.ticket(group[0]).game;
     const bots = group.filter(ws => this.ticket(ws).consent).length;
-    const humans = group.filter(ws => this.ticket(ws).humanConsent).length;
+    // Humans-only is only valid at or above the game's minimum (Werewolf is 5–8).
+    const humansRaw = group.filter(ws => this.ticket(ws).humanConsent).length;
+    const humans = group.length >= minPlayers(game) ? humansRaw : 0;
     const revision = Math.max(0, ...group.map(ws => this.ticket(ws).revision)) + 1;
     for (const ws of group) {
       const t = this.ticket(ws);
       if (bots === humans) ws.serializeAttachment({ ...t, phase: "searching", consent: false, humanConsent: false, voteDeadline: undefined, revision, deadline: Date.now() + 20_000 });
       else ws.serializeAttachment({ ...t, consent: bots > humans, humanConsent: humans > bots, voteDeadline: undefined });
     }
-    await this.update(id, bots === humans ? (bots === 0 ? "no_votes" : "tie") : undefined);
+    await this.update(id, bots === humans ? (bots === 0 && humansRaw === 0 ? "no_votes" : "tie") : undefined);
   }
   private fail(id: string): void {
     for (const ws of this.group(id)) {

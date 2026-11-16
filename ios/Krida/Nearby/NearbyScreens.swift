@@ -378,21 +378,18 @@ struct RoomLobby: View {
         } else {
             Text("You're in")
         }
-        let name = p.bot ? String(localized: "Computer", bundle: .app) : p.name
+        let name = p.name
         return HStack(spacing: 12 * s) {
-            if !p.bot, let avatar = p.avatar {
+            if p.bot {
+                BotFace(avatar: p.avatar, size: 40)
+            } else if let avatar = p.avatar {
                 AvatarBadge(avatar: avatar, size: 40)
             } else {
-                ZStack {
-                    Circle().fill(circle)
-                    if p.bot {
-                        Image(systemName: "desktopcomputer").font(.system(size: 18 * s, weight: .bold))
-                    } else {
-                        Text("\(seat + 1)").font(Theme.font(18 * s, .black))
-                    }
-                }
-                .foregroundStyle(inkOn(circle))
-                .frame(width: 40 * s, height: 40 * s)
+                Text("\(seat + 1)")
+                    .font(Theme.font(18 * s, .black))
+                    .foregroundStyle(inkOn(circle))
+                    .frame(width: 40 * s, height: 40 * s)
+                    .background(circle, in: Circle())
             }
             VStack(alignment: .leading, spacing: 1 * s) {
                 (me ? Text("\(name) (kamu)") : Text(verbatim: name)).font(Theme.font(15 * s, .heavy))

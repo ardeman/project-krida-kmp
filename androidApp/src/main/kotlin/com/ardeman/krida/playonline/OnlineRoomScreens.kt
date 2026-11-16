@@ -115,6 +115,10 @@ internal fun fourSeatGame(game: String) = game == UlarTanggaGame.id || game == L
 
 internal fun werewolfGame(game: String) = game == WerewolfGame.id
 
+/** Fewest humans allowed to start without filling empty seats with computers. */
+internal fun minHumansOnly(game: String) =
+    if (werewolfGame(game)) WerewolfSettings.MIN_SEATS else 2
+
 @Composable
 private fun RoomHeading(id: Int) = Text(stringResource(id), style = Theme.font(20, FontWeight.Black, Theme.ink))
 

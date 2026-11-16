@@ -181,11 +181,14 @@ private fun MatchSearch(
                 (2..4).map { it to "$it" }, soloSeats, stringResource(R.string.play_players), { soloSeats = it }, fill = true,
             )
             if (humans >= 2) {
-                // A live poll: every player sees how the group is voting before and after choosing.
+                // Humans-only only when the found count meets the game minimum (Werewolf is 5+).
+                val humansOnlyOk = humans >= minHumansOnly(game)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        PrimaryButton(stringResource(R.string.match_play_humans, humans), { client.acceptHumans(revision) }, Modifier.fillMaxWidth(), enabled = !acceptedHumans)
-                        VoteTally(agreedHumans, humans, acceptedHumans)
+                    if (humansOnlyOk) {
+                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            PrimaryButton(stringResource(R.string.match_play_humans, humans), { client.acceptHumans(revision) }, Modifier.fillMaxWidth(), enabled = !acceptedHumans)
+                            VoteTally(agreedHumans, humans, acceptedHumans)
+                        }
                     }
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         PrimaryButton(stringResource(R.string.match_play_bots), { client.acceptBots(revision) }, Modifier.fillMaxWidth(), enabled = !accepted)

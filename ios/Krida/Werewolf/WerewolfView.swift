@@ -338,15 +338,27 @@ private struct WerewolfBoardView: View {
         let sheriff = state.sheriff?.intValue == seat
         let voted = seatHasVoted(seat)
         let bot = table.botSeats.contains(seat)
-        let avatar = bot ? nil : table.players.avatar(of: seat)
+        let avatar = table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 12 * s)
         let number = "\(seat + 1)"
         return VStack(spacing: 4 * s) {
             ZStack(alignment: .topTrailing) {
-                if let avatar {
-                    ZStack(alignment: .bottomTrailing) {
+                ZStack(alignment: .bottomTrailing) {
+                    if bot {
+                        BotFace(avatar: avatar, size: 32)
+                            .opacity(alive ? 1 : 0.35)
+                    } else if let avatar {
                         AvatarBadge(avatar: avatar, size: 32)
                             .opacity(alive ? 1 : 0.35)
+                    } else {
+                        Text(number)
+                            .font(Theme.font(16 * s, .black))
+                            .foregroundStyle(Color(hex: 0xFFF6E8).opacity(alive ? 1 : 0.5))
+                            .frame(width: 32 * s, height: 32 * s)
+                            .background(seatTint(seat).opacity(alive ? 1 : 0.45), in: Circle())
+                            .overlay(Circle().stroke(boardLine, lineWidth: 1))
+                    }
+                    if bot || avatar != nil {
                         Text(number)
                             .font(Theme.font(9 * s, .black))
                             .foregroundStyle(Color.white)
@@ -354,14 +366,6 @@ private struct WerewolfBoardView: View {
                             .background(seatTint(seat), in: Capsule())
                             .offset(x: 2 * s, y: 2 * s)
                     }
-                } else {
-                    // Big seat number — readable at a glance among many computers.
-                    Text(number)
-                        .font(Theme.font(16 * s, .black))
-                        .foregroundStyle(Color(hex: 0xFFF6E8).opacity(alive ? 1 : 0.5))
-                        .frame(width: 32 * s, height: 32 * s)
-                        .background(seatTint(seat).opacity(alive ? 1 : 0.45), in: Circle())
-                        .overlay(Circle().stroke(boardLine, lineWidth: 1))
                 }
                 if sheriff {
                     Image(systemName: "star.fill")
@@ -374,6 +378,13 @@ private struct WerewolfBoardView: View {
                 .font(Theme.font(10 * s, .bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.65)
+            if seat == table.mySeat, !model.myRole.isEmpty, !model.finished {
+                Text(roleName(model.myRole))
+                    .font(Theme.font(9 * s, .bold))
+                    .foregroundStyle(Theme.accent)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
             if voted {
                 Text(String(localized: "Voted", bundle: .app))
                     .font(Theme.font(9 * s, .semibold))
@@ -390,6 +401,10 @@ private struct WerewolfBoardView: View {
         .background((voted ? boardChip : boardSurface).opacity(alive ? 1 : 0.55), in: shape)
         .overlay(shape.stroke(voted ? Theme.accent : boardLine, lineWidth: voted ? 2 : 1))
         .accessibilityLabel("\(number), \(seatName(seat))")
+        .onTapGesture {
+            guard seat == table.mySeat, !model.myRole.isEmpty else { return }
+            model.showRole = true
+        }
     }
 
     private func seatHasVoted(_ seat: Int) -> Bool {
@@ -403,10 +418,28 @@ private struct WerewolfBoardView: View {
     }
 
     private var centerPanel: some View {
-        VStack(spacing: 12 * s) {
+        let roleTint = night ? Color(hex: 0xFFF0D0) : Color(hex: 0x7A4A1E)
+        return VStack(spacing: 12 * s) {
             Text(phaseHeadline).font(Theme.font(22 * s, .black)).multilineTextAlignment(.center)
             if let body = phaseBody {
                 Text(body).font(Theme.font(14 * s, .semibold)).foregroundStyle(boardMuted).multilineTextAlignment(.center)
+            }
+            if !model.myRole.isEmpty, !model.finished {
+                Button {
+                    model.showRole = true
+                } label: {
+                    VStack(spacing: 4 * s) {
+                        Text(String(localized: "Your role: \(roleName(model.myRole))", bundle: .app))
+                            .font(Theme.font(14 * s, .bold))
+                            .foregroundStyle(roleTint)
+                        Text(roleBlurb(model.myRole))
+                            .font(Theme.font(12 * s, .bold))
+                            .foregroundStyle(boardMuted)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint(String(localized: "Tap to see your role again", bundle: .app))
             }
             dawnBanner
             actionArea
@@ -558,11 +591,28 @@ private struct WerewolfBoardView: View {
             return allowSelf || seat != model.me
         }
         // Full-width adaptive grid so Claims / Election / Night all pack 4–5 when they fit.
-        return SeatChipGrid(seats: living, ink: boardInk, chip: boardChip, line: boardLine, s: s) { seat in
+        return SeatChipGrid(table: table, seats: living, ink: boardInk, chip: boardChip, line: boardLine, s: s) { seat in
             onChoose(seat)
         } label: { seat in
-            seatName(seat)
+            seatChipLabel(seat)
         }
+    }
+
+    /// Tight pick chips: bots are face + seat number (full “Computer N” truncates).
+    private func seatChipLabel(_ seat: Int) -> String {
+        if seat == table.mySeat { return seatName(seat) }
+        if table.botSeats.contains(seat) { return "\(seat + 1)" }
+        return "\(seat + 1) · \(seatName(seat))"
+    }
+
+    /// Claim feed labels always include the seat number (bots: “7 · Computer”).
+    private func shortSeatName(_ seat: Int) -> String {
+        if seat == table.mySeat { return seatName(seat) }
+        let n = seat + 1
+        if table.botSeats.contains(seat) {
+            return "\(n) · \(String(localized: "Computer", bundle: .app))"
+        }
+        return "\(n) · \(seatName(seat))"
     }
 
     private var rightColumn: some View {
@@ -575,21 +625,7 @@ private struct WerewolfBoardView: View {
                 EmoteHud(canEmote: true, emotes: table.emotes, playerName: seatName, onSend: table.sendEmote, s: s)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            if !table.claims.isEmpty {
-                VStack(alignment: .trailing, spacing: 4 * s) {
-                    ForEach(table.claims.suffix(4)) { event in
-                        let speaker = seatName(event.seat)
-                        let target = event.target.map(seatName)
-                        Text("\(speaker): \(claimLine(event.claimId, target: target))")
-                            .font(Theme.font(11 * s, .bold))
-                            .foregroundStyle(boardInk)
-                            .padding(.horizontal, 8 * s)
-                            .padding(.vertical, 6 * s)
-                            .background(boardSurface, in: RoundedRectangle(cornerRadius: 10 * s))
-                    }
-                }
-            }
-            Spacer(minLength: 0)
+            claimFeed
             TurnTimer(
                 seconds: model.phaseSeconds,
                 total: model.phaseTotal(),
@@ -601,6 +637,55 @@ private struct WerewolfBoardView: View {
             .clearPunchHole(hole, .bottomTrailing, already: 24 * s)
         }
         .frame(width: 136 * s)
+    }
+
+    @ViewBuilder
+    private var claimFeed: some View {
+        if table.claims.isEmpty {
+            Spacer(minLength: 0)
+        } else {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .trailing, spacing: 4 * s) {
+                        ForEach(table.claims) { event in
+                            let speaker = shortSeatName(event.seat)
+                            let target = event.target.map(shortSeatName)
+                            let bot = table.botSeats.contains(event.seat)
+                            let avatar = table.players.avatar(of: event.seat)
+                            HStack(alignment: .top, spacing: 4 * s) {
+                                if bot {
+                                    BotFace(avatar: avatar, size: 16)
+                                } else if let avatar {
+                                    AvatarBadge(avatar: avatar, size: 16)
+                                }
+                                Text("\(speaker): \(claimLine(event.claimId, target: target))")
+                                    .font(Theme.font(11 * s, .bold))
+                                    .foregroundStyle(boardInk)
+                                    .multilineTextAlignment(.leading)
+                            }
+                            .padding(.horizontal, 8 * s)
+                            .padding(.vertical, 6 * s)
+                            .background(boardSurface, in: RoundedRectangle(cornerRadius: 10 * s))
+                            .id(event.id)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .onAppear {
+                    if let id = table.claims.last?.id {
+                        proxy.scrollTo(id, anchor: .bottom)
+                    }
+                }
+                .onChange(of: table.claims.last?.n) { _, _ in
+                    if let id = table.claims.last?.id {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            proxy.scrollTo(id, anchor: .bottom)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -859,17 +944,24 @@ private struct ClaimChipsView: View {
             guard table.latest.alive.indices.contains(seat), table.latest.alive[seat].boolValue else { return false }
             return seat != me
         }
-        return SeatChipGrid(seats: living, ink: ink, chip: chip, line: line, s: s) { seat in
+        return SeatChipGrid(table: table, seats: living, ink: ink, chip: chip, line: line, s: s) { seat in
             table.sendClaim(claimId, target: seat)
             pending = nil
         } label: { seat in
-            table.name(seat)
+            if seat == me {
+                String(localized: "You", bundle: .app)
+            } else if table.botSeats.contains(seat) {
+                "\(seat + 1)"
+            } else {
+                "\(seat + 1) · \(table.name(seat))"
+            }
         }
     }
 }
 
-/// Name chips that fill the row width and pack as many columns as fit (Claims “Who?”, votes, night).
+/// Face + short label chips that pack across Claims “Who?”, votes, and night.
 private struct SeatChipGrid: View {
+    let table: WerewolfTable
     let seats: [Int]
     let ink: Color
     let chip: Color
@@ -880,27 +972,40 @@ private struct SeatChipGrid: View {
 
     var body: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 72 * s), spacing: 6 * s)],
+            columns: [GridItem(.adaptive(minimum: 56 * s), spacing: 6 * s)],
             spacing: 6 * s
         ) {
             ForEach(seats, id: \.self) { seat in
                 Button {
                     onChoose(seat)
                 } label: {
-                    Text(label(seat))
-                        .font(Theme.font(12 * s, .bold))
-                        .foregroundStyle(ink)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 8 * s)
-                        .padding(.vertical, 8 * s)
-                        .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
-                        .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1.5))
+                    HStack(spacing: 4 * s) {
+                        chipFace(seat)
+                        Text(label(seat))
+                            .font(Theme.font(12 * s, .bold))
+                            .foregroundStyle(ink)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 8 * s)
+                    .padding(.vertical, 6 * s)
+                    .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
+                    .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1.5))
                 }
                 .buttonStyle(.plain)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func chipFace(_ seat: Int) -> some View {
+        let avatar = table.players.avatar(of: seat)
+        if table.botSeats.contains(seat) {
+            BotFace(avatar: avatar, size: 18)
+        } else if let avatar {
+            AvatarBadge(avatar: avatar, size: 18)
+        }
     }
 }

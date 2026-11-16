@@ -115,7 +115,9 @@ struct ContentView: View {
                             game: roomGame(quickMatchGame),
                             online: true, code: code, onOnlineReady: onReady, standardRules: true
                         )
-                        host.configureQuickMatch(humans: humans, bots: bots, botName: String(localized: "Computer", bundle: .app))
+                        host.configureQuickMatch(
+                            humans: humans, bots: bots,
+                            botName: String(localized: "Computer", bundle: .app))
                         return host
                     },
                     onHost: { matchedRoom in
@@ -130,8 +132,16 @@ struct ContentView: View {
                         if quickMatchGame == UlarTanggaGame.shared.id || quickMatchGame == LudoGame.shared.id {
                             let you = String(localized: "You", bundle: .app)
                             let computer = String(localized: "Computer", bundle: .app)
-                            let players = (0..<count).map { seat in
-                                LocalPlayer(name: seat == 0 ? you : computer, computer: seat != 0, color: seat)
+                            let players = (0..<count).map { seat -> LocalPlayer in
+                                let name: String
+                                if seat == 0 {
+                                    name = you
+                                } else if count <= 2 {
+                                    name = computer
+                                } else {
+                                    name = String(localized: "Computer \(seat + 1)", bundle: .app)
+                                }
+                                return LocalPlayer(name: name, computer: seat != 0, color: seat)
                             }
                             if quickMatchGame == LudoGame.shared.id {
                                 ludoTable = LudoHostTable.local(players: players)
@@ -142,12 +152,19 @@ struct ContentView: View {
                             startPerangKapal(computer: true)
                         } else if quickMatchGame == GapleGame.shared.id {
                             let computer = String(localized: "Computer", bundle: .app)
-                            gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: count - 1) { _ in computer }
+                            gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: count - 1) { n in
+                                count <= 2
+                                    ? computer
+                                    : String(localized: "Computer \(n + 1)", bundle: .app)
+                            }
                         } else if quickMatchGame == WerewolfGame.shared.id {
                             let you = String(localized: "You", bundle: .app)
                             let computer = String(localized: "Computer", bundle: .app)
                             werewolfTable = WerewolfHostTable.vsComputer(you: you, players: count) { n in
-                                n == 1 ? computer : String(localized: "Computer \(n)", bundle: .app)
+                                // n is seat index 1..; label matches the seat chip (Computer 2 for seat 2).
+                                count <= 2
+                                    ? computer
+                                    : String(localized: "Computer \(n + 1)", bundle: .app)
                             }
                         } else {
                             startVsComputer(.normal)

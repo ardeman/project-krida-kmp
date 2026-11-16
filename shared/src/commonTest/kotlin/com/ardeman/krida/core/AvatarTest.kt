@@ -51,6 +51,17 @@ class AvatarTest {
     }
 
     @Test
+    fun botMixVariesBySeatAndKeepsDieShape() {
+        val a = Avatar.botMix(0)
+        val b = Avatar.botMix(1)
+        assertEquals(Avatar.Shape.DIE, a.shapeKind)
+        assertEquals(Avatar.Shape.DIE, b.shapeKind)
+        assertNotEquals(a.background, a.symbol)
+        assertNotEquals(a, b)
+        assertEquals(a, Avatar.botMix(0))
+    }
+
+    @Test
     fun resolve() {
         assertIs<Avatar.Resolved.Drawn>(Avatar.resolve("2-12-3"))
         assertIs<Avatar.Resolved.Google>(

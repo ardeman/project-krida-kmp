@@ -152,6 +152,9 @@ in the same commit as the code.
   drawn in code (any of 12 shapes with independent background and symbol colours) or the
   Google profile picture; no photo uploads. Plan: step 10d in [online.md](online.md).
   Approved [mockup](mockups/profile.md).
+- **Computer seats** (2026-11-16): every game auto-names computers `Computer N` (localized)
+  from their seat when more than one is present, assigns `Avatar.botMix(seat)` on the wire,
+  and shows a desktop/computer icon on that generated background (not a human shape).
 - **Notification permission** (iPhone, 2026-11-12): asked right after sign-in, never at
   launch. The app shows its own card first (what the notifications are for, Not now /
   Allow); the iOS question comes only after Allow, so a Not now does not use it up.
