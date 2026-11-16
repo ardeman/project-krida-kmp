@@ -123,6 +123,7 @@ import com.ardeman.krida.gaple.GaplePreview
 import com.ardeman.krida.gaple.GapleScreen
 import com.ardeman.krida.gaple.GapleSettings
 import com.ardeman.krida.gaple.GapleTable
+import com.ardeman.krida.werewolf.WerewolfHostTable
 import com.ardeman.krida.werewolf.WerewolfPreview
 import com.ardeman.krida.werewolf.WerewolfScreen
 import com.ardeman.krida.werewolf.WerewolfSettings
@@ -350,7 +351,7 @@ class MainActivity : ComponentActivity() {
                                 })
                                 PerangKapalGame.id -> perangKapalTable = PerangKapalHostTable.vsComputer(you, computer)
                                 GapleGame.id -> gapleTable = GapleHostTable.vsComputer(you, count - 1) { computer }
-                                WerewolfGame.id -> playingQuickMatch = false
+                                WerewolfGame.id -> werewolfTable = WerewolfHostTable.vsComputer(you, count) { computer }
                                 else -> passAndPlay = HostTable.vsComputer(you, computer, CongklakBot.Level.NORMAL, getString(R.string.bot_normal))
                             }
                             playingQuickMatch = false
@@ -683,9 +684,6 @@ class MainActivity : ComponentActivity() {
         val nearby = place != Place.PHONE
         val online = nearby && place == Place.ONLINE
         val lan = nearby && !online && nearbyLink == NearbyLink.WIFI
-        LaunchedEffect(werewolf) {
-            if (werewolf && place == Place.PHONE) place = Place.NEARBY
-        }
         LaunchedEffect(werewolf, nearby, online) {
             if (werewolf && nearby && !online) nearbyLink = NearbyLink.WIFI
         }
@@ -726,13 +724,12 @@ class MainActivity : ComponentActivity() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             SettingRow(stringResource(R.string.play_where)) {
-                val places = if (werewolf) Place.entries.filter { it != Place.PHONE } else Place.entries
                 Segmented(
-                    options = places.map { it to stringResource(it.label) },
+                    options = Place.entries.map { it to stringResource(it.label) },
                     current = place,
                     label = stringResource(R.string.play_where),
                     onChange = { place = it },
-                    icons = places.map { it.icon },
+                    icons = Place.entries.map { it.icon },
                     fill = true,
                 )
             }
@@ -810,7 +807,7 @@ class MainActivity : ComponentActivity() {
             // The action row: what this choice means (or the computer's level), then the
             // buttons, right under the choice that changes them. "Gabung pakai kode" (only for
             // "Teman dekat") turns the row into the code field.
-            SettingRow(if (werewolf && !nearby) stringResource(R.string.play_level) else if (!multi && !gaple && !werewolf && !nearby && computers > 0) stringResource(R.string.play_level) else "") {
+            SettingRow(if (!nearby && !werewolf && !multi && !gaple && computers > 0) stringResource(R.string.play_level) else "") {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.fillMaxWidth()) {
                         when {
@@ -831,6 +828,7 @@ class MainActivity : ComponentActivity() {
                                 werewolf -> R.string.werewolf_detail_nearby
                                 else -> R.string.nearby_detail
                             }))
+                            werewolf -> Detail(stringResource(R.string.werewolf_detail_computer))
                             gaple -> Detail(stringResource(R.string.gaple_detail_computer))
                             kapal -> Detail(stringResource(if (computers > 0) R.string.perang_kapal_detail_computer else R.string.mode_pass_detail))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
@@ -896,6 +894,9 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                         if (werewolf || lan) startHost() else withBlePermissions { startHost() }
+                                    }
+                                    werewolf -> werewolfTable = WerewolfHostTable.vsComputer(you, WerewolfSettings.targetSeats) { n ->
+                                        if (n == 1) computer else getString(R.string.ular_computer_n, n)
                                     }
                                     gaple -> gapleTable = GapleHostTable.vsComputer(you, computers) { n ->
                                         if (computers == 1) computer else computerN[n - 1]

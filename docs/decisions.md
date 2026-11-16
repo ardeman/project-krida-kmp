@@ -298,9 +298,10 @@ in the same commit as the code.
 
 - Sixth game (2026-11-16); game id `werewolf`. Mockup:
   [mockups/werewolf.md](mockups/werewolf.md).
-- **Seats:** 5–8 (person / computer). **No This phone, no BLE.** Nearby is **Wi‑Fi / LAN
-  only** for this game; Online unchanged. `Krida.MAX_PLAYERS` raised to 8 so this game can
-  fill; other games stay at their own `maxPlayers` (≤ 4).
+- **Seats:** 5–8 (person / computer). **No BLE.** Nearby is **Wi‑Fi / LAN only**; Online
+  unchanged. **This phone** vs computers is allowed for practice (owner, 2026-11-16).
+  `Krida.MAX_PLAYERS` raised to 8 so this game can fill; other games stay at their own
+  `maxPlayers` (≤ 4).
 - **Roles (dealt):** Serigala, Penduduk, Peramal (exact role on peek), Dokter, Pemburu,
   Penyihir (heal and poison once each). Counts by lobby size in the mockup.
 - **Kepala desa (Sheriff):** public elected badge (not a dealt card); lynch vote ×2; names a

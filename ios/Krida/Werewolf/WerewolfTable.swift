@@ -85,7 +85,7 @@ final class WerewolfHostTable: WerewolfTable {
         ticker = SecondTicker { [weak self, weak session] in
             guard let self, let session else { return }
             for s in session.expiredSeats() {
-                _ = session.replaceWithBot(seat: s.int32Value, bot: WerewolfBot(level: .normal))
+                _ = session.replaceWithBot(seat: s.int32Value, bot: WerewolfSettings.bot())
             }
             self.waiting = hostWaiting(players: session.players) { session.handOffInMs(seat: $0) }
         }
@@ -128,7 +128,7 @@ final class WerewolfHostTable: WerewolfTable {
             rules: StandardRules.shared.werewolf, transport: transport, roomCode: "LOCAL")
         _ = session.addLocalPlayer(name: you, platform: .ios)
         for i in 1..<total {
-            _ = session.addBot(name: computerName(i), platform: .ios, bot: WerewolfBot(level: .normal))
+            _ = session.addBot(name: computerName(i), platform: .ios, bot: WerewolfSettings.bot())
         }
         session.start()
         return WerewolfHostTable(session: session, mySeat: 0, transport: transport)
@@ -190,9 +190,10 @@ final class WerewolfGuestTable: WerewolfTable {
     }
 }
 
-/// Target seats for online create (5–8); nearby rooms fill in the lobby.
+/// Target seats (5–8) and computer difficulty for This phone / quick-match practice.
 enum WerewolfSettings {
     static let targetKey = "werewolf.target"
+    static let levelKey = "werewolf.level"
     static let minPlayers = 5
     static let maxPlayers = 8
 
@@ -204,4 +205,16 @@ enum WerewolfSettings {
     static func setTarget(_ seats: Int) {
         UserDefaults.standard.set(min(max(seats, minPlayers), maxPlayers), forKey: targetKey)
     }
+
+    static var botLevel: WerewolfBot.Level {
+        get {
+            let raw = UserDefaults.standard.integer(forKey: levelKey)
+            let entries = WerewolfBot.Level.entries
+            if raw >= 0 && raw < entries.count { return entries[raw] }
+            return .normal
+        }
+        set { UserDefaults.standard.set(Int(newValue.ordinal), forKey: levelKey) }
+    }
+
+    static func bot() -> WerewolfBot { WerewolfBot(level: botLevel) }
 }

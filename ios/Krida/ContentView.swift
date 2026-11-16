@@ -142,7 +142,11 @@ struct ContentView: View {
                             let computer = String(localized: "Computer", bundle: .app)
                             gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: count - 1) { _ in computer }
                         } else if quickMatchGame == WerewolfGame.shared.id {
-                            playingQuickMatch = false
+                            let you = String(localized: "You", bundle: .app)
+                            let computer = String(localized: "Computer", bundle: .app)
+                            werewolfTable = WerewolfHostTable.vsComputer(you: you, players: count) { n in
+                                n == 1 ? computer : String(localized: "Computer \(n)", bundle: .app)
+                            }
                         } else {
                             startVsComputer(.normal)
                         }
@@ -370,10 +374,7 @@ struct ContentView: View {
                 }
                 GameCard(game: $game) { menuReady = true }
                     .onChange(of: game) { _, g in
-                        if g == .werewolf {
-                            if place == .phone { place = .nearby }
-                            nearbyLink = .wifi
-                        }
+                        if g == .werewolf { nearbyLink = .wifi }
                     }
                 HStack { SoundToggles(); Spacer(minLength: 8 * s); LanguagePicker() }
             }
@@ -508,12 +509,10 @@ struct ContentView: View {
         let computerColors = Set(seats.indices.compactMap { i -> Int? in
             i < seatColors.count && seatColors[i] >= 0 && seats[i] == .computer ? seatColors[i] : nil
         })
-        let places: [(Place, LocalizedStringKey, String?)] = werewolf
-            ? [(.nearby, "Nearby", "antenna.radiowaves.left.and.right"), (.online, "Online", "globe")]
-            : [
-                (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
-                (.online, "Online", "globe"),
-            ]
+        let places: [(Place, LocalizedStringKey, String?)] = [
+            (.phone, "This phone", "person.2"), (.nearby, "Nearby", "antenna.radiowaves.left.and.right"),
+            (.online, "Online", "globe"),
+        ]
         let links: [(NearbyLink, LocalizedStringKey, String?)] = [
             (.bluetooth, "Bluetooth", nil), (.wifi, "Wi‑Fi", nil),
         ]
@@ -530,7 +529,6 @@ struct ContentView: View {
                 SettingRow(label: "Players") {
                     WerewolfSeatTargetPicker()
                 }
-                RuleHint(text: "No chat — use emotes, then vote.")
             }
             // In a nearby room everyone who joins plays, up to 4.
             if gaple && !nearby && !werewolf {
@@ -583,6 +581,8 @@ struct ContentView: View {
                         detail(gaple ? "Up to 4 phones over Bluetooth, each hand on its own phone"
                             : multi ? "Up to 4 phones over Bluetooth, no internet"
                             : kapal ? "2 phones over Bluetooth, no internet" : "Bluetooth, no internet")
+                    } else if werewolf {
+                        detail("You against computers. Roles stay hidden on this phone.")
                     } else if gaple {
                         detail("You against the computer. Hands stay hidden.")
                     } else if kapal {
@@ -693,6 +693,14 @@ struct ContentView: View {
         if place == .online {
             quickMatchGame = gameId(game)
             creatingOnlineRoom = true
+            return
+        }
+        if place == .phone && game == .werewolf {
+            let you = String(localized: "You", bundle: .app)
+            let computer = String(localized: "Computer", bundle: .app)
+            werewolfTable = WerewolfHostTable.vsComputer(you: you, players: WerewolfSettings.target) { n in
+                n == 1 ? computer : String(localized: "Computer \(n)", bundle: .app)
+            }
             return
         }
         if place == .nearby {
@@ -1027,7 +1035,12 @@ struct GameRoomOptions: View {
             // No rule options in v1; one line says how it is played.
             RuleHint(text: "Classic · one shot each turn")
         case .werewolf:
-            RuleHint(text: "No chat — use emotes, then vote.")
+            Group {
+                SettingRow(label: "Level") {
+                    WerewolfLevelPicker()
+                }
+                RuleHint(text: "No chat — use emotes, then vote.")
+            }
         case .congklak:
             Group {
                 SettingRow(label: "Shooting") {
@@ -1472,6 +1485,29 @@ private struct WerewolfSeatTargetPicker: View {
                 }
             ),
             label: "Players"
+        )
+    }
+}
+
+private struct WerewolfLevelPicker: View {
+    @State private var level = WerewolfSettings.botLevel
+    @Environment(\.uiScale) private var s
+
+    var body: some View {
+        Segmented(
+            options: [
+                (.easy, "Easy", nil),
+                (.normal, "Medium", nil),
+                (.hard, "Hard", nil),
+            ] as [(WerewolfBot.Level, LocalizedStringKey, String?)],
+            selection: Binding(
+                get: { level },
+                set: {
+                    level = $0
+                    WerewolfSettings.botLevel = $0
+                }
+            ),
+            label: "Level"
         )
     }
 }

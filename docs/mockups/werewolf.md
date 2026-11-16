@@ -9,16 +9,18 @@ role (wolves also see fellow wolves) via `PrivateStateRules`.
 
 ## Modes
 
+- **This phone:** you against computers (5–8 seats, bot difficulty). Practice / quick-match
+  “Play with computers”.
 - **Nearby:** Wi‑Fi / LAN only (Bluetooth control hidden). 5–8 seats, person / computer.
 - **Online:** same. Quick match and public rooms for 5–8.
-- **No This phone**, no BLE.
+- **No BLE.**
 
 ## Home
 
 - Add **Werewolf** to the left game switch after Gaple. Card face: deep night `#1A2332` with a
   wolf silhouette and a small moon; tagline EN/ID below.
-- Play card: **Play on** (Nearby | Online only — no This phone). Seat chips 5–8. Hint line
-  about emotes then vote. Nearby locks to Wi‑Fi.
+- Play card: **Play on** (This phone | Nearby | Online). Seat chips 5–8. Hint line about
+  emotes then vote. Nearby locks to Wi‑Fi.
 
 ## Game screen
 

@@ -475,6 +475,7 @@
     <string name="werewolf_hint">Tanpa obrolan — pakai reaksi, lalu voting.</string>
     <string name="werewolf_detail_nearby">5–8 HP lewat Wi‑Fi; peran rahasia di tiap HP</string>
     <string name="werewolf_detail_online">5–8 pemain online; peran rahasia di tiap HP</string>
+    <string name="werewolf_detail_computer">Kamu lawan komputer. Peran tetap rahasia di HP ini.</string>
     <string name="werewolf_player_lost">Seorang pemain terputus. Komputer menggantikan setelah 15 detik.</string>
     <string name="werewolf_sheriff">Kepala desa</string>
     <string name="werewolf_dead">Gugur</string>

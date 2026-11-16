@@ -7,10 +7,11 @@ file in the same commit when an item is done or a new one comes up. Last updated
 
 - **Werewolf** (sixth game): shared, Android, iOS and relay capacity (MAX_PLAYERS 8 /
   7 guests) done 2026-11-16 ([mockups/werewolf.md](mockups/werewolf.md)). LAN (Wi‑Fi) +
-  Online only, 5–8 seats, bots, Kepala desa. Builds. iOS Simulator smoke
+  Online + **This phone** vs computers (and quick-match “Play with computers”) wired
+  2026-11-16; 5–8 seats, bots, Kepala desa. Builds. iOS Simulator smoke
   (`WerewolfSmokeTests`, host + 4 computers via `-openWerewolf`) passed 2026-11-16.
-  Next: real phone checks (host + computers, then multi-phone). Pushing relay to `main`
-  drops open games — deploy deliberately.
+  Next: real phone checks (This phone / Play with computers, then multi-phone). Pushing
+  relay to `main` drops open games — deploy deliberately.
 - **Perang kapal** (fourth game): shared, Android and iOS done 2026-11-12
   ([mockups/perang-kapal.md](mockups/perang-kapal.md)); both build, nothing played on a
   device yet. Reworked the same day on the owner's notes (voxel ships, tap/drag placement,

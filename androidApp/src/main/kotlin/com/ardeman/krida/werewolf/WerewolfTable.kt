@@ -146,6 +146,25 @@ class WerewolfHostTable(
         ticker.stop()
         transport.close()
     }
+
+    companion object {
+        /** You in seat 0 against enough computers to reach [players] (5–8). */
+        fun vsComputer(
+            you: String,
+            players: Int = WerewolfSettings.targetSeats,
+            computerName: (Int) -> String,
+        ): WerewolfHostTable {
+            val total = players.coerceIn(WerewolfGame.minPlayers, WerewolfGame.maxPlayers)
+            val transport = LocalTransport()
+            val session = HostSession(WerewolfSettings.rules, transport, roomCode = "LOCAL")
+            session.addLocalPlayer(you, Platform.ANDROID)
+            for (i in 1 until total) {
+                session.addBot(computerName(i), Platform.ANDROID, WerewolfSettings.bot())
+            }
+            session.start()
+            return WerewolfHostTable(session, mySeat = 0, transport = transport)
+        }
+    }
 }
 
 class WerewolfGuestTable(

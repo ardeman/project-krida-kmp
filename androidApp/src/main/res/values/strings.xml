@@ -488,6 +488,7 @@
     <string name="werewolf_hint">No chat — use emotes, then vote.</string>
     <string name="werewolf_detail_nearby">5–8 phones over Wi‑Fi; secret roles on each phone</string>
     <string name="werewolf_detail_online">5–8 players online; secret roles on each phone</string>
+    <string name="werewolf_detail_computer">You against computers. Roles stay hidden on this phone.</string>
     <string name="werewolf_player_lost">A player disconnected. The computer takes over after 15 seconds.</string>
     <string name="werewolf_sheriff">Sheriff</string>
     <string name="werewolf_dead">Out</string>

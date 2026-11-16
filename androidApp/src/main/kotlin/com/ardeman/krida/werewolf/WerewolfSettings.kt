@@ -12,7 +12,7 @@ import com.ardeman.krida.core.session.GameRules
 
 /**
  * Werewolf lobby choices on this device: table size (5–8) and computer difficulty.
- * There is no pass-and-play or solo-on-device mode.
+ * This phone vs computers is supported; rooms stay Wi‑Fi / Online (no BLE).
  */
 object WerewolfSettings {
     private const val PREFS = "werewolf"
