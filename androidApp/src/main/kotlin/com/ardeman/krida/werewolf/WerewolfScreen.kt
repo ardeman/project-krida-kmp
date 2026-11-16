@@ -4,7 +4,7 @@ import com.ardeman.krida.account.SeatAvatar
 import com.ardeman.krida.account.avatarOf
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,11 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -83,70 +81,16 @@ fun WerewolfScreen(table: WerewolfTable, onExit: () -> Unit) {
     Board(table, onExit)
 }
 
-/** Home card preview: night sky and a black werewolf shadow against the moon. */
+/** Home card preview: baked night / moon / howling-wolf shadow (mockup `#1A2332`). */
 @Composable
 fun WerewolfPreview(modifier: Modifier = Modifier, onReady: () -> Unit = {}) {
     LaunchedEffect(Unit) { onReady() }
-    val night = Color(0xFF1A2332)
-    val moon = Color(0xFFF4E4BC)
-    Canvas(modifier.clip(RoundedCornerShape(14.dp))) {
-        val w = size.width
-        val h = size.height
-        drawRect(Brush.linearGradient(listOf(Color(0xFF0F1520), night, Color(0xFF243044))))
-        val ground = Path().apply {
-            moveTo(0f, h * 0.82f)
-            cubicTo(w * 0.4f, h * 0.92f, w * 0.7f, h * 0.76f, w, h * 0.78f)
-            lineTo(w, h)
-            lineTo(0f, h)
-            close()
-        }
-        drawPath(ground, Color(0xFF070B12))
-        listOf(
-            Triple(0.10f, 0.14f, 1.0f), Triple(0.22f, 0.28f, 0.7f),
-            Triple(0.92f, 0.18f, 0.9f), Triple(0.86f, 0.48f, 0.6f),
-        ).forEach { (sx, sy, r) ->
-            drawCircle(Color(0xFFE8EEF5).copy(alpha = 0.4f), radius = r, center = Offset(w * sx, h * sy))
-        }
-        // Large moon as backlight for the shadow.
-        val moonC = Offset(w * 0.62f, h * 0.38f)
-        val moonR = size.minDimension * 0.34f
-        drawCircle(moon.copy(alpha = 0.14f), radius = moonR * 1.25f, center = moonC)
-        drawCircle(moon.copy(alpha = 0.92f), radius = moonR, center = moonC)
-        // Bipedal werewolf shadow (howling).
-        val shadow = Path().apply {
-            moveTo(w * 0.28f, h * 0.82f)
-            lineTo(w * 0.24f, h * 0.82f)
-            cubicTo(w * 0.22f, h * 0.74f, w * 0.24f, h * 0.64f, w * 0.30f, h * 0.58f)
-            cubicTo(w * 0.32f, h * 0.50f, w * 0.34f, h * 0.40f, w * 0.42f, h * 0.36f)
-            lineTo(w * 0.40f, h * 0.18f)
-            lineTo(w * 0.46f, h * 0.30f)
-            lineTo(w * 0.48f, h * 0.14f)
-            lineTo(w * 0.54f, h * 0.28f)
-            cubicTo(w * 0.58f, h * 0.22f, w * 0.64f, h * 0.18f, w * 0.68f, h * 0.22f)
-            lineTo(w * 0.62f, h * 0.30f)
-            cubicTo(w * 0.60f, h * 0.34f, w * 0.55f, h * 0.38f, w * 0.52f, h * 0.38f)
-            cubicTo(w * 0.54f, h * 0.42f, w * 0.58f, h * 0.44f, w * 0.58f, h * 0.48f)
-            lineTo(w * 0.70f, h * 0.42f)
-            lineTo(w * 0.74f, h * 0.46f)
-            lineTo(w * 0.68f, h * 0.48f)
-            lineTo(w * 0.72f, h * 0.52f)
-            lineTo(w * 0.64f, h * 0.52f)
-            lineTo(w * 0.56f, h * 0.54f)
-            cubicTo(w * 0.54f, h * 0.60f, w * 0.52f, h * 0.66f, w * 0.48f, h * 0.70f)
-            lineTo(w * 0.52f, h * 0.82f)
-            lineTo(w * 0.46f, h * 0.82f)
-            lineTo(w * 0.44f, h * 0.74f)
-            cubicTo(w * 0.42f, h * 0.68f, w * 0.38f, h * 0.68f, w * 0.34f, h * 0.72f)
-            lineTo(w * 0.28f, h * 0.82f)
-            close()
-        }
-        drawPath(shadow, Color.Black.copy(alpha = 0.92f))
-        drawOval(
-            Color.Black.copy(alpha = 0.45f),
-            topLeft = Offset(w * 0.22f, h * 0.78f),
-            size = Size(w * 0.36f, h * 0.06f),
-        )
-    }
+    Image(
+        painter = painterResource(R.drawable.werewolf_preview),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier.clip(RoundedCornerShape(14.dp)).fillMaxSize(),
+    )
 }
 
 @Composable
@@ -180,6 +124,16 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
         while (lifetime.active && guard++ < 48) {
             if (!table.stepBot()) break
             delay(350L)
+        }
+    }
+
+    // Bots are not in actingSeats during discuss — pulse claim chips on a timer.
+    LaunchedEffect(state.phase, lifetime.active, table.isHost) {
+        if (state.phase != WerewolfPhase.DISCUSS || !table.isHost || !lifetime.active) return@LaunchedEffect
+        delay(2_000L)
+        while (lifetime.active) {
+            table.stepDiscussClaim()
+            delay(3_500L)
         }
     }
 
@@ -294,12 +248,15 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                 ClaimFeed(table, me)
                 Spacer(Modifier.weight(1f))
                 if (timerOn && phaseTotal > 0) {
+                    val night = state.phase == WerewolfPhase.NIGHT
+                    val timerInk = if (night) Color(0xFFF6EADC) else Color(0xFF2B1D14)
                     TurnTimer(
                         if (me in autoSeats && !hostDiscuss) 0 else phaseSeconds,
                         phaseTotal,
                         auto = me in autoSeats && !hostDiscuss,
                         onResume = ::resumeManual,
                         size = 52.dp,
+                        ink = timerInk,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -341,28 +298,73 @@ private fun phaseMs(phase: String) = when (phase) {
     else -> 0L
 }
 
+private fun seatTint(seat: Int): Color {
+    val colors = longArrayOf(
+        0xFF4A5D78, 0xFF6B4E3D, 0xFF3D5A45, 0xFF5A4568,
+        0xFF6B5A3D, 0xFF3D5568, 0xFF684545, 0xFF456068,
+    )
+    return Color(colors[seat % colors.size])
+}
+
 @Composable
 private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modifier: Modifier = Modifier) {
     val alive = state.alive.getOrElse(seat) { false }
     val me = seat == table.mySeat
     val sheriff = state.sheriff == seat
     val acting = seat in WerewolfGame.actingSeats(state)
+    val voting = state.phase == WerewolfPhase.VOTE || state.phase == WerewolfPhase.SHERIFF_ELECT
+    val voted = voting && alive && state.votes.getOrNull(seat) != null
     val ink = if (alive) Theme.ink else Theme.muted
     val face = when {
         !alive -> Color(0xFF2A3344)
+        voted -> Theme.chip
         acting -> Theme.chip
         else -> Theme.surface
     }
+    val number = (seat + 1).toString()
+    val tint = seatTint(seat)
     Column(
         modifier.clip(RoundedCornerShape(12.dp))
             .background(face)
-            .border(if (acting && alive) 2.dp else 1.5.dp, if (acting) Theme.accent else Theme.line, RoundedCornerShape(12.dp))
+            .border(
+                if ((acting || voted) && alive) 2.dp else 1.5.dp,
+                when {
+                    voted -> Theme.accent
+                    acting -> Theme.accent
+                    else -> Theme.line
+                },
+                RoundedCornerShape(12.dp),
+            )
             .padding(6.dp)
             .then(modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val avatar = table.players.avatarOf(seat)
-        SeatAvatar(avatar, if (alive) Color(0xFF4A5D78) else Theme.border, 26.dp)
+        Box(contentAlignment = Alignment.Center) {
+            if (avatar != null) {
+                SeatAvatar(avatar, if (alive) tint else Theme.border, 26.dp)
+                Text(
+                    number,
+                    style = Theme.font(9, FontWeight.Black, Color.White),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(tint)
+                        .padding(horizontal = 3.dp),
+                )
+            } else {
+                // Big seat number — readable at a glance among many computers.
+                Box(
+                    Modifier
+                        .size(26.dp)
+                        .clip(CircleShape)
+                        .background(if (alive) tint else Theme.border),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(number, style = Theme.font(13, FontWeight.Black, Color(0xFFFFF6E8).copy(alpha = if (alive) 1f else 0.5f)))
+                }
+            }
+        }
         Text(
             if (me) stringResource(R.string.bot_you) else table.name(seat),
             style = Theme.font(11, FontWeight.Bold, ink),
@@ -370,6 +372,9 @@ private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modi
         )
         if (sheriff && alive) {
             Text(stringResource(R.string.werewolf_sheriff), style = Theme.font(9, FontWeight.Bold, Theme.accent))
+        }
+        if (voted) {
+            Text(stringResource(R.string.werewolf_voted), style = Theme.font(9, FontWeight.Bold, Theme.accent))
         }
         if (!alive) {
             Text(stringResource(R.string.werewolf_dead), style = Theme.font(9, FontWeight.Bold, Theme.muted))
@@ -576,6 +581,14 @@ private fun voteActions(
     chip: Color,
     line: Color,
 ) {
+    val living = state.living()
+    val cast = living.count { state.votes.getOrNull(it) != null }
+    if (state.phase == WerewolfPhase.VOTE || state.phase == WerewolfPhase.SHERIFF_ELECT) {
+        Text(
+            stringResource(R.string.werewolf_vote_progress, cast, living.size),
+            style = Theme.font(12, FontWeight.Bold, muted),
+        )
+    }
     if (!myTurn) {
         Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, muted))
         return
@@ -872,16 +885,23 @@ private fun ClaimChips(
 
 @Composable
 private fun ClaimFeed(table: WerewolfTable, me: Int) {
+    if (table.claims.isEmpty()) return
     val youLabel = stringResource(R.string.bot_you)
-    val latest = table.claims.lastOrNull() ?: return
-    val speaker = if (latest.seat == me) youLabel else table.name(latest.seat)
-    val target = latest.target?.let { if (it == me) youLabel else table.name(it) }
-    Text(
-        stringResource(R.string.werewolf_claim_bubble, speaker, claimLine(latest.id, target)),
-        style = Theme.font(11, FontWeight.Bold, Theme.ink),
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .background(Theme.surface.copy(alpha = 0.92f), RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-    )
+    Column(
+        Modifier.padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.End,
+    ) {
+        table.claims.takeLast(4).forEach { event ->
+            val speaker = if (event.seat == me) youLabel else table.name(event.seat)
+            val target = event.target?.let { if (it == me) youLabel else table.name(it) }
+            Text(
+                stringResource(R.string.werewolf_claim_bubble, speaker, claimLine(event.id, target)),
+                style = Theme.font(11, FontWeight.Bold, Theme.ink),
+                modifier = Modifier
+                    .background(Theme.surface.copy(alpha = 0.92f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+            )
+        }
+    }
 }

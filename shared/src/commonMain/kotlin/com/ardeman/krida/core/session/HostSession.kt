@@ -259,6 +259,17 @@ class HostSession<S, M>(
         return fanoutClaim(seat, id, target)
     }
 
+    /**
+     * Sends a Werewolf claim from a bot seat. Returns false when the seat is not a bot,
+     * the id/target is invalid, or cooldown applies. Host apps drive this during discuss
+     * (bots are not in [actingSeats] then, so [stepBot] alone never posts claims).
+     */
+    fun sendBotClaim(seat: Int, id: String, target: Int? = null): Boolean {
+        val s = seats.getOrNull(seat) ?: return false
+        if (s.bot == null) return false
+        return fanoutClaim(seat, id, target)
+    }
+
     // ---- TransportListener -------------------------------------------------
 
     override fun onPeerConnected(peer: String) {

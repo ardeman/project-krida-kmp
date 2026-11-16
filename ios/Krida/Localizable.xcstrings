@@ -6325,6 +6325,38 @@
         }
       }
     },
+    "Voted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voted"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah pilih"
+          }
+        }
+      }
+    },
+    "Voted %lld / %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voted %lld / %lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sudah pilih %lld / %lld"
+          }
+        }
+      }
+    },
     "Town wins": {
       "localizations": {
         "en": {

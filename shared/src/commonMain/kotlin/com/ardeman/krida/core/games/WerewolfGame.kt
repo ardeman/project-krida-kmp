@@ -1,5 +1,6 @@
 package com.ardeman.krida.core.games
 
+import com.ardeman.krida.core.protocol.WerewolfClaims
 import com.ardeman.krida.core.session.Bot
 import com.ardeman.krida.core.session.GameRules
 import com.ardeman.krida.core.session.PrivateStateRules
@@ -602,5 +603,42 @@ class WerewolfBot(val level: Level = Level.NORMAL) : Bot<WerewolfState, Werewolf
         // Town: prefer last night's wolf victim's... they are dead. Prefer someone not self.
         val suspect = state.lastDeaths.firstOrNull()?.let { /* no-op */ null }
         return WerewolfMove(target = living.random(random))
+    }
+
+    /**
+     * Discussion claim for [seat], or null to stay quiet this beat. Host apps call this on a
+     * timer during [WerewolfPhase.DISCUSS] (bots are not in [actingSeats] then).
+     */
+    fun chooseClaim(state: WerewolfState, seat: Int, random: Random): Pair<String, Int?>? {
+        if (state.phase != WerewolfPhase.DISCUSS) return null
+        if (!state.alive.getOrElse(seat) { false }) return null
+        // Pace the feed: about half the ticks a bot stays quiet.
+        if (random.nextFloat() > 0.55f) return null
+        val others = state.living().filter { it != seat }
+        if (others.isEmpty()) return null
+        val role = state.roles.getOrElse(seat) { WerewolfRole.VILLAGER }
+        val id = when (role) {
+            WerewolfRole.WEREWOLF ->
+                listOf("suspect", "trust", "saw_wolf", "i_villager", "pass").random(random)
+            WerewolfRole.SEER ->
+                listOf("suspect", "saw_wolf", "i_seer", "trust", "pass").random(random)
+            WerewolfRole.DOCTOR ->
+                listOf("trust", "i_doctor", "suspect", "i_villager", "pass").random(random)
+            WerewolfRole.HUNTER ->
+                listOf("suspect", "i_hunter", "trust", "pass").random(random)
+            else ->
+                listOf("suspect", "trust", "i_villager", "pass").random(random)
+        }
+        if (!WerewolfClaims.needsTarget(id)) return id to null
+        val target = when {
+            role == WerewolfRole.WEREWOLF && (id == "suspect" || id == "saw_wolf") ->
+                others.filter { state.roles[it] != WerewolfRole.WEREWOLF }
+                    .randomOrNull(random) ?: others.random(random)
+            role == WerewolfRole.WEREWOLF && id == "trust" ->
+                state.livingWolves().filter { it != seat }.randomOrNull(random)
+                    ?: others.random(random)
+            else -> others.random(random)
+        }
+        return id to target
     }
 }

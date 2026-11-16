@@ -498,6 +498,8 @@
     <string name="werewolf_player_lost">A player disconnected. The computer takes over after 15 seconds.</string>
     <string name="werewolf_sheriff">Sheriff</string>
     <string name="werewolf_dead">Out</string>
+    <string name="werewolf_voted">Voted</string>
+    <string name="werewolf_vote_progress">Voted %1$d / %2$d</string>
     <string name="werewolf_day_n">Day %1$d</string>
     <string name="werewolf_your_role">Your role: %1$s</string>
     <string name="werewolf_role_blurb_werewolf">Each night, pick one living player to eliminate. Wolves see each other.</string>

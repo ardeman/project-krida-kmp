@@ -65,7 +65,9 @@ class WerewolfTable: ObservableObject {
     }
 
     func act(seat: Int, move: WerewolfMove) -> Bool { false }
-    func stepBot() {}
+    @discardableResult func stepBot() -> Bool { false }
+    /// One bot discussion claim when phase is DISCUSS; false when none spoke. Host only.
+    @discardableResult func stepDiscussClaim() -> Bool { false }
     func leave() { active = false; onUpdate = nil; emotes = []; claims = [] }
     func sendEmote(_ id: String) {}
     func sendClaim(_ id: String, target: Int? = nil) {}
@@ -139,7 +141,30 @@ final class WerewolfHostTable: WerewolfTable {
         active && session.submitLocal(seat: Int32(seat), move: move) == nil
     }
 
-    override func stepBot() { if active { _ = session.stepBot() } }
+    @discardableResult
+    override func stepBot() -> Bool {
+        guard active else { return false }
+        return session.stepBot()
+    }
+
+    @discardableResult
+    override func stepDiscussClaim() -> Bool {
+        guard active, let state = session.state, state.phase == WerewolfPhase.shared.DISCUSS else {
+            return false
+        }
+        let bots = players.filter { $0.bot && state.alive.indices.contains(Int($0.seat))
+            && state.alive[Int($0.seat)].boolValue }.shuffled()
+        for p in bots {
+            let seat = Int(p.seat)
+            guard let pick = WerewolfBot().chooseClaim(
+                state: state, seat: Int32(seat), random: KotlinRandom.companion
+            ) else { continue }
+            guard let id = pick.first as? String else { continue }
+            let target = pick.second as? KotlinInt
+            if session.sendBotClaim(seat: Int32(seat), id: id, target: target) { return true }
+        }
+        return false
+    }
 
     override func sendEmote(_ id: String) {
         guard active else { return }

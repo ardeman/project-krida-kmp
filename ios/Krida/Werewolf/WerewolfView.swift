@@ -73,8 +73,12 @@ final class WerewolfGameModel: ObservableObject {
     private func scheduleBot() {
         lifetime.launch("bot") { [self] in
             while loading { try await Task.sleep(for: .milliseconds(100)) }
-            try await Task.sleep(for: .seconds(Self.botPause))
-            table.stepBot()
+            var guardCount = 0
+            while lifetime.active && guardCount < 48 {
+                try await Task.sleep(for: .seconds(Self.botPause))
+                guardCount += 1
+                if !table.stepBot() { break }
+            }
         }
     }
 
@@ -85,11 +89,22 @@ final class WerewolfGameModel: ObservableObject {
         guard key != phaseKey else { return }
         phaseKey = key
         lifetime.cancel("phase")
+        lifetime.cancel("discuss-bots")
         phaseSeconds = phaseTotal()
         witchHealChoice = nil
         witchPoisonTarget = nil
         selectedTarget = nil
         auto = false
+
+        if table.isHost, state.phase == WerewolfPhase.shared.DISCUSS {
+            lifetime.launch("discuss-bots") { [self] in
+                try await Task.sleep(for: .seconds(2))
+                while lifetime.active, phaseKey == key {
+                    _ = table.stepDiscussClaim()
+                    try await Task.sleep(for: .seconds(3.5))
+                }
+            }
+        }
 
         lifetime.launch("phase") { [self] in
             let total = phaseTotal()
@@ -309,25 +324,44 @@ private struct WerewolfBoardView: View {
         .frame(width: 148 * s, alignment: .leading)
     }
 
+    /// Distinct seat tints so bots aren’t a wall of identical computer icons.
+    private func seatTint(_ seat: Int) -> Color {
+        let colors: [UInt32] = [
+            0x4A5D78, 0x6B4E3D, 0x3D5A45, 0x5A4568,
+            0x6B5A3D, 0x3D5568, 0x684545, 0x456068,
+        ]
+        return Color(hex: colors[seat % colors.count])
+    }
+
     private func seatTile(_ seat: Int) -> some View {
         let alive = state.alive.indices.contains(seat) && state.alive[seat].boolValue
         let sheriff = state.sheriff?.intValue == seat
+        let voted = seatHasVoted(seat)
         let bot = table.botSeats.contains(seat)
         let avatar = bot ? nil : table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 12 * s)
+        let number = "\(seat + 1)"
         return VStack(spacing: 4 * s) {
             ZStack(alignment: .topTrailing) {
                 if let avatar {
-                    AvatarBadge(avatar: avatar, size: 32)
-                        .opacity(alive ? 1 : 0.35)
-                } else if bot {
-                    Image(systemName: "desktopcomputer")
-                        .font(.system(size: 14 * s, weight: .semibold))
-                        .foregroundStyle(boardInk)
-                        .frame(width: 32 * s, height: 32 * s)
-                        .background(boardChip, in: Circle())
+                    ZStack(alignment: .bottomTrailing) {
+                        AvatarBadge(avatar: avatar, size: 32)
+                            .opacity(alive ? 1 : 0.35)
+                        Text(number)
+                            .font(Theme.font(9 * s, .black))
+                            .foregroundStyle(Color.white)
+                            .padding(.horizontal, 4 * s)
+                            .background(seatTint(seat), in: Capsule())
+                            .offset(x: 2 * s, y: 2 * s)
+                    }
                 } else {
-                    Circle().fill(boardChip).frame(width: 32 * s, height: 32 * s)
+                    // Big seat number — readable at a glance among many computers.
+                    Text(number)
+                        .font(Theme.font(16 * s, .black))
+                        .foregroundStyle(Color(hex: 0xFFF6E8).opacity(alive ? 1 : 0.5))
+                        .frame(width: 32 * s, height: 32 * s)
+                        .background(seatTint(seat).opacity(alive ? 1 : 0.45), in: Circle())
+                        .overlay(Circle().stroke(boardLine, lineWidth: 1))
                 }
                 if sheriff {
                     Image(systemName: "star.fill")
@@ -336,7 +370,15 @@ private struct WerewolfBoardView: View {
                         .offset(x: 4 * s, y: -4 * s)
                 }
             }
-            Text(seatName(seat)).font(Theme.font(10 * s, .bold)).lineLimit(1)
+            Text(seatName(seat))
+                .font(Theme.font(10 * s, .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+            if voted {
+                Text(String(localized: "Voted", bundle: .app))
+                    .font(Theme.font(9 * s, .semibold))
+                    .foregroundStyle(Theme.accent)
+            }
             if !alive {
                 Text(String(localized: "Eliminated", bundle: .app))
                     .font(Theme.font(9 * s, .semibold))
@@ -345,8 +387,19 @@ private struct WerewolfBoardView: View {
         }
         .padding(6 * s)
         .frame(maxWidth: .infinity)
-        .background(boardSurface.opacity(alive ? 1 : 0.55), in: shape)
-        .overlay(shape.stroke(boardLine, lineWidth: 1))
+        .background((voted ? boardChip : boardSurface).opacity(alive ? 1 : 0.55), in: shape)
+        .overlay(shape.stroke(voted ? Theme.accent : boardLine, lineWidth: voted ? 2 : 1))
+        .accessibilityLabel("\(number), \(seatName(seat))")
+    }
+
+    private func seatHasVoted(_ seat: Int) -> Bool {
+        let voting = state.phase == WerewolfPhase.shared.VOTE
+            || state.phase == WerewolfPhase.shared.SHERIFF_ELECT
+        guard voting,
+              state.alive.indices.contains(seat), state.alive[seat].boolValue,
+              state.votes.indices.contains(seat)
+        else { return false }
+        return (state.votes[seat] as? KotlinInt) != nil
     }
 
     private var centerPanel: some View {
@@ -394,6 +447,31 @@ private struct WerewolfBoardView: View {
                 .multilineTextAlignment(.center)
             if table.canClaim, model.alive {
                 ClaimChipsView(table: table, me: model.me, ink: boardInk, muted: boardMuted, chip: boardChip, line: boardLine, s: s)
+            }
+        } else if state.phase == WerewolfPhase.shared.VOTE || state.phase == WerewolfPhase.shared.SHERIFF_ELECT {
+            let living = (0..<Int(state.players)).filter {
+                state.alive.indices.contains($0) && state.alive[$0].boolValue
+            }
+            let cast = living.filter { seatHasVoted($0) }.count
+            Text(String(localized: "Voted \(cast) / \(living.count)", bundle: .app))
+                .font(Theme.font(12 * s, .bold))
+                .foregroundStyle(boardMuted)
+            if model.acting {
+                Text(actionPrompt).font(Theme.font(14 * s, .bold))
+                Text(String(localized: "Tap a name below to choose.", bundle: .app))
+                    .font(Theme.font(12 * s, .semibold))
+                    .foregroundStyle(boardMuted)
+                targetGrid(allowSelf: false) { seat in
+                    model.pickTarget(seat)
+                    model.confirmTarget()
+                }
+                if canAbstain {
+                    boardSecondary(String(localized: "Abstain", bundle: .app)) { model.abstain() }
+                }
+            } else {
+                Text(String(localized: "Waiting for others…", bundle: .app))
+                    .font(Theme.font(14 * s, .semibold))
+                    .foregroundStyle(boardMuted)
             }
         } else if !model.acting {
             Text(String(localized: "Waiting for others…", bundle: .app))
@@ -497,15 +575,19 @@ private struct WerewolfBoardView: View {
                 EmoteHud(canEmote: true, emotes: table.emotes, playerName: seatName, onSend: table.sendEmote, s: s)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
-            if let latest = table.claims.last {
-                let speaker = seatName(latest.seat)
-                let target = latest.target.map(seatName)
-                Text("\(speaker): \(claimLine(latest.claimId, target: target))")
-                    .font(Theme.font(11 * s, .bold))
-                    .foregroundStyle(boardInk)
-                    .padding(.horizontal, 8 * s)
-                    .padding(.vertical, 6 * s)
-                    .background(boardSurface, in: RoundedRectangle(cornerRadius: 10 * s))
+            if !table.claims.isEmpty {
+                VStack(alignment: .trailing, spacing: 4 * s) {
+                    ForEach(table.claims.suffix(4)) { event in
+                        let speaker = seatName(event.seat)
+                        let target = event.target.map(seatName)
+                        Text("\(speaker): \(claimLine(event.claimId, target: target))")
+                            .font(Theme.font(11 * s, .bold))
+                            .foregroundStyle(boardInk)
+                            .padding(.horizontal, 8 * s)
+                            .padding(.vertical, 6 * s)
+                            .background(boardSurface, in: RoundedRectangle(cornerRadius: 10 * s))
+                    }
+                }
             }
             Spacer(minLength: 0)
             TurnTimer(
@@ -513,6 +595,7 @@ private struct WerewolfBoardView: View {
                 total: model.phaseTotal(),
                 auto: model.auto,
                 size: 44,
+                ink: boardInk,
                 onResume: model.resumeManual
             )
             .clearPunchHole(hole, .bottomTrailing, already: 24 * s)

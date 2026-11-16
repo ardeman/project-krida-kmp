@@ -485,6 +485,8 @@
     <string name="werewolf_player_lost">Seorang pemain terputus. Komputer menggantikan setelah 15 detik.</string>
     <string name="werewolf_sheriff">Kepala desa</string>
     <string name="werewolf_dead">Gugur</string>
+    <string name="werewolf_voted">Sudah pilih</string>
+    <string name="werewolf_vote_progress">Sudah pilih %1$d / %2$d</string>
     <string name="werewolf_day_n">Hari %1$d</string>
     <string name="werewolf_your_role">Peranmu: %1$s</string>
     <string name="werewolf_role_blurb_werewolf">Tiap malam, pilih satu pemain hidup untuk digugurkan. Serigala saling melihat.</string>

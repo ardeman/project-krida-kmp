@@ -7,6 +7,8 @@ struct CountdownRing: View {
     let seconds: Int
     let total: Int
     var size: CGFloat = 56
+    /// Override when the host screen uses phase ink (e.g. Werewolf day on a light sky).
+    var ink: Color? = nil
     @Environment(\.uiScale) private var s
 
     var body: some View {
@@ -24,7 +26,7 @@ struct CountdownRing: View {
                 .animation(.easeInOut, value: urgent)
             Text("\(seconds)")
                 .font(Theme.font(size * s * 0.36, .black))
-                .foregroundStyle(urgent ? Theme.error : Theme.ink)
+                .foregroundStyle(urgent ? Theme.error : (ink ?? Theme.ink))
                 .monospacedDigit()
         }
         .padding(width / 2)
@@ -69,6 +71,7 @@ struct TurnTimer: View {
     var total: Int
     var auto: Bool
     var size: CGFloat = 40
+    var ink: Color? = nil
     var onResume: () -> Void
     @Environment(\.uiScale) private var s
 
@@ -77,7 +80,7 @@ struct TurnTimer: View {
             if auto {
                 AutopilotButton(size: size, action: onResume)
             } else if seconds > 0 {
-                CountdownRing(seconds: seconds, total: total, size: size)
+                CountdownRing(seconds: seconds, total: total, size: size, ink: ink)
             }
         }
         .frame(width: size * s, height: size * s)

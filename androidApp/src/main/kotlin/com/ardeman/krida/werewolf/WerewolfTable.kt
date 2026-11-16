@@ -9,6 +9,7 @@ import com.ardeman.krida.R
 import com.ardeman.krida.core.games.WerewolfBot
 import com.ardeman.krida.core.games.WerewolfGame
 import com.ardeman.krida.core.games.WerewolfMove
+import com.ardeman.krida.core.games.WerewolfPhase
 import com.ardeman.krida.core.games.WerewolfState
 import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
@@ -21,6 +22,7 @@ import com.ardeman.krida.online.GuestWaiting
 import com.ardeman.krida.online.SecondTicker
 import com.ardeman.krida.online.Waiting
 import com.ardeman.krida.online.waiting
+import kotlin.random.Random
 
 class WerewolfUpdate(val state: WerewolfState, val fresh: Boolean)
 
@@ -86,6 +88,8 @@ abstract class WerewolfTable {
     abstract fun playLocal(seat: Int, move: WerewolfMove): Boolean
     abstract fun advanceDiscuss(): Boolean
     open fun stepBot(): Boolean = false
+    /** One bot discussion claim when phase is DISCUSS; false when none spoke. Host only. */
+    open fun stepDiscussClaim(): Boolean = false
     abstract fun restart()
     open fun leave() {
         active = false
@@ -150,6 +154,18 @@ class WerewolfHostTable(
         active && session.submitLocal(0, WerewolfMove(advance = true)) == null
 
     override fun stepBot(): Boolean = active && session.stepBot()
+
+    override fun stepDiscussClaim(): Boolean {
+        if (!active) return false
+        val state = session.state ?: return false
+        if (state.phase != WerewolfPhase.DISCUSS) return false
+        val bots = players.filter { it.bot && state.alive.getOrElse(it.seat) { false } }.shuffled()
+        for (p in bots) {
+            val pick = WerewolfBot().chooseClaim(state, p.seat, Random.Default) ?: continue
+            if (session.sendBotClaim(p.seat, pick.first, pick.second)) return true
+        }
+        return false
+    }
 
     override fun restart() {
         if (active && WerewolfGame.isFinished(latest)) session.restart()
