@@ -29,6 +29,8 @@ role (wolves also see fellow wolves) via `PrivateStateRules`.
 - **Centre:** phase panel (role reveal, night actions, dawn deaths, election, discuss, vote,
   result). Soft village / night atmosphere (code-drawn, no large assets).
 - **Right:** sound, rules help, emote (nearby/online), phase countdown / autopilot.
+- **Discussion:** claim chips (preset bilingual lines + optional seat target), not free
+  text or voice. Emotes remain for quick reactions.
 
 ## Timers (v1)
 
@@ -86,7 +88,7 @@ discuss → lynch vote) → repeat until Town (all wolves dead) or Wolves (wolve
 ### UI copy (English)
 
 - Tagline: Find the wolves before they outnumber the village.
-- Hint: No chat — use emotes, then vote.
+- Hint: Use claim chips and emotes, then vote. No free-text chat.
 - Lobby: Add people or computers. / Waiting for N more…
 - Actions: Your role · Pick a victim · Peek at someone · Protect someone · Heal the victim ·
   Poison someone · Skip · Shoot someone · Vote to lynch · Abstain · Vote for Sheriff ·

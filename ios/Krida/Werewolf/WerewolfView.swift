@@ -236,6 +236,12 @@ private struct WerewolfBoardView: View {
 
     private var state: WerewolfState { model.state }
     private var night: Bool { state.phase == WerewolfPhase.shared.NIGHT }
+    /// Day/night ink follows the phase, not system appearance (day sky is always light).
+    private var boardInk: Color { night ? Color(hex: 0xF6EADC) : Color(hex: 0x2B1D14) }
+    private var boardMuted: Color { night ? Color(hex: 0xB7A593) : Color(hex: 0x5A4537) }
+    private var boardSurface: Color { night ? Color(hex: 0x243044).opacity(0.92) : Color(hex: 0xFFFBF5) }
+    private var boardChip: Color { night ? Color.white.opacity(0.14) : Color(hex: 0xE7DFD4) }
+    private var boardLine: Color { night ? Color.white.opacity(0.22) : Color(hex: 0xC9B8A6) }
 
     var body: some View {
         ZStack {
@@ -253,14 +259,14 @@ private struct WerewolfBoardView: View {
             if model.showRole { roleCard }
             if model.finished { resultCard }
         }
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(boardInk)
         .onDisappear { model.stop() }
         .sheet(isPresented: $showRules) { WerewolfRulesSheet() }
     }
 
     private var atmosphere: some View {
-        let top = night ? Color(hex: 0x1A2332) : Color(hex: 0xC9D4E2)
-        let bottom = night ? Color(hex: 0x0F1520) : Color(hex: 0xE8EEF5)
+        let top = night ? Color(hex: 0x1A2332) : Color(hex: 0xB9D4EF)
+        let bottom = night ? Color(hex: 0x0F1520) : Color(hex: 0xF3E6D2)
         return LinearGradient(colors: [top, bottom], startPoint: .top, endPoint: .bottom)
             .ignoresSafeArea()
     }
@@ -281,10 +287,10 @@ private struct WerewolfBoardView: View {
             CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
                 .clearPunchHole(hole, .topLeading, already: 24 * s)
             Text("Werewolf").font(Theme.font(18 * s, .black))
-            Text(phaseTitle).font(Theme.font(12 * s, .bold)).foregroundStyle(Theme.muted).lineLimit(2)
+            Text(phaseTitle).font(Theme.font(12 * s, .bold)).foregroundStyle(boardMuted).lineLimit(2)
             Text(String(localized: "Day \(state.day)", bundle: .app))
                 .font(Theme.font(12 * s, .bold))
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(boardMuted)
             ScrollView {
                 VStack(spacing: 8 * s) {
                     ForEach(rows, id: \.self) { pair in
@@ -308,58 +314,52 @@ private struct WerewolfBoardView: View {
         let bot = table.botSeats.contains(seat)
         let avatar = bot ? nil : table.players.avatar(of: seat)
         let shape = RoundedRectangle(cornerRadius: 12 * s)
-        let sel = model.selectedTarget == seat
-        return Button {
-            if model.acting && alive { model.pickTarget(seat) }
-        } label: {
-            VStack(spacing: 4 * s) {
-                ZStack(alignment: .topTrailing) {
-                    if let avatar {
-                        AvatarBadge(avatar: avatar, size: 32)
-                            .opacity(alive ? 1 : 0.35)
-                    } else if bot {
-                        Image(systemName: "desktopcomputer")
-                            .font(.system(size: 14 * s, weight: .semibold))
-                            .frame(width: 32 * s, height: 32 * s)
-                            .background(Theme.track, in: Circle())
-                    } else {
-                        Circle().fill(Theme.chip).frame(width: 32 * s, height: 32 * s)
-                    }
-                    if sheriff {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 10 * s))
-                            .foregroundStyle(Theme.gold)
-                            .offset(x: 4 * s, y: -4 * s)
-                    }
+        return VStack(spacing: 4 * s) {
+            ZStack(alignment: .topTrailing) {
+                if let avatar {
+                    AvatarBadge(avatar: avatar, size: 32)
+                        .opacity(alive ? 1 : 0.35)
+                } else if bot {
+                    Image(systemName: "desktopcomputer")
+                        .font(.system(size: 14 * s, weight: .semibold))
+                        .foregroundStyle(boardInk)
+                        .frame(width: 32 * s, height: 32 * s)
+                        .background(boardChip, in: Circle())
+                } else {
+                    Circle().fill(boardChip).frame(width: 32 * s, height: 32 * s)
                 }
-                Text(seatName(seat)).font(Theme.font(10 * s, .bold)).lineLimit(1)
-                if !alive {
-                    Text(String(localized: "Eliminated", bundle: .app))
-                        .font(Theme.font(9 * s, .semibold))
-                        .foregroundStyle(Theme.muted)
+                if sheriff {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 10 * s))
+                        .foregroundStyle(Theme.gold)
+                        .offset(x: 4 * s, y: -4 * s)
                 }
             }
-            .padding(6 * s)
-            .frame(maxWidth: .infinity)
-            .background(sel ? Theme.accent.opacity(0.2) : Theme.surface.opacity(alive ? 0.92 : 0.5), in: shape)
-            .overlay(shape.stroke(sel ? Theme.accent : Theme.line, lineWidth: sel ? 2 : 1))
+            Text(seatName(seat)).font(Theme.font(10 * s, .bold)).lineLimit(1)
+            if !alive {
+                Text(String(localized: "Eliminated", bundle: .app))
+                    .font(Theme.font(9 * s, .semibold))
+                    .foregroundStyle(boardMuted)
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(!alive)
+        .padding(6 * s)
+        .frame(maxWidth: .infinity)
+        .background(boardSurface.opacity(alive ? 1 : 0.55), in: shape)
+        .overlay(shape.stroke(boardLine, lineWidth: 1))
     }
 
     private var centerPanel: some View {
         VStack(spacing: 12 * s) {
             Text(phaseHeadline).font(Theme.font(22 * s, .black)).multilineTextAlignment(.center)
             if let body = phaseBody {
-                Text(body).font(Theme.font(14 * s, .semibold)).foregroundStyle(Theme.muted).multilineTextAlignment(.center)
+                Text(body).font(Theme.font(14 * s, .semibold)).foregroundStyle(boardMuted).multilineTextAlignment(.center)
             }
             dawnBanner
             actionArea
         }
         .padding(16 * s)
-        .background(Theme.surface.opacity(0.88), in: RoundedRectangle(cornerRadius: 20 * s))
-        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
+        .background(boardSurface, in: RoundedRectangle(cornerRadius: 20 * s))
+        .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(boardLine, lineWidth: 1.5))
     }
 
     @ViewBuilder
@@ -371,11 +371,11 @@ private struct WerewolfBoardView: View {
                 .foregroundStyle(Theme.error)
                 .padding(.horizontal, 12 * s)
                 .padding(.vertical, 6 * s)
-                .background(Theme.chip, in: Capsule())
+                .background(boardChip, in: Capsule())
         } else if state.phase != WerewolfPhase.shared.NIGHT, state.lastDeaths.isEmpty, state.day > 0 {
             Text(String(localized: "Peaceful night", bundle: .app))
                 .font(Theme.font(13 * s, .bold))
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(boardMuted)
         }
     }
 
@@ -383,23 +383,35 @@ private struct WerewolfBoardView: View {
     private var actionArea: some View {
         if !model.alive {
             Text(String(localized: "You died", bundle: .app)).font(Theme.font(16 * s, .black))
+        } else if state.phase == WerewolfPhase.shared.DISCUSS {
+            Text(String(localized: "Use emotes to signal, then vote when time ends.", bundle: .app))
+                .font(Theme.font(14 * s, .semibold))
+                .foregroundStyle(boardMuted)
+                .multilineTextAlignment(.center)
         } else if !model.acting {
             Text(String(localized: "Waiting for others…", bundle: .app))
                 .font(Theme.font(14 * s, .semibold))
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(boardMuted)
         } else if model.myRole == WerewolfRole.shared.WITCH && state.phase == WerewolfPhase.shared.NIGHT {
             witchActions
         } else {
+            Text(actionPrompt).font(Theme.font(14 * s, .bold))
+            Text(String(localized: "Tap a name below to choose.", bundle: .app))
+                .font(Theme.font(12 * s, .semibold))
+                .foregroundStyle(boardMuted)
+            targetGrid(allowSelf: model.myRole == WerewolfRole.shared.DOCTOR && state.phase == WerewolfPhase.shared.NIGHT) { seat in
+                model.pickTarget(seat)
+                model.confirmTarget()
+            }
             HStack(spacing: 10 * s) {
                 if canAbstain {
                     Button(String(localized: "Abstain", bundle: .app)) { model.abstain() }
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                        .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
                 }
-                Button(String(localized: "Skip", bundle: .app)) { model.skipNight() }
-                    .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                Button(actionPrompt) { model.confirmTarget() }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .disabled(model.selectedTarget == nil && !canAbstain)
+                if state.phase == WerewolfPhase.shared.NIGHT {
+                    Button(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
+                        .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                }
             }
         }
         if let peek = seerPeekText {
@@ -408,21 +420,74 @@ private struct WerewolfBoardView: View {
     }
 
     private var witchActions: some View {
-        VStack(spacing: 8 * s) {
-            if state.witchHealLeft {
+        let needHeal = state.witchHealLeft && model.witchHealChoice == nil
+        return VStack(spacing: 8 * s) {
+            if needHeal {
                 Text(String(localized: "Heal the victim", bundle: .app)).font(Theme.font(13 * s, .bold))
-                HStack {
-                    Button(String(localized: "Heal the victim", bundle: .app)) { model.setWitchHeal(true) }
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
-                    Button(String(localized: "Skip", bundle: .app)) { model.setWitchHeal(false) }
-                        .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
+                HStack(spacing: 10 * s) {
+                    Button(String(localized: "Heal the victim", bundle: .app)) {
+                        model.setWitchHeal(true)
+                        if !state.witchPoisonLeft { model.confirmWitch() }
+                    }
+                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                    Button(String(localized: "Skip heal", bundle: .app)) {
+                        model.setWitchHeal(false)
+                        if !state.witchPoisonLeft { model.confirmWitch() }
+                    }
+                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+                }
+            } else if state.witchPoisonLeft {
+                Text(String(localized: "Poison someone", bundle: .app)).font(Theme.font(13 * s, .bold))
+                Text(String(localized: "Tap a name below to choose.", bundle: .app))
+                    .font(Theme.font(12 * s, .semibold))
+                    .foregroundStyle(boardMuted)
+                targetGrid(allowSelf: false) { seat in
+                    model.pickTarget(seat)
+                    model.confirmWitch()
+                }
+                Button(String(localized: "Skip poison", bundle: .app)) {
+                    model.witchPoisonTarget = -1
+                    model.confirmWitch()
+                }
+                .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+            } else {
+                Button(String(localized: "Pass tonight", bundle: .app)) { model.skipNight() }
+                    .buttonStyle(SecondaryButtonStyle(tint: boardMuted))
+            }
+        }
+    }
+
+    private func targetGrid(allowSelf: Bool, onChoose: @escaping (Int) -> Void) -> some View {
+        let living = (0..<Int(state.players)).filter { seat in
+            guard state.alive.indices.contains(seat), state.alive[seat].boolValue else { return false }
+            return allowSelf || seat != model.me
+        }
+        let rows = stride(from: 0, to: living.count, by: 3).map { Array(living[$0..<min($0 + 3, living.count)]) }
+        return VStack(spacing: 6 * s) {
+            ForEach(rows, id: \.self) { row in
+                HStack(spacing: 6 * s) {
+                    ForEach(row, id: \.self) { seat in
+                        Button {
+                            onChoose(seat)
+                        } label: {
+                            Text(seatName(seat))
+                                .font(Theme.font(12 * s, .bold))
+                                .foregroundStyle(boardInk)
+                                .lineLimit(1)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 8 * s)
+                                .background(boardChip, in: RoundedRectangle(cornerRadius: 10 * s))
+                                .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(boardLine, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if row.count < 3 {
+                        ForEach(0..<(3 - row.count), id: \.self) { _ in
+                            Color.clear.frame(maxWidth: .infinity)
+                        }
+                    }
                 }
             }
-            if state.witchPoisonLeft {
-                Text(String(localized: "Poison someone", bundle: .app)).font(Theme.font(13 * s, .bold))
-            }
-            Button(String(localized: "Done", bundle: .app)) { model.confirmWitch() }
-                .buttonStyle(PrimaryButtonStyle())
         }
     }
 
@@ -473,6 +538,10 @@ private struct WerewolfBoardView: View {
             VStack(spacing: 10 * s) {
                 Text(String(localized: "Your role", bundle: .app)).font(Theme.font(20 * s, .black))
                 Text(roleName(model.myRole)).font(Theme.font(18 * s, .bold))
+                Text(roleBlurb(model.myRole))
+                    .font(Theme.font(13 * s, .semibold))
+                    .foregroundStyle(Theme.muted)
+                    .multilineTextAlignment(.center)
                 Button(String(localized: "Done", bundle: .app)) { model.showRole = false }
                     .buttonStyle(PrimaryButtonStyle())
             }
@@ -515,7 +584,7 @@ private struct WerewolfBoardView: View {
         case WerewolfPhase.shared.SHERIFF_ELECT: "Vote for Sheriff"
         case WerewolfPhase.shared.HUNTER: "Shoot someone"
         case WerewolfPhase.shared.SUCCESSOR: "Name a successor"
-        default: "Confirm"
+        default: "Pick a target"
         }
     }
 
@@ -524,7 +593,7 @@ private struct WerewolfBoardView: View {
         case WerewolfRole.shared.WEREWOLF: "Pick a victim"
         case WerewolfRole.shared.SEER: "Peek at someone"
         case WerewolfRole.shared.DOCTOR: "Protect someone"
-        default: "Confirm"
+        default: "Pick a target"
         }
     }
 
@@ -542,15 +611,7 @@ private struct WerewolfBoardView: View {
 
     private var phaseHeadline: String { phaseTitle }
 
-    private var phaseBody: String? {
-        if state.phase == WerewolfPhase.shared.DISCUSS {
-            return String(localized: "No chat — use emotes, then vote.", bundle: .app)
-        }
-        if model.acting, state.phase == WerewolfPhase.shared.DISCUSS {
-            return String(localized: "No chat — use emotes, then vote.", bundle: .app)
-        }
-        return nil
-    }
+    private var phaseBody: String? { nil }
 
     private var seerPeekText: String? {
         guard model.myRole == WerewolfRole.shared.SEER,
@@ -571,6 +632,23 @@ private func roleName(_ id: String) -> String {
     }
 }
 
+private func roleBlurb(_ id: String) -> String {
+    switch id {
+    case WerewolfRole.shared.WEREWOLF:
+        String(localized: "Each night, pick one living player to eliminate. Wolves see each other.", bundle: .app)
+    case WerewolfRole.shared.SEER:
+        String(localized: "Each night, peek one living player’s exact role.", bundle: .app)
+    case WerewolfRole.shared.DOCTOR:
+        String(localized: "Each night, protect one living player (you may pick yourself).", bundle: .app)
+    case WerewolfRole.shared.HUNTER:
+        String(localized: "No night action. If you die, you shoot one living player.", bundle: .app)
+    case WerewolfRole.shared.WITCH:
+        String(localized: "Once each per game: heal tonight’s victim, and/or poison someone.", bundle: .app)
+    default:
+        String(localized: "No night action. Survive and vote with the village.", bundle: .app)
+    }
+}
+
 struct WerewolfRulesSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.uiScale) private var s
@@ -579,13 +657,17 @@ struct WerewolfRulesSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10 * s) {
-                    Text(String(localized: "Find the wolves before they outnumber the village.", bundle: .app))
-                    Text(String(localized: "No chat — use emotes, then vote.", bundle: .app))
+                    Text(String(localized: "5–8 players get secret roles. Villagers win by eliminating all werewolves; wolves win when they match or outnumber the village.", bundle: .app))
+                    Text(String(localized: "Werewolves choose one victim each night (majority; random tie). Wolves see each other.", bundle: .app))
+                    Text(String(localized: "The Seer peeks one living seat; the Doctor protects one; the Witch may heal or poison once each per game; the Hunter shoots when eliminated.", bundle: .app))
+                    Text(String(localized: "Sheriff (Kepala desa) is elected when vacant. Lynch votes count double. When the Sheriff dies, they name a successor.", bundle: .app))
+                    Text(String(localized: "Night actions, dawn deaths, discussion (emotes only), then a lynch vote. Timers auto-resolve unused actions.", bundle: .app))
                 }
                 .font(Theme.font(14 * s, .semibold))
+                .foregroundStyle(Theme.muted)
                 .padding()
             }
-            .navigationTitle(Text("Werewolf"))
+            .navigationTitle(Text("How to play"))
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }

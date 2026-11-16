@@ -5975,188 +5975,498 @@
     },
     "Werewolf": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Werewolf" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Werewolf" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werewolf"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werewolf"
+          }
+        }
       }
     },
     "Find the wolves before they outnumber the village.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Find the wolves before they outnumber the village." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Temukan serigala sebelum mereka menguasai desa." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find the wolves before they outnumber the village."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temukan serigala sebelum mereka menguasai desa."
+          }
+        }
       }
     },
     "No chat — use emotes, then vote.": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No chat — use emotes, then vote." } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tanpa obrolan — pakai reaksi, lalu voting." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No chat — use emotes, then vote."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanpa obrolan — pakai reaksi, lalu voting."
+          }
+        }
       }
     },
     "Your role": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Your role" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Peranmu" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your role"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peranmu"
+          }
+        }
       }
     },
     "Pick a victim": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Pick a victim" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pilih korban" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a victim"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih korban"
+          }
+        }
       }
     },
     "Peek at someone": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Peek at someone" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Intip seseorang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peek at someone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intip seseorang"
+          }
+        }
       }
     },
     "Protect someone": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Protect someone" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Lindungi seseorang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protect someone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lindungi seseorang"
+          }
+        }
       }
     },
     "Heal the victim": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Heal the victim" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Sembuhkan korban" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heal the victim"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sembuhkan korban"
+          }
+        }
       }
     },
     "Poison someone": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Poison someone" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Racuni seseorang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poison someone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Racuni seseorang"
+          }
+        }
       }
     },
     "Skip": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Skip" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Lewati" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewati"
+          }
+        }
       }
     },
     "Shoot someone": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Shoot someone" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tembak seseorang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shoot someone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tembak seseorang"
+          }
+        }
       }
     },
     "Vote to lynch": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Vote to lynch" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pilih untuk dihukum" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vote to lynch"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih untuk dihukum"
+          }
+        }
       }
     },
     "Abstain": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Abstain" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Golput" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abstain"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Golput"
+          }
+        }
       }
     },
     "Vote for Sheriff": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Vote for Sheriff" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pilih Kepala desa" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vote for Sheriff"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih Kepala desa"
+          }
+        }
       }
     },
     "Name a successor": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Name a successor" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Tunjuk pengganti" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name a successor"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunjuk pengganti"
+          }
+        }
       }
     },
     "Waiting for others…": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Waiting for others…" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Menunggu yang lain…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for others…"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menunggu yang lain…"
+          }
+        }
       }
     },
     "Night": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Night" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Malam" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Malam"
+          }
+        }
       }
     },
     "Discussion": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Discussion" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Diskusi" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discussion"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diskusi"
+          }
+        }
       }
     },
     "Vote": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Vote" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Voting" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vote"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voting"
+          }
+        }
       }
     },
     "Election": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Election" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pemilihan" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Election"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemilihan"
+          }
+        }
       }
     },
     "You died": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "You died" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Kamu gugur" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You died"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamu gugur"
+          }
+        }
       }
     },
     "Eliminated": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Eliminated" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Gugur" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminated"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gugur"
+          }
+        }
       }
     },
     "Town wins": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Town wins" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Desa menang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Town wins"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desa menang"
+          }
+        }
       }
     },
     "Wolves win": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Wolves win" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Serigala menang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wolves win"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serigala menang"
+          }
+        }
       }
     },
     "Peaceful night": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Peaceful night" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Malam tenang" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peaceful night"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Malam tenang"
+          }
+        }
       }
     },
     "Seer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Seer" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Peramal" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seer"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peramal"
+          }
+        }
       }
     },
     "Doctor": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Doctor" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Dokter" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doctor"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dokter"
+          }
+        }
       }
     },
     "Hunter": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Hunter" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Pemburu" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hunter"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemburu"
+          }
+        }
       }
     },
     "Witch": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Witch" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Penyihir" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Witch"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Penyihir"
+          }
+        }
       }
     },
     "Villager": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Villager" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Penduduk" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Villager"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Penduduk"
+          }
+        }
       }
     },
     "Up to 8 phones over the internet, each role hidden on its phone": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Up to 8 phones over the internet, each role hidden on its phone" } },
-        "id": { "stringUnit": { "state": "translated", "value": "Hingga 8 ponsel lewat internet, peran masing-masing tersembunyi di ponselnya" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to 8 phones over the internet, each role hidden on its phone"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hingga 8 ponsel lewat internet, peran masing-masing tersembunyi di ponselnya"
+          }
+        }
       }
     },
     "Match the ends, empty your hand.": {
@@ -7051,6 +7361,278 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tidak bisa memeriksa"
+          }
+        }
+      }
+    },
+    "Tap a name below to choose.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap a name below to choose."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ketuk nama di bawah untuk memilih."
+          }
+        }
+      }
+    },
+    "Pass tonight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass tonight"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewati malam ini"
+          }
+        }
+      }
+    },
+    "Skip heal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip heal"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewati sembuh"
+          }
+        }
+      }
+    },
+    "Skip poison": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip poison"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lewati racun"
+          }
+        }
+      }
+    },
+    "Use emotes to signal, then vote when time ends.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use emotes to signal, then vote when time ends."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pakai reaksi, lalu voting saat waktu habis."
+          }
+        }
+      }
+    },
+    "Each night, pick one living player to eliminate. Wolves see each other.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each night, pick one living player to eliminate. Wolves see each other."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiap malam, pilih satu pemain hidup untuk digugurkan. Serigala saling melihat."
+          }
+        }
+      }
+    },
+    "Each night, peek one living player’s exact role.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each night, peek one living player’s exact role."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiap malam, intip peran tepat satu pemain hidup."
+          }
+        }
+      }
+    },
+    "Each night, protect one living player (you may pick yourself).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each night, protect one living player (you may pick yourself)."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiap malam, lindungi satu pemain hidup (boleh dirimu sendiri)."
+          }
+        }
+      }
+    },
+    "No night action. If you die, you shoot one living player.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No night action. If you die, you shoot one living player."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanpa aksi malam. Jika gugur, kamu menembak satu pemain hidup."
+          }
+        }
+      }
+    },
+    "Once each per game: heal tonight’s victim, and/or poison someone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once each per game: heal tonight’s victim, and/or poison someone."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sekali tiap permainan: sembuhkan korban malam ini, dan/atau racuni seseorang."
+          }
+        }
+      }
+    },
+    "No night action. Survive and vote with the village.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No night action. Survive and vote with the village."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tanpa aksi malam. Bertahan dan voting bersama desa."
+          }
+        }
+      }
+    },
+    "5–8 players get secret roles. Villagers win by eliminating all werewolves; wolves win when they match or outnumber the village.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5–8 players get secret roles. Villagers win by eliminating all werewolves; wolves win when they match or outnumber the village."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5–8 pemain dapat peran rahasia. Desa menang jika semua serigala gugur; serigala menang jika jumlah mereka menyamai atau menguasai desa."
+          }
+        }
+      }
+    },
+    "Werewolves choose one victim each night (majority; random tie). Wolves see each other.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Werewolves choose one victim each night (majority; random tie). Wolves see each other."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serigala memilih satu korban tiap malam (mayoritas; seri acak). Mereka saling melihat."
+          }
+        }
+      }
+    },
+    "The Seer peeks one living seat; the Doctor protects one; the Witch may heal or poison once each per game; the Hunter shoots when eliminated.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Seer peeks one living seat; the Doctor protects one; the Witch may heal or poison once each per game; the Hunter shoots when eliminated."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peramal mengintip satu kursi; Dokter melindungi satu; Penyihir bisa menyembuhkan atau meracuni masing-masing sekali; Pemburu menembak saat gugur."
+          }
+        }
+      }
+    },
+    "Sheriff (Kepala desa) is elected when vacant. Lynch votes count double. When the Sheriff dies, they name a successor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sheriff (Kepala desa) is elected when vacant. Lynch votes count double. When the Sheriff dies, they name a successor."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kepala desa dipilih saat kosong. Suara hukuman bernilai ganda. Saat Kepala desa gugur, ia menunjuk pengganti."
+          }
+        }
+      }
+    },
+    "Night actions, dawn deaths, discussion (emotes only), then a lynch vote. Timers auto-resolve unused actions.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Night actions, dawn deaths, discussion (emotes only), then a lynch vote. Timers auto-resolve unused actions."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aksi malam, kematian fajar, diskusi (hanya reaksi), lalu voting hukuman. Timer menyelesaikan aksi yang tidak dipakai."
+          }
+        }
+      }
+    },
+    "Pick a target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a target"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pilih target"
           }
         }
       }

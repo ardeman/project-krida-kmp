@@ -306,11 +306,21 @@ in the same commit as the code.
   Penyihir (heal and poison once each). Counts by lobby size in the mockup.
 - **Kepala desa (Sheriff):** public elected badge (not a dealt card); lynch vote ×2; names a
   successor on death. Not the same as Pemburu or Peramal.
-- **No free-text chat:** day = timer + emotes + vote.
+- **Day talk:** structured **claim chips**, not free text or voice (owner, 2026-11-16).
+  Discussion phase: pick a preset claim and often a target seat (e.g. “I suspect …”,
+  “I am Seer …”, “I protected …”). Host fans out like emotes; bilingual catalog; cooldown.
+  Emotes stay for quick reactions. No free-text chat, no voice.
 - **Bots:** easy / normal / hard for night actions and votes; mid-game hand-off to bot;
   quick match may fill empty seats with computers (final count 5–8).
 - **Timers:** night 45 s, discuss 60 s, election / vote / hunter / successor 20 s
   (`Krida.WEREWOLF_*` constants).
+
+## Link quality on seats
+
+- Small **4-dot** link/latency cue on the bottom of each player seat tile, every game that
+  has seats over a link (Nearby / Online). Fills by measured quality (ping / recent
+  delivery); empty or dim when unknown / local-only / bots. Keep it quiet — not a large
+  signal-strength HUD (owner, 2026-11-16).
 
 ## Game lineup
 

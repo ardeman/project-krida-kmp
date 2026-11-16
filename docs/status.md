@@ -10,8 +10,11 @@ file in the same commit when an item is done or a new one comes up. Last updated
   Online + **This phone** vs computers (and quick-match “Play with computers”) wired
   2026-11-16; 5–8 seats, bots, Kepala desa. Builds. iOS Simulator smoke
   (`WerewolfSmokeTests`, host + 4 computers via `-openWerewolf`) passed 2026-11-16.
-  Next: real phone checks (This phone / Play with computers, then multi-phone). Pushing
-  relay to `main` drops open games — deploy deliberately.
+  Next: real phone checks (This phone / Play with computers, then multi-phone). **Claim
+  chips** for discussion (decisions, 2026-11-16) not built yet. Pushing relay to `main`
+  drops open games — deploy deliberately.
+- **Seat link dots (all linked games):** 4-dot quality cue under each seat tile (decisions,
+  2026-11-16). Not built yet.
 - **Perang kapal** (fourth game): shared, Android and iOS done 2026-11-12
   ([mockups/perang-kapal.md](mockups/perang-kapal.md)); both build, nothing played on a
   device yet. Reworked the same day on the owner's notes (voxel ships, tap/drag placement,

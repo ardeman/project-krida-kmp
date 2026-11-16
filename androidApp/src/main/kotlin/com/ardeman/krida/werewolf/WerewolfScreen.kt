@@ -232,7 +232,7 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
                 Modifier.widthIn(min = 220.dp, max = 340.dp).fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                PhasePanel(state, me, picking, onPick = { picking = it }, onAction = { table.play(it) })
+                PhasePanel(table, state, me, picking, onPick = { picking = it }, onAction = { table.play(it) })
             }
             Spacer(Modifier.weight(1f))
             Column(Modifier.width(148.dp).fillMaxHeight(), horizontalAlignment = Alignment.End) {
@@ -335,6 +335,7 @@ private fun SeatTile(table: WerewolfTable, state: WerewolfState, seat: Int, modi
 
 @Composable
 private fun PhasePanel(
+    table: WerewolfTable,
     state: WerewolfState,
     me: Int,
     picking: Int?,
@@ -342,19 +343,28 @@ private fun PhasePanel(
     onAction: (WerewolfMove) -> Unit,
 ) {
     val night = state.phase == WerewolfPhase.NIGHT
-    val sky = if (night) Color(0xFF1A2332) else Color(0xFF4A6748)
+    // Day stays a light panel with dark ink so it stays readable in dark appearance too.
+    val skyTop = if (night) Color(0xFF1A2332) else Color(0xFFB9D4EF)
+    val skyBottom = if (night) Color(0xFF0F1520) else Color(0xFFF3E6D2)
+    val ink = if (night) Color(0xFFF6EADC) else Color(0xFF2B1D14)
+    val muted = if (night) Color(0xFFB7A593) else Color(0xFF5A4537)
+    val chip = if (night) Color.White.copy(alpha = 0.14f) else Color(0xFFE7DFD4)
+    val line = if (night) Color.White.copy(alpha = 0.22f) else Color(0xFFC9B8A6)
+    val roleTint = if (night) Color(0xFFFFF0D0) else Color(0xFF7A4A1E)
     val shape = RoundedCornerShape(20.dp)
+    val youLabel = stringResource(R.string.bot_you)
+    fun seatLabel(seat: Int) = if (seat == me) youLabel else table.name(seat)
     Column(
         Modifier.fillMaxWidth().fillMaxHeight().clip(shape)
-            .background(Brush.verticalGradient(listOf(sky, sky.copy(alpha = 0.85f))))
-            .border(1.5.dp, Theme.line.copy(alpha = 0.4f), shape)
+            .background(Brush.verticalGradient(listOf(skyTop, skyBottom)))
+            .border(1.5.dp, line, shape)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(phaseTitle(state), style = Theme.font(18, FontWeight.Black, Color.White), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Text(phaseTitle(state), style = Theme.font(18, FontWeight.Black, ink), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         Text(
             stringResource(R.string.werewolf_day_n, state.day),
-            style = Theme.font(13, FontWeight.Bold, Color.White.copy(alpha = 0.75f)),
+            style = Theme.font(13, FontWeight.Bold, muted),
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
@@ -362,36 +372,53 @@ private fun PhasePanel(
         if (role.isNotEmpty()) {
             Text(
                 stringResource(R.string.werewolf_your_role, roleLabel(role)),
-                style = Theme.font(14, FontWeight.Bold, Color(0xFFFFF0D0)),
+                style = Theme.font(14, FontWeight.Bold, roleTint),
+            )
+            Text(
+                roleBlurb(role),
+                style = Theme.font(12, FontWeight.Bold, muted),
             )
         }
         state.seerPeekRole?.let { peek ->
             val target = state.seerPeekTarget
             if (target != null) {
                 Text(
-                    stringResource(R.string.werewolf_seer_result, tableSeatName(target), roleLabel(peek)),
-                    style = Theme.font(13, FontWeight.Bold, Color.White),
+                    stringResource(R.string.werewolf_seer_result, seatLabel(target), roleLabel(peek)),
+                    style = Theme.font(13, FontWeight.Bold, ink),
                 )
             }
         }
-        if (state.lastDeaths.isNotEmpty() && state.phase != WerewolfPhase.NIGHT) {
-            Text(
-                state.lastDeaths.joinToString { "${it + 1}" },
-                style = Theme.font(13, FontWeight.Bold, Color(0xFFFFC9C9)),
-            )
+        if (state.phase != WerewolfPhase.NIGHT) {
+            if (state.lastDeaths.isNotEmpty()) {
+                val names = state.lastDeaths.joinToString { seatLabel(it) }
+                Text(
+                    stringResource(R.string.werewolf_dawn_deaths, names),
+                    style = Theme.font(13, FontWeight.Bold, Theme.error),
+                )
+            } else if (state.day > 0) {
+                Text(
+                    stringResource(R.string.werewolf_peaceful_night),
+                    style = Theme.font(13, FontWeight.Bold, muted),
+                )
+            }
         }
         Spacer(Modifier.height(4.dp))
-        ActionArea(state, me, picking, onPick, onAction)
+        ActionArea(table, state, me, picking, onPick, onAction, ink = ink, muted = muted, chip = chip, line = line)
     }
 }
 
 @Composable
 private fun ActionArea(
+    table: WerewolfTable,
     state: WerewolfState,
     me: Int,
     picking: Int?,
     onPick: (Int) -> Unit,
     onAction: (WerewolfMove) -> Unit,
+    ink: Color,
+    muted: Color,
+    chip: Color,
+    line: Color,
 ) {
     val myTurn = me in WerewolfGame.actingSeats(state)
     when (state.phase) {
@@ -399,65 +426,88 @@ private fun ActionArea(
         WerewolfPhase.DISCUSS -> {
             Text(
                 stringResource(R.string.werewolf_discuss_hint),
-                style = Theme.font(13, FontWeight.Bold, Color.White.copy(alpha = 0.9f)),
+                style = Theme.font(13, FontWeight.Bold, muted),
             )
         }
-        WerewolfPhase.NIGHT -> nightActions(state, me, myTurn, picking, onPick, onAction)
+        WerewolfPhase.NIGHT -> nightActions(table, state, me, myTurn, picking, onPick, onAction, ink, muted, chip, line)
         WerewolfPhase.VOTE, WerewolfPhase.SHERIFF_ELECT, WerewolfPhase.HUNTER, WerewolfPhase.SUCCESSOR ->
-            voteActions(state, me, myTurn, picking, onPick, onAction, abstain = state.phase == WerewolfPhase.VOTE)
+            voteActions(
+                table, state, me, myTurn, picking, onPick, onAction,
+                abstain = state.phase == WerewolfPhase.VOTE, ink = ink, muted = muted, chip = chip, line = line,
+            )
         else -> {
-            if (!myTurn) Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, Color.White))
+            if (!myTurn) Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, muted))
         }
     }
 }
 
 @Composable
 private fun nightActions(
+    table: WerewolfTable,
     state: WerewolfState,
     me: Int,
     myTurn: Boolean,
     picking: Int?,
     onPick: (Int) -> Unit,
     onAction: (WerewolfMove) -> Unit,
+    ink: Color,
+    muted: Color,
+    chip: Color,
+    line: Color,
 ) {
     val role = state.roles.getOrNull(me).orEmpty()
     if (!myTurn) {
-        Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, Color.White))
+        Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, muted))
         return
     }
     when (role) {
-        WerewolfRole.WITCH -> WitchPanel(state, onAction)
+        WerewolfRole.WITCH -> WitchPanel(table, state, me, picking, onPick, onAction, ink, muted, chip, line)
         WerewolfRole.WEREWOLF, WerewolfRole.SEER, WerewolfRole.DOCTOR -> {
-            Text(promptForRole(role), style = Theme.font(13, FontWeight.Bold, Color.White))
-            TargetGrid(state, me, picking, onPick, allowSelf = role == WerewolfRole.DOCTOR) { target ->
+            Text(promptForRole(role), style = Theme.font(13, FontWeight.Bold, ink))
+            Text(stringResource(R.string.werewolf_tap_hint), style = Theme.font(12, FontWeight.Bold, muted))
+            TargetGrid(table, state, me, picking, onPick, allowSelf = role == WerewolfRole.DOCTOR, ink = ink, chip = chip, line = line) { target ->
                 onAction(WerewolfMove(target = target))
             }
+            SecondaryButton(stringResource(R.string.werewolf_skip), { onAction(WerewolfMove(target = -1, done = true)) }, tint = muted)
         }
-        else -> Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, Color.White))
+        else -> Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, muted))
     }
 }
 
 @Composable
-private fun WitchPanel(state: WerewolfState, onAction: (WerewolfMove) -> Unit) {
-    val witch = state.living().firstOrNull { state.roles[it] == WerewolfRole.WITCH } ?: return
+private fun WitchPanel(
+    table: WerewolfTable,
+    state: WerewolfState,
+    me: Int,
+    picking: Int?,
+    onPick: (Int) -> Unit,
+    onAction: (WerewolfMove) -> Unit,
+    ink: Color,
+    muted: Color,
+    chip: Color,
+    line: Color,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (state.witchHealLeft) {
-            SecondaryButton(stringResource(R.string.werewolf_heal), { onAction(WerewolfMove(witchHeal = true)) }, tint = Color.White)
-            SecondaryButton(stringResource(R.string.werewolf_skip_heal), { onAction(WerewolfMove(witchHeal = false)) }, tint = Color.White)
+            SecondaryButton(stringResource(R.string.werewolf_heal), { onAction(WerewolfMove(witchHeal = true)) }, tint = muted)
+            SecondaryButton(stringResource(R.string.werewolf_skip_heal), { onAction(WerewolfMove(witchHeal = false)) }, tint = muted)
         }
         if (state.witchPoisonLeft) {
-            Text(stringResource(R.string.werewolf_poison_someone), style = Theme.font(12, FontWeight.Bold, Color.White))
-            TargetGrid(state, witch, null, {}, allowSelf = false) { target ->
+            Text(stringResource(R.string.werewolf_poison_someone), style = Theme.font(12, FontWeight.Bold, ink))
+            Text(stringResource(R.string.werewolf_tap_hint), style = Theme.font(12, FontWeight.Bold, muted))
+            TargetGrid(table, state, me, picking, onPick, allowSelf = false, ink = ink, chip = chip, line = line) { target ->
                 onAction(WerewolfMove(target = target, done = true))
             }
-            SecondaryButton(stringResource(R.string.werewolf_skip_poison), { onAction(WerewolfMove(target = -1, done = true)) }, tint = Color.White)
+            SecondaryButton(stringResource(R.string.werewolf_skip_poison), { onAction(WerewolfMove(target = -1, done = true)) }, tint = muted)
+        } else {
+            SecondaryButton(stringResource(R.string.werewolf_skip), { onAction(WerewolfMove(done = true)) }, tint = muted)
         }
-        SecondaryButton(stringResource(R.string.werewolf_skip), { onAction(WerewolfMove(done = true)) }, tint = Color.White)
     }
 }
 
 @Composable
 private fun voteActions(
+    table: WerewolfTable,
     state: WerewolfState,
     me: Int,
     myTurn: Boolean,
@@ -465,9 +515,13 @@ private fun voteActions(
     onPick: (Int) -> Unit,
     onAction: (WerewolfMove) -> Unit,
     abstain: Boolean,
+    ink: Color,
+    muted: Color,
+    chip: Color,
+    line: Color,
 ) {
     if (!myTurn) {
-        Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, Color.White))
+        Text(stringResource(R.string.werewolf_waiting_others), style = Theme.font(13, FontWeight.Bold, muted))
         return
     }
     val prompt = when (state.phase) {
@@ -477,22 +531,30 @@ private fun voteActions(
         WerewolfPhase.SUCCESSOR -> R.string.werewolf_name_successor
         else -> R.string.werewolf_pick_target
     }
-    Text(stringResource(prompt), style = Theme.font(13, FontWeight.Bold, Color.White))
-    TargetGrid(state, me, picking, onPick, allowSelf = false) { target -> onAction(WerewolfMove(target = target)) }
+    Text(stringResource(prompt), style = Theme.font(13, FontWeight.Bold, ink))
+    Text(stringResource(R.string.werewolf_tap_hint), style = Theme.font(12, FontWeight.Bold, muted))
+    TargetGrid(table, state, me, picking, onPick, allowSelf = false, ink = ink, chip = chip, line = line) { target ->
+        onAction(WerewolfMove(target = target))
+    }
     if (abstain) {
-        SecondaryButton(stringResource(R.string.werewolf_abstain), { onAction(WerewolfMove(target = -1)) }, tint = Color.White)
+        SecondaryButton(stringResource(R.string.werewolf_abstain), { onAction(WerewolfMove(target = -1)) }, tint = muted)
     }
 }
 
 @Composable
 private fun TargetGrid(
+    table: WerewolfTable,
     state: WerewolfState,
     me: Int,
     picking: Int?,
     onPick: (Int) -> Unit,
     allowSelf: Boolean = false,
+    ink: Color,
+    chip: Color,
+    line: Color,
     onChoose: (Int) -> Unit,
 ) {
+    val youLabel = stringResource(R.string.bot_you)
     val living = state.living().filter { allowSelf || it != me }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         living.chunked(3).forEach { row ->
@@ -501,7 +563,8 @@ private fun TargetGrid(
                     val selected = picking == seat
                     Box(
                         Modifier.weight(1f).heightIn(min = 36.dp).clip(RoundedCornerShape(10.dp))
-                            .background(if (selected) Theme.accent else Color.White.copy(alpha = 0.15f))
+                            .background(if (selected) Theme.accent else chip)
+                            .border(1.dp, if (selected) Theme.accent else line, RoundedCornerShape(10.dp))
                             .clickable(role = Role.Button) {
                                 Sounds.play(Sounds.Effect.Tap)
                                 onPick(seat)
@@ -511,8 +574,8 @@ private fun TargetGrid(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            tableSeatName(seat),
-                            style = Theme.font(12, FontWeight.Bold, if (selected) Color.White else Color.White.copy(alpha = 0.9f)),
+                            if (seat == me) youLabel else table.name(seat),
+                            style = Theme.font(12, FontWeight.Bold, if (selected) Color.White else ink),
                             maxLines = 1,
                         )
                     }
@@ -637,4 +700,13 @@ private fun roleLabel(role: String) = stringResource(
 )
 
 @Composable
-private fun tableSeatName(seat: Int) = "${seat + 1}"
+private fun roleBlurb(role: String) = stringResource(
+    when (role) {
+        WerewolfRole.WEREWOLF -> R.string.werewolf_role_blurb_werewolf
+        WerewolfRole.SEER -> R.string.werewolf_role_blurb_seer
+        WerewolfRole.DOCTOR -> R.string.werewolf_role_blurb_doctor
+        WerewolfRole.HUNTER -> R.string.werewolf_role_blurb_hunter
+        WerewolfRole.WITCH -> R.string.werewolf_role_blurb_witch
+        else -> R.string.werewolf_role_blurb_villager
+    },
+)
