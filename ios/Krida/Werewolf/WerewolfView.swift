@@ -139,7 +139,8 @@ final class WerewolfGameModel: ObservableObject {
             return game.nightActors(state: state).map(\.intValue).contains(seat)
                 && state.nightDone.indices.contains(seat) && !state.nightDone[seat].boolValue
         case WerewolfPhase.shared.VOTE, WerewolfPhase.shared.SHERIFF_ELECT:
-            return state.votes.indices.contains(seat) && state.votes[seat] == nil
+            // KMP exposes List<Int?> as NSArray; an unset vote is missing KotlinInt.
+            return state.votes.indices.contains(seat) && (state.votes[seat] as? KotlinInt) == nil
         case WerewolfPhase.shared.HUNTER:
             return state.hunterSeat?.intValue == seat
         case WerewolfPhase.shared.SUCCESSOR:
