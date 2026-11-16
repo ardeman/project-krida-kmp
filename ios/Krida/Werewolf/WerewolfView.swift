@@ -240,8 +240,9 @@ private struct WerewolfBoardView: View {
     private var boardInk: Color { night ? Color(hex: 0xF6EADC) : Color(hex: 0x2B1D14) }
     private var boardMuted: Color { night ? Color(hex: 0xB7A593) : Color(hex: 0x5A4537) }
     private var boardSurface: Color { night ? Color(hex: 0x243044).opacity(0.92) : Color(hex: 0xFFFBF5) }
-    private var boardChip: Color { night ? Color.white.opacity(0.14) : Color(hex: 0xE7DFD4) }
-    private var boardLine: Color { night ? Color.white.opacity(0.22) : Color(hex: 0xC9B8A6) }
+    /// Day chips are white with a stronger rim so they don’t melt into the cream panel.
+    private var boardChip: Color { night ? Color.white.opacity(0.22) : Color.white }
+    private var boardLine: Color { night ? Color.white.opacity(0.4) : Color(hex: 0x8B6F52) }
 
     var body: some View {
         ZStack {
@@ -435,7 +436,7 @@ private struct WerewolfBoardView: View {
             .foregroundStyle(boardInk)
             .padding(.horizontal, 18 * s)
             .frame(height: 44 * s)
-            .background(boardSurface, in: RoundedRectangle(cornerRadius: 14 * s))
+            .background(boardChip, in: RoundedRectangle(cornerRadius: 14 * s))
             .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(boardLine, lineWidth: 1.5))
     }
 
@@ -478,21 +479,11 @@ private struct WerewolfBoardView: View {
             guard state.alive.indices.contains(seat), state.alive[seat].boolValue else { return false }
             return allowSelf || seat != model.me
         }
-        return PackedChipRows(items: living, spacing: 6 * s) { seat in
-            Button {
-                onChoose(seat)
-            } label: {
-                Text(seatName(seat))
-                    .font(Theme.font(12 * s, .bold))
-                    .foregroundStyle(boardInk)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 10 * s)
-                    .padding(.vertical, 8 * s)
-                    .background(boardChip, in: RoundedRectangle(cornerRadius: 10 * s))
-                    .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(boardLine, lineWidth: 1))
-            }
-            .buttonStyle(.plain)
+        // Full-width adaptive grid so Claims / Election / Night all pack 4–5 when they fit.
+        return SeatChipGrid(seats: living, ink: boardInk, chip: boardChip, line: boardLine, s: s) { seat in
+            onChoose(seat)
+        } label: { seat in
+            seatName(seat)
         }
     }
 
@@ -785,50 +776,48 @@ private struct ClaimChipsView: View {
             guard table.latest.alive.indices.contains(seat), table.latest.alive[seat].boolValue else { return false }
             return seat != me
         }
-        return PackedChipRows(items: living, spacing: 6 * s) { seat in
-            Button {
-                table.sendClaim(claimId, target: seat)
-                pending = nil
-            } label: {
-                Text(table.name(seat))
-                    .font(Theme.font(12 * s, .bold))
-                    .foregroundStyle(ink)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 10 * s)
-                    .padding(.vertical, 8 * s)
-                    .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
-                    .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1))
-            }
-            .buttonStyle(.plain)
+        return SeatChipGrid(seats: living, ink: ink, chip: chip, line: line, s: s) { seat in
+            table.sendClaim(claimId, target: seat)
+            pending = nil
+        } label: { seat in
+            table.name(seat)
         }
     }
 }
 
-/// Equal-width chip columns that fill the card; empty slots hold the last row’s alignment.
-private struct PackedChipRows<Item: Hashable, Content: View>: View {
-    let items: [Item]
-    let spacing: CGFloat
-    var perRow: Int = 3
-    @ViewBuilder let content: (Item) -> Content
+/// Name chips that fill the row width and pack as many columns as fit (Claims “Who?”, votes, night).
+private struct SeatChipGrid: View {
+    let seats: [Int]
+    let ink: Color
+    let chip: Color
+    let line: Color
+    let s: CGFloat
+    let onChoose: (Int) -> Void
+    let label: (Int) -> String
 
     var body: some View {
-        let rows = stride(from: 0, to: items.count, by: perRow).map {
-            Array(items[$0..<min($0 + perRow, items.count)])
-        }
-        VStack(spacing: spacing) {
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                HStack(spacing: spacing) {
-                    ForEach(0..<perRow, id: \.self) { col in
-                        if col < row.count {
-                            content(row[col]).frame(maxWidth: .infinity)
-                        } else {
-                            Color.clear.frame(maxWidth: .infinity)
-                        }
-                    }
+        LazyVGrid(
+            columns: [GridItem(.adaptive(minimum: 72 * s), spacing: 6 * s)],
+            spacing: 6 * s
+        ) {
+            ForEach(seats, id: \.self) { seat in
+                Button {
+                    onChoose(seat)
+                } label: {
+                    Text(label(seat))
+                        .font(Theme.font(12 * s, .bold))
+                        .foregroundStyle(ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 8 * s)
+                        .padding(.vertical, 8 * s)
+                        .background(chip, in: RoundedRectangle(cornerRadius: 10 * s))
+                        .overlay(RoundedRectangle(cornerRadius: 10 * s).stroke(line, lineWidth: 1.5))
                 }
+                .buttonStyle(.plain)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
