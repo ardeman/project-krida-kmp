@@ -11,15 +11,17 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
-## Next (unreleased)
+## 1.0.5 (Android build 6 / iOS build 7) — 2026-11-17
 
 ### id
 
 - Werewolf: 5–8 pemain lewat Wi‑Fi atau online (tanpa Bluetooth), peran Indonesia, Kepala desa, bot.
+- Saat diskusi siang Werewolf, ketuk chip klaim singkat agar meja tahu maksudmu.
 
 ### en-US
 
 - Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.
+- During Werewolf day talk, tap a short claim chip so the table sees what you mean.
 
 ## 1.0.4 (Android build 5 / iOS build 6) — 2026-11-14
 

@@ -122,22 +122,20 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
-**Version:** marketing `1.0.4`, Android `versionCode` `5` / iOS build `6` (see [changelog.md](changelog.md)).
+**Version:** marketing `1.0.5`, Android `versionCode` `6` / iOS build `7` (see [changelog.md](changelog.md)).
 Paste the matching language block into Play “Release notes” (≤ 500) and App Store
 “What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
 notes go on the store form.
 
-### What’s New — 1.0.4 (id)
+### What’s New — 1.0.5 (id)
 
-> Iklan penuh layar saat keluar permainan (tombol kembali atau Menu), langsung tanpa konfirmasi.
-> Periksa pembaruan di menu; juga dicek otomatis saat buka aplikasi.
-> Meja gaple lebih besar; tangan pemain memakai ubin voxel di bibir meja.
+> Werewolf: 5–8 pemain lewat Wi‑Fi atau online (tanpa Bluetooth), peran Indonesia, Kepala desa, bot.
+> Saat diskusi siang Werewolf, ketuk chip klaim singkat agar meja tahu maksudmu.
 
-### What’s New — 1.0.4 (en-US)
+### What’s New — 1.0.5 (en-US)
 
-> Full-screen ad when leaving a game (back button or Menu), with no confirm step.
-> Check for update on the menu; also checked automatically on launch.
-> Larger gaple table; your hand is voxel tiles on the rim.
+> Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.
+> During Werewolf day talk, tap a short claim chip so the table sees what you mean.
 
 **Graphics:** shipping files in `docs/brand/store/` (Play icon 512×512, feature graphic
 1024×500, phone screenshots). The screenshot editor lives in Pamer Studio at
