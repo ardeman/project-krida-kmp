@@ -118,6 +118,21 @@ final class WerewolfHostTable: WerewolfTable {
         ticker?.stop()
         transport.close()
     }
+
+    /// You in seat 0 against enough computers to reach [players] (5–8). For simulator smoke /
+    /// local practice without opening an Online room.
+    static func vsComputer(you: String, players: Int = 5, computerName: (Int) -> String) -> WerewolfTable {
+        let total = min(max(players, WerewolfSettings.minPlayers), WerewolfSettings.maxPlayers)
+        let transport = LocalTransport()
+        let session = HostSession<WerewolfState, WerewolfMove>(
+            rules: StandardRules.shared.werewolf, transport: transport, roomCode: "LOCAL")
+        _ = session.addLocalPlayer(name: you, platform: .ios)
+        for i in 1..<total {
+            _ = session.addBot(name: computerName(i), platform: .ios, bot: WerewolfBot(level: .normal))
+        }
+        session.start()
+        return WerewolfHostTable(session: session, mySeat: 0, transport: transport)
+    }
 }
 
 final class WerewolfGuestTable: WerewolfTable {

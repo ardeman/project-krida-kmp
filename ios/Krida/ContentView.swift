@@ -173,7 +173,21 @@ struct ContentView: View {
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openCongklakComputer") { startVsComputer(.normal) } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openUlarTangga") { game = .ularTangga; startUlarTangga() } }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openLudo") { game = .ludo; startLudo() } }
-        .onAppear { if ProcessInfo.processInfo.arguments.contains("-openPerangKapal") { game = .perangKapal; startPerangKapal(computer: true) } }
+        .onAppear {
+            let args = ProcessInfo.processInfo.arguments
+            if args.contains("-openPerangKapal") { game = .perangKapal; startPerangKapal(computer: true) }
+            if args.contains("-openWerewolf") {
+                game = .werewolf
+                werewolfTable = WerewolfHostTable.vsComputer(
+                    you: String(localized: "You", bundle: .app),
+                    players: 5,
+                    computerName: { n in
+                        n == 1
+                            ? String(localized: "Computer", bundle: .app)
+                            : String(localized: "Computer \(n)", bundle: .app)
+                    })
+            }
+        }
         .onAppear { if ProcessInfo.processInfo.arguments.contains("-openGaple") { game = .gaple; startGaple() } }
         .onAppear {
             if ProcessInfo.processInfo.arguments.contains("-openNearby") {
