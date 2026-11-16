@@ -167,8 +167,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   exempt. Cancelled the version-only queue, then one submission with **1.0.4** +
   **`hapus_iklan`**. **Live on the App Store** 2026-11-16 (track id `6832093929`).
   **1.0.5 / versionCode 6** (2026-11-17): Werewolf + claim chips (and related polish).
-  AAB: `~/Desktop/krida-1.0.5-release.aab` — Play closed testing upload. Details in
-  `docs/store.md`.
+  AAB: `~/Desktop/krida-1.0.5-release.aab` — Play closed testing **sent for review**
+  (6 / 1.0.5). Details in `docs/store.md`.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
