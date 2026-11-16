@@ -91,6 +91,7 @@ import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -344,8 +345,13 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         lifetime.stop()
         activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
-
-    BackHandler(onBack = ::exit)
+    var confirmingLeave by remember { mutableStateOf(false) }
+    fun requestExit() {
+        if (table.isHost && table.canEmote) confirmingLeave = true else exit()
+    }
+    BackHandler(onBack = {
+        if (confirmingLeave) confirmingLeave = false else requestExit()
+    })
     val turned = LocalStageTurned.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -431,7 +437,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                 Modifier.width(leftW).fillMaxHeight().align(Alignment.CenterStart).hud("left"),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::requestExit)
                 Text(stringResource(R.string.gaple_title), style = Theme.font(18, FontWeight.Black, Theme.ink))
                 Text(
                     stringResource(R.string.gaple_round, state.round, GapleGame.TARGET),
@@ -546,14 +552,20 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         if (roundCard) RoundCard(
             table, state, roundSeconds, turnTotal,
             dealing = dealing,
-            onExit = ::exit,
+            onExit = ::requestExit,
             onNext = ::deal,
         )
         if (settled && state.finished) ResultCard(
             table, state,
-            onExit = ::exit,
+            onExit = ::requestExit,
             onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
         )
+        if (confirmingLeave) {
+            HostLeaveConfirm(
+                onCancel = { confirmingLeave = false },
+                onConfirm = { confirmingLeave = false; exit() },
+            )
+        }
         if (showRules) RulesSheet(state.partners, drawing(state)) { showRules = false }
     }
 }

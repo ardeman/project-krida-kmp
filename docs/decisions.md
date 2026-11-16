@@ -155,6 +155,9 @@ in the same commit as the code.
 - **Computer seats** (2026-11-16): every game auto-names computers `Computer N` (localized)
   from their seat when more than one is present, assigns `Avatar.botMix(seat)` on the wire,
   and shows a desktop/computer icon on that generated background (not a human shape).
+- **Host leave confirm** (2026-11-16): when the host of a linked room (nearby or online)
+  backs out of the lobby or a mid-game board, show a confirm that leaving closes the room
+  for everyone. Guests and local / pass-and-play leave without it.
 - **Notification permission** (iPhone, 2026-11-12): asked right after sign-in, never at
   launch. The app shows its own card first (what the notifications are for, Not now /
   Allow); the iOS question comes only after Allow, so a Not now does not use it up.

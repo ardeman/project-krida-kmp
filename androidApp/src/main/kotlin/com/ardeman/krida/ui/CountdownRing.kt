@@ -66,7 +66,9 @@ fun CountdownRing(
             drawArc(track, 0f, 360f, false, topLeft, arcSize, style = Stroke(width))
             drawArc(color, -90f, 360f * progress, false, topLeft, arcSize, style = Stroke(width, cap = StrokeCap.Round))
         }
-        Text("$seconds", style = Theme.font((size.value * 0.36f).toInt(), FontWeight.Black, if (urgent) Theme.error else ink))
+        // Digit stays on [ink] (readable on Werewolf’s light day panel); only the arc goes
+        // Theme.error in the last 5 s — dark-mode error pink vanishes on cream.
+        Text("$seconds", style = Theme.font((size.value * 0.36f).toInt(), FontWeight.Black, ink))
     }
 }
 

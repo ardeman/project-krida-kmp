@@ -232,6 +232,8 @@
     <string name="nearby_remove_computer">Hapus komputer dari kursi %1$d</string>
     <string name="nearby_waiting_friend">Menunggu teman…</string>
     <string name="nearby_leave_room">Keluar room</string>
+    <string name="nearby_host_leave_title">Keluar room?</string>
+    <string name="nearby_host_leave_detail">Keluar menutup room untuk semua orang.</string>
     <string name="nearby_joined_title">Sudah masuk</string>
     <string name="nearby_joined_waiting">Menunggu host memulai…</string>
     <string name="nearby_joined_seat_pawn">Kamu pemain %1$d, pion %2$s.</string>

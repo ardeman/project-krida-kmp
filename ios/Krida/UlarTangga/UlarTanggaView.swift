@@ -384,6 +384,7 @@ private struct UlarTanggaBoardView: View {
     @StateObject private var model: UlarTanggaGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @State private var size: CGSize = .zero
     /// HUD boxes the board stays clear of, and "room" for where it may go, in `space`.
     @State private var boxes: [String: CGRect] = [:]
@@ -422,6 +423,12 @@ private struct UlarTanggaBoardView: View {
             ZStack(alignment: .topLeading) {
                 hud
                 if model.state.finished && !model.animating { gameOver }
+                if confirmingLeave {
+                    HostLeaveConfirm(
+                        onCancel: { confirmingLeave = false },
+                        onConfirm: { confirmingLeave = false; exit() }
+                    )
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             // In the background: the view is larger than the screen and must not size the HUD.
@@ -489,6 +496,11 @@ private struct UlarTanggaBoardView: View {
         ads.afterGame(then: onExit)
     }
 
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.canRestart && table.canEmote { confirmingLeave = true } else { exit() }
+    }
+
     private func hudBox(_ key: String) -> some ViewModifier {
         FrameReader(space: Self.space, frame: Binding(get: { boxes[key] ?? .zero }, set: { boxes[key] = $0 }))
     }
@@ -554,7 +566,7 @@ private struct UlarTanggaBoardView: View {
         return HStack(alignment: .top, spacing: 0) {
             // Left: back, then the players, two tiles a row.
             VStack(alignment: .leading, spacing: 10 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                     .clearPunchHole(hole, .topLeading, already: 24 * s)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
@@ -770,7 +782,7 @@ private struct UlarTanggaBoardView: View {
                     }
                 }
                 HStack(spacing: 10 * s) {
-                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
                         Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }

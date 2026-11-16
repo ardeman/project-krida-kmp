@@ -38,6 +38,9 @@ object Sounds {
         Miss(R.raw.sfx_miss, 0.7f),
         Hit(R.raw.sfx_hit, 0.85f),
         Sunk(R.raw.sfx_sunk, 1f),
+        // Werewolf: night howl / dawn chime under the phase call.
+        Night(R.raw.sfx_night, 0.75f),
+        Dawn(R.raw.sfx_dawn, 0.7f),
     }
 
     /** Each line in Indonesian and in English; [english] picks which one is spoken. */
@@ -66,6 +69,15 @@ object Sounds {
         Miss(R.raw.vo_miss, R.raw.vo_miss_en),
         Hit(R.raw.vo_hit, R.raw.vo_hit_en),
         Sunk(R.raw.vo_sunk, R.raw.vo_sunk_en),
+        Night(R.raw.vo_night, R.raw.vo_night_en),
+        Dawn(R.raw.vo_dawn, R.raw.vo_dawn_en),
+        Peaceful(R.raw.vo_peaceful, R.raw.vo_peaceful_en),
+        Day(R.raw.vo_day, R.raw.vo_day_en),
+        Vote(R.raw.vo_vote, R.raw.vo_vote_en),
+        Election(R.raw.vo_election, R.raw.vo_election_en),
+        TownWin(R.raw.vo_town_win, R.raw.vo_town_win_en),
+        WolvesWin(R.raw.vo_wolves_win, R.raw.vo_wolves_win_en),
+        YouDied(R.raw.vo_you_died, R.raw.vo_you_died_en),
     }
 
     private const val PREFS = "sounds"

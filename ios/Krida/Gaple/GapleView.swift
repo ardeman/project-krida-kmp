@@ -310,6 +310,7 @@ private struct GapleBoardView: View {
     @StateObject private var model: GapleGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @State private var size: CGSize = .zero
     @State private var boxes: [String: CGRect] = [:]
     @State private var sideInsets = EdgeInsets()
@@ -361,6 +362,12 @@ private struct GapleBoardView: View {
                 notices
                 if model.roundCard { roundCard }
                 if model.settled && state.finished { resultCard }
+                if confirmingLeave {
+                    HostLeaveConfirm(
+                        onCancel: { confirmingLeave = false },
+                        onConfirm: { confirmingLeave = false; exit() }
+                    )
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             .background(alignment: .topLeading) {
@@ -411,6 +418,11 @@ private struct GapleBoardView: View {
         ads.afterGame(then: onExit)
     }
 
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.isHost && table.canEmote { confirmingLeave = true } else { exit() }
+    }
+
     private func hudBox(_ key: String) -> some ViewModifier {
         GapleFrameReader(space: Self.space, frame: Binding(get: { boxes[key] ?? .zero }, set: { boxes[key] = $0 }))
     }
@@ -434,7 +446,7 @@ private struct GapleBoardView: View {
         let rows = stride(from: 0, to: count, by: 2).map { Array($0..<min($0 + 2, count)) }
         return HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 8 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                     .clearPunchHole(hole, .topLeading, already: 24 * s)
                 Text("Gaple").font(Theme.font(18 * s, .black))
                 Text("Round \(Int(state.round)) · to \(Int(GapleGame.shared.TARGET))")
@@ -709,7 +721,7 @@ private struct GapleBoardView: View {
                 }
             }
             // The card covers the HUD back button; leave without waiting for the next deal.
-            Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+            Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                 .buttonStyle(SecondaryButtonStyle(height: 44, tint: Theme.muted))
         }
     }
@@ -733,7 +745,7 @@ private struct GapleBoardView: View {
             Text("First to 100 points").font(Theme.font(13 * s, .bold)).foregroundStyle(Theme.muted)
             scoreTable(scoreRows(state).sorted { $0.total > $1.total })
             HStack(spacing: 10 * s) {
-                Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                     .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
                 if table.isHost {
                     Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }

@@ -321,6 +321,7 @@ private struct CongklakBoardView: View {
     @ObservedObject private var table: CongklakTable
     @StateObject private var model: CongklakGameModel
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @ObservedObject private var ads = Ads.shared
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
@@ -351,6 +352,12 @@ private struct CongklakBoardView: View {
 
                 hud
                 if model.finished && !model.animating { gameOver }
+                if confirmingLeave {
+                    HostLeaveConfirm(
+                        onCancel: { confirmingLeave = false },
+                        onConfirm: { confirmingLeave = false; exit() }
+                    )
+                }
             }
             .onAppear {
                 model.board.whenDrawn(onDrawn)
@@ -379,6 +386,11 @@ private struct CongklakBoardView: View {
     private func exit() {
         model.stop()
         ads.afterGame(then: onExit)
+    }
+
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.canRestart && table.canEmote { confirmingLeave = true } else { exit() }
     }
 
     /// Interstitials only where nobody waits on this device: local games, or leaving to the menu.
@@ -425,7 +437,7 @@ private struct CongklakBoardView: View {
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0 * s) {
                 PillTopBar(gap: 8 * s) {
-                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                    CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                         .clearPunchHole(hole, .topLeading, already: 24 * s)
                     opponentPill
                     HStack(spacing: 8 * s) {
@@ -567,7 +579,7 @@ private struct CongklakBoardView: View {
                     scoreTile(farSeat, winner: winner)
                 }
                 HStack(spacing: 10 * s) {
-                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.ink))
                     if table.canRestart {
                         Button(action: restart) { Text("Play again").frame(maxWidth: .infinity) }

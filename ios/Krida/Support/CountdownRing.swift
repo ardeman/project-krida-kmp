@@ -24,9 +24,11 @@ struct CountdownRing: View {
                 .rotationEffect(.degrees(-90))
                 .animation(.linear(duration: seconds > 0 ? 1 : 0.2), value: progress)
                 .animation(.easeInOut, value: urgent)
+            // Digit stays on phase/ink (readable on Werewolf’s light day panel); only the
+            // arc goes Theme.error in the last 5 s — dark-mode error pink vanishes on cream.
             Text("\(seconds)")
                 .font(Theme.font(size * s * 0.36, .black))
-                .foregroundStyle(urgent ? Theme.error : (ink ?? Theme.ink))
+                .foregroundStyle(ink ?? Theme.ink)
                 .monospacedDigit()
         }
         .padding(width / 2)

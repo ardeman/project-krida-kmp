@@ -92,6 +92,7 @@ import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.CountdownRing
 import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
@@ -387,8 +388,13 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         lifetime.stop()
         activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
-
-    BackHandler(onBack = ::exit)
+    var confirmingLeave by remember { mutableStateOf(false) }
+    fun requestExit() {
+        if (table.canRestart && table.canEmote) confirmingLeave = true else exit()
+    }
+    BackHandler(onBack = {
+        if (confirmingLeave) confirmingLeave = false else requestExit()
+    })
     val turned = LocalStageTurned.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -531,7 +537,7 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
                 CircleIconButton(
                     R.drawable.ic_chevron_left,
                     stringResource(R.string.congklak_back_to_menu),
-                    ::exit,
+                    ::requestExit,
                     Modifier.hud("back"),
                 )
                 Spacer(Modifier.height(4.dp))
@@ -669,12 +675,18 @@ private fun Board(table: PerangKapalTable, onExit: () -> Unit, onFirstFrame: () 
         }
         if (state.finished) ResultCard(
             table, state,
-            onExit = ::exit,
+            onExit = ::requestExit,
             onRestart = {
                 selectedKind = 0
                 activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart()
             },
         )
+        if (confirmingLeave) {
+            HostLeaveConfirm(
+                onCancel = { confirmingLeave = false },
+                onConfirm = { confirmingLeave = false; exit() },
+            )
+        }
         if (showRules) RulesSheet { showRules = false }
     }
 }

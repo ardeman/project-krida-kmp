@@ -242,6 +242,8 @@
     <string name="nearby_remove_computer">Remove the computer from seat %1$d</string>
     <string name="nearby_waiting_friend">Waiting for a friend…</string>
     <string name="nearby_leave_room">Leave room</string>
+    <string name="nearby_host_leave_title">Leave room?</string>
+    <string name="nearby_host_leave_detail">Leaving closes the room for everyone.</string>
     <string name="nearby_joined_title">You\'re in</string>
     <string name="nearby_joined_waiting">Waiting for the host to start…</string>
     <string name="nearby_joined_seat_pawn">You\'re player %1$d, %2$s pawn.</string>

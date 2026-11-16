@@ -79,6 +79,7 @@ import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.EmoteHud
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.LoadingScreen
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
@@ -409,8 +410,13 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
         lifetime.stop()
         activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
-
-    BackHandler(onBack = ::exit)
+    var confirmingLeave by remember { mutableStateOf(false) }
+    fun requestExit() {
+        if (table.canRestart && table.canEmote) confirmingLeave = true else exit()
+    }
+    BackHandler(onBack = {
+        if (confirmingLeave) confirmingLeave = false else requestExit()
+    })
     val turned = LocalStageTurned.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -504,7 +510,7 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
             Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp).hud(ROOM),
         ) {
             Column(Modifier.width(136.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit, Modifier.hud("back"))
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::requestExit, Modifier.hud("back"))
                 Spacer(Modifier.height(4.dp))
                 // Two tiles a row; each local seat keeps its timer / autopilot under the tile
                 // (same slot as congklak's pill), so the die column does not jump.
@@ -643,9 +649,15 @@ private fun Board(table: LudoTable, onExit: () -> Unit, onFirstFrame: () -> Unit
 
         if (state.finished) ResultCard(
             table, state,
-            onExit = ::exit,
+            onExit = ::requestExit,
             onRestart = { activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart() },
         )
+        if (confirmingLeave) {
+            HostLeaveConfirm(
+                onCancel = { confirmingLeave = false },
+                onConfirm = { confirmingLeave = false; exit() },
+            )
+        }
         if (showRules) RulesSheet(state.options) { showRules = false }
     }
 }

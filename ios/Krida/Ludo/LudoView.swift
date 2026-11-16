@@ -466,6 +466,7 @@ private struct LudoBoardView: View {
     @StateObject private var model: LudoGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @State private var size: CGSize = .zero
     @State private var boxes: [String: CGRect] = [:]
     @GestureState private var dieDown = false
@@ -504,6 +505,12 @@ private struct LudoBoardView: View {
                     .allowsHitTesting(model.canPick)
                 hud
                 if model.state.finished && !model.animating { gameOver }
+                if confirmingLeave {
+                    HostLeaveConfirm(
+                        onCancel: { confirmingLeave = false },
+                        onConfirm: { confirmingLeave = false; exit() }
+                    )
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             .background(alignment: .topLeading) {
@@ -578,6 +585,11 @@ private struct LudoBoardView: View {
         ads.afterGame(then: onExit)
     }
 
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.canRestart && table.canEmote { confirmingLeave = true } else { exit() }
+    }
+
     private func hudBox(_ key: String) -> some ViewModifier {
         LudoFrameReader(space: Self.space, frame: Binding(get: { boxes[key] ?? .zero }, set: { boxes[key] = $0 }))
     }
@@ -609,7 +621,7 @@ private struct LudoBoardView: View {
     private var hud: some View {
         HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 10 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                     .clearPunchHole(hole, .topLeading, already: 24 * s)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
@@ -798,7 +810,7 @@ private struct LudoBoardView: View {
                     }
                 }
                 HStack(spacing: 10 * s) {
-                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
                     if table.canRestart {
                         Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }

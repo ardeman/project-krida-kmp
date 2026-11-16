@@ -14,6 +14,7 @@ final class Sounds: ObservableObject {
         case win = "sfx_win", lose = "sfx_lose", tap = "sfx_tap"
         case die = "sfx_die", step = "sfx_step"
         case miss = "sfx_miss", hit = "sfx_hit", sunk = "sfx_sunk"
+        case night = "sfx_night", dawn = "sfx_dawn"
     }
 
     enum Line: String, CaseIterable {
@@ -25,6 +26,9 @@ final class Sounds: ObservableObject {
         case die1 = "vo_die_1", die2 = "vo_die_2", die3 = "vo_die_3"
         case die4 = "vo_die_4", die5 = "vo_die_5", die6 = "vo_die_6"
         case miss = "vo_miss", hit = "vo_hit", sunk = "vo_sunk"
+        case night = "vo_night", dawn = "vo_dawn", peaceful = "vo_peaceful", day = "vo_day"
+        case vote = "vo_vote", election = "vo_election"
+        case townWin = "vo_town_win", wolvesWin = "vo_wolves_win", youDied = "vo_you_died"
     }
 
     @AppStorage("soundOn") var soundOn = true {
@@ -68,6 +72,7 @@ final class Sounds: ObservableObject {
     private static let volume: [Effect: Float] = [
         .sow: 0.45, .store: 0.6, .tap: 0.4, .die: 0.6, .step: 0.45,
         .miss: 0.7, .hit: 0.85, .sunk: 1,
+        .night: 0.75, .dawn: 0.7,
     ]
 
     func play(_ effect: Effect) {

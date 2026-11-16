@@ -85,6 +85,7 @@ import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.TurnTimer
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.EmoteHud
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
 import com.ardeman.krida.ui.PrimaryButton
@@ -257,6 +258,10 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         lifetime.stop()
         activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
+    var confirmingLeave by remember { mutableStateOf(false) }
+    fun requestExit() {
+        if (table.canRestart && table.canEmote) confirmingLeave = true else exit()
+    }
 
     // Turn timer: while a player on this device picks a pit, a countdown runs; at 0 the
     // phone plays the easy computer's pick for them (CongklakGame.timeoutMove). Sowing and
@@ -305,7 +310,9 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         .toSet()
     LaunchedEffect(rings, renderer) { renderer?.showRings(rings) }
 
-    BackHandler(onBack = ::exit)
+    BackHandler(onBack = {
+        if (confirmingLeave) confirmingLeave = false else requestExit()
+    })
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle, renderer) {
@@ -400,7 +407,7 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
         Box(Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp)) {
             Column(Modifier.fillMaxSize()) {
                 PillTopBar(gap = 12.dp) {
-                    CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                    CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::requestExit)
                     OpponentPill(
                         seat = seats.pill(seats.far),
                         on = active(seats.far),
@@ -476,12 +483,18 @@ private fun Board(table: CongklakTable, onExit: () -> Unit, onFirstFrame: () -> 
             val local = table.mySeat == null || table.botLevel != null
             GameOver(
                 table, seats, state,
-                onExit = ::exit,
+                onExit = ::requestExit,
                 onRestart = { if (local && activity != null) Ads.afterGame(activity, table::restart) else table.restart() },
             )
         }
     }
 
+    if (confirmingLeave) {
+        HostLeaveConfirm(
+            onCancel = { confirmingLeave = false },
+            onConfirm = { confirmingLeave = false; exit() },
+        )
+    }
     if (showRules) CongklakRulesDialog(state.tembakAfterStore) { showRules = false }
 }
 

@@ -543,6 +543,7 @@ private struct PerangKapalBoardView: View {
     @StateObject private var model: PerangKapalGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @State private var size: CGSize = .zero
     @State private var boxes: [String: CGRect] = [:]
     @State private var sideInsets = EdgeInsets()
@@ -585,6 +586,12 @@ private struct PerangKapalBoardView: View {
                 }
                 if let next = model.cover { passCover(next) }
                 if model.state.finished { gameOver }
+                if confirmingLeave {
+                    HostLeaveConfirm(
+                        onCancel: { confirmingLeave = false },
+                        onConfirm: { confirmingLeave = false; exit() }
+                    )
+                }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             .background(alignment: .topLeading) {
@@ -645,6 +652,11 @@ private struct PerangKapalBoardView: View {
         ads.afterGame(then: onExit)
     }
 
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.canRestart && table.canEmote { confirmingLeave = true } else { exit() }
+    }
+
     private func hudBox(_ key: String) -> some ViewModifier {
         PerangKapalFrameReader(space: Self.space, frame: Binding(get: { boxes[key] ?? .zero }, set: { boxes[key] = $0 }))
     }
@@ -691,7 +703,7 @@ private struct PerangKapalBoardView: View {
         let far = 1 - model.viewer
         return HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 8 * s) {
-                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+                CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                     .clearPunchHole(hole, .topLeading, already: 24 * s)
                     .modifier(hudBox("back"))
                 Spacer().frame(height: 4 * s)
@@ -947,7 +959,7 @@ private struct PerangKapalBoardView: View {
                     .font(Theme.font(14 * s, .bold))
                     .foregroundStyle(Theme.muted)
                 HStack(spacing: 10 * s) {
-                    Button(action: exit) { Text("Menu").frame(maxWidth: .infinity) }
+                    Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
                         .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
                     if table.canRestart {
                         Button { ads.afterGame(then: model.restart) } label: { Text("Play again").frame(maxWidth: .infinity) }

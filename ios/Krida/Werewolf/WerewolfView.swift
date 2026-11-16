@@ -16,6 +16,8 @@ final class WerewolfGameModel: ObservableObject {
     private let sounds = Sounds.shared
     private let lifetime = GameLifetime()
     private var phaseKey: String?
+    /// Phase calls only; must not include acting seats (bots finishing night would re-play “Night!”).
+    private var announcedAudioKey: String?
     private var roleShown = false
     @Published private(set) var selectedTarget: Int?
 
@@ -95,6 +97,7 @@ final class WerewolfGameModel: ObservableObject {
         witchPoisonTarget = nil
         selectedTarget = nil
         auto = false
+        maybeAnnouncePhase()
 
         if table.isHost, state.phase == WerewolfPhase.shared.DISCUSS {
             lifetime.launch("discuss-bots") { [self] in
@@ -118,6 +121,19 @@ final class WerewolfGameModel: ObservableObject {
             }
             resolveTimeouts()
         }
+    }
+
+    private func audioAnnounceKey(_ state: WerewolfState) -> String {
+        let deaths = state.lastDeaths.map(\.intValue).sorted()
+        return "\(state.phase)-\(state.day)-\(deaths)-\(state.winnerSide ?? "")"
+    }
+
+    private func maybeAnnouncePhase() {
+        let key = audioAnnounceKey(state)
+        guard key != announcedAudioKey else { return }
+        announcedAudioKey = key
+        lifetime.cancel("announce")
+        announcePhase(key: key)
     }
 
     private func resolveTimeouts() {
@@ -218,10 +234,67 @@ final class WerewolfGameModel: ObservableObject {
         phaseSeconds = phaseTotal()
     }
 
+    /// Host Play again: new deal at the same table; reset phase audio / role card.
+    func restart() {
+        guard lifetime.active, table.canRestart else { return }
+        announcedAudioKey = nil
+        phaseKey = nil
+        roleShown = false
+        showRole = false
+        phaseSeconds = 0
+        auto = false
+        table.restart()
+    }
+
     func stop() {
         lifetime.stop()
         table.leave()
         sounds.stopGameAudio()
+    }
+
+    /// Night / dawn / day / vote calls with transition SFX; spaced so lines don’t overlap.
+    private func announcePhase(key: String) {
+        lifetime.launch("announce") { [self] in
+            // Use announcedAudioKey (not phaseKey — that changes when bots act).
+            switch state.phase {
+            case WerewolfPhase.shared.NIGHT:
+                sounds.play(.night)
+                try await Task.sleep(for: .milliseconds(350))
+                guard lifetime.active, announcedAudioKey == key else { return }
+                sounds.say(.night)
+            case WerewolfPhase.shared.DISCUSS:
+                sounds.play(.dawn)
+                try await Task.sleep(for: .milliseconds(350))
+                guard lifetime.active, announcedAudioKey == key else { return }
+                if state.lastDeaths.isEmpty {
+                    sounds.say(.peaceful)
+                } else {
+                    sounds.say(.dawn)
+                }
+                try await Task.sleep(for: .milliseconds(1050))
+                guard lifetime.active, announcedAudioKey == key else { return }
+                if state.lastDeaths.contains(where: { $0.intValue == me }) {
+                    sounds.say(.youDied)
+                    try await Task.sleep(for: .milliseconds(950))
+                    guard lifetime.active, announcedAudioKey == key else { return }
+                }
+                sounds.say(.day)
+            case WerewolfPhase.shared.VOTE:
+                sounds.say(.vote)
+            case WerewolfPhase.shared.SHERIFF_ELECT:
+                sounds.say(.election)
+            case WerewolfPhase.shared.FINISHED:
+                let town = state.winnerSide == "town"
+                let mySide = state.teamOf(seat: Int32(me))
+                let won = (town && mySide == "town") || (!town && mySide == "wolves")
+                sounds.play(won ? .win : .lose)
+                try await Task.sleep(for: .milliseconds(400))
+                guard lifetime.active, announcedAudioKey == key else { return }
+                sounds.say(town ? .townWin : .wolvesWin)
+            default:
+                break
+            }
+        }
     }
 }
 
@@ -239,6 +312,7 @@ private struct WerewolfBoardView: View {
     @StateObject private var model: WerewolfGameModel
     @ObservedObject private var ads = Ads.shared
     @State private var showRules = false
+    @State private var confirmingLeave = false
     @Environment(\.uiScale) private var s
     @Environment(\.punchHole) private var hole
     let onExit: () -> Void
@@ -274,6 +348,12 @@ private struct WerewolfBoardView: View {
             notices
             if model.showRole { roleCard }
             if model.finished { resultCard }
+            if confirmingLeave {
+                HostLeaveConfirm(
+                    onCancel: { confirmingLeave = false },
+                    onConfirm: { confirmingLeave = false; exit() }
+                )
+            }
         }
         .foregroundStyle(boardInk)
         .onDisappear { model.stop() }
@@ -292,6 +372,11 @@ private struct WerewolfBoardView: View {
         ads.afterGame(then: onExit)
     }
 
+    /// Host of a linked room: confirm before ending the game for every guest.
+    private func requestExit() {
+        if table.isHost && table.canEmote { confirmingLeave = true } else { exit() }
+    }
+
     private func seatName(_ seat: Int) -> String {
         seat == table.mySeat ? String(localized: "You", bundle: .app) : table.name(seat)
     }
@@ -300,7 +385,7 @@ private struct WerewolfBoardView: View {
         let count = Int(state.players)
         let rows = stride(from: 0, to: count, by: 2).map { Array($0..<min($0 + 2, count)) }
         return VStack(alignment: .leading, spacing: 8 * s) {
-            CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: exit)
+            CircleIconButton(systemImage: "chevron.left", label: "Back to menu", action: requestExit)
                 .clearPunchHole(hole, .topLeading, already: 24 * s)
             Text("Werewolf").font(Theme.font(18 * s, .black))
             Text(phaseTitle).font(Theme.font(12 * s, .bold)).foregroundStyle(boardMuted).lineLimit(2)
@@ -741,10 +826,25 @@ private struct WerewolfBoardView: View {
                 Text(mine ? String(localized: "You won", bundle: .app) : String(localized: "You lost", bundle: .app))
                     .font(Theme.font(15 * s, .bold))
                     .foregroundStyle(Theme.muted)
-                Button(String(localized: "Back to menu", bundle: .app), action: exit)
-                    .buttonStyle(PrimaryButtonStyle())
+                HStack(spacing: 10 * s) {
+                    Button(action: requestExit) { Text("Menu").frame(maxWidth: .infinity) }
+                        .buttonStyle(SecondaryButtonStyle(height: 48, tint: Theme.muted))
+                    if table.canRestart {
+                        Button { ads.afterGame(then: model.restart) } label: {
+                            Text("Play again").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(PrimaryButtonStyle(height: 48))
+                    } else {
+                        Text("Waiting for the host to start again…")
+                            .font(Theme.font(14 * s, .bold))
+                            .foregroundStyle(Theme.muted)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
             }
             .padding(24 * s)
+            .frame(maxWidth: 420 * s)
             .foregroundStyle(Theme.ink)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
         }

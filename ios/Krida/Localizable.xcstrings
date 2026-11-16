@@ -1900,6 +1900,38 @@
         }
       }
     },
+    "Leave room?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave room?"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keluar room?"
+          }
+        }
+      }
+    },
+    "Leaving closes the room for everyone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaving closes the room for everyone."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keluar menutup room untuk semua orang."
+          }
+        }
+      }
+    },
     "Let's go!": {
       "localizations": {
         "en": {

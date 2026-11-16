@@ -102,60 +102,82 @@ struct RoomLobby: View {
     @Environment(\.uiScale) private var s
     @State private var showRules = false
     @State private var inviting = false
+    @State private var confirmingLeave = false
     @ObservedObject private var account = Account.shared
 
     /// Invites need an account and an open seat.
     private var canInvite: Bool { room.canInvite && account.user != nil && room.players.count < room.maxPlayers }
 
+    private func requestLeave() {
+        if room.isHost { confirmingLeave = true } else { onLeave() }
+    }
+
+    private func onBack() {
+        if confirmingLeave { confirmingLeave = false }
+        else if inviting { inviting = false }
+        else { requestLeave() }
+    }
+
     var body: some View {
         // Text("… \(x)") can print Optional(Optional("…")); resolve to a plain string first.
         let hostName = room.players.first { Int($0.seat) == 0 }?.name ?? ""
         let guestSubtitle = String(localized: "Room \(room.code) · host \(hostName)", bundle: .app)
-        NearbyFrame(
-            title: gameTitle(room.game),
-            subtitle: room.isHost ? placeLine(room.online, lan: room.lan) : Text(verbatim: guestSubtitle),
-            online: room.online,
-            backLabel: room.isHost ? "Back" : "Leave room",
-            onBack: onLeave
-        ) {
-            GeometryReader { geo in
-                HStack(spacing: 14 * s) {
-                    // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
-                    VStack(spacing: 10 * s) {
-                        if room.isHost {
-                            if room.online {
-                                Text(room.publicRoom ? "Public" : "Private")
-                                    .font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
-                            }
-                            hostCode
-                        } else { joinedNote }
-                    }
-                    .padding(.horizontal, 16 * s)
-                    .padding(.vertical, 14 * s)
-                    .frame(width: min((geo.size.width - 14 * s) * 0.37, 290 * s))
-                    .frame(maxHeight: .infinity)
-                    .nearbyCard(s)
-                    VStack(alignment: .leading, spacing: 10 * s) {
-                        if inviting && canInvite {
-                            InvitePicker(room: room, onBack: { inviting = false })
-                        } else {
-                            playersHeader
-                            if room.colorCount > 0 { colorRow }
-                            seats
-                            if room.canInvite { WaitingInvites(room: room) }
-                            Spacer(minLength: 0)
+        ZStack {
+            NearbyFrame(
+                title: gameTitle(room.game),
+                subtitle: room.isHost ? placeLine(room.online, lan: room.lan) : Text(verbatim: guestSubtitle),
+                online: room.online,
+                backLabel: room.isHost ? "Back" : "Leave room",
+                onBack: onBack
+            ) {
+                GeometryReader { geo in
+                    HStack(spacing: 14 * s) {
+                        // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
+                        VStack(spacing: 10 * s) {
+                            if room.isHost {
+                                if room.online {
+                                    Text(room.publicRoom ? "Public" : "Private")
+                                        .font(Theme.font(13 * s, .heavy)).foregroundStyle(Theme.muted)
+                                }
+                                hostCode
+                            } else { joinedNote }
                         }
+                        .padding(.horizontal, 16 * s)
+                        .padding(.vertical, 14 * s)
+                        .frame(width: min((geo.size.width - 14 * s) * 0.37, 290 * s))
+                        .frame(maxHeight: .infinity)
+                        .nearbyCard(s)
+                        VStack(alignment: .leading, spacing: 10 * s) {
+                            if inviting && canInvite {
+                                InvitePicker(room: room, onBack: { inviting = false })
+                            } else {
+                                playersHeader
+                                if room.colorCount > 0 { colorRow }
+                                seats
+                                if room.canInvite { WaitingInvites(room: room) }
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        // The picker closes by itself once the last seat is taken.
+                        .onChange(of: canInvite, initial: true) { _, can in
+                            if can { account.loadFriends() } else { inviting = false }
+                        }
+                        .padding(.horizontal, 16 * s)
+                        .padding(.top, 12 * s)
+                        .padding(.bottom, 14 * s)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .nearbyCard(s)
                     }
-                    // The picker closes by itself once the last seat is taken.
-                    .onChange(of: canInvite, initial: true) { _, can in
-                        if can { account.loadFriends() } else { inviting = false }
-                    }
-                    .padding(.horizontal, 16 * s)
-                    .padding(.top, 12 * s)
-                    .padding(.bottom, 14 * s)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .nearbyCard(s)
                 }
+            }
+            if confirmingLeave {
+                HostLeaveConfirm(
+                    onCancel: { confirmingLeave = false },
+                    onConfirm: {
+                        confirmingLeave = false
+                        onLeave()
+                    }
+                )
             }
         }
     }
@@ -269,7 +291,7 @@ struct RoomLobby: View {
                     .opacity(room.canStart ? 1 : 0.5)
                     .disabled(!room.canStart)
             } else {
-                Button(action: onLeave) { Text("Leave room").frame(minWidth: 94 * s) }
+                Button(action: requestLeave) { Text("Leave room").frame(minWidth: 94 * s) }
                     .buttonStyle(SecondaryButtonStyle(tint: Theme.muted))
             }
         }

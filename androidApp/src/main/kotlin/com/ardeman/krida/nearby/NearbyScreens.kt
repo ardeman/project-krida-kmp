@@ -88,6 +88,7 @@ import com.ardeman.krida.core.qr.QrCode
 import com.ardeman.krida.core.session.RoomCode
 import com.ardeman.krida.ui.LoadingIndicator
 import com.ardeman.krida.ui.CircleIconButton
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.Sounds
@@ -166,48 +167,70 @@ fun RoomLobby(room: NearbyRoom, onLeave: () -> Unit) {
     // Invites need an account; the picker closes by itself once the last seat is taken.
     val canInvite = room.canInvite && Account.user != null && room.players.size < room.maxPlayers
     var inviting by remember { mutableStateOf(false) }
+    var confirmingLeave by remember { mutableStateOf(false) }
     LaunchedEffect(canInvite) { if (canInvite) Account.loadFriends() else inviting = false }
     val subtitle = if (room.isHost) {
         subtitle(room.online, room.lan)
     } else {
         stringResource(R.string.nearby_room_host, room.code, room.players.firstOrNull { it.seat == 0 }?.name ?: "")
     }
-    NearbyFrame(
-        title,
-        subtitle,
-        room.online,
-        stringResource(if (room.isHost) R.string.congklak_back else R.string.nearby_leave_room),
-        onLeave,
-    ) {
-        // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
-        // Inner column scrolls when code + QR + hint are taller than the landscape card —
-        // otherwise the card's rounded clip chops the bottom of the hint line.
-        Box(Modifier.weight(0.37f).widthIn(max = 290.dp).fillMaxHeight().card()) {
+    val requestLeave = {
+        if (room.isHost) confirmingLeave = true else onLeave()
+    }
+    val onBack = {
+        when {
+            confirmingLeave -> confirmingLeave = false
+            inviting -> inviting = false
+            else -> requestLeave()
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        NearbyFrame(
+            title,
+            subtitle,
+            room.online,
+            stringResource(if (room.isHost) R.string.congklak_back else R.string.nearby_leave_room),
+            onBack,
+        ) {
+            // Shares the width with the seats, so a narrow phone still fits "+ Komputer".
+            // Inner column scrolls when code + QR + hint are taller than the landscape card —
+            // otherwise the card's rounded clip chops the bottom of the hint line.
+            Box(Modifier.weight(0.37f).widthIn(max = 290.dp).fillMaxHeight().card()) {
+                Column(
+                    // Bottom padding ≥ card corner radius so the hint isn't shaved by the clip.
+                    Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                        .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+                ) {
+                    if (room.isHost) {
+                        if (room.online) Text(stringResource(if (room.publicRoom) R.string.room_public else R.string.room_private), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
+                        HostCode(room.code, room.online)
+                    } else JoinedNote(room, names)
+                }
+            }
             Column(
-                // Bottom padding ≥ card corner radius so the hint isn't shaved by the clip.
-                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                    .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+                Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                if (room.isHost) {
-                    if (room.online) Text(stringResource(if (room.publicRoom) R.string.room_public else R.string.room_private), style = Theme.font(13, FontWeight.ExtraBold, Theme.muted))
-                    HostCode(room.code, room.online)
-                } else JoinedNote(room, names)
+                if (inviting && canInvite) {
+                    InvitePicker(room, onBack = { inviting = false })
+                } else {
+                    PlayersHeader(room, requestLeave, onInvite = if (canInvite) ({ inviting = true }) else null)
+                    if (room.colorCount > 0) ColorRow(room, names)
+                    Seats(room, names)
+                    if (room.canInvite) WaitingInvites(room)
+                }
             }
         }
-        Column(
-            Modifier.weight(0.63f).fillMaxHeight().card().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            if (inviting && canInvite) {
-                InvitePicker(room, onBack = { inviting = false })
-            } else {
-                PlayersHeader(room, onLeave, onInvite = if (canInvite) ({ inviting = true }) else null)
-                if (room.colorCount > 0) ColorRow(room, names)
-                Seats(room, names)
-                if (room.canInvite) WaitingInvites(room)
-            }
+        if (confirmingLeave) {
+            HostLeaveConfirm(
+                onCancel = { confirmingLeave = false },
+                onConfirm = {
+                    confirmingLeave = false
+                    onLeave()
+                },
+            )
         }
     }
 }

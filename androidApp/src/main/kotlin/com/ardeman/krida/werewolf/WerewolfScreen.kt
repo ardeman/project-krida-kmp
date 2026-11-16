@@ -66,6 +66,7 @@ import com.ardeman.krida.core.protocol.WerewolfClaims
 import com.ardeman.krida.ui.CircleIconButton
 import com.ardeman.krida.ui.CountdownNotice
 import com.ardeman.krida.ui.EmoteHud
+import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
@@ -119,6 +120,16 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
         }
     }
 
+    // Phase calls once per phase/day (not on every bot nightDone update).
+    var announcedKey by remember { mutableStateOf<String?>(null) }
+    val audioKey = werewolfAudioKey(state)
+    LaunchedEffect(audioKey, lifetime.active) {
+        if (!lifetime.active) return@LaunchedEffect
+        if (audioKey == announcedKey) return@LaunchedEffect
+        announcedKey = audioKey
+        announceWerewolfPhase(state, me)
+    }
+
     DisposableEffect(table) {
         table.onUpdate = { update ->
             if (lifetime.active) {
@@ -150,11 +161,17 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
     }
 
     val activity = LocalActivity.current
+    var confirmingLeave by remember { mutableStateOf(false) }
     fun exit() {
         lifetime.stop()
         activity?.let { Ads.afterGame(it, onExit) } ?: onExit()
     }
-    BackHandler(onBack = ::exit)
+    fun requestExit() {
+        if (table.isHost && table.canEmote) confirmingLeave = true else exit()
+    }
+    BackHandler(onBack = {
+        if (confirmingLeave) confirmingLeave = false else requestExit()
+    })
 
     val phaseTotal = (phaseMs(state.phase) / 1000L).toInt()
     var phaseSeconds by remember { mutableIntStateOf(0) }
@@ -220,7 +237,7 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
             Modifier.fillMaxSize().windowInsetsPadding(gameInsets).padding(horizontal = 24.dp, vertical = 14.dp),
         ) {
             Column(Modifier.width(136.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::exit)
+                CircleIconButton(R.drawable.ic_chevron_left, stringResource(R.string.congklak_back_to_menu), ::requestExit)
                 Text(stringResource(R.string.werewolf_title), style = Theme.font(16, FontWeight.Black, Theme.ink), maxLines = 1)
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()),
@@ -305,9 +322,18 @@ private fun Board(table: WerewolfTable, onExit: () -> Unit) {
             RoleCard(myRole) { showRole = false }
         }
         if (WerewolfGame.isFinished(state)) {
-            ResultOverlay(table, state, onExit = ::exit, onRestart = {
+            ResultOverlay(table, state, onExit = ::requestExit, onRestart = {
+                roleShown = false
+                showRole = false
+                announcedKey = null
                 activity?.let { Ads.afterGame(it, table::restart) } ?: table.restart()
             })
+        }
+        if (confirmingLeave) {
+            HostLeaveConfirm(
+                onCancel = { confirmingLeave = false },
+                onConfirm = { confirmingLeave = false; exit() },
+            )
         }
         if (showRules) RulesSheet { showRules = false }
     }
@@ -811,9 +837,55 @@ private fun ResultOverlay(table: WerewolfTable, state: WerewolfState, onExit: ()
                 SecondaryButton(stringResource(R.string.congklak_to_menu), onExit, Modifier.weight(1f), tint = Theme.muted)
                 if (table.canRestart) {
                     PrimaryButton(stringResource(R.string.congklak_play_again), onRestart, Modifier.weight(1f))
+                } else {
+                    Text(
+                        stringResource(R.string.congklak_wait_host),
+                        style = Theme.font(14, FontWeight.Bold, Theme.muted),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }
+    }
+}
+
+/** Stable key so night bots finishing actions do not re-trigger “Night!”. */
+private fun werewolfAudioKey(state: WerewolfState): String {
+    val deaths = state.lastDeaths.sorted().joinToString(",")
+    return "${state.phase}-${state.day}-$deaths-${state.winnerSide}"
+}
+
+/** Night / dawn / day / vote calls with transition SFX; spaced so lines don’t overlap. */
+private suspend fun announceWerewolfPhase(state: WerewolfState, me: Int) {
+    when (state.phase) {
+        WerewolfPhase.NIGHT -> {
+            Sounds.play(Sounds.Effect.Night)
+            delay(350L)
+            Sounds.say(Sounds.Line.Night)
+        }
+        WerewolfPhase.DISCUSS -> {
+            Sounds.play(Sounds.Effect.Dawn)
+            delay(350L)
+            if (state.lastDeaths.isEmpty()) Sounds.say(Sounds.Line.Peaceful)
+            else Sounds.say(Sounds.Line.Dawn)
+            delay(1_050L)
+            if (me in state.lastDeaths) {
+                Sounds.say(Sounds.Line.YouDied)
+                delay(950L)
+            }
+            Sounds.say(Sounds.Line.Day)
+        }
+        WerewolfPhase.VOTE -> Sounds.say(Sounds.Line.Vote)
+        WerewolfPhase.SHERIFF_ELECT -> Sounds.say(Sounds.Line.Election)
+        WerewolfPhase.FINISHED -> {
+            val town = state.winnerSide == "town"
+            val won = (town && state.teamOf(me) == "town") || (!town && state.teamOf(me) == "wolves")
+            Sounds.play(if (won) Sounds.Effect.Win else Sounds.Effect.Lose)
+            delay(400L)
+            Sounds.say(if (town) Sounds.Line.TownWin else Sounds.Line.WolvesWin)
+        }
+        else -> Unit
     }
 }
 

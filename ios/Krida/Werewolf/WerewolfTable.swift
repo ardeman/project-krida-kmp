@@ -25,6 +25,7 @@ class WerewolfTable: ObservableObject {
     var isHost: Bool { false }
     var canEmote: Bool { false }
     var canClaim: Bool { false }
+    var canRestart: Bool { false }
     /// Full authoritative state for phase timers on the host; nil for guests.
     var authority: WerewolfState? { nil }
 
@@ -68,6 +69,7 @@ class WerewolfTable: ObservableObject {
     @discardableResult func stepBot() -> Bool { false }
     /// One bot discussion claim when phase is DISCUSS; false when none spoke. Host only.
     @discardableResult func stepDiscussClaim() -> Bool { false }
+    func restart() {}
     func leave() { active = false; onUpdate = nil; emotes = []; claims = [] }
     func sendEmote(_ id: String) {}
     func sendClaim(_ id: String, target: Int? = nil) {}
@@ -134,6 +136,7 @@ final class WerewolfHostTable: WerewolfTable {
     override var isHost: Bool { true }
     override var canEmote: Bool { true }
     override var canClaim: Bool { true }
+    override var canRestart: Bool { true }
     override var authority: WerewolfState? { session.state }
 
     private static func view(_ state: WerewolfState, _ seat: Int) -> WerewolfState {
@@ -178,6 +181,13 @@ final class WerewolfHostTable: WerewolfTable {
         guard active else { return }
         let t = target.map { KotlinInt(int: Int32($0)) }
         _ = session.sendClaim(seat: Int32(seat), id: id, target: t)
+    }
+
+    override func restart() {
+        guard active, let full = session.state, WerewolfGame.shared.isFinished(state: full) else { return }
+        claims = []
+        emotes = []
+        session.restart()
     }
 
     override func leave() {
