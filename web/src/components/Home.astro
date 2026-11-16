@@ -25,16 +25,27 @@ const copy = {
     description:
       "Congklak, ular tangga, ludo, perang kapal dan gaple dalam gaya voxel 3D. Lawan komputer, main offline lewat Bluetooth atau Wi‑Fi, atau online. Android dan iPhone bisa main bareng.",
     gamesNav: "Permainan",
+    whyNav: "Kenapa",
     h1: "Main bareng, di mana saja.",
-    lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
+    lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman.",
     downloadAppStore: "Unduh di App Store",
     downloadAppStoreBadge: "id-id",
     downloadAndroid: "Android · closed tester",
-    soon: "Sudah di App Store. Android masih closed testing — cara gabung di bawah.",
-    testNav: "Closed tester",
-    testTitle: "Yuk gabung jadi closed tester (Android)",
+    availIos: "iPhone & iPad — App Store",
+    availAndroid: "Android — closed testing",
+    gamesLead: "Lima permainan dalam gaya voxel 3D yang sama.",
+    modesTitle: "Cara main",
+    modesLead: "Satu meja, banyak cara duduk bersama.",
+    modes: [
+      { title: "Lawan komputer", body: "Main sendiri, atau isi kursi kosong dengan komputer." },
+      { title: "Gantian satu HP", body: "Berdua atau lebih bergiliran di perangkat yang sama." },
+      { title: "Nearby", body: "Bluetooth atau Wi‑Fi yang sama, tanpa internet." },
+      { title: "Online", body: "Kode room, QR, lobi publik, atau quick match." },
+    ],
+    testNav: "Android",
+    testTitle: "Android: yuk jadi closed tester",
     testLead:
-      "Di iPhone, unduh dari App Store. Di Android, Krida masih di Google Play closed testing — ikut sebagai tester murni lewat TesBareng, tidak perlu punya app sendiri.",
+      "Krida sudah di App Store untuk iPhone. Di Android masih Google Play closed testing — ikut lewat TesBareng sebagai tester murni, tidak perlu punya app sendiri.",
     testVideoCaption: "Undangan closed testing",
     testVideoWatch: "Tonton di YouTube",
     testHow: "Cara gabung",
@@ -89,6 +100,7 @@ const copy = {
       { name: "Gaple", players: "2–4 pemain", tagline: "Sambung ujungnya, habiskan kartumu." },
     ],
     whyTitle: "Kenapa Krida",
+    whyLead: "Dirancang agar keluarga dan teman bisa duduk satu meja, apa pun HP-nya.",
     features: [
       { title: "Main offline", body: "Lewat Bluetooth atau Wi‑Fi yang sama, tanpa internet. Cocok di rumah, di mobil, atau di warung." },
       { title: "Android ↔ iPhone", body: "Semua bisa satu meja, apa pun HP-nya, di setiap mode. Sampai 4 pemain." },
@@ -111,16 +123,27 @@ const copy = {
     description:
       "Congklak, snakes & ladders, ludo, battleship and gaple in 3D voxel style. Play the computer, offline over Bluetooth or Wi‑Fi, or online; Android and iPhone play together.",
     gamesNav: "Games",
+    whyNav: "Why",
     h1: "Play together, anywhere.",
-    lead: "Congklak, snakes & ladders, ludo, battleship and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
+    lead: "Congklak, snakes & ladders, ludo, battleship and gaple, remade as little toys you can play with family and friends.",
     downloadAppStore: "Download on the App Store",
     downloadAppStoreBadge: "en-us",
     downloadAndroid: "Android · closed tester",
-    soon: "On the App Store now. Android is still closed testing — how to join below.",
-    testNav: "Closed tester",
-    testTitle: "Come join as a closed tester (Android)",
+    availIos: "iPhone & iPad — App Store",
+    availAndroid: "Android — closed testing",
+    gamesLead: "Five games in the same warm 3D voxel style.",
+    modesTitle: "How to play",
+    modesLead: "One table, several ways to sit together.",
+    modes: [
+      { title: "Against the computer", body: "Play solo, or fill empty seats with the computer." },
+      { title: "Pass and play", body: "Take turns on the same phone or tablet." },
+      { title: "Nearby", body: "Bluetooth or the same Wi‑Fi, no internet needed." },
+      { title: "Online", body: "Room code, QR, public lobbies, or quick match." },
+    ],
+    testNav: "Android",
+    testTitle: "Android: join closed testing",
     testLead:
-      "On iPhone, get it from the App Store. On Android, Krida is still on Google Play closed testing — join as a pure tester on TesBareng; you don’t need your own app.",
+      "Krida is on the App Store for iPhone. On Android it’s still Google Play closed testing — join through TesBareng as a pure tester; you don’t need your own app.",
     testVideoCaption: "Closed testing invite",
     testVideoWatch: "Watch on YouTube",
     testHow: "How to join",
@@ -175,6 +198,7 @@ const copy = {
       { name: "Gaple", players: "2–4 players", tagline: "Match the ends, empty your hand." },
     ],
     whyTitle: "Why Krida",
+    whyLead: "Built so family and friends can share one table, whatever phone they bring.",
     features: [
       { title: "Play offline", body: "Over Bluetooth or the same Wi‑Fi, no internet needed. At home, in the car, or at a roadside café." },
       { title: "Android ↔ iPhone", body: "Everyone at one table, whatever their phone, in every mode. Up to 4 players." },
@@ -211,11 +235,13 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
   <main>
     <header class="nav">
       <a class="logo" href={`${root}/${alternates[lang]}`}><Wordmark height={30} /></a>
-      <span class="nav-links">
+      <nav class="nav-links" aria-label="Krida">
         <a class="pill" href="#games">{copy.gamesNav}</a>
+        <a class="pill" href="#modes">{copy.modesTitle}</a>
+        <a class="pill" href="#why">{copy.whyNav}</a>
         <a class="pill" href="#closed-test">{copy.testNav}</a>
         <LangSwitch lang={lang} alternates={alternates} />
-      </span>
+      </nav>
     </header>
 
     <section class="hero">
@@ -244,12 +270,69 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
           </a>
           <a class="pill" href="#closed-test">{copy.downloadAndroid}</a>
         </p>
-        <p class="soon"><a href="#closed-test">{copy.soon}</a></p>
+        <ul class="avail">
+          <li><span class="avail-dot avail-dot-live" aria-hidden="true"></span>{copy.availIos}</li>
+          <li><span class="avail-dot avail-dot-test" aria-hidden="true"></span><a href="#closed-test">{copy.availAndroid}</a></li>
+        </ul>
       </div>
       <div class="hero-art"><Board /></div>
     </section>
 
-    <section id="closed-test" class="section">
+    <section id="games" class="section">
+      <div class="section-head">
+        <h2>{copy.gamesNav}</h2>
+        <p class="section-lead">{copy.gamesLead}</p>
+      </div>
+      <div class="games">
+        {
+          games.map((g) => (
+            <article class="game" style={`--game-accent: ${g.color}`}>
+              <Voxel color={g.color} size={48} />
+              <h3 lang={g.name === "Snakes & ladders" ? undefined : "id"}>{g.name}</h3>
+              <p class="players">{g.players}</p>
+              <p>{g.tagline}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="modes" class="section">
+      <div class="section-head">
+        <h2>{copy.modesTitle}</h2>
+        <p class="section-lead">{copy.modesLead}</p>
+      </div>
+      <div class="modes">
+        {
+          copy.modes.map((m, i) => (
+            <article class="mode">
+              <span class="mode-num" aria-hidden="true">{i + 1}</span>
+              <h3>{m.title}</h3>
+              <p>{m.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="why" class="section">
+      <div class="section-head">
+        <h2>{copy.whyTitle}</h2>
+        <p class="section-lead">{copy.whyLead}</p>
+      </div>
+      <div class="features">
+        {
+          copy.features.map((f) => (
+            <article class="feature">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="closed-test" class="section section-test">
       <div class="test-layout">
         <div class="test-main">
           <h2>{copy.testTitle}</h2>
@@ -371,36 +454,6 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
           ) : null,
         )
       }
-    </section>
-
-    <section id="games" class="section">
-      <h2>{copy.gamesNav}</h2>
-      <div class="games">
-        {
-          games.map((g) => (
-            <article class="game">
-              <Voxel color={g.color} size={48} />
-              <h3 lang={g.name === "Snakes & ladders" ? undefined : "id"}>{g.name}</h3>
-              <p class="players">{g.players}</p>
-              <p>{g.tagline}</p>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>{copy.whyTitle}</h2>
-      <div class="features">
-        {
-          copy.features.map((f) => (
-            <article class="feature">
-              <h3>{f.title}</h3>
-              <p>{f.body}</p>
-            </article>
-          ))
-        }
-      </div>
     </section>
 
     <footer class="footer">
