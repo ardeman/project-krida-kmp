@@ -28,6 +28,7 @@ const copy = {
     h1: "Main bareng, di mana saja.",
     lead: "Congklak, ular tangga, ludo, perang kapal dan gaple, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman. Lawan komputer, offline lewat Bluetooth atau Wi‑Fi, atau online.",
     downloadAppStore: "Unduh di App Store",
+    downloadAppStoreBadge: "id-id",
     downloadAndroid: "Android · closed tester",
     soon: "Sudah di App Store. Android masih closed testing — cara gabung di bawah.",
     testNav: "Closed tester",
@@ -103,7 +104,7 @@ const copy = {
     privacyPath: "privasi/",
     changelog: "Catatan perubahan",
     changelogPath: "catatan/",
-    portfolio: "ardeman.com",
+    portfolio: "Ardeman",
   },
   en: {
     title: "Krida — Board games from Indonesia, play together anywhere",
@@ -113,6 +114,7 @@ const copy = {
     h1: "Play together, anywhere.",
     lead: "Congklak, snakes & ladders, ludo, battleship and gaple, remade as little toys you can play with family and friends. Against the computer, offline over Bluetooth or Wi‑Fi, or online.",
     downloadAppStore: "Download on the App Store",
+    downloadAppStoreBadge: "en-us",
     downloadAndroid: "Android · closed tester",
     soon: "On the App Store now. Android is still closed testing — how to join below.",
     testNav: "Closed tester",
@@ -188,7 +190,7 @@ const copy = {
     privacyPath: "en/privacy/",
     changelog: "Changelog",
     changelogPath: "en/changelog/",
-    portfolio: "ardeman.com",
+    portfolio: "Ardeman",
   },
 }[lang];
 
@@ -222,11 +224,24 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
         <p class="lead">{copy.lead}</p>
         <p class="hero-cta">
           <a
-            class="pill pill-strong"
+            class="store-badge"
             href={appStoreUrl}
             rel="noopener noreferrer"
             target="_blank"
-          >{copy.downloadAppStore}</a>
+          >
+            <picture>
+              <source
+                srcset={`${root}/badges/app-store-white-${copy.downloadAppStoreBadge}.svg`}
+                media="(prefers-color-scheme: dark)"
+              />
+              <img
+                src={`${root}/badges/app-store-black-${copy.downloadAppStoreBadge}.svg`}
+                alt={copy.downloadAppStore}
+                height="40"
+                width="120"
+              />
+            </picture>
+          </a>
           <a class="pill" href="#closed-test">{copy.downloadAndroid}</a>
         </p>
         <p class="soon"><a href="#closed-test">{copy.soon}</a></p>
@@ -395,7 +410,7 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
         <span class="lema-src">{copy.lemaSrc} <i lang="sa">krīḍā</i>: {copy.lemaSrcGloss}.</span>
       </p>
       <span class="footer-copy"
-        >© {year} Krida · <a href={portfolioUrl} rel="noopener noreferrer">{copy.portfolio}</a> · <a
+        >© {year} <a href={portfolioUrl} rel="noopener noreferrer">{copy.portfolio}</a> · <a
           href={`${root}/${copy.changelogPath}`}>{copy.changelog}</a
         > · <a href={`${root}/${copy.privacyPath}`}>{copy.privacy}</a></span
       >
