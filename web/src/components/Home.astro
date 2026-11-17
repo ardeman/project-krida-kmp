@@ -18,6 +18,9 @@ const alternates = { id: "", en: "en/" };
 const colors = ["#8a5a2e", "#4f8a3b", "#3d6eb5", "#1b4f72", "#7b2d3b", "#1a2332"];
 
 const appStoreUrl = "https://apps.apple.com/app/id6832093929";
+// Closed testing via TesBareng. On public Play: use PLAY_STORE_URL + official "GET IT ON" badge.
+const tesBarengUrl =
+  "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6";
 
 const copy = {
   id: {
@@ -30,7 +33,9 @@ const copy = {
     lead: "Congklak, ular tangga, ludo, perang kapal, gaple dan werewolf, dibuat ulang jadi mainan kecil yang bisa kamu mainkan bersama keluarga dan teman.",
     downloadAppStore: "Unduh di App Store",
     downloadAppStoreBadge: "id-id",
-    downloadAndroid: "Android · closed tester",
+    downloadAndroid: "Closed testing di Google Play lewat TesBareng",
+    downloadAndroidTop: "CLOSED TESTING",
+    downloadAndroidPlatform: "Google Play",
     availIos: "iPhone & iPad — App Store",
     availAndroid: "Android — closed testing",
     gamesLead: "Enam permainan: papan voxel dan werewolf sosial.",
@@ -41,56 +46,6 @@ const copy = {
       { title: "Gantian satu HP", body: "Berdua atau lebih bergiliran di perangkat yang sama." },
       { title: "Nearby", body: "Bluetooth atau Wi‑Fi yang sama, tanpa internet." },
       { title: "Online", body: "Kode room, QR, lobi publik, atau quick match." },
-    ],
-    testNav: "Android",
-    testTitle: "Android: yuk jadi closed tester",
-    testLead:
-      "Krida sudah di App Store untuk iPhone. Di Android masih Google Play closed testing — ikut lewat TesBareng sebagai tester murni, tidak perlu punya app sendiri.",
-    testVideoCaption: "Undangan closed testing",
-    testVideoWatch: "Tonton di YouTube",
-    testHow: "Cara gabung",
-    testPrev: "Sebelumnya",
-    testNext: "Lanjut",
-    testShot: "Lihat cuplikan layar",
-    testShotClose: "Tutup",
-    testStepOf: (n: number, total: number) => `Langkah ${n} dari ${total}`,
-    testSteps: [
-      {
-        tab: "Google Group",
-        title: "Gabung Google Group",
-        body: "Masuk ke google-tester-indonesia dengan akun Google di HP-mu (sekali saja).",
-        cta: "Gabung Google Group",
-        href: "https://groups.google.com/g/google-tester-indonesia",
-        img: "join/step-1-group.jpg",
-        imgAlt: "Kartu TesBareng langkah 1: Gabung Google Group, salin email grup, dan tombol Gabung Google Group.",
-      },
-      {
-        tab: "Buka Krida",
-        title: "Masuk dengan Google, buka Krida",
-        body: "Masuk TesBareng dengan Google, lalu buka halaman Krida di daftar app (tombol di bawah).",
-        cta: "Buka Krida di TesBareng",
-        href: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
-        strong: true,
-        img: "join/step-2-krida.jpg",
-        imgAlt: "Kartu TesBareng langkah 2: Masuk dengan Google, lalu pilih app yang ingin diuji.",
-      },
-      {
-        tab: "Jadi tester",
-        title: "Gabung sebagai tester",
-        body: "Di halaman Krida, ketuk “Gabung sebagai tester”, lalu “Buka link opt-in”. Cohort tidak wajib.",
-        img: "join/step-3-gabung.jpg",
-        imgAlt: "Tombol Gabung sebagai tester dan Buka link opt-in, plus tip tiga langkah di TesBareng.",
-      },
-      {
-        tab: "Opt-in Play",
-        title: "Opt-in di Play, lalu install",
-        body: "Di Play, ketuk “Become a tester” / “Jadi tester”, install Krida, main sebentar, kirim feedback.",
-        cta: "Buka opt-in Google Play",
-        href: "https://play.google.com/apps/testing/com.ardeman.krida",
-        strong: true,
-        img: "join/step-4-play.jpg",
-        imgAlt: "Halaman Google Play testing Krida dengan tombol Become a tester.",
-      },
     ],
     games: [
       { name: "Congklak", players: "2 pemain", tagline: "Kumpulkan biji terbanyak di lumbungmu." },
@@ -129,7 +84,9 @@ const copy = {
     lead: "Congklak, snakes & ladders, ludo, battleship, gaple and werewolf, remade as little toys you can play with family and friends.",
     downloadAppStore: "Download on the App Store",
     downloadAppStoreBadge: "en-us",
-    downloadAndroid: "Android · closed tester",
+    downloadAndroid: "Closed testing on Google Play via TesBareng",
+    downloadAndroidTop: "CLOSED TESTING",
+    downloadAndroidPlatform: "Google Play",
     availIos: "iPhone & iPad — App Store",
     availAndroid: "Android — closed testing",
     gamesLead: "Six games: voxel boards and social werewolf.",
@@ -140,56 +97,6 @@ const copy = {
       { title: "Pass and play", body: "Take turns on the same phone or tablet." },
       { title: "Nearby", body: "Bluetooth or the same Wi‑Fi, no internet needed." },
       { title: "Online", body: "Room code, QR, public lobbies, or quick match." },
-    ],
-    testNav: "Android",
-    testTitle: "Android: join closed testing",
-    testLead:
-      "Krida is on the App Store for iPhone. On Android it’s still Google Play closed testing — join through TesBareng as a pure tester; you don’t need your own app.",
-    testVideoCaption: "Closed testing invite",
-    testVideoWatch: "Watch on YouTube",
-    testHow: "How to join",
-    testPrev: "Previous",
-    testNext: "Next",
-    testShot: "View screenshot",
-    testShotClose: "Close",
-    testStepOf: (n: number, total: number) => `Step ${n} of ${total}`,
-    testSteps: [
-      {
-        tab: "Google Group",
-        title: "Join the Google Group",
-        body: "Join google-tester-indonesia with the Google account on your phone (once is enough).",
-        cta: "Join the Google Group",
-        href: "https://groups.google.com/g/google-tester-indonesia",
-        img: "join/step-1-group.jpg",
-        imgAlt: "TesBareng step 1 card: join Google Group, copy group email, Gabung Google Group button.",
-      },
-      {
-        tab: "Open Krida",
-        title: "Sign in with Google, open Krida",
-        body: "Sign in to TesBareng with Google, then open Krida’s page in the app list (button below).",
-        cta: "Open Krida on TesBareng",
-        href: "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6",
-        strong: true,
-        img: "join/step-2-krida.jpg",
-        imgAlt: "TesBareng step 2 card: sign in with Google, then pick an app to test.",
-      },
-      {
-        tab: "Join tester",
-        title: "Join as a tester",
-        body: "On Krida’s page, tap “Gabung sebagai tester”, then “Buka link opt-in”. A cohort is optional.",
-        img: "join/step-3-gabung.jpg",
-        imgAlt: "Gabung sebagai tester and Buka link opt-in buttons, plus TesBareng’s three-step tip.",
-      },
-      {
-        tab: "Opt-in Play",
-        title: "Opt in on Play, then install",
-        body: "On Play, tap “Become a tester”, install Krida, play a bit, leave feedback.",
-        cta: "Open Google Play opt-in",
-        href: "https://play.google.com/apps/testing/com.ardeman.krida",
-        strong: true,
-        img: "join/step-4-play.jpg",
-        imgAlt: "Google Play testing page for Krida with Become a tester.",
-      },
     ],
     games: [
       { name: "Congklak", players: "2 players", tagline: "Gather the most seeds in your store." },
@@ -224,13 +131,6 @@ const portfolioUrl = "https://ardeman.com";
 
 const games = copy.games.map((g, i) => ({ ...g, color: colors[i] }));
 const year = new Date().getFullYear();
-const joinSteps = copy.testSteps;
-const joinTotal = joinSteps.length;
-const joinRadioName = `join-${lang}`;
-// YouTube uploads from the launch promo (ID / EN).
-const youtubeId = lang === "id" ? "I1J0heCExhE" : "zNrHe3mnXcw";
-const youtubeWatch = `https://youtu.be/${youtubeId}`;
-const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
 ---
 
 <Base title={copy.title} description={copy.description} lang={lang} alternates={alternates}>
@@ -241,7 +141,6 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
         <a class="pill" href="#games">{copy.gamesNav}</a>
         <a class="pill" href="#modes">{copy.modesTitle}</a>
         <a class="pill" href="#why">{copy.whyNav}</a>
-        <a class="pill" href="#closed-test">{copy.testNav}</a>
         <LangSwitch lang={lang} alternates={alternates} />
       </nav>
     </header>
@@ -270,11 +169,31 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
               />
             </picture>
           </a>
-          <a class="pill" href="#closed-test">{copy.downloadAndroid}</a>
+          <a
+            class="store-btn store-btn--play"
+            href={tesBarengUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+            aria-label={copy.downloadAndroid}
+          >
+            <svg class="store-btn__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                fill="currentColor"
+                d="M3 20.5V3.5c0-.59.34-1.11.84-1.35L13.69 12 3.84 21.85C3.34 21.6 3 21.09 3 20.5m13.81-5.38L6.05 21.34l8.49-8.49 2.27 2.27m3.35-4.31c.34.27.59.69.59 1.19s-.25.92-.6 1.19l-2.29 1.32-2.5-2.5 2.5-2.5 2.3 1.3M6.05 2.66l10.76 6.22-2.27 2.27L6.05 2.66z"
+              />
+            </svg>
+            <span class="store-btn__text">
+              <span class="store-btn__top">{copy.downloadAndroidTop}</span>
+              <span class="store-btn__platform">{copy.downloadAndroidPlatform}</span>
+            </span>
+          </a>
         </p>
         <ul class="avail">
           <li><span class="avail-dot avail-dot-live" aria-hidden="true"></span>{copy.availIos}</li>
-          <li><span class="avail-dot avail-dot-test" aria-hidden="true"></span><a href="#closed-test">{copy.availAndroid}</a></li>
+          <li>
+            <span class="avail-dot avail-dot-test" aria-hidden="true"></span>
+            <a href={tesBarengUrl} rel="noopener noreferrer" target="_blank">{copy.availAndroid}</a>
+          </li>
         </ul>
       </div>
       <div class="hero-art"><Board /></div>
@@ -332,130 +251,6 @@ const youtubeEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
           ))
         }
       </div>
-    </section>
-
-    <section id="closed-test" class="section section-test">
-      <div class="test-layout">
-        <div class="test-main">
-          <h2>{copy.testTitle}</h2>
-          <p class="test-lead">{copy.testLead}</p>
-
-          <div class="test-wizard">
-            <h3 class="test-how">{copy.testHow}</h3>
-            {
-              joinSteps.map((_, i) => (
-                <input
-                  class="test-wizard-radio"
-                  type="radio"
-                  name={joinRadioName}
-                  id={`${joinRadioName}-${i}`}
-                  checked={i === 0}
-                />
-              ))
-            }
-            <div class="test-wizard-tabs" role="tablist" aria-label={copy.testHow}>
-              {
-                joinSteps.map((step, i) => (
-                  <label
-                    class="test-wizard-tab"
-                    for={`${joinRadioName}-${i}`}
-                    title={step.title}
-                  >
-                    <span class="test-wizard-tab-num">{i + 1}</span>
-                    <span class="test-wizard-tab-label">{step.tab}</span>
-                  </label>
-                ))
-              }
-            </div>
-            <div class="test-wizard-stage">
-              {
-                joinSteps.map((step, i) => (
-                  <article class={`test-wizard-panel test-wizard-panel-${i}`} aria-labelledby={`${joinRadioName}-${i}-title`}>
-                    <p class="test-wizard-count">{copy.testStepOf(i + 1, joinTotal)}</p>
-                    <h4 class="test-wizard-title" id={`${joinRadioName}-${i}-title`}>{step.title}</h4>
-                    <p class="test-wizard-body">{step.body}</p>
-                    <p class="test-wizard-actions">
-                      {step.cta && step.href ? (
-                        <a
-                          class:list={["pill", { "pill-strong": step.strong }]}
-                          href={step.href}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {step.cta}
-                        </a>
-                      ) : null}
-                      {step.img ? (
-                        <label class="pill test-shot-open" for={`shot-toggle-${lang}-${i}`}>{copy.testShot}</label>
-                      ) : null}
-                    </p>
-                  </article>
-                ))
-              }
-            </div>
-            <div class="test-wizard-nav">
-              {
-                joinSteps.map((_, i) => (
-                  <div class={`test-wizard-nav-row test-wizard-nav-${i}`}>
-                    {i > 0 ? (
-                      <label class="pill test-wizard-nav-btn" for={`${joinRadioName}-${i - 1}`}>{copy.testPrev}</label>
-                    ) : (
-                      <span class="test-wizard-nav-spacer" />
-                    )}
-                    {i < joinTotal - 1 ? (
-                      <label class="pill pill-strong test-wizard-nav-btn" for={`${joinRadioName}-${i + 1}`}>{copy.testNext}</label>
-                    ) : (
-                      <span class="test-wizard-nav-spacer" />
-                    )}
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </div>
-
-        <aside class="test-media">
-          <div class="promo-video">
-            <iframe
-              class="promo-frame"
-              src={youtubeEmbed}
-              title={copy.testTitle}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-              loading="lazy"
-              referrerpolicy="strict-origin-when-cross-origin"
-            ></iframe>
-          </div>
-          <p class="promo-watch">
-            <span>{copy.testVideoCaption}</span>
-            {" · "}
-            <a href={youtubeWatch} rel="noopener noreferrer" target="_blank">{copy.testVideoWatch}</a>
-          </p>
-        </aside>
-      </div>
-
-      {
-        joinSteps.map((step, i) =>
-          step.img ? (
-            <>
-              <input
-                class="shot-toggle"
-                type="checkbox"
-                id={`shot-toggle-${lang}-${i}`}
-                aria-hidden="true"
-                tabindex={-1}
-              />
-              <div class="shot-lightbox" role="dialog" aria-label={step.imgAlt}>
-                <label class="shot-lightbox-backdrop" for={`shot-toggle-${lang}-${i}`} aria-label={copy.testShotClose}></label>
-                <figure class="shot-lightbox-frame">
-                  <label class="shot-lightbox-close pill" for={`shot-toggle-${lang}-${i}`}>{copy.testShotClose}</label>
-                  <img src={`${root}/${step.img}`} alt={step.imgAlt} loading="lazy" width="1100" />
-                </figure>
-              </div>
-            </>
-          ) : null,
-        )
-      }
     </section>
 
     <footer class="footer">
