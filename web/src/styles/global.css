@@ -89,9 +89,9 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  max-width: min(100%, 28rem);
+  min-width: 0;
 }
 .pill {
   color: var(--ink);
@@ -224,10 +224,10 @@ h2 {
 }
 h3 { margin: 10px 0 2px; font-size: 18px; }
 
-/* Games */
+/* Games — 6 cards: 3×2 on desktop, 2-col on phone */
 .games {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 .game {
@@ -538,8 +538,10 @@ html:has(.shot-toggle:checked) { overflow: hidden; }
 
 /* —— Responsive —— */
 @media (max-width: 960px) {
-  .games { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Side panels / tablets: drop secondary nav so pills + lang stay one row. */
+  .nav .pill[href="#modes"],
+  .nav .pill[href="#why"] { display: none; }
 }
 
 @media (max-width: 860px) {
@@ -554,8 +556,6 @@ html:has(.shot-toggle:checked) { overflow: hidden; }
   .test-media { position: static; }
   .test-wizard-tab { padding: 8px; }
   .test-wizard-tab-label { display: none; }
-  .nav .pill[href="#modes"],
-  .nav .pill[href="#why"] { display: none; }
 }
 
 @media (max-width: 560px) {
@@ -563,8 +563,10 @@ html:has(.shot-toggle:checked) { overflow: hidden; }
   .modes { grid-template-columns: 1fr; }
   .features { grid-template-columns: 1fr; }
   .game { padding: 14px 12px 16px; }
-  .nav-links { gap: 6px; }
-  .nav .pill { padding: 8px 12px; font-size: 13px; }
+  .nav-links { gap: 4px; }
+  .nav .pill { padding: 8px 10px; font-size: 13px; }
+  .nav .pill[href="#games"] { display: none; }
+  .lang-switch a, .lang-current { padding: 10px 6px; }
   .test-wizard-actions .pill { width: 100%; }
   .test-wizard-nav-row { flex-direction: column-reverse; }
   .test-wizard-nav-btn { width: 100%; }
