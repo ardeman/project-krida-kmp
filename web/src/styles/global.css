@@ -140,9 +140,19 @@ h1 {
 .hero-cta {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px 12px;
   margin: 0 0 14px;
+}
+.store-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 9.5rem;
+}
+.store-slot .store-btn {
+  width: 100%;
 }
 /* Themed store buttons (code, not badge assets) — black in light, white in dark. */
 .store-btn {
@@ -198,24 +208,28 @@ h1 {
   }
 }
 .avail {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  font-size: 14px;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.25;
   color: var(--muted);
 }
-.avail a { color: inherit; }
-.avail a:hover { color: var(--ink); }
+.avail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  color: inherit;
+  text-decoration: none;
+}
+a.avail-text:hover { color: var(--ink); }
 .avail-dot {
-  display: inline-block;
+  flex: none;
   width: 8px;
   height: 8px;
+  margin-top: 0.35em;
   border-radius: 999px;
-  margin-right: 8px;
-  vertical-align: 1px;
 }
 .avail-dot-live { background: #2f7a3e; }
 .avail-dot-test { background: #c47a1a; }

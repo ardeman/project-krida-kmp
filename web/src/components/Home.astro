@@ -41,8 +41,8 @@ const copy = {
     downloadAndroid: "Closed testing di Google Play",
     downloadAndroidTop: "CLOSED TESTING",
     downloadAndroidPlatform: "Google Play",
-    availIos: "iPhone & iPad — App Store",
-    availAndroid: "Android — closed testing",
+    availIos: ["iPhone & iPad", "App Store"],
+    availAndroid: ["Android", "closed testing"],
     gamesLead: "Enam permainan: papan voxel dan werewolf sosial.",
     modesTitle: "Cara main",
     modesLead: "Satu meja, banyak cara duduk bersama.",
@@ -93,8 +93,8 @@ const copy = {
     downloadAndroid: "Closed testing on Google Play",
     downloadAndroidTop: "CLOSED TESTING",
     downloadAndroidPlatform: "Google Play",
-    availIos: "iPhone & iPad — App Store",
-    availAndroid: "Android — closed testing",
+    availIos: ["iPhone & iPad", "App Store"],
+    availAndroid: ["Android", "closed testing"],
     gamesLead: "Six games: voxel boards and social werewolf.",
     modesTitle: "How to play",
     modesLead: "One table, several ways to sit together.",
@@ -155,29 +155,40 @@ const year = new Date().getFullYear();
       <div class="hero-text">
         <h1>{copy.h1}</h1>
         <p class="lead">{copy.lead}</p>
-        <p class="hero-cta">
-          <StoreBtn
-            href={appStoreUrl}
-            label={copy.downloadAppStore}
-            top={copy.downloadAppStoreTop}
-            platform={copy.downloadAppStorePlatform}
-            mark="apple"
-          />
-          <StoreBtn
-            href={playClosedTestingUrl}
-            label={copy.downloadAndroid}
-            top={copy.downloadAndroidTop}
-            platform={copy.downloadAndroidPlatform}
-            mark="play"
-          />
-        </p>
-        <ul class="avail">
-          <li><span class="avail-dot avail-dot-live" aria-hidden="true"></span>{copy.availIos}</li>
-          <li>
-            <span class="avail-dot avail-dot-test" aria-hidden="true"></span>
-            <a href={tesBarengUrl} rel="noopener noreferrer" target="_blank">{copy.availAndroid}</a>
-          </li>
-        </ul>
+        <div class="hero-cta">
+          <div class="store-slot">
+            <StoreBtn
+              href={appStoreUrl}
+              label={copy.downloadAppStore}
+              top={copy.downloadAppStoreTop}
+              platform={copy.downloadAppStorePlatform}
+              mark="apple"
+            />
+            <p class="avail">
+              <span class="avail-dot avail-dot-live" aria-hidden="true"></span>
+              <span class="avail-text">
+                <span>{copy.availIos[0]}</span>
+                <span>{copy.availIos[1]}</span>
+              </span>
+            </p>
+          </div>
+          <div class="store-slot">
+            <StoreBtn
+              href={playClosedTestingUrl}
+              label={copy.downloadAndroid}
+              top={copy.downloadAndroidTop}
+              platform={copy.downloadAndroidPlatform}
+              mark="play"
+            />
+            <p class="avail">
+              <span class="avail-dot avail-dot-test" aria-hidden="true"></span>
+              <a class="avail-text" href={tesBarengUrl} rel="noopener noreferrer" target="_blank">
+                <span>{copy.availAndroid[0]}</span>
+                <span>{copy.availAndroid[1]}</span>
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
       <div class="hero-art"><Board /></div>
     </section>
