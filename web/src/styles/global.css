@@ -110,8 +110,7 @@ main {
 .pill:hover { border-color: var(--ink); background: var(--surface); }
 .pill:active { transform: scale(0.98); }
 .pill:focus-visible,
-.store-badge:focus-visible,
-.store-btn:focus-visible {
+.store-badge:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
@@ -157,46 +156,6 @@ h1 {
   display: block;
   height: 40px;
   width: auto;
-}
-/* Custom Play CTA for closed testing (not the official “GET IT ON” badge). */
-.store-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 40px;
-  padding: 0 12px 0 10px;
-  border: 1px solid #a6a6a6;
-  border-radius: 6px;
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-  line-height: 1;
-  transition: transform var(--ease), opacity var(--ease);
-}
-.store-btn:hover { opacity: 0.92; }
-.store-btn:active { transform: scale(0.98); }
-.store-btn__mark {
-  flex: none;
-  width: 22px;
-  height: 22px;
-}
-.store-btn__text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  text-align: left;
-}
-.store-btn__top {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-.store-btn__platform {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
 }
 .avail {
   list-style: none;
