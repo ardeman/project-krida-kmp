@@ -18,8 +18,8 @@ const alternates = { id: "", en: "en/" };
 const colors = ["#8a5a2e", "#4f8a3b", "#3d6eb5", "#1b4f72", "#7b2d3b", "#1a2332"];
 
 const appStoreUrl = "https://apps.apple.com/app/id6832093929";
-// Closed testing via TesBareng. On public Play: official GET IT ON badge + PLAY_STORE_URL
-// (same pattern as Coba Lagi’s website/badges/google-play.png).
+// Android closed testing via TesBareng (Bilah Aksara store-btn pattern). On public Play:
+// swap to Coba Lagi–style official GET IT ON badge + PLAY_STORE_URL.
 const tesBarengUrl =
   "https://tesbareng.vercel.app/apps/b2bfd6e9-f394-46b9-adb8-277ba9583ca6";
 const playClosedTestingUrl =
@@ -37,6 +37,8 @@ const copy = {
     downloadAppStore: "Unduh di App Store",
     downloadAppStoreBadge: "id-id",
     downloadAndroid: "Closed testing di Google Play lewat TesBareng",
+    downloadAndroidTop: "CLOSED TESTING",
+    downloadAndroidPlatform: "Google Play",
     availIos: "iPhone & iPad — App Store",
     availAndroid: "Android — closed testing",
     gamesLead: "Enam permainan: papan voxel dan werewolf sosial.",
@@ -86,6 +88,8 @@ const copy = {
     downloadAppStore: "Download on the App Store",
     downloadAppStoreBadge: "en-us",
     downloadAndroid: "Closed testing on Google Play via TesBareng",
+    downloadAndroidTop: "CLOSED TESTING",
+    downloadAndroidPlatform: "Google Play",
     availIos: "iPhone & iPad — App Store",
     availAndroid: "Android — closed testing",
     gamesLead: "Six games: voxel boards and social werewolf.",
@@ -169,17 +173,22 @@ const year = new Date().getFullYear();
             </picture>
           </a>
           <a
-            class="store-badge"
+            class="store-btn"
             href={tesBarengUrl}
             rel="noopener noreferrer"
             target="_blank"
+            aria-label={copy.downloadAndroid}
           >
-            <img
-              src={`${root}/badges/google-play-closed-testing.svg`}
-              alt={copy.downloadAndroid}
-              height="40"
-              width="115"
-            />
+            <svg class="store-btn__mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                fill="currentColor"
+                d="M3 20.5V3.5c0-.59.34-1.11.84-1.35L13.69 12 3.84 21.85C3.34 21.6 3 21.09 3 20.5m13.81-5.38L6.05 21.34l8.49-8.49 2.27 2.27m3.35-4.31c.34.27.59.69.59 1.19s-.25.92-.6 1.19l-2.29 1.32-2.5-2.5 2.5-2.5 2.3 1.3M6.05 2.66l10.76 6.22-2.27 2.27L6.05 2.66z"
+              />
+            </svg>
+            <span class="store-btn__text">
+              <span class="store-btn__top">{copy.downloadAndroidTop}</span>
+              <span class="store-btn__platform">{copy.downloadAndroidPlatform}</span>
+            </span>
           </a>
         </p>
         <ul class="avail">
