@@ -173,7 +173,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   **1.0.6 / versionCode 7 / iOS build 8** (2026-11-19): gaple fixes (both-ends tile plays at
   once, hand stays on screen on wide phones, clearer turn labels). iOS build 8 uploaded to
   App Store Connect (needs a 1.0.6 version + submit). AAB: `~/Desktop/krida-1.0.6-release.aab`
-  for Play closed testing (upload by hand). Export used the Xcode account: the ASC API key
+  uploaded to Play closed testing (alpha, `7 (1.0.6)`, completed) through the Play
+  Developer API with gcloud ADC, quota project `pamer-studio`. Export used the Xcode account: the ASC API key
   can't cloud-sign (`Cloud signing permission error`).
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
