@@ -63,6 +63,8 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Krida
+        # Only exempt encryption (HTTPS): App Store Connect skips the per-build compliance question.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: Backdrop
         # iPhone stays landscape-only. Portrait on the phone lets the orientation lock trap

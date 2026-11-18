@@ -176,6 +176,10 @@ Real users will try online play first; don't push for these, ask whether feedbac
   uploaded to Play closed testing (alpha, `7 (1.0.6)`, completed) through the Play
   Developer API with gcloud ADC, quota project `pamer-studio`. Export used the Xcode account: the ASC API key
   can't cloud-sign (`Cloud signing permission error`).
+  App Store **1.0.6 (build 8)** submitted 2026-11-19 through the ASC API → **Waiting for
+  Review** (release after approval). iOS skipped 1.0.5, so its What's New lists Werewolf + claim
+  chips and the gaple fixes; description updated from `docs/store.md` (adds werewolf). The
+  in-app What's New card on iOS still shows only the gaple lines.
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
