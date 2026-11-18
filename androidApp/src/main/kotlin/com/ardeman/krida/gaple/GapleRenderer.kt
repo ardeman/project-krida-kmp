@@ -452,7 +452,14 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
             val shot = GapleScene.fitBounds().map(::screen)
             val needW = shot.maxOf { abs(it[0] - cx) }.coerceAtLeast(1f)
             val needH = shot.maxOf { abs(it[1] - cy) }.coerceAtLeast(1f)
-            val k = min(halfW / needW, halfH / needH).coerceAtLeast(1e-3f)
+            var k = min(halfW / needW, halfH / needH).coerceAtLeast(1e-3f)
+            // Your enlarged hand sits past the felt on the near rim: on short, wide screens
+            // zoom out until its front edge stays above the screen's bottom.
+            val handLow = GapleScene.nearHandBounds().maxOf { screen(it)[1] }
+            if (handLow > cy) {
+                val room = height * (1 - HAND_EDGE) - freeMidY
+                k = min(k, room / (handLow - cy)).coerceAtLeast(1e-3f)
+            }
             // May be wider than [base]: the felt has to fit the free box.
             val fov = (atan(tanBase / k) * 360f / PI.toFloat()).coerceAtLeast(MIN_FOV)
             return floatArrayOf(fov, freeMidX - cx, freeMidY - cy)
@@ -493,6 +500,8 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         const val FLIGHT_SECONDS = 0.35f
         private const val MIN_FOV = 18f
         private const val FRAME_FILL = 0.7f
+        /** Gap kept under your hand, as a share of the screen height. */
+        private const val HAND_EDGE = 0.02f
         private const val CAMERA_TAU = 0.35f
         private const val MAX_CAMERA_DT = 1f / 30f
     }

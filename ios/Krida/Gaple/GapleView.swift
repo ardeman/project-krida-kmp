@@ -527,8 +527,11 @@ private struct GapleBoardView: View {
         } else if model.myTurn {
             // "Your turn" itself sits by the countdown ring.
             state.mustPlay.map { String(localized: "Open with \(Int($0.a))|\(Int($0.b))", bundle: .app) }
+        } else if Int(state.turn) == table.mySeat {
+            // Your seat while the phone plays for you: not "You's turn".
+            String(localized: "Your turn", bundle: .app)
         } else {
-            String(localized: "\(seatName(Int(state.turn)))'s turn", bundle: .app)
+            String(localized: "\(table.name(Int(state.turn)))'s turn", bundle: .app)
         }
         let played: String? = state.lastSeat.flatMap { seat in
             state.lastTile.map { t in
@@ -551,11 +554,14 @@ private struct GapleBoardView: View {
         Text(text)
             .font(Theme.font(12 * s, .bold))
             .foregroundStyle(color)
-            .lineLimit(1)
+            // Long names wrap to a second line instead of being clipped.
+            .lineLimit(2)
+            .truncationMode(.tail)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 12 * s)
             .padding(.vertical, 6 * s)
-            .background(Theme.surface.opacity(0.9), in: Capsule())
-            .overlay(Capsule().stroke(Theme.line, lineWidth: 1))
+            .background(Theme.surface.opacity(0.9), in: RoundedRectangle(cornerRadius: 14 * s))
+            .overlay(RoundedRectangle(cornerRadius: 14 * s).stroke(Theme.line, lineWidth: 1))
     }
 
     /// Seat tile for every seat count, two a row like ludo / ular tangga: avatar large, score in the corner.

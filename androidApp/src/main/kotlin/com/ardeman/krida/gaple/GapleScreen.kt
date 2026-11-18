@@ -73,6 +73,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -589,7 +590,9 @@ private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, pi
         picking -> stringResource(R.string.gaple_pick_end)
         // "Your turn" itself sits by the countdown ring.
         myTurn -> state.mustPlay?.let { stringResource(R.string.gaple_must_open, it.a, it.b) }
-        else -> stringResource(R.string.gaple_turn_of, seatName(table, state.turn))
+        // Your seat while the phone plays for you: not "You's turn".
+        state.turn == table.mySeat -> stringResource(R.string.gaple_your_turn)
+        else -> stringResource(R.string.gaple_turn_of, table.name(state.turn))
     }
     val passes = state.lastDraws.withIndex().filter { it.value > 0 }
         .map { (seat, n) -> stringResource(R.string.gaple_drew, seatName(table, seat), n) } +
@@ -611,9 +614,11 @@ private fun Pill(text: String, color: Color) {
     Text(
         text,
         style = Theme.font(12, FontWeight.Bold, color),
-        maxLines = 1,
-        modifier = Modifier.background(Theme.surface.copy(alpha = 0.9f), RoundedCornerShape(50))
-            .border(1.dp, Theme.line, RoundedCornerShape(50))
+        // Long names wrap to a second line instead of being clipped.
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.background(Theme.surface.copy(alpha = 0.9f), RoundedCornerShape(14.dp))
+            .border(1.dp, Theme.line, RoundedCornerShape(14.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp),
     )
 }

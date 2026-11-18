@@ -397,7 +397,16 @@ final class GapleRenderer {
         let halfW = max(shot.map { abs($0.x - c.x) }.max() ?? 1, 1)
         let halfH = max(shot.map { abs($0.y - c.y) }.max() ?? 1, 1)
         // Scaling the picture by k around the centre is the same as dividing the tangent by k.
-        let k = min(free.width / 2 / halfW, free.height / 2 / halfH)
+        var k = min(free.width / 2 / halfW, free.height / 2 / halfH)
+        if focus == nil {
+            // Your enlarged hand sits past the felt on the near rim: on short, wide screens
+            // zoom out until its front edge stays above the screen's bottom.
+            let handLow = scene.nearHandBounds().map { project(Self.vec($0), tanV: baseTan).y }.max() ?? 0
+            if handLow > c.y {
+                k = min(k, (size.height * 0.98 - free.midY) / (handLow - c.y))
+            }
+        }
+        k = max(k, 1e-3)
         baseFov = 2 * atan(baseTan / Float(k)) * 180 / .pi
         if focus != nil || camSettled {
             targetFov = baseFov

@@ -46,6 +46,22 @@ object GapleScene {
      */
     fun fitBounds(): List<FloatArray> = boxCorners(FELT_X, FELT_Z)
 
+    /**
+     * Box your own enlarged hand can fill on the near rim, at full lift. The felt fit lets the
+     * rim tuck under the HUD, but this box must stay on screen.
+     */
+    fun nearHandBounds(): List<FloatArray> {
+        val x = FELT_X - 2f + HAND_SCALE / 2
+        val z = FELT_Z + RIM / 2
+        val top = HAND_LIFT_PICKING + TILE_H * HAND_SCALE
+        return listOf(0f, top).flatMap { y ->
+            listOf(
+                floatArrayOf(-x, y, z - HAND_SCALE), floatArrayOf(x, y, z - HAND_SCALE),
+                floatArrayOf(-x, y, z + HAND_SCALE), floatArrayOf(x, y, z + HAND_SCALE),
+            )
+        }
+    }
+
     private fun boxCorners(x: Float, z: Float): List<FloatArray> =
         listOf(0f, TILE_H).flatMap { y ->
             listOf(

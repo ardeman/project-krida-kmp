@@ -53,4 +53,24 @@ class GapleSceneTest {
             assertTrue(l.minZ >= -GapleScene.FELT_Z && l.maxZ <= GapleScene.FELT_Z, "z, origin $origin")
         }
     }
+
+    @Test
+    fun nearHandBoundsHoldYourWholeHand() {
+        val box = GapleScene.nearHandBounds()
+        val maxX = box.maxOf { it[0] }
+        val minZ = box.minOf { it[2] }
+        val maxZ = box.maxOf { it[2] }
+        val maxY = box.maxOf { it[1] }
+        for (count in listOf(1, 7, 14)) for (i in 0 until count) {
+            val m = GapleScene.handMatrix(0, i, count, GapleScene.HAND_LIFT_PICKING, GapleScene.HAND_SCALE)
+            // Tile corners: local x ±1 runs along z, local z ±0.5 along x, scaled.
+            for (lx in listOf(-1f, 1f)) for (lz in listOf(-0.5f, 0.5f)) {
+                val x = m[0] * lx + m[8] * lz + m[12]
+                val z = m[2] * lx + m[10] * lz + m[14]
+                assertTrue(abs(x) <= maxX + 1e-4f, "x, $i of $count")
+                assertTrue(z >= minZ - 1e-4f && z <= maxZ + 1e-4f, "z, $i of $count")
+            }
+            assertTrue(m[13] + GapleScene.TILE_H * GapleScene.HAND_SCALE <= maxY + 1e-4f, "y, $i of $count")
+        }
+    }
 }
