@@ -269,6 +269,9 @@ in the same commit as the code.
   until you tap a tile. One legal end → plays there immediately; both → only those two
   rings light; tap a ring to place. Avoids showing both empty ends before a pick so
   players don't tap the wrong side. No camera zoom onto the ends (owner, 2026-11-14).
+  When both ends show the same number (always the second move, after the double opener) the
+  tile plays on the right end straight away (`GapleGame.autoEnd`): the choice changes nothing,
+  and a tester read the ring prompt as the game ignoring taps (agent, 2026-11-19).
 - **Ad between rounds (owner, 2026-11-12; every finish 2026-11-14):** against computers only,
   the next round opens with the shared interstitial (`Ads.afterGame`) when one is ready; none
   in rooms, none after "Remove ads".

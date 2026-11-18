@@ -87,6 +87,22 @@ class GapleTest {
     }
 
     @Test
+    fun autoEndSkipsTheChoiceOnlyWhenItChangesNothing() {
+        val hands = listOf(listOf(t(6, 5), t(4, 2), t(2, 3)), listOf(t(1, 1)))
+        // After a 6|6 opener both ends are 6: a 6 tile goes straight on.
+        val double = state(hands = hands, line = listOf(GaplePlaced(6, 6)))
+        assertEquals(listOf(GapleGame.LEFT, GapleGame.RIGHT), game.endsFor(double, t(6, 5)))
+        assertEquals(GapleGame.RIGHT, game.autoEnd(double, t(6, 5)))
+        assertNull(game.validate(double, 0, GapleMove(t(6, 5), GapleGame.RIGHT)))
+        // Different ends: one fit plays there, a fit on both still asks.
+        val open = state(hands = hands, line = listOf(GaplePlaced(2, 6), GaplePlaced(6, 3)))
+        assertEquals(GapleGame.LEFT, game.autoEnd(open, t(4, 2)))
+        assertNull(game.autoEnd(open, t(2, 3)))
+        // First tile of a round has no end.
+        assertNull(game.autoEnd(state(hands = hands, line = emptyList()), t(6, 5)))
+    }
+
+    @Test
     fun playsOnTheMatchingEndAndTurnsTheTile() {
         val s = state(
             hands = listOf(listOf(t(4, 2), t(5, 5)), listOf(t(1, 1), t(0, 0))),

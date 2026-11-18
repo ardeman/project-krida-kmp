@@ -198,6 +198,21 @@ object GapleGame : GameRules<GapleState, GapleMove>, PrivateStateRules<GapleStat
         }
     }
 
+    /**
+     * The end [tile] goes on without asking the player: the only end it fits, or [RIGHT] when
+     * it fits both and both ends show the same number (as after a double opener), where the
+     * choice changes nothing. Null when the player must pick, or for the first tile of a round.
+     */
+    fun autoEnd(state: GapleState, tile: GapleTile): Int? {
+        if (state.line.isEmpty()) return null
+        val ends = endsFor(state, tile)
+        return when {
+            ends.size == 1 -> ends[0]
+            ends.size == 2 && state.leftEnd == state.rightEnd -> RIGHT
+            else -> null
+        }
+    }
+
     /** Tiles in [seat]'s hand that may be played now (only the opener's tile on a first move). */
     fun playable(state: GapleState, seat: Int): List<GapleTile> {
         val hand = state.hands.getOrNull(seat) ?: return emptyList()

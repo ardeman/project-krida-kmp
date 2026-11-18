@@ -182,14 +182,14 @@ final class GapleGameModel: ObservableObject {
             if table.play(tile, end: nil) { sounds.play(.tap) }
             return
         }
-        let ends = game.endsFor(state: state, tile: tile).map(\.intValue)
-        if ends.count == 1 {
+        // Fits one end, or both ends show the same number: no choice to make.
+        if let end = game.autoEnd(state: state, tile: tile) {
             picking = nil
             sounds.play(.tap)
-            _ = table.play(tile, end: ends[0])
+            _ = table.play(tile, end: end.intValue)
             return
         }
-        // Fits both ends: pick / unpick, then tap the lit ring.
+        // Fits two different ends: pick / unpick, then tap the lit ring.
         picking = picking == tile ? nil : tile
         if picking != nil { sounds.play(.tap) }
     }

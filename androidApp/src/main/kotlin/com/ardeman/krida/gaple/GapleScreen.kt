@@ -264,14 +264,14 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             table.play(tile, null)
             return
         }
-        val ends = GapleGame.endsFor(state, tile)
-        if (ends.size == 1) {
+        // Fits one end, or both ends show the same number: no choice to make.
+        GapleGame.autoEnd(state, tile)?.let { end ->
             picking = null
             Sounds.play(Sounds.Effect.Tap)
-            table.play(tile, ends[0])
+            table.play(tile, end)
             return
         }
-        // Fits both ends: pick / unpick, then tap the lit ring.
+        // Fits two different ends: pick / unpick, then tap the lit ring.
         picking = if (picking == tile) null else tile
         if (picking != null) Sounds.play(Sounds.Effect.Tap)
     }
