@@ -35,8 +35,8 @@ enum WhatsNew {
     /// Bullets for the current shipping notes (keep in sync with `docs/changelog.md`).
     /// English source strings are also the catalog keys.
     static let bulletKeys: [String] = [
-        "Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.",
-        "During Werewolf day talk, tap a short claim chip so the table sees what you mean.",
+        "Gaple: a tile that fits both open ends now plays at once, no end tap needed.",
+        "Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.",
     ]
 }
 

@@ -122,20 +122,20 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
-**Version:** marketing `1.0.5`, Android `versionCode` `6` / iOS build `7` (see [changelog.md](changelog.md)).
+**Version:** marketing `1.0.6`, Android `versionCode` `7` / iOS build `8` (see [changelog.md](changelog.md)).
 Paste the matching language block into Play “Release notes” (≤ 500) and App Store
 “What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
 notes go on the store form.
 
-### What’s New — 1.0.5 (id)
+### What’s New — 1.0.6 (id)
 
-> Werewolf: 5–8 pemain lewat Wi‑Fi atau online (tanpa Bluetooth), peran Indonesia, Kepala desa, bot.
-> Saat diskusi siang Werewolf, ketuk chip klaim singkat agar meja tahu maksudmu.
+> Gaple: ubin yang cocok di kedua ujung langsung dimainkan, tanpa ketuk ujung lagi.
+> Gaple: tanganmu tetap terlihat utuh di layar ponsel yang lebar, dan label giliran lebih jelas.
 
-### What’s New — 1.0.5 (en-US)
+### What’s New — 1.0.6 (en-US)
 
-> Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.
-> During Werewolf day talk, tap a short claim chip so the table sees what you mean.
+> Gaple: a tile that fits both open ends now plays at once, no end tap needed.
+> Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.
 
 **Graphics:** shipping files in `docs/brand/store/` (Play icon 512×512, feature graphic
 1024×500, phone screenshots). The screenshot editor lives in Pamer Studio at

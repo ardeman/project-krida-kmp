@@ -7413,6 +7413,38 @@
         }
       }
     },
+    "Gaple: a tile that fits both open ends now plays at once, no end tap needed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: a tile that fits both open ends now plays at once, no end tap needed."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: ubin yang cocok di kedua ujung langsung dimainkan, tanpa ketuk ujung lagi."
+          }
+        }
+      }
+    },
+    "Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: tanganmu tetap terlihat utuh di layar ponsel yang lebar, dan label giliran lebih jelas."
+          }
+        }
+      }
+    },
     "Werewolf: 5–8 players over Wi‑Fi or online (no Bluetooth), Indonesian role pack, Sheriff, bots.": {
       "localizations": {
         "en": {

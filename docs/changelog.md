@@ -11,6 +11,18 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
+## 1.0.6 (Android build 7 / iOS build 8) — 2026-11-19
+
+### id
+
+- Gaple: ubin yang cocok di kedua ujung langsung dimainkan, tanpa ketuk ujung lagi.
+- Gaple: tanganmu tetap terlihat utuh di layar ponsel yang lebar, dan label giliran lebih jelas.
+
+### en-US
+
+- Gaple: a tile that fits both open ends now plays at once, no end tap needed.
+- Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.
+
 ## 1.0.5 (Android build 6 / iOS build 7) — 2026-11-17
 
 ### id
