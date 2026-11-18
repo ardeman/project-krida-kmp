@@ -482,7 +482,8 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (auto || myTurn) {
+                    // Only while it's your seat, even when the phone plays for you.
+                    if (seatOn(me)) {
                         Text(stringResource(R.string.gaple_your_turn), style = Theme.font(13, FontWeight.Bold, Theme.ink))
                     }
                     TurnTimer(
@@ -590,8 +591,8 @@ private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, pi
         picking -> stringResource(R.string.gaple_pick_end)
         // "Your turn" itself sits by the countdown ring.
         myTurn -> state.mustPlay?.let { stringResource(R.string.gaple_must_open, it.a, it.b) }
-        // Your seat while the phone plays for you: not "You's turn".
-        state.turn == table.mySeat -> stringResource(R.string.gaple_your_turn)
+        // Your seat while the phone plays for you: the ring's label already says so.
+        state.turn == table.mySeat -> null
         else -> stringResource(R.string.gaple_turn_of, table.name(state.turn))
     }
     val passes = state.lastDraws.withIndex().filter { it.value > 0 }

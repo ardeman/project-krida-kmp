@@ -492,7 +492,8 @@ private struct GapleBoardView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 Spacer(minLength: 0)
                 HStack(spacing: 8 * s) {
-                    if model.auto || model.myTurn {
+                    // Only while it's your seat, even when the phone plays for you.
+                    if seatOn(table.mySeat) {
                         Text("Your turn").font(Theme.font(13 * s, .bold))
                     }
                     TurnTimer(
@@ -528,8 +529,8 @@ private struct GapleBoardView: View {
             // "Your turn" itself sits by the countdown ring.
             state.mustPlay.map { String(localized: "Open with \(Int($0.a))|\(Int($0.b))", bundle: .app) }
         } else if Int(state.turn) == table.mySeat {
-            // Your seat while the phone plays for you: not "You's turn".
-            String(localized: "Your turn", bundle: .app)
+            // Your seat while the phone plays for you: the ring's label already says so.
+            nil
         } else {
             String(localized: "\(table.name(Int(state.turn)))'s turn", bundle: .app)
         }
