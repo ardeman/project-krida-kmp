@@ -189,3 +189,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
   traditional game; bring them up when planning congklak work.
 - Ular tangga: a game list at launch, then the mode screen with a game switcher on the left
   card.
+- Gaple pass-and-play (owner, 2026-11-19): only people on one phone, no computer seat. Today
+  this phone needs at least one computer because hands are hidden (`GapleSettings.sanitize`
+  / `tapSeat`). Add a "Pass the phone to …" cover between turns like perang kapal, pausing the
+  turn timer while it shows; Android and iOS screens plus seat settings, rules unchanged.
+  Asked for by a TesBareng tester (Poco X6).
