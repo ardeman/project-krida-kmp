@@ -5973,6 +5973,38 @@
         }
       }
     },
+    "Gaple: 2–4 people can now play on one phone, passing it round, with or without computers.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: 2–4 people can now play on one phone, passing it round, with or without computers."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gaple: kini 2–4 orang bisa main di satu HP secara bergiliran, dengan atau tanpa komputer."
+          }
+        }
+      }
+    },
+    "Battleship and gaple: taps on the board land where you aim.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battleship and gaple: taps on the board land where you aim."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perang kapal dan gaple: ketukan di papan kini tepat sasaran."
+          }
+        }
+      }
+    },
     "Continue": {
       "localizations": {
         "en": {

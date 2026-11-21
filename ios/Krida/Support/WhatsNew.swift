@@ -35,8 +35,8 @@ enum WhatsNew {
     /// Bullets for the current shipping notes (keep in sync with `docs/changelog.md`).
     /// English source strings are also the catalog keys.
     static let bulletKeys: [String] = [
-        "Gaple: a tile that fits both open ends now plays at once, no end tap needed.",
-        "Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.",
+        "Gaple: 2–4 people can now play on one phone, passing it round, with or without computers.",
+        "Battleship and gaple: taps on the board land where you aim.",
     ]
 }
 

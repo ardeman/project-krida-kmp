@@ -11,6 +11,18 @@ Public release notes. Keep these three places in sync for each upload:
 Bump Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` for every upload; keep
 marketing versions aligned on both stores.
 
+## 1.0.7 (Android build 8 / iOS build 9) — 2026-11-22
+
+### id
+
+- Gaple: kini 2–4 orang bisa main di satu HP secara bergiliran, dengan atau tanpa komputer.
+- Perang kapal dan gaple: ketukan di papan kini tepat sasaran.
+
+### en-US
+
+- Gaple: 2–4 people can now play on one phone, passing it round, with or without computers.
+- Battleship and gaple: taps on the board land where you aim.
+
 ## 1.0.6 (Android build 7 / iOS build 8) — 2026-11-19
 
 ### id

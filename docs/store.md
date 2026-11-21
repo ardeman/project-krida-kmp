@@ -122,20 +122,20 @@ category Family is not used (the app is not in Families / Kids).
 
 **First publish path (owner, 2026-11-13):** App Store production submit; Play closed testing first.
 
-**Version:** marketing `1.0.6`, Android `versionCode` `7` / iOS build `8` (see [changelog.md](changelog.md)).
+**Version:** marketing `1.0.7`, Android `versionCode` `8` / iOS build `9` (see [changelog.md](changelog.md)).
 Paste the matching language block into Play “Release notes” (≤ 500) and App Store
 “What’s New” (≤ 4000). Keep history in `changelog.md`; only the current version’s
 notes go on the store form.
 
-### What’s New — 1.0.6 (id)
+### What’s New — 1.0.7 (id)
 
-> Gaple: ubin yang cocok di kedua ujung langsung dimainkan, tanpa ketuk ujung lagi.
-> Gaple: tanganmu tetap terlihat utuh di layar ponsel yang lebar, dan label giliran lebih jelas.
+> Gaple: kini 2–4 orang bisa main di satu HP secara bergiliran, dengan atau tanpa komputer.
+> Perang kapal dan gaple: ketukan di papan kini tepat sasaran.
 
-### What’s New — 1.0.6 (en-US)
+### What’s New — 1.0.7 (en-US)
 
-> Gaple: a tile that fits both open ends now plays at once, no end tap needed.
-> Gaple: your hand stays fully on screen on wide phones, and turn labels are clearer.
+> Gaple: 2–4 people can now play on one phone, passing it round, with or without computers.
+> Battleship and gaple: taps on the board land where you aim.
 
 **Graphics:** shipping files in `docs/brand/store/` (Play icon 512×512, feature graphic
 1024×500, phone screenshots). The screenshot editor lives in Pamer Studio at

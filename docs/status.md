@@ -189,7 +189,13 @@ Real users will try online play first; don't push for these, ask whether feedbac
   App Store **1.0.6 (build 8)** submitted 2026-11-19 through the ASC API → **Waiting for
   Review** (release after approval). iOS skipped 1.0.5, so its What's New lists Werewolf + claim
   chips and the gaple fixes; description updated from `docs/store.md` (adds werewolf). The
-  in-app What's New card on iOS still shows only the gaple lines.
+  in-app What's New card on iOS still shows only the gaple lines. 1.0.6 is live on the App
+  Store (Ready for Sale, seen 2026-11-22).
+  **1.0.7 / versionCode 8 / iOS build 9** (2026-11-22): gaple pass-and-play (2–4 people on one
+  phone) and the battleship/gaple tap-aim fix. AAB `~/Desktop/krida-1.0.7-release.aab`
+  uploaded to Play closed testing (alpha, `8 (1.0.7)`, completed) through the API. iOS build 9
+  uploaded with altool (IPA exported with the Xcode account); App Store **1.0.7** submitted
+  2026-11-22 through the ASC API → **Waiting for Review** (release after approval).
 - Once online play ships, drop the push trigger from the relay deploy workflow (a deploy
   drops open games).
 
