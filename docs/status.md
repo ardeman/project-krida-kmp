@@ -47,7 +47,11 @@ file in the same commit when an item is done or a new one comes up. Last updated
   (any mix, at least two seats), people are "Player 1…4", and a "Pass the phone to …" cover
   (shared `PassCover`, also used by perang kapal) goes up whenever another person on the
   phone has to play; the turn timer waits behind it. Computers' turns keep the last
-  holder's hand on screen. Both build; not played on a device yet.
+  holder's hand on screen. Both build. iOS Simulator check 2026-11-22: two people (cover
+  each way, the timer waits behind it) and two people + a computer (timeout autoplay,
+  computer turn, cover back) OK. Pixel_XL emulator 2026-11-22, in Indonesian: same two
+  tables OK, plus seat cycling and the play-card text, and a cover at the deal when
+  Player 2 opens. Not yet on a real phone, nor a full round to the result card.
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak
