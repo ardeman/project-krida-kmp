@@ -115,8 +115,8 @@ Real users will try online play first; don't push for these, ask whether feedbac
 - **Path (owner, 2026-11-13):** App Store → production submit (not TestFlight as the goal).
   Play → closed testing first, then production later. **App Store 1.0.4 is public**
   (2026-11-16, `https://apps.apple.com/app/id6832093929`). Landing page hero links there;
-  Hero store CTAs are code buttons (black/white with theme), App Store → listing, Play →
-  closed-testing opt-in; status line → TesBareng. Swap Play href to public URL when live.
+  Hero store CTAs are code buttons (black/white with theme), App Store → listing, Play
+  button and status line → TesBareng (closed-testing sign-up). Swap Play href to public URL when live.
 - Play: create the app, upload the AAB to closed testing, the `hapus_iklan` product. Enter
   Data safety from `docs/store.md` (AdMob + online relay rows) when uploading.
 - Play app signing SHA-256 added to `web/public/.well-known/assetlinks.json` (2026-11-14;
