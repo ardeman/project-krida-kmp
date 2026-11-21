@@ -1,10 +1,12 @@
 package com.ardeman.krida.ads
 
 import android.app.Activity
+import com.ardeman.krida.core.protocol.Krida
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
@@ -88,6 +90,8 @@ object Ads {
     private lateinit var app: Context
     private val main = Handler(Looper.getMainLooper())
     private var interstitial: InterstitialAd? = null
+    /** `elapsedRealtime` when the last interstitial closed; null until one has shown. */
+    private var lastInterstitialClosed: Long? = null
     private var rewarded: RewardedAd? = null
     private var loadingInterstitial = false
     private var loadingRewarded = false
@@ -144,7 +148,8 @@ object Ads {
     /**
      * Call when the player leaves a game (back / Menu) or restarts after a finish; [then]
      * runs after the interstitial closes, or immediately if ads are off / none ready yet.
-     * No confirm gate — the creative plays straight away when one is loaded.
+     * No confirm gate — the creative plays straight away when one is loaded. At most one per
+     * [Krida.INTERSTITIAL_GAP_MS], counted from when the last one closed.
      */
     fun afterGame(activity: Activity, then: () -> Unit) {
         val ad = interstitial
@@ -152,8 +157,14 @@ object Ads {
             loadInterstitial()
             return then()
         }
+        val since = lastInterstitialClosed?.let { SystemClock.elapsedRealtime() - it }
+        if (since != null && since < Krida.INTERSTITIAL_GAP_MS) return then()
         interstitial = null
-        ad.fullScreenContentCallback = closed { loadInterstitial(); then() }
+        ad.fullScreenContentCallback = closed {
+            lastInterstitialClosed = SystemClock.elapsedRealtime()
+            loadInterstitial()
+            then()
+        }
         ad.show(activity)
     }
 

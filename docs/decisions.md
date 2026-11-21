@@ -45,6 +45,9 @@ in the same commit as the code.
   overlaying the creative). A one-time "Remove ads" purchase turns them off. Audience
   General / 13+, not Families. (Owner 2026-11-14: every finish; also on quit via back or Menu;
   interstitial no gate; rewarded keeps gate.)
+  **Gap (owner, 2026-11-22):** at most one interstitial per 3 minutes, counted from when the
+  last one closed (`Krida.INTERSTITIAL_GAP_MS`); a finish inside the gap goes straight on.
+  Video creatives felt too long when every finish showed one. Rewarded ads have no gap.
 - **iOS ATT (owner path after App Review 5.1.2, 2026-11-15):** keep personalized ads; show
   the system App Tracking Transparency prompt after any UMP consent sheet and before ad
   requests. App Privacy in Connect discloses Device ID used to track for Third-Party

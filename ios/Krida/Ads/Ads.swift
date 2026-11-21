@@ -1,5 +1,6 @@
 import AppTrackingTransparency
 @preconcurrency import GoogleMobileAds
+import Shared
 import SwiftUI
 @preconcurrency import UserMessagingPlatform
 
@@ -28,6 +29,8 @@ final class Ads: NSObject, ObservableObject {
 
     private var store: Store!
     private var interstitial: InterstitialAd?
+    /// `systemUptime` when the last interstitial closed; nil until one has shown.
+    private var lastInterstitialClosed: TimeInterval?
     private var rewarded: RewardedAd?
     private var loadingInterstitial = false
     private var loadingRewarded = false
@@ -82,13 +85,20 @@ final class Ads: NSObject, ObservableObject {
     /// Call when the player leaves a game (back / Menu) or restarts after a finish; [then]
     /// runs after the interstitial closes, or immediately if ads are off / none ready yet.
     /// No confirm gate — the creative plays straight away when one is loaded.
+    /// At most one per `Krida.INTERSTITIAL_GAP_MS`, counted from when the last one closed.
     func afterGame(then: @escaping () -> Void) {
         guard !removed, let ad = interstitial else {
             loadInterstitial()
             return then()
         }
+        let gap = Double(Krida.shared.INTERSTITIAL_GAP_MS) / 1000
+        if let last = lastInterstitialClosed, ProcessInfo.processInfo.systemUptime - last < gap { return then() }
         interstitial = nil
-        onClosed = { [weak self] in self?.loadInterstitial(); then() }
+        onClosed = { [weak self] in
+            self?.lastInterstitialClosed = ProcessInfo.processInfo.systemUptime
+            self?.loadInterstitial()
+            then()
+        }
         ad.present(from: nil)
     }
 

@@ -92,4 +92,10 @@ object Krida {
      * player acts again themselves.
      */
     const val AUTO_PLAY_MS: Long = 800L
+
+    /**
+     * Least time between two interstitials, counted from when the last one closed. A finish
+     * inside the gap goes straight on with no ad (owner, 2026-11-22).
+     */
+    const val INTERSTITIAL_GAP_MS: Long = 180_000L
 }
