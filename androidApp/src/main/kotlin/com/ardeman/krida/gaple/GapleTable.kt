@@ -3,6 +3,7 @@ package com.ardeman.krida.gaple
 import com.ardeman.krida.ui.EmoteEvent
 import com.ardeman.krida.ui.plusEmote
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.ardeman.krida.R
@@ -14,6 +15,7 @@ import com.ardeman.krida.core.protocol.Platform
 import com.ardeman.krida.core.protocol.PlayerInfo
 import com.ardeman.krida.core.session.GuestSession
 import com.ardeman.krida.core.session.HostSession
+import com.ardeman.krida.core.session.LocalSeat
 import com.ardeman.krida.core.transport.LocalTransport
 import com.ardeman.krida.core.transport.Transport
 import com.ardeman.krida.nearby.LastRoom
@@ -56,6 +58,15 @@ abstract class GapleTable {
     /** Everyone else is a computer on this device, so nobody waits through an ad. */
     open val isLocal: Boolean get() = false
 
+    /** Several people pass this phone round; [mySeat] follows whoever holds it. */
+    open val passing: Boolean get() = false
+
+    /** The seat labelled "You"; none (-1) while people pass the phone. */
+    val you: Int get() = if (passing) -1 else mySeat
+
+    /** Passing the phone: [seat] (a person on this phone) holds it now. */
+    open fun handTo(seat: Int) = Unit
+
     protected var active = true
         private set
 
@@ -90,10 +101,22 @@ abstract class GapleTable {
 
 class GapleHostTable(
     private val session: HostSession<GapleState, GapleMove>,
-    override val mySeat: Int,
+    mySeat: Int,
     private val transport: Transport,
 ) : GapleTable() {
     override val isHost = true
+
+    override var mySeat by mutableIntStateOf(mySeat)
+        private set
+
+    /** Seats of the people on this phone (not computers). */
+    private val people = if (transport is LocalTransport) session.players.filter { !it.bot }.map { it.seat }.toSet() else emptySet()
+
+    override val passing: Boolean get() = people.size > 1
+
+    override fun handTo(seat: Int) {
+        if (passing && seat in people) mySeat = seat
+    }
 
     private val ticker = SecondTicker {
         session.expiredSeats().forEach { session.replaceWithBot(it, GapleBot()) }
@@ -152,6 +175,25 @@ class GapleHostTable(
             val session = HostSession(GapleSettings.rules, transport, roomCode = "LOCAL")
             session.addLocalPlayer(you, Platform.ANDROID)
             for (i in 1..computers) session.addBot(computerName(i), Platform.ANDROID, GapleBot())
+            session.start()
+            return GapleHostTable(session, mySeat = 0, transport = transport)
+        }
+
+        /**
+         * This phone with [seats] from the play card: people pass it round, computers play on
+         * it, empty seats are left out. People are named by [personName] (1..), computers by
+         * [computerName] (1..).
+         */
+        fun onPhone(seats: List<LocalSeat>, personName: (Int) -> String, computerName: (Int) -> String): GapleTable {
+            val transport = LocalTransport()
+            val session = HostSession(GapleSettings.rules, transport, roomCode = "LOCAL")
+            var person = 0
+            var computer = 0
+            for (kind in seats) when (kind) {
+                LocalSeat.PERSON -> session.addLocalPlayer(personName(++person), Platform.ANDROID)
+                LocalSeat.COMPUTER -> session.addBot(computerName(++computer), Platform.ANDROID, GapleBot())
+                LocalSeat.EMPTY -> Unit
+            }
             session.start()
             return GapleHostTable(session, mySeat = 0, transport = transport)
         }

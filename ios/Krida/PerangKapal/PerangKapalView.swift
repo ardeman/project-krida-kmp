@@ -920,26 +920,7 @@ private struct PerangKapalBoardView: View {
 
     /// Two people on one phone: hides the board while it changes hands.
     private func passCover(_ seat: Int) -> some View {
-        ZStack {
-            Theme.backdropGradient.ignoresSafeArea()
-            VStack(spacing: 14 * s) {
-                Circle().fill(seatColor(seat)).frame(width: 28 * s, height: 28 * s)
-                Text("Pass the phone to \(table.name(seat))")
-                    .font(Theme.font(22 * s, .black))
-                    .multilineTextAlignment(.center)
-                Button(action: model.continuePass) { Text("Continue").frame(maxWidth: .infinity) }
-                    .buttonStyle(PrimaryButtonStyle(height: 48))
-            }
-            .padding(24 * s)
-            .frame(maxWidth: 420 * s)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 20 * s))
-            .overlay(RoundedRectangle(cornerRadius: 20 * s).stroke(Theme.line, lineWidth: 1.5))
-            .padding(.horizontal, 24 * s)
-            .foregroundStyle(Theme.ink)
-            .accessibilityElement(children: .contain)
-            .accessibilityAddTraits(.isModal)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        PassCover(name: table.name(seat), color: seatColor(seat), onContinue: model.continuePass)
     }
 
     private var gameOver: some View {

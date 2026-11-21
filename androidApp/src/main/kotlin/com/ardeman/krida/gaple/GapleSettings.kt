@@ -10,9 +10,9 @@ import com.ardeman.krida.core.session.LocalSeat
 import com.ardeman.krida.core.session.LocalSeats
 
 /**
- * Gaple choices on this device. On this phone the first seat is you and the other three are a
- * computer or empty (at least one computer); two people on one phone is out of scope, since
- * hands are hidden. Partners only apply with four seats.
+ * Gaple choices on this device. On this phone the first seat is a person and the other three
+ * are a person, a computer or empty (at least two seats filled). Several people pass the phone
+ * round behind a cover, since hands are hidden. Partners only apply with four seats.
  */
 object GapleSettings {
     private const val PREFS = "gaple"
@@ -40,12 +40,11 @@ object GapleSettings {
         options = GapleOptions(partners = p.getBoolean(KEY_PARTNERS, false), draw = p.getBoolean(KEY_DRAW, false))
     }
 
-    /** Seats 1–3 switch between a computer and empty; one computer always stays. */
+    /** Seats 1–3 cycle person → computer → empty; at least two seats stay filled. */
     fun tapSeat(index: Int) {
         if (index !in 1 until SEATS) return
-        val next = seats.toMutableList()
-        next[index] = if (next[index] == LocalSeat.COMPUTER) LocalSeat.EMPTY else LocalSeat.COMPUTER
-        if (next.count { it == LocalSeat.COMPUTER } == 0) return
+        val next = LocalSeats.next(seats, index)
+        if (next == seats) return
         seats = next
         prefs.edit().putString(KEY_SEATS, LocalSeats.encode(seats)).apply()
     }
@@ -60,13 +59,13 @@ object GapleSettings {
         prefs.edit().putBoolean(KEY_DRAW, on).apply()
     }
 
-    /** Players at the table on this phone (you plus the computers). */
+    /** Players at the table on this phone (people plus computers). */
     val players: Int get() = seats.count { it != LocalSeat.EMPTY }
 
     val rules: GapleRules get() = GapleRules(options)
 
     private fun sanitize(list: List<LocalSeat>): List<LocalSeat> {
-        val fixed = list.mapIndexed { i, s -> if (i == 0) LocalSeat.PERSON else if (s == LocalSeat.PERSON) LocalSeat.COMPUTER else s }
-        return if (fixed.none { it == LocalSeat.COMPUTER }) DEFAULT else fixed
+        val fixed = list.mapIndexed { i, s -> if (i == 0) LocalSeat.PERSON else s }
+        return if (LocalSeats.isValid(fixed)) fixed else DEFAULT
     }
 }

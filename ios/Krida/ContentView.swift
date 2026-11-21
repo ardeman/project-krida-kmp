@@ -21,7 +21,7 @@ struct ContentView: View {
     @State private var congklakSeats: [LocalSeat] = [.person, .person]
     /// Perang kapal's seats: the first is always a person, the second the computer or a person.
     @State private var kapalSeats: [LocalSeat] = [.person, .computer]
-    /// Gaple's seat tiles on this phone (you, then a computer or empty), as `LocalSeats.encode` text.
+    /// Gaple's seat tiles on this phone (a person, then a person, computer or empty), as `LocalSeats.encode` text.
     @AppStorage(GapleSettings.seatsKey) private var gapleSeatsText = ""
     @State private var room: NearbyRoom?
     @State private var level: CongklakBot.Level = .normal
@@ -558,7 +558,7 @@ struct ContentView: View {
             // In a nearby room everyone who joins plays, up to 4.
             if gaple && !nearby && !werewolf {
                 SettingRow(label: "Players") {
-                    // You are always the first seat; the others are a computer or empty.
+                    // The first seat is always a person; the others are a person, a computer or empty.
                     SeatTiles(
                         seats: seats,
                         colors: seats.indices.map { seats[$0] == .empty ? Theme.border : pawnColor($0) },
@@ -609,7 +609,9 @@ struct ContentView: View {
                     } else if werewolf {
                         detail("You against computers. Roles stay hidden on this phone.")
                     } else if gaple {
-                        detail("You against the computer. Hands stay hidden.")
+                        detail(people == 1 ? "You against the computer. Hands stay hidden."
+                            : computers == 0 ? "Pass the phone round; a cover hides each hand."
+                            : "Pass the phone round; computers play on their own.")
                     } else if kapal {
                         detail(computers > 0 ? "You against the computer." : "Two players, taking turns on one phone")
                     } else if !multi && computers > 0 {
@@ -795,10 +797,14 @@ struct ContentView: View {
     }
 
     private func startGaple() {
-        let computers = gapleSeats.filter { $0 == .computer }.count
-        gapleTable = GapleHostTable.vsComputer(you: String(localized: "You", bundle: .app), computers: computers) { n in
-            computers == 1 ? String(localized: "Computer", bundle: .app) : String(localized: "Computer \(n)", bundle: .app)
-        }
+        let seats = gapleSeats
+        let computers = seats.filter { $0 == .computer }.count
+        let people = seats.filter { $0 == .person }.count
+        gapleTable = GapleHostTable.onPhone(
+            seats: seats,
+            personName: { n in people == 1 ? String(localized: "You", bundle: .app) : String(localized: "Player \(n)", bundle: .app) },
+            computerName: { n in computers == 1 ? String(localized: "Computer", bundle: .app) : String(localized: "Computer \(n)", bundle: .app) }
+        )
     }
 
     private func startPassAndPlay() {

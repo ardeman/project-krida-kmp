@@ -781,7 +781,7 @@ class MainActivity : ComponentActivity() {
                 SeatTiles(
                     seats = seats,
                     colors = seats.indices.map { if (seats[it] == LocalSeat.EMPTY) Theme.border else pawnColor(it) },
-                    // You are always the first seat; the others are a computer or empty.
+                    // The first seat is always a person; the others are a person, a computer or empty.
                     tappable = setOf(1, 2, 3),
                     onTap = GapleSettings::tapSeat,
                 )
@@ -852,7 +852,11 @@ class MainActivity : ComponentActivity() {
                                 else -> R.string.nearby_detail
                             }))
                             werewolf -> Detail(stringResource(R.string.werewolf_detail_computer))
-                            gaple -> Detail(stringResource(R.string.gaple_detail_computer))
+                            gaple -> Detail(stringResource(when {
+                                people == 1 -> R.string.gaple_detail_computer
+                                computers == 0 -> R.string.gaple_detail_phone
+                                else -> R.string.gaple_detail_mixed
+                            }))
                             kapal -> Detail(stringResource(if (computers > 0) R.string.perang_kapal_detail_computer else R.string.mode_pass_detail))
                             !multi && computers > 0 -> LevelPicker(level) { level = it }
                             !multi -> Detail(stringResource(R.string.mode_pass_detail))
@@ -921,9 +925,11 @@ class MainActivity : ComponentActivity() {
                                     werewolf -> werewolfTable = WerewolfHostTable.vsComputer(you, WerewolfSettings.targetSeats) { n ->
                                         if (n == 1) computer else getString(R.string.ular_computer_n, n)
                                     }
-                                    gaple -> gapleTable = GapleHostTable.vsComputer(you, computers) { n ->
-                                        if (computers == 1) computer else computerN[n - 1]
-                                    }
+                                    gaple -> gapleTable = GapleHostTable.onPhone(
+                                        seats,
+                                        personName = { n -> if (people == 1) you else getString(R.string.gaple_player_n, n) },
+                                        computerName = { n -> if (computers == 1) computer else computerN[n - 1] },
+                                    )
                                     kapal -> perangKapalTable = if (computers > 0) PerangKapalHostTable.vsComputer(you, computer)
                                     else PerangKapalHostTable.passAndPlay(names)
                                     multi -> {

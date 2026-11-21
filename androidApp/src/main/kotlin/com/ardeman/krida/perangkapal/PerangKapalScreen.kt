@@ -95,6 +95,7 @@ import com.ardeman.krida.ui.EmoteHud
 import com.ardeman.krida.ui.HostLeaveConfirm
 import com.ardeman.krida.ui.LocalStageTurned
 import com.ardeman.krida.ui.PrimaryButton
+import com.ardeman.krida.ui.PassCover
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
@@ -877,31 +878,6 @@ private fun FleetStatus(title: Int, sunk: Set<Int>) {
                     }
                 }
             }
-        }
-    }
-}
-
-/** Two people on one phone: hides the board while it changes hands. */
-@Composable
-private fun PassCover(name: String, color: Color, onContinue: () -> Unit) {
-    Box(
-        Modifier.fillMaxSize().background(Theme.backdropBrush).pointerInput(Unit) { detectTapGestures { } },
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            Modifier.widthIn(max = 420.dp).fillMaxWidth(0.7f)
-                .clip(RoundedCornerShape(20.dp)).background(Theme.surface)
-                .border(1.5.dp, Theme.line, RoundedCornerShape(20.dp))
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(Modifier.size(28.dp).clip(CircleShape).background(color))
-            Text(
-                stringResource(R.string.perang_kapal_pass, name),
-                style = Theme.font(22, FontWeight.Black, Theme.ink), textAlign = TextAlign.Center,
-            )
-            PrimaryButton(stringResource(R.string.perang_kapal_continue), onContinue, Modifier.fillMaxWidth(), height = 48.dp)
         }
     }
 }

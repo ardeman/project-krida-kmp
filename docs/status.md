@@ -1,7 +1,7 @@
 # Status and open work
 
 What is still open outside the online plan (`docs/online.md` has its own steps). Update this
-file in the same commit when an item is done or a new one comes up. Last updated 2026-11-12.
+file in the same commit when an item is done or a new one comes up. Last updated 2026-11-22.
 
 ## Next
 
@@ -42,6 +42,12 @@ file in the same commit when an item is done or a new one comes up. Last updated
   empty seats, 2–4 seat online rooms, partners, quick match); builds, not played on a device
   yet. Next: phone checks (vs computer, then nearby/online iPhone ↔ Pixel). The "Pas!" voice line plays when a seat passes (recorded 2026-11-12).
   End rings light on a dual-fit pick; no camera zoom (2026-11-14).
+- **Gaple pass-and-play** (owner, 2026-11-19; asked for by a TesBareng tester): built
+  2026-11-22 on Android and iOS. On this phone seats 2–4 now cycle person → computer → empty
+  (any mix, at least two seats), people are "Player 1…4", and a "Pass the phone to …" cover
+  (shared `PassCover`, also used by perang kapal) goes up whenever another person on the
+  phone has to play; the turn timer waits behind it. Computers' turns keep the last
+  holder's hand on screen. Both build; not played on a device yet.
 - **Turn timer in every game** (owner, 2026-11-12): every turn gets a countdown, and at 0 the
   phone moves for the player. Ludo and ular tangga have it (roll timer; ludo also a 15 s
   pick timer, not checked on a device yet), gaple and congklak
@@ -189,8 +195,3 @@ Real users will try online play first; don't push for these, ask whether feedbac
   traditional game; bring them up when planning congklak work.
 - Ular tangga: a game list at launch, then the mode screen with a game switcher on the left
   card.
-- Gaple pass-and-play (owner, 2026-11-19): only people on one phone, no computer seat. Today
-  this phone needs at least one computer because hands are hidden (`GapleSettings.sanitize`
-  / `tapSeat`). Add a "Pass the phone to …" cover between turns like perang kapal, pausing the
-  turn timer while it shows; Android and iOS screens plus seat settings, rules unchanged.
-  Asked for by a TesBareng tester (Poco X6).

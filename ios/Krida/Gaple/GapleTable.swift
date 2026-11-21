@@ -29,6 +29,12 @@ class GapleTable: ObservableObject {
     var canEmote: Bool { false }
     /// Everyone else is a computer on this device, so nobody waits through an ad.
     var isLocal: Bool { false }
+    /// Several people pass this phone round; `mySeat` follows whoever holds it.
+    var passing: Bool { false }
+    /// The seat labelled "You"; none (-1) while people pass the phone.
+    var you: Int { passing ? -1 : mySeat }
+    /// Passing the phone: `seat` (a person on this phone) holds it now.
+    func handTo(_ seat: Int) {}
 
     fileprivate init(first: GapleState, seq: Int32) {
         latest = first
@@ -73,13 +79,16 @@ class GapleTable: ObservableObject {
 final class GapleHostTable: GapleTable {
     private let session: HostSession<GapleState, GapleMove>
     private let transport: Transport
-    private let seat: Int
+    private var seat: Int
+    /// Seats of the people on this phone (not computers).
+    private let people: Set<Int>
     private var ticker: SecondTicker?
 
     init(session: HostSession<GapleState, GapleMove>, mySeat: Int, transport: Transport) {
         self.session = session
         self.transport = transport
         seat = mySeat
+        people = transport is LocalTransport ? Set(session.players.filter { !$0.bot }.map { Int($0.seat) }) : []
         super.init(first: session.state!, seq: session.seq)
         players = session.players
         session.onPlayersChanged = { [weak self] list in self?.playersChanged(list) }
@@ -105,6 +114,13 @@ final class GapleHostTable: GapleTable {
     override var isHost: Bool { true }
     override var canEmote: Bool { !(transport is LocalTransport) }
     override var isLocal: Bool { transport is LocalTransport }
+    override var passing: Bool { people.count > 1 }
+
+    override func handTo(_ seat: Int) {
+        guard passing, people.contains(seat) else { return }
+        objectWillChange.send()
+        self.seat = seat
+    }
 
     override func play(_ tile: GapleTile, end: Int?) -> Bool {
         let move = GapleMove(tile: tile, end: end.map { KotlinInt(int: Int32($0)) }, next: false)
@@ -140,6 +156,30 @@ final class GapleHostTable: GapleTable {
         _ = session.addLocalPlayer(name: you, platform: .ios)
         for i in 1...max(computers, 1) {
             _ = session.addBot(name: computerName(i), platform: .ios, bot: GapleBot(level: .normal))
+        }
+        session.start()
+        return GapleHostTable(session: session, mySeat: 0, transport: transport)
+    }
+
+    /// This phone with `seats` from the play card: people pass it round, computers play on it,
+    /// empty seats are left out. People are named by `personName` (1...), computers by
+    /// `computerName` (1...).
+    static func onPhone(seats: [LocalSeat], personName: (Int) -> String, computerName: (Int) -> String) -> GapleTable {
+        let transport = LocalTransport()
+        let session = HostSession<GapleState, GapleMove>(rules: GapleSettings.rules, transport: transport, roomCode: "LOCAL")
+        var person = 0
+        var computer = 0
+        for kind in seats {
+            switch kind {
+            case .person:
+                person += 1
+                _ = session.addLocalPlayer(name: personName(person), platform: .ios)
+            case .computer:
+                computer += 1
+                _ = session.addBot(name: computerName(computer), platform: .ios, bot: GapleBot(level: .normal))
+            default:
+                break
+            }
         }
         session.start()
         return GapleHostTable(session: session, mySeat: 0, transport: transport)
@@ -216,16 +256,14 @@ enum GapleSettings {
     /// The seat tiles stored as `LocalSeats.encode` text, sanitised.
     static func seats(_ text: String?) -> [LocalSeat] {
         let list = LocalSeats.shared.decode(text: text?.isEmpty == false ? text : nil, size: Int32(size), fallback: fallback)
-        let fixed = list.enumerated().map { i, s in i == 0 ? LocalSeat.person : s == .person ? LocalSeat.computer : s }
-        return fixed.contains(.computer) ? fixed : fallback
+        let fixed = list.enumerated().map { i, s in i == 0 ? LocalSeat.person : s }
+        return LocalSeats.shared.isValid(seats: fixed) ? fixed : fallback
     }
 
-    /// Seats 1–3 switch between a computer and empty; one computer always stays.
+    /// Seats 1–3 cycle person → computer → empty; at least two seats stay filled.
     static func tap(_ seats: [LocalSeat], index: Int) -> [LocalSeat] {
         guard (1..<size).contains(index) else { return seats }
-        var next = seats
-        next[index] = next[index] == .computer ? .empty : .computer
-        return next.contains(.computer) ? next : seats
+        return LocalSeats.shared.next(seats: seats, index: Int32(index), allowEmpty: true)
     }
 
     static var seats: [LocalSeat] { seats(UserDefaults.standard.string(forKey: seatsKey)) }

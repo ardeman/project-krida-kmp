@@ -5925,6 +5925,54 @@
         }
       }
     },
+    "Pass the phone round; a cover hides each hand.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass the phone round; a cover hides each hand."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP digilir; layar tertutup saat berganti pemain."
+          }
+        }
+      }
+    },
+    "Pass the phone round; computers play on their own.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pass the phone round; computers play on their own."
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP digilir; komputer main sendiri."
+          }
+        }
+      }
+    },
+    "Player %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Player %lld"
+          }
+        },
+        "id": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pemain %lld"
+          }
+        }
+      }
+    },
     "Continue": {
       "localizations": {
         "en": {

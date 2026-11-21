@@ -99,6 +99,7 @@ import com.ardeman.krida.ui.PrimaryButton
 import com.ardeman.krida.ui.SecondaryButton
 import com.ardeman.krida.ui.SoundToggles
 import com.ardeman.krida.ui.Sounds
+import com.ardeman.krida.ui.PassCover
 import com.ardeman.krida.ui.Theme
 import com.ardeman.krida.ui.gameInsets
 import com.ardeman.krida.ui.rememberGameLifetime
@@ -193,6 +194,8 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
         scope.launch {
             try {
                 val r = renderer
+                // Read the seat now: passing the phone moves it.
+                val me = table.mySeat
                 if (r != null) {
                     r.applyState(next.state, me, animate = next.fresh)
                     if (next.fresh) {
@@ -205,7 +208,8 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                 // Seats that couldn't play after this move passed: "Pas!".
                 if (next.fresh && next.state.lastPasses.isNotEmpty()) Sounds.say(Sounds.Line.Pass)
                 if (next.state.finished && !before.finished) {
-                    val mine = next.state.team(me) == next.state.winner?.let(next.state::team)
+                    // People sharing the phone: the win is somebody's here.
+                    val mine = table.passing || next.state.team(me) == next.state.winner?.let(next.state::team)
                     Sounds.play(if (mine) Sounds.Effect.Win else Sounds.Effect.Lose)
                 } else if (!next.state.roundOver && next.state.turn == me && before.turn != me) {
                     Sounds.play(Sounds.Effect.Turn)
@@ -231,7 +235,18 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
     }
 
     val settled = !animating && queue.isEmpty()
-    val myTurn = settled && !state.roundOver && !state.finished && state.turn == me
+    // Passing the phone: when another person on it has to play, a cover hides the board until
+    // they take it. Computers' turns keep the last holder's view.
+    var cover by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(settled, state, me) {
+        if (!table.passing) return@LaunchedEffect
+        if (state.roundOver || state.finished) {
+            cover = null
+        } else if (settled) {
+            cover = state.turn.takeIf { it != me && it !in table.botSeats }
+        }
+    }
+    val myTurn = settled && cover == null && !state.roundOver && !state.finished && state.turn == me
     val playable = if (myTurn) GapleGame.playable(state, me) else emptyList()
     LaunchedEffect(myTurn) { if (!myTurn) picking = null }
     // Only the ends this tile can join light up while picking.
@@ -472,7 +487,7 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
                 EmoteHud(
                     canEmote = table.canEmote,
                     emotes = table.emotes,
-                    playerName = { seat -> if (seat == me) youLabel else table.name(seat) },
+                    playerName = { seat -> if (seat == table.you) youLabel else table.name(seat) },
                     onSend = table::sendEmote,
                 )
                 Spacer(Modifier.weight(1f))
@@ -551,6 +566,18 @@ private fun Board(table: GapleTable, onExit: () -> Unit, onFirstFrame: () -> Uni
             )
         }
 
+        cover?.let { next ->
+            PassCover(table.name(next), pawnColor(next)) {
+                if (lifetime.active) {
+                    Sounds.play(Sounds.Effect.Tap)
+                    auto = false
+                    picking = null
+                    table.handTo(next)
+                    renderer?.applyState(state, next, animate = false)
+                    cover = null
+                }
+            }
+        }
         if (roundCard) RoundCard(
             table, state, roundSeconds, turnTotal,
             dealing = dealing,
@@ -578,7 +605,7 @@ private fun drawing(state: GapleState) = state.options.draw && state.players < 4
 /** "You", a player's name, or "Team A" with partners. */
 @Composable
 private fun seatName(table: GapleTable, seat: Int): String =
-    if (seat == table.mySeat) stringResource(R.string.bot_you) else table.name(seat)
+    if (seat == table.you) stringResource(R.string.bot_you) else table.name(seat)
 
 @Composable
 private fun teamName(team: Int) = stringResource(R.string.gaple_team, if (team == 0) "A" else "B")
@@ -600,7 +627,7 @@ private fun EventPills(table: GapleTable, state: GapleState, myTurn: Boolean, pi
         state.lastPasses.map { stringResource(R.string.gaple_pass, seatName(table, it)) }
     val played = state.lastSeat?.let { seat ->
         state.lastTile?.let {
-            if (seat == table.mySeat) stringResource(R.string.gaple_you_play, it.left, it.right)
+            if (seat == table.you) stringResource(R.string.gaple_you_play, it.left, it.right)
             else stringResource(R.string.gaple_plays, table.name(seat), it.left, it.right)
         }
     }
@@ -750,7 +777,7 @@ private fun RoundCard(
     val winner = state.roundWinner
     val title = when {
         state.roundEnd == "gaple" -> stringResource(R.string.gaple_gaple)
-        winner == table.mySeat -> stringResource(R.string.gaple_domino_you)
+        winner == table.you -> stringResource(R.string.gaple_domino_you)
         winner != null -> stringResource(R.string.gaple_domino, table.name(winner))
         else -> ""
     }
@@ -776,10 +803,10 @@ private fun RoundCard(
 @Composable
 private fun ResultCard(table: GapleTable, state: GapleState, onExit: () -> Unit, onRestart: () -> Unit) {
     val winner = state.winner
-    val me = table.mySeat
+    val me = table.you
     val title = when {
         winner == null -> stringResource(R.string.gaple_title)
-        state.partners && state.team(winner) == state.team(me) -> stringResource(R.string.gaple_your_team_wins)
+        state.partners && me >= 0 && state.team(winner) == state.team(me) -> stringResource(R.string.gaple_your_team_wins)
         state.partners -> stringResource(R.string.gaple_team_wins, if (state.team(winner) == 0) "A" else "B")
         winner == me -> stringResource(R.string.ludo_you_win)
         else -> stringResource(R.string.ludo_wins, table.name(winner))

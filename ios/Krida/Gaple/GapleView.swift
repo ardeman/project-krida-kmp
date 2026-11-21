@@ -16,6 +16,8 @@ final class GapleGameModel: ObservableObject {
     }
     @Published private(set) var turnSeconds = 0
     @Published private(set) var roundSeconds = 0
+    /// Passing the phone: the person to hand it to; the cover hides the board until they take it.
+    @Published private(set) var cover: Int?
 
     let table: GapleTable
     let renderer = GapleRenderer()
@@ -51,7 +53,7 @@ final class GapleGameModel: ObservableObject {
     var me: Int { table.mySeat }
     var settled: Bool { !animating && queue.isEmpty }
     var myTurn: Bool {
-        lifetime.active && settled && !state.roundOver && !state.finished && Int(state.turn) == me
+        lifetime.active && settled && cover == nil && !state.roundOver && !state.finished && Int(state.turn) == me
     }
     var playable: [GapleTile] { myTurn ? game.playable(state: state, seat: Int32(me)) : [] }
     var hand: [GapleTile] { state.hands.indices.contains(me) ? state.hands[me] : [] }
@@ -66,6 +68,7 @@ final class GapleGameModel: ObservableObject {
     private func drain() {
         guard lifetime.active, !animating else { return }
         guard !queue.isEmpty else {
+            syncCover()
             idle()
             syncTimers()
             return
@@ -86,7 +89,8 @@ final class GapleGameModel: ObservableObject {
             // Seats that couldn't play after this move passed: "Pas!".
             if next.fresh && !next.state.lastPasses.isEmpty { sounds.say(.pass) }
             if next.state.finished && !before.finished {
-                let mine = next.state.winner.map { next.state.team(seat: $0.int32Value) == next.state.team(seat: Int32(me)) } ?? false
+                // People sharing the phone: the win is somebody's here.
+                let mine = table.passing || next.state.winner.map { next.state.team(seat: $0.int32Value) == next.state.team(seat: Int32(me)) } ?? false
                 sounds.play(mine ? .win : .lose)
             } else if !next.state.roundOver && Int(next.state.turn) == me && Int(before.turn) != me {
                 sounds.play(.turn)
@@ -95,6 +99,27 @@ final class GapleGameModel: ObservableObject {
             syncEndHighlight()
             drain()
         }
+    }
+
+    /// Passing the phone: when another person on it has to play, the cover goes up. Computers'
+    /// turns keep the last holder's view.
+    private func syncCover() {
+        guard table.passing else { return }
+        let turn = Int(state.turn)
+        cover = state.roundOver || state.finished || turn == me || table.botSeats.contains(turn) ? nil : turn
+    }
+
+    /// The next person took the phone: show their hand and start their turn.
+    func continuePass() {
+        guard lifetime.active, let next = cover else { return }
+        sounds.play(.tap)
+        auto = false
+        picking = nil
+        table.handTo(next)
+        renderer.apply(state, viewer: next, animate: false)
+        cover = nil
+        syncEndHighlight()
+        syncTimers()
     }
 
     /// Lets a computer play once the table is still.
@@ -360,6 +385,9 @@ private struct GapleBoardView: View {
                     .accessibilityAction(named: Text("Left end")) { model.playEnd(Int(GapleGame.shared.LEFT)) }
                     .accessibilityAction(named: Text("Right end")) { model.playEnd(Int(GapleGame.shared.RIGHT)) }
                 notices
+                if let next = model.cover {
+                    PassCover(name: table.name(next), color: pawnColor(next), onContinue: model.continuePass)
+                }
                 if model.roundCard { roundCard }
                 if model.settled && state.finished { resultCard }
                 if confirmingLeave {
@@ -429,7 +457,7 @@ private struct GapleBoardView: View {
 
     /// "You" or a player's name.
     private func seatName(_ seat: Int) -> String {
-        seat == table.mySeat ? String(localized: "You", bundle: .app) : table.name(seat)
+        seat == table.you ? String(localized: "You", bundle: .app) : table.name(seat)
     }
 
     private func teamLetter(_ seat: Int) -> String { state.team(seat: Int32(seat)) == 0 ? "A" : "B" }
@@ -536,7 +564,7 @@ private struct GapleBoardView: View {
         }
         let played: String? = state.lastSeat.flatMap { seat in
             state.lastTile.map { t in
-                Int(seat.int32Value) == table.mySeat
+                Int(seat.int32Value) == table.you
                     ? String(localized: "You play \(Int(t.left))|\(Int(t.right))", bundle: .app)
                     : String(localized: "\(table.name(Int(seat.int32Value))) plays \(Int(t.left))|\(Int(t.right))", bundle: .app)
             }
@@ -702,7 +730,7 @@ private struct GapleBoardView: View {
         let winner = state.roundWinner?.intValue
         let title: String = if state.roundEnd == "gaple" {
             String(localized: "Gaple! Nobody can play", bundle: .app)
-        } else if let winner, winner == table.mySeat {
+        } else if let winner, winner == table.you {
             String(localized: "Domino! You went out", bundle: .app)
         } else if let winner {
             String(localized: "Domino! \(table.name(winner)) went out", bundle: .app)
@@ -734,9 +762,9 @@ private struct GapleBoardView: View {
     }
 
     private var resultCard: some View {
-        let me = table.mySeat
+        let me = table.you
         let winner = state.winner?.intValue
-        let title: String = if let winner, state.partners, state.team(seat: Int32(winner)) == state.team(seat: Int32(me)) {
+        let title: String = if let winner, state.partners, me >= 0, state.team(seat: Int32(winner)) == state.team(seat: Int32(me)) {
             String(localized: "Your team wins!", bundle: .app)
         } else if let winner, state.partners {
             String(localized: "Team \(teamLetter(winner)) wins", bundle: .app)

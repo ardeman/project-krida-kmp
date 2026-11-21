@@ -432,6 +432,9 @@
     <string name="gaple_card_tagline">Sambung ujungnya, habiskan kartumu.</string>
     <string name="gaple_hint">Tak ada yang cocok? Pas. Pertama ke 100 poin menang.</string>
     <string name="gaple_detail_computer">Kamu melawan komputer. Kartu tetap tertutup.</string>
+    <string name="gaple_detail_phone">HP digilir; layar tertutup saat berganti pemain.</string>
+    <string name="gaple_detail_mixed">HP digilir; komputer main sendiri.</string>
+    <string name="gaple_player_n">Pemain %1$d</string>
     <string name="gaple_detail_nearby">Hingga 4 HP lewat Bluetooth, kartu di HP masing-masing</string>
     <string name="gaple_detail_online">Hingga 4 HP lewat internet, kartu di HP masing-masing</string>
     <string name="gaple_partners">Berpasangan</string>
