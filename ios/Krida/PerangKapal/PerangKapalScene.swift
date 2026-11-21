@@ -293,27 +293,24 @@ final class PerangKapalScene {
     private static let fitSteps = 24
 
     /// The cell of the radar (in battle) or of the ocean (while placing) under `point`, in
-    /// the screen's coordinates.
+    /// the screen's coordinates. Casts the tap's ray onto the grid's top, so it is exact under
+    /// perspective (a nearest projected centre drifts near the edges); same as Android.
     func pickCell(at point: CGPoint, onRadar: Bool) -> Int? {
-        guard screen.width > 0, onRadar == battle else { return nil }
-        let originX = onRadar ? board.RADAR_OFFSET_X : 0
+        guard screen.width > 0, screen.height > 0, onRadar == battle else { return nil }
         let local = CGPoint(x: point.x - viewFrame.minX, y: point.y - viewFrame.minY)
-        func center(_ cell: Int) -> CGPoint {
-            project(Self.vec(board.cellCenter(index: Int32(cell), originX: originX)), tanV: tanHalf)
-        }
-        // Within three quarters of a cell of its centre, so a tap between the grids is ignored.
-        let a = center(0), b = center(1)
-        var bestDistance = hypot(b.x - a.x, b.y - a.y) * 0.75
-        var best: Int?
-        for cell in 0..<Int(PerangKapalGame.shared.CELLS) {
-            let p = center(cell)
-            let d = hypot(p.x - local.x, p.y - local.y)
-            if d < bestDistance {
-                bestDistance = d
-                best = cell
-            }
-        }
-        return best
+        let nx = Float(local.x / (screen.width / 2) - 1)
+        let ny = Float(1 - local.y / (screen.height / 2))
+        let eye = eyePosition()
+        let fwd = simd_normalize(target() - eye)
+        let right = simd_normalize(simd_cross(fwd, SIMD3(0, 1, 0)))
+        let up = simd_cross(right, fwd)
+        let aspect = Float(screen.width / screen.height)
+        let dir = fwd + right * (nx * tanHalf * aspect) + up * (ny * tanHalf)
+        guard dir.y < 0 else { return nil }
+        let t = (board.TOP - eye.y) / dir.y
+        let hit = eye + dir * t
+        let originX = onRadar ? board.RADAR_OFFSET_X : 0
+        return board.cellAt(x: hit.x, z: hit.z, originX: originX)?.intValue
     }
 
     /// Screen point of `p` inside the view (which is as large as the screen).

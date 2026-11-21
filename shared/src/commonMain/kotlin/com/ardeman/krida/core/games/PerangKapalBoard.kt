@@ -1,6 +1,7 @@
 package com.ardeman.krida.core.games
 
 import com.ardeman.krida.core.voxel.VoxelMesh
+import kotlin.math.floor
 
 /**
  * Perang kapal grids in world units (y up, camera on +z). One 10×10 ocean; in battle the
@@ -62,6 +63,23 @@ object PerangKapalBoard {
         val z = HALF - row * CELL - CELL / 2
         return floatArrayOf(x, TOP, z)
     }
+
+    /**
+     * The cell of a grid whose origin is at [originX], 0, 0 under world point ([x], [TOP], [z]),
+     * or null off the grid. A quarter cell of slack past the edge still picks the edge cell, so
+     * a tap just outside the frame counts. Hosts cast the tap's ray onto y = [TOP] and call this.
+     */
+    fun cellAt(x: Float, z: Float, originX: Float): Int? {
+        val n = PerangKapalGame.SIZE
+        val u = (x - originX + HALF) / CELL
+        val v = (HALF - z) / CELL
+        if (u < -PICK_SLACK || v < -PICK_SLACK || u > n + PICK_SLACK || v > n + PICK_SLACK) return null
+        val col = floor(u).toInt().coerceIn(0, n - 1)
+        val row = floor(v).toInt().coerceIn(0, n - 1)
+        return row * n + col
+    }
+
+    private const val PICK_SLACK = 0.25f
 
     fun bounds(originX: Float = 0f): List<FloatArray> {
         val e = HALF + RIM

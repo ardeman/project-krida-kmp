@@ -243,11 +243,9 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         if (width <= 1 || handAt.isEmpty()) return null
         var best: GapleTile? = null
         var bestD = reach
-        val shiftOk = shiftInProjection()
         for ((tile, c) in handAt) {
             val p = project(c[0], c[1], c[2])
-            val s = if (shiftOk) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
-            val d = hypot(s[0] - x, s[1] - y)
+            val d = hypot(p[0] + shiftX - x, p[1] + shiftY - y)
             if (d < bestD) {
                 bestD = d
                 best = tile
@@ -284,13 +282,8 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
         if (end !in activeEnds) return null
         val at = ringAt[end] ?: return null
         val p = project(at[0], 0f, at[2])
-        return if (shiftInProjection()) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
-    }
-
-    /** Whether Filament's projection matrix already carries the shift (a symmetric one has 0 there). */
-    private fun shiftInProjection(): Boolean {
-        val m = camera.getProjectionMatrix(DoubleArray(16))
-        return abs(m[8]) > 1e-6 || abs(m[9]) > 1e-6
+        // getProjectionMatrix leaves out setShift; add the pixel shift by hand.
+        return floatArrayOf(p[0] + shiftX, p[1] + shiftY)
     }
 
     override fun step(dt: Float): Boolean {
@@ -403,7 +396,8 @@ class GapleRenderer(textureView: TextureView) : VoxelStage(textureView, GapleGlb
     private fun applyProjection() {
         val aspect = width.toDouble() / height.coerceAtLeast(1)
         camera.setProjection(fovDegrees.toDouble(), aspect, 0.5, 120.0, Camera.Fov.VERTICAL)
-        camera.setShift((shiftX / (width / 2f)).toDouble(), (-shiftY / (height / 2f)).toDouble())
+        // Filament's shift is in whole views (it doubles it into clip space): pixels / size.
+        camera.setShift((shiftX / width).toDouble(), (-shiftY / height).toDouble())
     }
 
     /**

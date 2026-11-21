@@ -4,6 +4,7 @@ import com.ardeman.krida.core.games.PerangKapalBoard
 import com.ardeman.krida.core.games.PerangKapalGame
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PerangKapalBoardTest {
@@ -44,5 +45,27 @@ class PerangKapalBoardTest {
         assertTrue(PerangKapalBoard.pegMesh(1, hit = false).vertexCount > 0)
         assertTrue(PerangKapalBoard.ringMesh(5).vertexCount > 0)
         assertEquals(PerangKapalGame.SIZE * PerangKapalGame.SIZE, PerangKapalGame.CELLS)
+    }
+
+    @Test
+    fun cellAtInvertsCellCenter() {
+        val origin = PerangKapalBoard.RADAR_OFFSET_X
+        for (cell in 0 until PerangKapalGame.CELLS) {
+            val c = PerangKapalBoard.cellCenter(cell, origin)
+            assertEquals(cell, PerangKapalBoard.cellAt(c[0], c[2], origin))
+            // Near a corner, still inside the cell.
+            val e = PerangKapalBoard.CELL * 0.45f
+            assertEquals(cell, PerangKapalBoard.cellAt(c[0] - e, c[2] + e, origin))
+            assertEquals(cell, PerangKapalBoard.cellAt(c[0] + e, c[2] - e, origin))
+        }
+    }
+
+    @Test
+    fun cellAtSnapsJustOutsideAndIgnoresFarAway() {
+        val c = PerangKapalBoard.cellCenter(0, 0f)
+        val cell = PerangKapalBoard.CELL
+        assertEquals(0, PerangKapalBoard.cellAt(c[0] - cell * 0.7f, c[2] + cell * 0.7f, 0f))
+        assertNull(PerangKapalBoard.cellAt(c[0] - cell, c[2], 0f))
+        assertNull(PerangKapalBoard.cellAt(0f, 0f, PerangKapalBoard.RADAR_OFFSET_X * 3))
     }
 }

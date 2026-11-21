@@ -10,9 +10,7 @@ import com.ardeman.krida.core.games.PerangKapalState
 import com.ardeman.krida.ui.VoxelStage
 import com.google.android.filament.Camera
 import java.nio.ByteBuffer
-import kotlin.math.abs
 import kotlin.math.atan
-import kotlin.math.hypot
 import kotlin.math.sqrt
 import kotlin.math.tan
 
@@ -145,36 +143,30 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         }
     }
 
-    /** The cell of the radar (in battle) or of the ocean (while placing) under a screen point. */
+    /**
+     * The cell of the radar (in battle) or of the ocean (while placing) under a screen point.
+     * Casts the tap's ray onto the grid's top, so it is exact under perspective (a nearest
+     * projected centre drifts toward the far rows and across columns near the edges).
+     */
     fun pickCell(sx: Float, sy: Float, onRadar: Boolean): Int? {
-        if (onRadar != battle) return null
-        val origin = if (onRadar) PerangKapalBoard.RADAR_OFFSET_X else 0f
-        fun center(cell: Int): FloatArray {
-            val c = PerangKapalBoard.cellCenter(cell, origin)
-            val p = project(c[0], PerangKapalBoard.TOP, c[2])
-            // Filament's projection matrix leaves out setShift; add it by hand (see Gaple/Congklak).
-            return if (shiftInProjection()) p else floatArrayOf(p[0] + shiftX, p[1] + shiftY)
-        }
-        // Within three quarters of a cell of its centre, so a tap beside the grid is ignored.
-        val a = center(0)
-        val b = center(1)
-        var bestD = hypot(b[0] - a[0], b[1] - a[1]) * 0.75f
-        var best = -1
-        for (cell in 0 until PerangKapalGame.CELLS) {
-            val p = center(cell)
-            val d = hypot(p[0] - sx, p[1] - sy)
-            if (d < bestD) {
-                bestD = d
-                best = cell
-            }
-        }
-        return best.takeIf { it >= 0 }
-    }
-
-    /** Whether Filament's projection matrix already carries the shift. */
-    private fun shiftInProjection(): Boolean {
-        val m = camera.getProjectionMatrix(DoubleArray(16))
-        return abs(m[8]) > 1e-6 || abs(m[9]) > 1e-6
+        if (onRadar != battle || width <= 1) return null
+        // Filament applies setShift after the projection matrix (getProjectionMatrix leaves it
+        // out), so undo the pixel shift first; the matrix itself is symmetric.
+        val p = camera.getProjectionMatrix(DoubleArray(16))
+        val m = camera.getModelMatrix(DoubleArray(16))
+        val nx = (sx - shiftX) / width * 2.0 - 1.0
+        val ny = 1.0 - (sy - shiftY) / height * 2.0
+        val ex = nx / p[0]
+        val ey = ny / p[5]
+        // Eye-space direction (ex, ey, -1) to world space with the camera's rotation.
+        val dx = m[0] * ex + m[4] * ey - m[8]
+        val dy = m[1] * ex + m[5] * ey - m[9]
+        val dz = m[2] * ex + m[6] * ey - m[10]
+        if (dy >= 0) return null
+        val t = (PerangKapalBoard.TOP - m[13]) / dy
+        val x = (m[12] + dx * t).toFloat()
+        val z = (m[14] + dz * t).toFloat()
+        return PerangKapalBoard.cellAt(x, z, if (onRadar) PerangKapalBoard.RADAR_OFFSET_X else 0f)
     }
 
     private fun showBattle(on: Boolean) {
@@ -315,7 +307,8 @@ class PerangKapalRenderer(textureView: TextureView) : VoxelStage(textureView, Pe
         shiftX = shift[0]
         shiftY = shift[1]
         camera.setProjection(fov, aspect, 0.5, 80.0, Camera.Fov.VERTICAL)
-        camera.setShift((shiftX / (width / 2f)).toDouble(), (-shiftY / (height / 2f)).toDouble())
+        // Filament's shift is in whole views (it doubles it into clip space): pixels / size.
+        camera.setShift((shiftX / width).toDouble(), (-shiftY / height).toDouble())
     }
 
     private companion object {
